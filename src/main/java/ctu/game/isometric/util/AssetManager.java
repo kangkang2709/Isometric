@@ -17,6 +17,7 @@ public class AssetManager implements Disposable {
 
     public void loadAssets() {
         // Load all necessary textures
+
         loadTexture("tiles/grass.png");
         loadTexture("characters/player.png");
         loadTexture("ui/dialog_box.png");
@@ -24,7 +25,12 @@ public class AssetManager implements Disposable {
     }
 
     private void loadTexture(String path) {
-        textures.put(path, new Texture(Gdx.files.internal(path)));
+        Texture texture = new Texture(Gdx.files.internal(path));
+        texture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+        texture.setWrap(Texture.TextureWrap.ClampToEdge, Texture.TextureWrap.ClampToEdge);
+
+        textures.put(path,texture);
+
     }
 
     public Texture getTexture(String path) {

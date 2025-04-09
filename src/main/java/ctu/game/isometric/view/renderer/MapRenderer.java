@@ -9,15 +9,15 @@ import ctu.game.isometric.util.AnimationManager;
 import ctu.game.isometric.util.AssetManager;
 import ctu.game.isometric.model.entity.Character;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MapRenderer {
     private IsometricMap map;
     private AssetManager assetManager;
     private float offsetX, offsetY;
     private AnimationManager animationManager;
     private Character character;
-
-    private static final float OVERLAP_X = 12.0f;
-    private static final float OVERLAP_Y = 9.0f;
 
     public MapRenderer(IsometricMap map, AssetManager assetManager, Character character) {
         this.map = map;
@@ -30,29 +30,24 @@ public class MapRenderer {
 
     public void render(SpriteBatch batch) {
         Texture tileTexture = assetManager.getTexture(map.getTileTexturePath());
+        TextureRegion tileRegion = new TextureRegion(tileTexture, 0, 0, map.getTileWidth(), map.getTileHeight());
         int[][] mapData = map.getMapData();
 
         // Draw tiles in correct isometric order (back to front)
         for (int sum = mapData.length + mapData[0].length - 2; sum >= 0; sum--) {
-            for (int y = Math.max(0, sum - mapData[0].length + 1); y < Math.min(mapData.length, sum + 1); y++) {
+            for (int y = Math.min(mapData.length - 1, sum); y >= Math.max(0, sum - mapData[0].length + 1); y--) {
                 int x = sum - y;
                 if (x >= 0 && x < mapData[0].length) {
                     int tileType = mapData[y][x];
+
                     if (tileType != 0) {
                         float[] iso = toIsometric(x, y);
-                        // Round position to avoid floating point issues
-                        float drawX = Math.round(iso[0] - OVERLAP_X);
-                        float drawY = Math.round(iso[1] - OVERLAP_Y);
-                        float width = map.getTileWidth() + 2 * OVERLAP_X;
-                        float height = map.getTileHeight() + 2 * OVERLAP_Y;
-
-                        batch.draw(tileTexture, drawX, drawY, width, height);
+                        batch.draw(tileRegion, iso[0], iso[1], map.getTileWidth(), map.getTileHeight());
                     }
                 }
             }
         }
     }
-
 
     public void renderWalkableTileHighlights(SpriteBatch batch, boolean[][] walkableTiles, float stateTime) {
         // Get character position
@@ -93,7 +88,7 @@ public class MapRenderer {
                     y >= 0 && y < walkableTiles.length &&
                     walkableTiles[y][x]) {
                 float[] iso = toIsometric(x, y);
-                batch.draw(tileTexture, iso[0], iso[1]);
+                batch.draw(tileTexture, iso[0], iso[1], map.getTileWidth(), map.getTileHeight());
             }
         }
 
@@ -103,10 +98,11 @@ public class MapRenderer {
 
     public float[] toIsometric(float x, float y) {
         // More precise calculation for diamond tiles
-        float isoX = (x - y) * (64 / 2.0f) + offsetX;
-        float isoY = (x + y) * (32 / 2.0f) + offsetY;
+        float isoX = (x - y) * (map.getTileWidth() / 2.0f) + offsetX;
+        float isoY = (x + y) * (map.getTileHeight() / 2.0f) + offsetY;
         return new float[]{isoX, isoY};
     }
+
     public float getOffsetX() {
         return offsetX;
     }
