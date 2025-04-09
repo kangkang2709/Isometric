@@ -8,9 +8,11 @@ import java.util.Map;
 
 public class AssetManager implements Disposable {
     private Map<String, Texture> textures;
+    private AnimationManager animationManager;
 
     public AssetManager() {
         textures = new HashMap<>();
+        animationManager = new AnimationManager();
     }
 
     public void loadAssets() {
@@ -19,11 +21,6 @@ public class AssetManager implements Disposable {
         loadTexture("characters/player.png");
         loadTexture("ui/dialog_box.png");
 
-
-        loadTexture("ui/arrow_up.png");
-        loadTexture("ui/arrow_down.png");
-        loadTexture("ui/arrow_left.png");
-        loadTexture("ui/arrow_right.png");
     }
 
     private void loadTexture(String path) {
@@ -32,6 +29,10 @@ public class AssetManager implements Disposable {
 
     public Texture getTexture(String path) {
         return textures.get(path);
+    }
+
+    public AnimationManager getAnimationManager() {
+        return animationManager;
     }
 
     @Override

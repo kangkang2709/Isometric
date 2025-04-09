@@ -57,7 +57,9 @@ public class AnimationManager {
 
         return animations.get("down_idle").getKeyFrame(0);
     }
-
+    public TextureRegion getCharacterFrame(String direction, boolean isMoving, float stateTime) {
+        return getFrame(direction, isMoving, stateTime);
+    }
     public void dispose() {
         // Dispose of textures if needed
     }

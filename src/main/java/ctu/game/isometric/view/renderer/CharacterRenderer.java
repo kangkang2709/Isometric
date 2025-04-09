@@ -18,24 +18,26 @@ public class CharacterRenderer {
     public CharacterRenderer(Character character, AssetManager assetManager) {
         this.character = character;
         this.assetManager = assetManager;
-        this.animationManager = new AnimationManager();
+        this.animationManager = assetManager.getAnimationManager();
         // Initialize animations with the character's sprite sheet
         this.animationManager.loadCharacterAnimations("characters/player.png");
     }
 
     public void render(SpriteBatch batch, float offsetX, float offsetY) {
-        if (character == null) return;
+        float gridX = character.getGridX();
+        float gridY = character.getGridY();
 
-        TextureRegion currentFrame = animationManager.getFrame(
+        // Convert to isometric coordinates
+        float isoX = (gridX - gridY) * 64 / 2f + offsetX; // Assuming 64 is tile width
+        float isoY = (gridX + gridY) * 32 / 2f + offsetY; // Assuming 32 is tile height
+
+        TextureRegion currentFrame = animationManager.getCharacterFrame(
                 character.getDirection(),
                 character.isMoving(),
                 character.getAnimationTime()
         );
 
-        float screenX = getScreenX(character.getGridX(), character.getGridY(), offsetX);
-        float screenY = getScreenY(character.getGridX(), character.getGridY(), offsetY);
-
-        batch.draw(currentFrame, screenX, screenY);
+        batch.draw(currentFrame, isoX, isoY);
     }
 
     // Convert grid coordinates to screen coordinates for isometric rendering

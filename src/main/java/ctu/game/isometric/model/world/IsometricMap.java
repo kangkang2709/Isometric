@@ -15,9 +15,10 @@ public class IsometricMap {
                 {1, 1, 1, 1, 1},
                 {1, 1, 1, 1, 1},
                 {1, 1, 1, 1, 1},
-                {1, 1, 1, 1, 1}
+                {1, 1, 2, 1, 2}
         };
     }
+
 
     public int[][] getMapData() { return mapData; }
     public int getTileWidth() { return tileWidth; }

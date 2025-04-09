@@ -65,7 +65,34 @@ public class GameController {
             dialogController.showDialog("You found a secret area!");
         }
     }
+    public boolean[][] getWalkableTiles() {
+        int width = map.getMapData()[0].length;
+        int height = map.getMapData().length;
+        boolean[][] walkable = new boolean[height][width];
 
+        // Mark all walkable tiles as false by default
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                walkable[y][x] = false;
+            }
+        }
+
+        // Mark only adjacent walkable tiles
+        int charX = (int) character.getGridX();
+        int charY = (int) character.getGridY();
+
+        // Check adjacent tiles (up, down, left, right)
+        int[][] directions = {{0, -1}, {0, 1}, {-1, 0}, {1, 0}};
+        for (int[] dir : directions) {
+            int newX = charX + dir[0];
+            int newY = charY + dir[1];
+            if (canMove(dir[0], dir[1])) {
+                walkable[newY][newX] = true;
+            }
+        }
+
+        return walkable;
+    }
     // Getters
     public Character getCharacter() { return character; }
     public IsometricMap getMap() { return map; }

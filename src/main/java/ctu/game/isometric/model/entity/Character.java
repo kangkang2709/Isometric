@@ -20,8 +20,22 @@ public class Character {
         this.gridY = startY;
     }
 
-    public float getGridX() { return gridX; }
-    public float getGridY() { return gridY; }
+    public float getGridX() {
+        return this.gridX;
+    }
+
+    public void setGridX(float gridX) {
+        this.gridX = gridX;
+    }
+
+    public float getGridY() {
+        return this.gridY;
+    }
+
+    public void setGridY(float gridY) {
+        this.gridY = gridY;
+    }
+
     public String getTexturePath() { return texturePath; }
     public String getDirection() { return direction; }
     public boolean isMoving() { return isMoving; }
