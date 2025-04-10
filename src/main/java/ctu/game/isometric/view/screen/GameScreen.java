@@ -9,6 +9,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import ctu.game.isometric.IsometricGame;
 import ctu.game.isometric.controller.GameController;
 import ctu.game.isometric.view.renderer.CharacterRenderer;
+import ctu.game.isometric.view.renderer.DialogUI;
 import ctu.game.isometric.view.renderer.MapRenderer;
 
 public class GameScreen implements Screen {
@@ -17,7 +18,7 @@ public class GameScreen implements Screen {
     private OrthographicCamera camera;
     private Viewport viewport;
     private SpriteBatch batch;
-
+    private DialogUI dialogUI; // Add DialogUI
     // Renderers
     private MapRenderer mapRenderer;
     private CharacterRenderer characterRenderer;
@@ -36,7 +37,7 @@ public class GameScreen implements Screen {
         // Initialize renderers
         mapRenderer = new MapRenderer(gameController.getMap(), game.getAssetManager(), gameController.getCharacter());
         characterRenderer = new CharacterRenderer(gameController.getCharacter(), game.getAssetManager(), mapRenderer);
-
+        dialogUI = new DialogUI(gameController.getDialogController());
         // Set input processor
         Gdx.input.setInputProcessor(gameController.getInputController());
     }
@@ -53,6 +54,8 @@ public class GameScreen implements Screen {
         mapRenderer.renderWalkableTileHighlights(batch, gameController.getWalkableTiles(), gameController.getCharacter().getAnimationTime());
         characterRenderer.render(batch);
         batch.end();
+
+        dialogUI.render();
     }
 
     @Override
@@ -78,5 +81,6 @@ public class GameScreen implements Screen {
     @Override
     public void dispose() {
         batch.dispose();
+        dialogUI.dispose(); // Dispose DialogUI
     }
 }

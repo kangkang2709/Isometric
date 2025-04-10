@@ -12,16 +12,23 @@ public class GameController {
     private IsometricMap map;
     private InputController inputController;
 
+    private DialogController dialogController; // New field
+
     public GameController(IsometricGame game) {
         this.game = game;
         this.map = new IsometricMap();
         this.character = new Character("characters/player.png", 2, 2);
         this.inputController = new InputController(this);
-
+        this.dialogController = new DialogController(this);
     }
 
     public void update(float delta) {
         // Update input controller
+        // Skip other updates if dialog is active
+        if (dialogController.isDialogActive()) {
+            return;
+        }
+
         inputController.update(delta);
 
         // Update character animation
@@ -111,6 +118,7 @@ public class GameController {
     private void checkPositionEvents(float x, float y) {
         // Example: Show dialog when character reaches specific positions
         if (x == 3 && y == 3) {
+            dialogController.startDialog("chapter_01", "scene_01");
         }
     }
     public boolean[][] getWalkableTiles() {
@@ -157,4 +165,12 @@ public class GameController {
     public Character getCharacter() { return character; }
     public IsometricMap getMap() { return map; }
     public InputController getInputController() { return inputController; }
+
+    public DialogController getDialogController() {
+        return dialogController;
+    }
+
+    public void setDialogController(DialogController dialogController) {
+        this.dialogController = dialogController;
+    }
 }

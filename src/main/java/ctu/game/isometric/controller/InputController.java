@@ -3,11 +3,14 @@ package ctu.game.isometric.controller;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.utils.TimeUtils;
 
 public class InputController extends InputAdapter {
     private GameController gameController;
     private float moveCooldown = 0;
     private final float MOVE_DELAY = 0.15f; // Delay between moves in seconds
+    private static final long INPUT_DELAY = 200; // milliseconds
+    private long lastInputTime = 0;
 
     // Add debugging
     private boolean debugLog = true;
@@ -60,12 +63,51 @@ public class InputController extends InputAdapter {
 
     @Override
     public boolean keyDown(int keycode) {
-        // Handle dialog progression
+        // Handle dialog input first
+        if (gameController.getDialogController().isDialogActive()) {
+            switch (keycode) {
+                case Keys.ENTER:
+                case Keys.SPACE:
+                    if (gameController.getDialogController().hasChoices()) {
+                        gameController.getDialogController().selectChoice(
+                                gameController.getDialogController().getSelectedChoiceIndex()
+                        );
+                    } else {
+                        if (!gameController.getDialogController().nextDialog()) {
+                            gameController.getDialogController().endDialog();
+                        }
+                    }
+                    return true;
+                case Keys.UP:
+                    gameController.getDialogController().selectPreviousChoice();
+                    return true;
+                case Keys.DOWN:
+                    gameController.getDialogController().selectNextChoice();
+                    return true;
+            }
+            return false;
+        }
 
+        // Handle character movement when no dialog is active
+        if (TimeUtils.timeSinceMillis(lastInputTime) < INPUT_DELAY) {
+            return false;
+        }
 
-        // Add debug messages for key presses
-        if (debugLog) {
-            Gdx.app.log("Input", "Key pressed: " + keycode);
+        lastInputTime = TimeUtils.millis();
+
+        switch (keycode) {
+            case Keys.UP:
+                gameController.moveCharacter(0, 1);
+                return true;
+            case Keys.DOWN:
+                gameController.moveCharacter(0, -1);
+                return true;
+            case Keys.LEFT:
+                gameController.moveCharacter(-1, 0);
+                return true;
+            case Keys.RIGHT:
+                gameController.moveCharacter(1, 0);
+                return true;
         }
 
         return false;
