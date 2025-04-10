@@ -38,6 +38,7 @@ public class GameScreen implements Screen {
         mapRenderer = new MapRenderer(gameController.getMap(), game.getAssetManager(), gameController.getCharacter());
         characterRenderer = new CharacterRenderer(gameController.getCharacter(), game.getAssetManager(), mapRenderer);
         dialogUI = new DialogUI(gameController.getDialogController());
+        gameController.getInputController().setDialogUI(dialogUI);
         // Set input processor
         Gdx.input.setInputProcessor(gameController.getInputController());
     }

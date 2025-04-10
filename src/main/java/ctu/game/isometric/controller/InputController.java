@@ -4,9 +4,11 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.utils.TimeUtils;
+import ctu.game.isometric.view.renderer.DialogUI;
 
 public class InputController extends InputAdapter {
     private GameController gameController;
+    private DialogUI dialogUI;
     private float moveCooldown = 0;
     private final float MOVE_DELAY = 0.15f; // Delay between moves in seconds
     private static final long INPUT_DELAY = 200; // milliseconds
@@ -18,7 +20,9 @@ public class InputController extends InputAdapter {
     public InputController(GameController gameController) {
         this.gameController = gameController;
     }
-
+    public void setDialogUI(DialogUI dialogUI) {
+        this.dialogUI = dialogUI;
+    }
     public void update(float delta) {
         // Update cooldown timer
         if (moveCooldown > 0) {
@@ -67,20 +71,43 @@ public class InputController extends InputAdapter {
         if (gameController.getDialogController().isDialogActive()) {
             switch (keycode) {
                 case Keys.ENTER:
-                case Keys.SPACE:
-                    if (gameController.getDialogController().hasChoices()) {
-                        gameController.getDialogController().selectChoice(
-                                gameController.getDialogController().getSelectedChoiceIndex()
-                        );
-                    } else {
-                        if (!gameController.getDialogController().nextDialog()) {
-                            gameController.getDialogController().endDialog();
+                    // Only advance dialogue if text is fully displayed
+                    if (dialogUI != null && dialogUI.isTextFullyDisplayed()) {
+                        if (gameController.getDialogController().hasChoices()) {
+                            gameController.getDialogController().selectChoice(
+                                    gameController.getDialogController().getSelectedChoiceIndex()
+                            );
+                        } else {
+                            if (!gameController.getDialogController().nextDialog()) {
+                                gameController.getDialogController().endDialog();
+                            }
                         }
                     }
                     return true;
+
+                case Keys.SPACE:
+                    // If text is still animating, complete it
+                    if (dialogUI != null && !dialogUI.isTextFullyDisplayed()) {
+                        dialogUI.completeTextAnimation();
+                    }
+                    // If text is already complete, act like ENTER key
+                    else if (dialogUI != null && dialogUI.isTextFullyDisplayed()) {
+                        if (gameController.getDialogController().hasChoices()) {
+                            gameController.getDialogController().selectChoice(
+                                    gameController.getDialogController().getSelectedChoiceIndex()
+                            );
+                        } else {
+                            if (!gameController.getDialogController().nextDialog()) {
+                                gameController.getDialogController().endDialog();
+                            }
+                        }
+                    }
+                    return true;
+
                 case Keys.UP:
                     gameController.getDialogController().selectPreviousChoice();
                     return true;
+
                 case Keys.DOWN:
                     gameController.getDialogController().selectNextChoice();
                     return true;

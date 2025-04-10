@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import ctu.game.isometric.controller.DialogController;
 import ctu.game.isometric.model.dialog.Dialog;
@@ -29,13 +30,47 @@ public class DialogUI {
 
     private static final int CHARACTER_IMAGE_SIZE = 100;
 
+    // Text typing effect variables
+    private String currentFullText = "";
+    private String displayedText = "";
+    private float textTimer = 0;
+    private float charactersPerSecond = 30f; // Adjust speed as needed
+    private boolean isTextFullyDisplayed = true;
+    private Dialog lastDialog = null;
+
+    private BitmapFont dialogFont;
+    private BitmapFont nameFont;
+    private BitmapFont promptFont;
+
+
     public DialogUI(DialogController dialogController) {
         this.dialogController = dialogController;
-        this.font = new BitmapFont();
-        font.setColor(Color.WHITE);
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/GrenzeGotisch.ttf"));
+        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        parameter.characters = FreeTypeFontGenerator.DEFAULT_CHARS +
+                "ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ" +
+                "ĂẮẰẲẴẶăắằẳẵặÂẤẦẨẪẬâấầẩẫậĐđÊẾỀỂỄỆêếềểễệÔỐỒỔỖỘôốồổỗộƠỚỜỞỠỢơớờởỡợƯỨỪỬỮỰưứừửữự" +
+                "ẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼẾỀỂỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪỬỮỰỲỴỶỸ";
+        // Dialog text font
+        parameter.size = 18;
+        parameter.color = Color.WHITE;
+        this.dialogFont = generator.generateFont(parameter);
+
+        // Character name font
+        parameter.size = 22;
+        parameter.color = Color.YELLOW;
+        this.nameFont = generator.generateFont(parameter);
+
+        // Prompt font
+        parameter.size = 16;
+        parameter.color = Color.LIGHT_GRAY;
+        this.promptFont = generator.generateFont(parameter);
+
+        generator.dispose();
         this.batch = new SpriteBatch();
         this.shapeRenderer = new ShapeRenderer();
     }
+
     private void loadCharacterImage(String imagePath) {
         // Don't reload the same image
         imagePath = "visualnovel/character/" + imagePath;
@@ -57,6 +92,7 @@ public class DialogUI {
             }
         }
     }
+
     public void render() {
         if (dialogController == null || !dialogController.isDialogActive()) {
             return;
@@ -79,8 +115,16 @@ public class DialogUI {
         Dialog currentDialog = dialogController.getCurrentDialog();
 
         if (currentDialog != null) {
-            // Character name
+            // Check if the dialog has changed
+            if (currentDialog != lastDialog) {
+                startNewTextAnimation(currentDialog.getText());
+                lastDialog = currentDialog;
+            }
 
+            // Update the text animation
+            updateTextAnimation(Gdx.graphics.getDeltaTime());
+
+            // Character name
             if (currentDialog.getCharacterImage() != null && !currentDialog.getCharacterImage().isEmpty()) {
                 loadCharacterImage(currentDialog.getCharacterImage());
             }
@@ -94,11 +138,18 @@ public class DialogUI {
                         CHARACTER_IMAGE_SIZE);
             }
 
-            font.draw(batch, currentDialog.getCharacterName(), DIALOG_BOX_X + 20, DIALOG_BOX_Y + DIALOG_BOX_HEIGHT - 20);
+            nameFont.draw(batch, currentDialog.getCharacterName(), DIALOG_BOX_X + 20, DIALOG_BOX_Y + DIALOG_BOX_HEIGHT - 20);
 
-            // Dialog text
-            font.draw(batch, currentDialog.getText(), DIALOG_BOX_X + 150, DIALOG_BOX_Y + DIALOG_BOX_HEIGHT - 50,
+
+            dialogFont.draw(batch, displayedText, DIALOG_BOX_X + 150, DIALOG_BOX_Y + DIALOG_BOX_HEIGHT - 50,
                     DIALOG_BOX_WIDTH - 40, -1, true);
+
+            // Show different prompts based on text animation state
+            if (!isTextFullyDisplayed) {
+                promptFont.draw(batch, "Press SPACE to skip...", DIALOG_BOX_X + DIALOG_BOX_WIDTH - 300, DIALOG_BOX_Y + 20);
+            } else {
+                promptFont.draw(batch, "Press ENTER to continue...", DIALOG_BOX_X + DIALOG_BOX_WIDTH - 300, DIALOG_BOX_Y + 20);
+            }
         }
 
         // Render choices if present
@@ -108,18 +159,52 @@ public class DialogUI {
         if (choices != null && !choices.isEmpty()) {
             for (int i = 0; i < choices.size(); i++) {
                 String choiceText = (i == selectedIndex ? "> " : "  ") + choices.get(i).getText();
-                font.draw(batch, choiceText, DIALOG_BOX_X + 150, DIALOG_BOX_Y + 80 - (i * 30));
+                dialogFont.draw(batch, choiceText, DIALOG_BOX_X + 150, DIALOG_BOX_Y + 80 - (i * 30));
             }
-        } else if (currentDialog != null) {
-            // Show continue prompt
-            font.draw(batch, "Press ENTER to continue...", DIALOG_BOX_X + DIALOG_BOX_WIDTH - 300, DIALOG_BOX_Y + 20);
         }
 
         batch.end();
     }
 
+    private void startNewTextAnimation(String text) {
+        currentFullText = text;
+        displayedText = "";
+        textTimer = 0;
+        isTextFullyDisplayed = false;
+    }
+
+    private void updateTextAnimation(float deltaTime) {
+        if (!isTextFullyDisplayed) {
+            textTimer += deltaTime;
+            int charactersToShow = (int)(textTimer * charactersPerSecond);
+
+            if (charactersToShow >= currentFullText.length()) {
+                displayedText = currentFullText;
+                isTextFullyDisplayed = true;
+            } else {
+                displayedText = currentFullText.substring(0, charactersToShow);
+            }
+        }
+    }
+
+    // Call this method when the player presses a key to show all text immediately
+    public boolean completeTextAnimation() {
+        if (!isTextFullyDisplayed) {
+            displayedText = currentFullText;
+            isTextFullyDisplayed = true;
+            return true; // Text was fast-forwarded
+        }
+        return false; // Text was already complete
+    }
+
+    public boolean isTextFullyDisplayed() {
+        return isTextFullyDisplayed;
+    }
+
     public void dispose() {
-        font.dispose();
+        dialogFont.dispose();
+        nameFont.dispose();
+        promptFont.dispose();
         batch.dispose();
         shapeRenderer.dispose();
         if (characterImage != null) characterImage.dispose();
