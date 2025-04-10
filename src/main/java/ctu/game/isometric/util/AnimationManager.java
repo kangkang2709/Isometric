@@ -4,63 +4,83 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.utils.Array;
-
 import java.util.HashMap;
 import java.util.Map;
 
 public class AnimationManager {
-    private Map<String, Animation<TextureRegion>> animations;
+    private Map<String, Animation<TextureRegion>> characterAnimations = new HashMap<>();
 
-    public AnimationManager() {
-        animations = new HashMap<>();
-    }
+    public void loadCharacterAnimations(String idleSpritePath, String walkSpritePath) {
+        // Load texture sheets
+        Texture idleSpriteSheet = new Texture(Gdx.files.internal(idleSpritePath));
+        Texture walkSpriteSheet = new Texture(Gdx.files.internal(walkSpritePath));
 
-    public void loadCharacterAnimations(String baseTexturePath) {
-        // Load sprite sheet
-        Texture spriteSheet = new Texture(Gdx.files.internal(baseTexturePath));
+        // Apply texture filtering for smoother rendering
+        idleSpriteSheet.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        walkSpriteSheet.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
-        // Assuming your sprite sheet has multiple rows for different directions
-        // and each row contains frames for that direction
-        int frameWidth = 32; // Adjust based on your sprite sheet
-        int frameHeight = 32; // Adjust based on your sprite sheet
+        // Split sprites
+        TextureRegion[][] idleTmp = TextureRegion.split(idleSpriteSheet, 48, 64);
+        TextureRegion[][] walkTmp = TextureRegion.split(walkSpriteSheet, 48, 64);
 
-        // Create texture regions for each direction
-        createAnimation(spriteSheet, "down_idle", 0, 0, frameWidth, frameHeight, 1, 0.5f);
-        createAnimation(spriteSheet, "down_walk", 0, 0, frameWidth, frameHeight, 4, 0.15f);
-        createAnimation(spriteSheet, "up_idle", 0, frameHeight, frameWidth, frameHeight, 1, 0.5f);
-        createAnimation(spriteSheet, "up_walk", 0, frameHeight, frameWidth, frameHeight, 4, 0.15f);
-        createAnimation(spriteSheet, "left_idle", 0, frameHeight*2, frameWidth, frameHeight, 1, 0.5f);
-        createAnimation(spriteSheet, "left_walk", 0, frameHeight*2, frameWidth, frameHeight, 4, 0.15f);
-        createAnimation(spriteSheet, "right_idle", 0, frameHeight*3, frameWidth, frameHeight, 1, 0.5f);
-        createAnimation(spriteSheet, "right_walk", 0, frameHeight*3, frameWidth, frameHeight, 4, 0.15f);
-    }
+        // Main directions (reduced set that matches your sprite sheet)
+        String[] directions = {"down", "left_down", "left_up", "right_down", "right_up", "up"};
 
-    private void createAnimation(Texture sheet, String name, int x, int y, int frameWidth, int frameHeight,
-                                 int frameCount, float frameDuration) {
-        Array<TextureRegion> frames = new Array<>(TextureRegion.class);
+        for (int i = 0; i < directions.length; i++) {
+            // IDLE: Create with just first frame
+            TextureRegion[] idleFrames = new TextureRegion[8];
+            for (int j = 0; j < 8; j++) {
+                idleFrames[j] = idleTmp[i][j];
+            }
+            // Create idle animation with SLOWER frame rate for smoother idle animation
+            characterAnimations.put(directions[i] + "_idle", new Animation<>(0.25f, idleFrames));
 
-        for (int i = 0; i < frameCount; i++) {
-            frames.add(new TextureRegion(sheet, x + i * frameWidth, y, frameWidth, frameHeight));
+            // WALK: Create with all 8 frames
+            TextureRegion[] walkFrames = new TextureRegion[8];
+            for (int j = 0; j < 8; j++) {
+                walkFrames[j] = walkTmp[i][j];
+            }
+            characterAnimations.put(
+                    directions[i] + "_walk",
+                    new Animation<>(0.1f, walkFrames)
+            );
         }
-
-        animations.put(name, new Animation<>(frameDuration, frames, Animation.PlayMode.LOOP));
     }
 
-    public TextureRegion getFrame(String direction, boolean isMoving, float stateTime) {
-        String key = direction + (isMoving ? "_walk" : "_idle");
-        Animation<TextureRegion> animation = animations.get(key);
-
-        if (animation != null) {
-            return animation.getKeyFrame(stateTime);
-        }
-
-        return animations.get("down_idle").getKeyFrame(0);
+    // Helper method to efficiently extract frames
+    private TextureRegion[] getFramesForDirection(TextureRegion[] sourceRow, int frameCount) {
+        TextureRegion[] frames = new TextureRegion[frameCount];
+        System.arraycopy(sourceRow, 0, frames, 0, frameCount);
+        return frames;
     }
+
     public TextureRegion getCharacterFrame(String direction, boolean isMoving, float stateTime) {
-        return getFrame(direction, isMoving, stateTime);
+        String animKey = direction + (isMoving ? "_walk" : "_idle");
+
+        // If animation doesn't exist, find a fallback
+        if (!characterAnimations.containsKey(animKey)) {
+            if (direction.contains("right")) {
+                animKey = "right_down" + (isMoving ? "_walk" : "_idle");
+            } else {
+                animKey = "left_down" + (isMoving ? "_walk" : "_idle");
+            }
+        }
+
+        Animation<TextureRegion> animation = characterAnimations.get(animKey);
+        if (animation == null) {
+            // Ultimate fallback
+            return characterAnimations.get("right_down_idle").getKeyFrame(0);
+        }
+
+        // Return proper frame with looping enabled
+        return animation.getKeyFrame(stateTime, true);
     }
-    public void dispose() {
-        // Dispose of textures if needed
+
+    public Map<String, Animation<TextureRegion>> getCharacterAnimations() {
+        return characterAnimations;
+    }
+
+    public void setCharacterAnimations(Map<String, Animation<TextureRegion>> characterAnimations) {
+        this.characterAnimations = characterAnimations;
     }
 }

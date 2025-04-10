@@ -9,9 +9,6 @@ import ctu.game.isometric.util.AnimationManager;
 import ctu.game.isometric.util.AssetManager;
 import ctu.game.isometric.model.entity.Character;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class MapRenderer {
     private IsometricMap map;
     private AssetManager assetManager;
@@ -29,8 +26,6 @@ public class MapRenderer {
     }
 
     public void render(SpriteBatch batch) {
-        Texture tileTexture = assetManager.getTexture(map.getTileTexturePath());
-        TextureRegion tileRegion = new TextureRegion(tileTexture, 0, 0, map.getTileWidth(), map.getTileHeight());
         int[][] mapData = map.getMapData();
 
         // Draw tiles in correct isometric order (back to front)
@@ -39,8 +34,11 @@ public class MapRenderer {
                 int x = sum - y;
                 if (x >= 0 && x < mapData[0].length) {
                     int tileType = mapData[y][x];
-
                     if (tileType != 0) {
+                        String texturePath = map.getTileTexturePath(tileType);
+                        Texture tileTexture = assetManager.getTexture(texturePath);
+                        TextureRegion tileRegion = new TextureRegion(tileTexture, 0, 0, map.getTileWidth(), map.getTileHeight());
+
                         float[] iso = toIsometric(x, y);
                         batch.draw(tileRegion, iso[0], iso[1], map.getTileWidth(), map.getTileHeight());
                     }
@@ -62,21 +60,22 @@ public class MapRenderer {
 
         // Get the tile texture
         Texture tileTexture = assetManager.getTexture(map.getTileTexturePath());
+        TextureRegion tileRegion = new TextureRegion(tileTexture, 0, 0, map.getTileWidth(), map.getTileHeight());
 
         // Define adjacent tiles in correct drawing order
         int[][] adjacentTiles = {
-                {characterX - 1, characterY - 1}, // northwest
-                {characterX, characterY - 1},     // north
-                {characterX - 1, characterY},     // west
+                {characterX - 1, characterY - 1}, // left_up (northwest)
+                {characterX, characterY - 1},     // right_up (northeast)
+                {characterX - 1, characterY},     // left (west)
                 {characterX, characterY},         // center
-                {characterX + 1, characterY - 1}, // northeast
-                {characterX - 1, characterY + 1}, // southwest
-                {characterX + 1, characterY},     // east
-                {characterX, characterY + 1},     // south
-                {characterX + 1, characterY + 1}  // southeast
+                {characterX + 1, characterY - 1}, // right_up (northeast)
+                {characterX - 1, characterY + 1}, // left_down (southwest)
+                {characterX + 1, characterY},     // right (east)
+                {characterX, characterY + 1},     // left_down (south)
+                {characterX + 1, characterY + 1}  // right_down (southeast)
         };
 
-        // Sort tiles by sum of coordinates (lower sum = draw first)
+        // Sort by isometric depth
         java.util.Arrays.sort(adjacentTiles, (a, b) -> Integer.compare(a[0] + a[1], b[0] + b[1]));
 
         for (int[] tile : adjacentTiles) {
@@ -88,7 +87,7 @@ public class MapRenderer {
                     y >= 0 && y < walkableTiles.length &&
                     walkableTiles[y][x]) {
                 float[] iso = toIsometric(x, y);
-                batch.draw(tileTexture, iso[0], iso[1], map.getTileWidth(), map.getTileHeight());
+                batch.draw(tileRegion, iso[0], iso[1], map.getTileWidth(), map.getTileHeight());
             }
         }
 
@@ -97,9 +96,12 @@ public class MapRenderer {
     }
 
     public float[] toIsometric(float x, float y) {
-        // More precise calculation for diamond tiles
-        float isoX = (x - y) * (map.getTileWidth() / 2.0f) + offsetX;
-        float isoY = (x + y) * (map.getTileHeight() / 2.0f) + offsetY;
+        // Width and height scaling factors
+        final float widthFactor = 2.01f;  // Standard is 2.0
+        final float heightFactor = 2.96f;  // Standard is 2.0
+
+        float isoX = (x - y) * (map.getTileWidth() / widthFactor) + offsetX;
+        float isoY = (x + y) * (map.getTileHeight() / heightFactor) + offsetY;
         return new float[]{isoX, isoY};
     }
 

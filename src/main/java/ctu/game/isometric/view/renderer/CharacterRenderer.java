@@ -1,6 +1,5 @@
 package ctu.game.isometric.view.renderer;
 
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import ctu.game.isometric.model.entity.Character;
@@ -11,51 +10,64 @@ public class CharacterRenderer {
     private Character character;
     private AssetManager assetManager;
     private AnimationManager animationManager;
+    private MapRenderer mapRenderer;
 
-    private final float tileWidth = 64;
-    private final float tileHeight = 32;
-
-    public CharacterRenderer(Character character, AssetManager assetManager) {
+    public CharacterRenderer(Character character, AssetManager assetManager, MapRenderer mapRenderer) {
         this.character = character;
         this.assetManager = assetManager;
+        this.mapRenderer = mapRenderer;
         this.animationManager = assetManager.getAnimationManager();
-        // Initialize animations with the character's sprite sheet
-        this.animationManager.loadCharacterAnimations("characters/player.png");
+
+        // Initialize animations with both sprite sheets
+        this.animationManager.loadCharacterAnimations("characters/idle.png", "characters/walk.png");
     }
 
-    public void render(SpriteBatch batch, float offsetX, float offsetY) {
+    public void render(SpriteBatch batch) {
         float gridX = character.getGridX();
         float gridY = character.getGridY();
 
-        // Convert to isometric coordinates
-        float isoX = (gridX - gridY) * 64 / 2f + offsetX; // Assuming 64 is tile width
-        float isoY = (gridX + gridY) * 32 / 2f + offsetY; // Assuming 32 is tile height
+        float[] screenPos = mapRenderer.toIsometric(gridX, gridY);
 
+        float isoX = screenPos[0];
+        float isoY = screenPos[1];
+
+        // Get animation frame with translated direction
+        String direction = translateDirection(character.getDirection());
+
+        // Always use walk animation when moving
         TextureRegion currentFrame = animationManager.getCharacterFrame(
-                character.getDirection(),
+                direction,
                 character.isMoving(),
                 character.getAnimationTime()
         );
 
-        batch.draw(currentFrame, isoX, isoY);
+        // Center the character sprite
+        float offsetPlayerX = -24 + 32;
+        float offsetPlayerY = -32 + 16;
+
+        batch.draw(currentFrame, isoX + offsetPlayerX, isoY + offsetPlayerY);
     }
 
-    // Convert grid coordinates to screen coordinates for isometric rendering
-    private float getScreenX(float gridX, float gridY, float offsetX) {
-        // Isometric transformation: (x - y) * (tileWidth/2)
-        return (gridX - gridY) * (tileWidth / 2) + offsetX;
-    }
-
-    private float getScreenY(float gridX, float gridY, float offsetY) {
-        // Isometric transformation: (x + y) * (tileHeight/2)
-        return (gridX + gridY) * (tileHeight / 2) + offsetY;
-    }
-
-    // Add this method to help with disposing resources when needed
-    public void dispose() {
-        // Dispose of any resources if necessary
-        if (animationManager != null) {
-            animationManager.dispose();
+    // Convert simplified direction to sprite sheet direction
+    private String translateDirection(String direction) {
+        // Map all 8-way directions to our available 6 sprite directions
+        switch(direction) {
+            case "up":
+                return "up";
+            case "down":
+                return "down";
+            case "left":
+                return "left_down"; // In isometric, pure left maps to left_down
+            case "right":
+                return "right_down"; // In isometric, pure right maps to right_down
+            case "left_up":
+                return "left_up";
+            case "right_up":
+                return "right_up";
+            case "left_down":
+                return "left_down";
+            default:
+                return "right_down";
         }
     }
 }

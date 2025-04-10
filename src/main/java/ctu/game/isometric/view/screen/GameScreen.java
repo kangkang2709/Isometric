@@ -8,7 +8,6 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import ctu.game.isometric.IsometricGame;
 import ctu.game.isometric.controller.GameController;
-import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.view.renderer.CharacterRenderer;
 import ctu.game.isometric.view.renderer.DialogRenderer;
 import ctu.game.isometric.view.renderer.MapRenderer;
@@ -20,7 +19,6 @@ public class GameScreen implements Screen {
     private Viewport viewport;
     private SpriteBatch batch;
 
-
     // Renderers
     private MapRenderer mapRenderer;
     private CharacterRenderer characterRenderer;
@@ -29,6 +27,7 @@ public class GameScreen implements Screen {
     public GameScreen(IsometricGame game, GameController gameController) {
         this.game = game;
         this.gameController = gameController;
+
         // Setup camera and viewport
         camera = new OrthographicCamera();
         viewport = new FitViewport(1280, 720, camera);
@@ -38,8 +37,9 @@ public class GameScreen implements Screen {
 
         // Initialize renderers
         mapRenderer = new MapRenderer(gameController.getMap(), game.getAssetManager(), gameController.getCharacter());
-        characterRenderer = new CharacterRenderer(gameController.getCharacter(), game.getAssetManager());
+        characterRenderer = new CharacterRenderer(gameController.getCharacter(), game.getAssetManager(), mapRenderer);
         dialogRenderer = new DialogRenderer(gameController.getDialogModel(), game.getAssetManager());
+
         // Set input processor
         Gdx.input.setInputProcessor(gameController.getInputController());
     }
@@ -49,19 +49,15 @@ public class GameScreen implements Screen {
         // Update game state
         gameController.update(delta);
 
-
         batch.setProjectionMatrix(camera.combined);
 
         batch.begin();
         mapRenderer.render(batch);
-
         mapRenderer.renderWalkableTileHighlights(batch, gameController.getWalkableTiles(), gameController.getCharacter().getAnimationTime());
-        characterRenderer.render(batch, mapRenderer.getOffsetX(), mapRenderer.getOffsetY());
+        characterRenderer.render(batch);
         dialogRenderer.render(batch);
         batch.end();
     }
-
-
 
     @Override
     public void resize(int width, int height) {
@@ -72,12 +68,14 @@ public class GameScreen implements Screen {
     public void show() {
         camera.position.set(viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2, 0);
         camera.update();
+    }
 
-
-    }    @Override
+    @Override
     public void pause() {}
+
     @Override
     public void resume() {}
+
     @Override
     public void hide() {}
 
