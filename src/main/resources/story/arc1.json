@@ -20,7 +20,7 @@
             },
             {
               "character": "MC",
-              "characterImage": "mc_default.png",
+              "characterImage": "mc_default2.png",
               "expression": "nervous",
               "text": "Không hiểu sao, nhưng mình có linh cảm không lành..."
             }
@@ -61,7 +61,7 @@
             },
             {
               "character": "MC",
-              "characterImage": "mc_default.png",
+              "characterImage": "mc_default2.png",
               "expression": "nervous",
               "text": "Nó đã bị bỏ hoang từ lâu, nhưng tại sao lại như thế này?"
             }
@@ -90,7 +90,7 @@
           "dialogues": [
             {
               "character": "MC",
-              "characterImage": "mc_default.png",
+              "characterImage": "mc_default2.png",
               "expression": "thinking",
               "text": "Tin nhắn này không có số điện thoại, cũng không có người gửi..."
             },
@@ -176,6 +176,79 @@
               "characterImage": "mc_default.png",
               "expression": "neutral",
               "text": "Có lẽ mình đã bỏ lỡ điều gì đó quan trọng..."
+            }
+          ],
+          "choices": []
+        }
+      ]
+    },
+    {
+      "id": "chapter_02",
+      "title": "Chương 2: Âm Thanh Trong Gió",
+      "description": "Sau khi khám phá căn hộ 404, MC bắt đầu nghe thấy những âm thanh lạ khi quay về nhà.",
+      "conditions": {},
+      "scenes": [
+        {
+          "id": "scene_08",
+          "background": "mc_home_night.png",
+          "music": "wind_howl.mp3",
+          "sound_effects": ["window_creak.mp3"],
+          "dialogues": [
+            {
+              "character": "MC",
+              "characterImage": "mc_default.png",
+              "expression": "uneasy",
+              "text": "Tại sao gió cứ rít qua khe cửa như có ai đó đang thì thầm?"
+            }
+          ],
+          "choices": [
+            {
+              "text": "Ra ban công kiểm tra.",
+              "next_scene": "scene_09",
+              "required_item": null,
+              "sanity_change": -1
+            },
+            {
+              "text": "Bỏ qua và đi ngủ.",
+              "next_scene": "scene_end_2",
+              "required_item": null,
+              "sanity_change": 0
+            }
+          ]
+        },
+        {
+          "id": "scene_09",
+          "background": "balcony.png",
+          "music": "ominous_wind.mp3",
+          "sound_effects": ["footsteps_behind.mp3"],
+          "dialogues": [
+            {
+              "character": "MC",
+              "characterImage": "mc_default.png",
+              "expression": "shocked",
+              "text": "Có ai đó đứng dưới đường nhìn lên... nhưng khi mình chớp mắt thì đã biến mất."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Quay vào trong và khóa cửa.",
+              "next_scene": "scene_end_2",
+              "required_item": null,
+              "sanity_change": 0
+            }
+          ]
+        },
+        {
+          "id": "scene_end_2",
+          "background": "mc_room_dark.png",
+          "music": "soft_piano.mp3",
+          "sound_effects": [],
+          "dialogues": [
+            {
+              "character": "MC",
+              "characterImage": "mc_default.png",
+              "expression": "neutral",
+              "text": "Mình không chắc điều gì đang xảy ra, nhưng mình cần nghỉ ngơi..."
             }
           ],
           "choices": []

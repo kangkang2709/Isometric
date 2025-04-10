@@ -18,6 +18,9 @@ public class DialogController {
     private String currentSceneId;
     private int currentDialogIndex = 0;
 
+    // Flag to track if we're showing choices or dialogues
+    private boolean showingChoices = false;
+
     private List<Choice> currentChoices = new ArrayList<>();
     private int selectedChoiceIndex = 0;
 
@@ -50,8 +53,9 @@ public class DialogController {
         currentSceneId = sceneId;
         currentDialogIndex = 0;
         dialogActive = true;
+        showingChoices = false;  // Start in dialogue mode, not choice mode
 
-        // If the scene has choices, prepare them
+        // Prepare choices but don't show them yet
         if (scene.getChoices() != null && !scene.getChoices().isEmpty()) {
             currentChoices = scene.getChoices();
             selectedChoiceIndex = 0;
@@ -64,6 +68,11 @@ public class DialogController {
 
     public boolean nextDialog() {
         if (!dialogActive) return false;
+
+        // If we're already showing choices, do nothing when nextDialog is called
+        if (showingChoices) {
+            return true;
+        }
 
         Arc arc = findArc(currentArcId);
         Scene scene = findScene(arc, currentSceneId);
@@ -80,8 +89,7 @@ public class DialogController {
         if (currentDialogIndex >= scene.getDialogues().size()) {
             // If there are choices, show them
             if (scene.getChoices() != null && !scene.getChoices().isEmpty()) {
-                currentChoices = scene.getChoices();
-                selectedChoiceIndex = 0;
+                showingChoices = true;  // Now switch to choice mode
                 return true;
             } else {
                 // End the dialog if no choices
@@ -94,7 +102,7 @@ public class DialogController {
     }
 
     public void selectChoice(int index) {
-        if (!dialogActive || currentChoices.isEmpty()) return;
+        if (!dialogActive || !showingChoices || currentChoices.isEmpty()) return;
 
         if (index >= 0 && index < currentChoices.size()) {
             Choice choice = currentChoices.get(index);
@@ -121,13 +129,13 @@ public class DialogController {
     }
 
     public void selectNextChoice() {
-        if (!currentChoices.isEmpty()) {
+        if (showingChoices && !currentChoices.isEmpty()) {
             selectedChoiceIndex = (selectedChoiceIndex + 1) % currentChoices.size();
         }
     }
 
     public void selectPreviousChoice() {
-        if (!currentChoices.isEmpty()) {
+        if (showingChoices && !currentChoices.isEmpty()) {
             selectedChoiceIndex = (selectedChoiceIndex - 1 + currentChoices.size()) % currentChoices.size();
         }
     }
@@ -156,7 +164,7 @@ public class DialogController {
 
     // Getters for current dialog state
     public Dialog getCurrentDialog() {
-        if (!dialogActive) return null;
+        if (!dialogActive || showingChoices) return null;
 
         Arc arc = findArc(currentArcId);
         Scene scene = findScene(arc, currentSceneId);
@@ -170,7 +178,7 @@ public class DialogController {
     }
 
     public List<Choice> getCurrentChoices() {
-        return currentChoices;
+        return showingChoices ? currentChoices : new ArrayList<>();
     }
 
     public int getSelectedChoiceIndex() {
@@ -182,11 +190,12 @@ public class DialogController {
     }
 
     public boolean hasChoices() {
-        return !currentChoices.isEmpty();
+        return showingChoices && !currentChoices.isEmpty();
     }
 
     public void endDialog() {
         dialogActive = false;
+        showingChoices = false;
         currentChoices.clear();
     }
 }
