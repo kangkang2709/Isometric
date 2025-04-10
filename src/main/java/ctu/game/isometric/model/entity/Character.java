@@ -17,7 +17,7 @@ public class Character {
     private static final float DIAGONAL_THRESHOLD = 0.3f; // For determining diagonal movement
 
     public static final String[] VALID_DIRECTIONS = {
-            "left_down", "right_down", "left_up", "right_up", "left", "right"
+            "up", "down", "left", "right", "left_down", "right_down", "left_up", "right_up"
     };
 
     public Character(String texturePath, float startX, float startY) {
@@ -45,34 +45,38 @@ public class Character {
     // In Character class
     public void update(float delta) {
         animationTime += delta;
+
         if (!isMoving) return;
 
             float dx = targetX - gridX;
             float dy = targetY - gridY;
             float distanceSquared = dx * dx + dy * dy;
 
-            if (distanceSquared < 0.0001f) {
+        if (distanceSquared < 0.0001f) {
+            gridX = targetX;
+            gridY = targetY;
+            isMoving = false;
+            animationTime = 0; // Reset animation time when stopping
+        } else {
+            float moveAmount = moveSpeed * delta;
+            float distance = (float) Math.sqrt(distanceSquared);
+
+            if (moveAmount >= distance) {
                 gridX = targetX;
                 gridY = targetY;
                 isMoving = false;
                 animationTime = 0; // Reset animation time when stopping
             } else {
-                float moveAmount = moveSpeed * delta;
-                float distance = (float) Math.sqrt(distanceSquared);
+                float ratio = moveAmount / distance;
+                float newX = gridX + dx * ratio;
+                float newY = gridY + dy * ratio;
 
-                if (moveAmount >= distance) {
-                    gridX = targetX;
-                    gridY = targetY;
-                    isMoving = false;
-                    animationTime = 0; // Reset animation time when stopping
-                } else {
-                    float ratio = moveAmount / distance;
-                    gridX += dx * ratio;
-                    gridY += dy * ratio;
-                    updateDirectionFromVector(dx, dy);
-                }
+                // Ensure we're not moving out of bounds
+                gridX = newX;
+                gridY = newY;
+                updateDirectionFromVector(dx, dy);
             }
-
+        }
     }
 
     // Optimized updateDirection method

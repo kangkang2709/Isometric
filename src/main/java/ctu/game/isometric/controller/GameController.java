@@ -1,28 +1,23 @@
 package ctu.game.isometric.controller;
 
 import ctu.game.isometric.IsometricGame;
-import ctu.game.isometric.model.dialog.DialogModel;
 import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.world.IsometricMap;
 
 public class GameController {
+
+
     private IsometricGame game;
     private Character character;
     private IsometricMap map;
-    private DialogModel dialogModel;
     private InputController inputController;
-    private DialogController dialogController;
 
     public GameController(IsometricGame game) {
         this.game = game;
         this.map = new IsometricMap();
         this.character = new Character("characters/player.png", 2, 2);
-        this.dialogModel = new DialogModel();
-        this.dialogController = new DialogController(dialogModel);
         this.inputController = new InputController(this);
 
-        // Show initial dialog
-        dialogController.showDialog("Welcome to my isometric visual novel!");
     }
 
     public void update(float delta) {
@@ -51,7 +46,6 @@ public class GameController {
         if (newY >= mapData.length) return false;
         if (newX >= mapData[0].length) return false;
 
-        // Check if tile is walkable (0 = empty/unwalkable)
         return mapData[newY][newX] != 0;
     }
 
@@ -117,7 +111,6 @@ public class GameController {
     private void checkPositionEvents(float x, float y) {
         // Example: Show dialog when character reaches specific positions
         if (x == 3 && y == 3) {
-            dialogController.showDialog("You found a secret area!");
         }
     }
     public boolean[][] getWalkableTiles() {
@@ -163,7 +156,5 @@ public class GameController {
     // Getters
     public Character getCharacter() { return character; }
     public IsometricMap getMap() { return map; }
-    public DialogModel getDialogModel() { return dialogModel; }
     public InputController getInputController() { return inputController; }
-    public DialogController getDialogController() { return dialogController; }
 }

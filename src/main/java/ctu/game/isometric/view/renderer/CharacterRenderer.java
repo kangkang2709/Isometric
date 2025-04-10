@@ -43,7 +43,7 @@ public class CharacterRenderer {
 
         // Center the character sprite
         float offsetPlayerX = -24 + 32;
-        float offsetPlayerY = -32 + 16;
+        float offsetPlayerY = -32 + 24;
 
         batch.draw(currentFrame, isoX + offsetPlayerX, isoY + offsetPlayerY);
     }

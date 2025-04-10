@@ -61,12 +61,7 @@ public class InputController extends InputAdapter {
     @Override
     public boolean keyDown(int keycode) {
         // Handle dialog progression
-        if (keycode == Keys.SPACE) {
-            if (gameController.getDialogModel().isActive()) {
-                gameController.getDialogController().hideDialog();
-                return true;
-            }
-        }
+
 
         // Add debug messages for key presses
         if (debugLog) {

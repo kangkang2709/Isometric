@@ -9,7 +9,6 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import ctu.game.isometric.IsometricGame;
 import ctu.game.isometric.controller.GameController;
 import ctu.game.isometric.view.renderer.CharacterRenderer;
-import ctu.game.isometric.view.renderer.DialogRenderer;
 import ctu.game.isometric.view.renderer.MapRenderer;
 
 public class GameScreen implements Screen {
@@ -22,7 +21,6 @@ public class GameScreen implements Screen {
     // Renderers
     private MapRenderer mapRenderer;
     private CharacterRenderer characterRenderer;
-    private DialogRenderer dialogRenderer;
 
     public GameScreen(IsometricGame game, GameController gameController) {
         this.game = game;
@@ -38,7 +36,6 @@ public class GameScreen implements Screen {
         // Initialize renderers
         mapRenderer = new MapRenderer(gameController.getMap(), game.getAssetManager(), gameController.getCharacter());
         characterRenderer = new CharacterRenderer(gameController.getCharacter(), game.getAssetManager(), mapRenderer);
-        dialogRenderer = new DialogRenderer(gameController.getDialogModel(), game.getAssetManager());
 
         // Set input processor
         Gdx.input.setInputProcessor(gameController.getInputController());
@@ -55,7 +52,6 @@ public class GameScreen implements Screen {
         mapRenderer.render(batch);
         mapRenderer.renderWalkableTileHighlights(batch, gameController.getWalkableTiles(), gameController.getCharacter().getAnimationTime());
         characterRenderer.render(batch);
-        dialogRenderer.render(batch);
         batch.end();
     }
 
@@ -82,6 +78,5 @@ public class GameScreen implements Screen {
     @Override
     public void dispose() {
         batch.dispose();
-        dialogRenderer.dispose();
     }
 }

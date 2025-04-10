@@ -1,0 +1,186 @@
+{
+  "arcs": [
+    {
+      "id": "chapter_01",
+      "title": "Chương 1: Bóng Tối Sau Cánh Cửa",
+      "description": "MC nhận được một tin nhắn bí ẩn yêu cầu đến căn hộ số 404, nơi bị bỏ hoang từ lâu.",
+      "conditions": {},
+      "scenes": [
+        {
+          "id": "scene_01",
+          "background": "night_street.png",
+          "music": "ominous.mp3",
+          "sound_effects": [],
+          "dialogues": [
+            {
+              "character": "MC",
+              "characterImage": "mc_default.png",
+              "expression": "thinking",
+              "text": "Mình đã nhận được tin nhắn kỳ lạ... Người gửi yêu cầu mình đến căn hộ số 404 ngay lập tức."
+            },
+            {
+              "character": "MC",
+              "characterImage": "mc_default.png",
+              "expression": "nervous",
+              "text": "Không hiểu sao, nhưng mình có linh cảm không lành..."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Tiếp tục tiến về căn hộ.",
+              "next_scene": "scene_02",
+              "required_item": null,
+              "sanity_change": 0
+            },
+            {
+              "text": " tiến về căn hộ.",
+              "next_scene": "scene_02",
+              "required_item": null,
+              "sanity_change": 0
+            },
+            {
+              "text": "Dừng lại và kiểm tra tin nhắn lần nữa.",
+              "next_scene": "scene_03",
+              "required_item": null,
+              "sanity_change": 0
+            }
+          ],
+          "conditions": {}
+        },
+        {
+          "id": "scene_02",
+          "background": "apartment_hallway.png",
+          "music": "suspense.mp3",
+          "sound_effects": ["door_creak.mp3"],
+          "dialogues": [
+            {
+              "character": "MC",
+              "characterImage": "mc_default.png",
+              "expression": "surprised",
+              "text": "Cửa căn hộ 404... đã mở sẵn?"
+            },
+            {
+              "character": "MC",
+              "characterImage": "mc_default.png",
+              "expression": "nervous",
+              "text": "Nó đã bị bỏ hoang từ lâu, nhưng tại sao lại như thế này?"
+            }
+          ],
+          "choices": [
+            {
+              "text": "Bước vào trong căn hộ.",
+              "next_scene": "scene_04",
+              "required_item": null,
+              "sanity_change": -1
+            },
+            {
+              "text": "Gõ cửa gọi thử.",
+              "next_scene": "scene_05",
+              "required_item": null,
+              "sanity_change": 0
+            }
+          ],
+          "conditions": {}
+        },
+        {
+          "id": "scene_03",
+          "background": "night_street.png",
+          "music": "mystery.mp3",
+          "sound_effects": [],
+          "dialogues": [
+            {
+              "character": "MC",
+              "characterImage": "mc_default.png",
+              "expression": "thinking",
+              "text": "Tin nhắn này không có số điện thoại, cũng không có người gửi..."
+            },
+            {
+              "character": "MC",
+              "characterImage": "mc_default.png",
+              "expression": "nervous",
+              "text": "Có khi nào đây là một cái bẫy?"
+            }
+          ],
+          "choices": [
+            {
+              "text": "Quay về nhà, không muốn dính vào rắc rối.",
+              "next_scene": "scene_end",
+              "required_item": null,
+              "sanity_change": 0
+            },
+            {
+              "text": "Tiếp tục đến căn hộ 404.",
+              "next_scene": "scene_02",
+              "required_item": null,
+              "sanity_change": 0
+            }
+          ],
+          "conditions": {}
+        },
+        {
+          "id": "scene_04",
+          "background": "apartment_inside.png",
+          "music": "mystery.mp3",
+          "sound_effects": ["footsteps.mp3"],
+          "dialogues": [
+            {
+              "character": "MC",
+              "characterImage": "mc_default.png",
+              "expression": "curious",
+              "text": "Trong này tối quá, mình cần tìm công tắc đèn."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Tìm công tắc đèn.",
+              "next_scene": "scene_06",
+              "required_item": null,
+              "sanity_change": 0
+            },
+            {
+              "text": "Dùng đèn pin.",
+              "next_scene": "scene_07",
+              "required_item": "flashlight",
+              "sanity_change": 0
+            }
+          ],
+          "conditions": {}
+        },
+        {
+          "id": "scene_hidden",
+          "background": "secret_room.png",
+          "music": "eerie_whispers.mp3",
+          "sound_effects": ["whispering.mp3"],
+          "dialogues": [
+            {
+              "character": "Shadow",
+              "characterImage": "shadow.png",
+              "expression": "whisper",
+              "text": "Cậu không nên đến đây..."
+            }
+          ],
+          "choices": [],
+          "conditions": {
+            "min_sanity": 5,
+            "required_item": "mysterious_note"
+          }
+        },
+        {
+          "id": "scene_end",
+          "background": "black.png",
+          "music": "sad_piano.mp3",
+          "sound_effects": [],
+          "dialogues": [
+            {
+              "character": "MC",
+              "characterImage": "mc_default.png",
+              "expression": "neutral",
+              "text": "Có lẽ mình đã bỏ lỡ điều gì đó quan trọng..."
+            }
+          ],
+          "choices": []
+        }
+      ]
+    }
+  ]
+}
