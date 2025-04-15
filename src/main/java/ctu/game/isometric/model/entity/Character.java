@@ -86,17 +86,24 @@ public class Character {
             return;
         }
 
-
-        if (Math.abs(dy) > 0.8f && Math.abs(dx) < 0.2f) {
-            direction = dy > 0 ? "left_up" : "up";
-            return;
+        // Determine primary direction based on vector components
+        if (Math.abs(dx) > Math.abs(dy)) {
+            // Horizontal movement dominant
+            if (dx > 0) {
+                direction = (dy > DIAGONAL_THRESHOLD) ? "right_down" :
+                        (dy < -DIAGONAL_THRESHOLD) ? "right" : "right_up";
+            } else {
+                direction = (dy > DIAGONAL_THRESHOLD) ? "left_down" :
+                        (dy < -DIAGONAL_THRESHOLD) ? "left_up" : "left";
+            }
+        } else {
+            // Vertical movement dominant
+            if (dy > 0) {
+                direction = "left_up";
+            } else {
+                direction = "up";
+            }
         }
-        // For pure grid directions (the common case in grid movement)
-        if (Math.abs(dx) > 0.8f && Math.abs(dy) < 0.2f) {
-            direction = dx > 0 ? "right_up" : "left_down";
-            return;
-        }
-
     }
 
     public float getGridX() {

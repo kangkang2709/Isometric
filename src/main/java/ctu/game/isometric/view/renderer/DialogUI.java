@@ -47,10 +47,7 @@ public class DialogUI {
         this.dialogController = dialogController;
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/GrenzeGotisch.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        parameter.characters = FreeTypeFontGenerator.DEFAULT_CHARS +
-                "ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ" +
-                "ĂẮẰẲẴẶăắằẳẵặÂẤẦẨẪẬâấầẩẫậĐđÊẾỀỂỄỆêếềểễệÔỐỒỔỖỘôốồổỗộƠỚỜỞỠỢơớờởỡợƯỨỪỬỮỰưứừửữự" +
-                "ẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼẾỀỂỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪỬỮỰỲỴỶỸ";
+
         // Dialog text font
         parameter.size = 18;
         parameter.color = Color.WHITE;

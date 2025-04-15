@@ -90,18 +90,18 @@ public class InputController extends InputAdapter {
                     if (dialogUI != null && !dialogUI.isTextFullyDisplayed()) {
                         dialogUI.completeTextAnimation();
                     }
-                    // If text is already complete, act like ENTER key
-                    else if (dialogUI != null && dialogUI.isTextFullyDisplayed()) {
-                        if (gameController.getDialogController().hasChoices()) {
-                            gameController.getDialogController().selectChoice(
-                                    gameController.getDialogController().getSelectedChoiceIndex()
-                            );
-                        } else {
-                            if (!gameController.getDialogController().nextDialog()) {
-                                gameController.getDialogController().endDialog();
-                            }
-                        }
-                    }
+//                    // If text is already complete, act like ENTER key
+//                    else if (dialogUI != null && dialogUI.isTextFullyDisplayed()) {
+//                        if (gameController.getDialogController().hasChoices()) {
+//                            gameController.getDialogController().selectChoice(
+//                                    gameController.getDialogController().getSelectedChoiceIndex()
+//                            );
+//                        } else {
+//                            if (!gameController.getDialogController().nextDialog()) {
+//                                gameController.getDialogController().endDialog();
+//                            }
+//                        }
+//                    }
                     return true;
 
                 case Keys.UP:

@@ -18,10 +18,6 @@ public class AssetManager implements Disposable {
     public void loadAssets() {
         // Load all necessary textures
 
-        loadTexture("tiles/brick.png");
-        loadTexture("tiles/test2.png");
-        loadTexture("tiles/wood.png");
-
         loadTexture("characters/idle.png");
         loadTexture("characters/walk.png");
 

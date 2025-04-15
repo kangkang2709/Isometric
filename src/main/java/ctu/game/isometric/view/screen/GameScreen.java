@@ -35,7 +35,8 @@ public class GameScreen implements Screen {
         batch = new SpriteBatch();
 
         // Initialize renderers
-        mapRenderer = new MapRenderer(gameController.getMap(), game.getAssetManager(), gameController.getCharacter());
+        // In GameScreen.java - when initializing MapRenderer
+        mapRenderer = new MapRenderer(gameController.getMap(), game.getAssetManager(), gameController.getCharacter(), camera);
         characterRenderer = new CharacterRenderer(gameController.getCharacter(), game.getAssetManager(), mapRenderer);
         dialogUI = new DialogUI(gameController.getDialogController());
         gameController.getInputController().setDialogUI(dialogUI);

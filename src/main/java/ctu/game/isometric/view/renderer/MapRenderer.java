@@ -1,13 +1,16 @@
 package ctu.game.isometric.view.renderer;
 
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.maps.tiled.TiledMapTile;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
+import com.badlogic.gdx.maps.tiled.renderers.IsometricTiledMapRenderer;
+import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.world.IsometricMap;
 import ctu.game.isometric.util.AnimationManager;
 import ctu.game.isometric.util.AssetManager;
-import ctu.game.isometric.model.entity.Character;
 
 public class MapRenderer {
     private IsometricMap map;
@@ -15,35 +18,46 @@ public class MapRenderer {
     private float offsetX, offsetY;
     private AnimationManager animationManager;
     private Character character;
+    private IsometricTiledMapRenderer tiledMapRenderer;
+    private OrthographicCamera camera;
 
-    public MapRenderer(IsometricMap map, AssetManager assetManager, Character character) {
+    // In MapRenderer.java - modify constructor to take an existing camera
+    public MapRenderer(IsometricMap map, AssetManager assetManager, Character character, OrthographicCamera camera) {
         this.map = map;
         this.assetManager = assetManager;
         this.character = character;
         this.animationManager = assetManager.getAnimationManager();
-        this.offsetX = 640; // Half of 1280
+        this.offsetX = 640;
         this.offsetY = 150;
+
+        // Use the provided camera instead of creating a new one
+        this.camera = camera;
+
+        // Create the tiled map renderer
+        this.tiledMapRenderer = new IsometricTiledMapRenderer(map.getTiledMap());
     }
 
     public void render(SpriteBatch batch) {
-        int[][] mapData = map.getMapData();
+        // Update camera position based on character with proper vertical offset
+        float[] isoPos = toIsometric(character.getGridX(), character.getGridY());
+        // Add vertical offset to camera to better position character in view
+        camera.position.set(isoPos[0], isoPos[1], 0);
+        camera.update();
 
-        // Draw tiles in correct isometric order (back to front)
-        for (int sum = mapData.length + mapData[0].length - 2; sum >= 0; sum--) {
-            for (int y = Math.min(mapData.length - 1, sum); y >= Math.max(0, sum - mapData[0].length + 1); y--) {
-                int x = sum - y;
-                if (x >= 0 && x < mapData[0].length) {
-                    int tileType = mapData[y][x];
-                    if (tileType != 0) {
-                        String texturePath = map.getTileTexturePath(tileType);
-                        Texture tileTexture = assetManager.getTexture(texturePath);
-                        TextureRegion tileRegion = new TextureRegion(tileTexture, 0, 0, map.getTileWidth(), map.getTileHeight());
+        // End SpriteBatch (if it's begun) to use the renderer
+        boolean batchWasDrawing = batch.isDrawing();
+        if (batchWasDrawing) {
+            batch.end();
+        }
 
-                        float[] iso = toIsometric(x, y);
-                        batch.draw(tileRegion, iso[0], iso[1], map.getTileWidth(), map.getTileHeight());
-                    }
-                }
-            }
+        // Render the tiled map
+        tiledMapRenderer.setView(camera);
+        tiledMapRenderer.render();
+
+        // Start batch again if it was drawing before
+        if (batchWasDrawing) {
+            batch.begin();
+            batch.setProjectionMatrix(camera.combined);
         }
     }
 
@@ -58,25 +72,24 @@ public class MapRenderer {
         // Set highlight color (semi-transparent green)
         batch.setColor(0.2f, 1f, 0.2f, 0.5f);
 
-        // Get the tile texture
-        Texture tileTexture = assetManager.getTexture(map.getTileTexturePath());
-        TextureRegion tileRegion = new TextureRegion(tileTexture, 0, 0, map.getTileWidth(), map.getTileHeight());
-
-        // Define adjacent tiles in correct drawing order
+        // Define adjacent tiles in correct drawing order for isometric depth
         int[][] adjacentTiles = {
-                {characterX - 1, characterY - 1}, // left_up (northwest)
-                {characterX, characterY - 1},     // right_up (northeast)
-                {characterX - 1, characterY},     // left (west)
+                {characterX - 1, characterY - 1}, // left_up
+                {characterX, characterY - 1},     // up
+                {characterX - 1, characterY},     // left
                 {characterX, characterY},         // center
-                {characterX + 1, characterY - 1}, // right_up (northeast)
-                {characterX - 1, characterY + 1}, // left_down (southwest)
-                {characterX + 1, characterY},     // right (east)
-                {characterX, characterY + 1},     // left_down (south)
-                {characterX + 1, characterY + 1}  // right_down (southeast)
+                {characterX + 1, characterY - 1}, // right_up
+                {characterX - 1, characterY + 1}, // left_down
+                {characterX + 1, characterY},     // right
+                {characterX, characterY + 1},     // down
+                {characterX + 1, characterY + 1}  // right_down
         };
 
-        // Sort by isometric depth
+        // Sort by isometric depth (higher x+y is further back)
         java.util.Arrays.sort(adjacentTiles, (a, b) -> Integer.compare(a[0] + a[1], b[0] + b[1]));
+
+        // Get the base layer for highlighting
+        TiledMapTileLayer baseLayer = (TiledMapTileLayer) map.getTiledMap().getLayers().get(0);
 
         for (int[] tile : adjacentTiles) {
             int x = tile[0];
@@ -86,8 +99,16 @@ public class MapRenderer {
             if (x >= 0 && x < walkableTiles[0].length &&
                     y >= 0 && y < walkableTiles.length &&
                     walkableTiles[y][x]) {
-                float[] iso = toIsometric(x, y);
-                batch.draw(tileRegion, iso[0], iso[1], map.getTileWidth(), map.getTileHeight());
+
+                TiledMapTileLayer.Cell cell = baseLayer.getCell(x, y);
+                if (cell != null) {
+                    TiledMapTile mapTile = cell.getTile();
+                    if (mapTile != null) {
+                        TextureRegion tileRegion = mapTile.getTextureRegion();
+                        float[] iso = toIsometric(x, y);
+                        batch.draw(tileRegion, iso[0], iso[1], map.getTileWidth(), map.getTileHeight());
+                    }
+                }
             }
         }
 
@@ -96,12 +117,9 @@ public class MapRenderer {
     }
 
     public float[] toIsometric(float x, float y) {
-        // Width and height scaling factors
-        final float widthFactor = 2.01f;  // Standard is 2.0
-        final float heightFactor = 2.96f;  // Standard is 2.0
-
-        float isoX = (x - y) * (map.getTileWidth() / widthFactor) + offsetX;
-        float isoY = (x + y) * (map.getTileHeight() / heightFactor) + offsetY;
+        // Standard isometric projection WITH offsets
+        float isoX = (x - y) * (map.getTileWidth() / 2.0f) + offsetX;
+        float isoY = (x + y) * (map.getTileHeight() / 2.0f) + offsetY;
         return new float[]{isoX, isoY};
     }
 
@@ -111,5 +129,13 @@ public class MapRenderer {
 
     public float getOffsetY() {
         return offsetY;
+    }
+
+    public IsometricMap getMap() {
+        return map;
+    }
+
+    public void setMap(IsometricMap map) {
+        this.map = map;
     }
 }

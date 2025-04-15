@@ -34,16 +34,15 @@ public class CharacterRenderer {
         // Get animation frame with translated direction
         String direction = translateDirection(character.getDirection());
 
-        // Always use walk animation when moving
         TextureRegion currentFrame = animationManager.getCharacterFrame(
                 direction,
                 character.isMoving(),
                 character.getAnimationTime()
         );
 
-        // Center the character sprite
-        float offsetPlayerX = -24 + 32;
-        float offsetPlayerY = -32 + 24;
+        // Correct offsets for character sprite alignment
+        float offsetPlayerX = -24; // Half of sprite width (48/2)
+        float offsetPlayerY = -32; // Position the feet at tile base (character sprite height - tile height)
 
         batch.draw(currentFrame, isoX + offsetPlayerX, isoY + offsetPlayerY);
     }
