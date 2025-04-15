@@ -65,53 +65,7 @@ public class IsometricMap {
         return 0; // Empty tile
     }
 
-    // Check if a tile is walkable (can use a property in Tiled called "walkable")
-    public boolean isWalkable(int x, int y) {
-        if (x < 0 || y < 0 || x >= mapWidth || y >= mapHeight) {
-            return false;
-        }
 
-        TiledMapTileLayer.Cell cell = baseLayer.getCell(x, y);
-        if (cell == null) {
-            return false;
-        }
-
-        // First check cell properties (higher priority)
-        Object walkable = cell.getTile().getProperties().get("walkable");
-        if (walkable == null) {
-            walkable = cell.getTile().getProperties().get("Walkable");
-        }
-
-        // Then check tile properties
-        if (walkable == null) {
-            TiledMapTile tile = cell.getTile();
-            if (tile != null) {
-                walkable = tile.getProperties().get("walkable");
-                if (walkable == null) {
-                    walkable = tile.getProperties().get("Walkable");
-                }
-            }
-        }
-
-        // Try layer properties as fallback
-        if (walkable == null && baseLayer.getProperties().containsKey("walkable")) {
-            walkable = baseLayer.getProperties().get("walkable");
-        }
-
-        // Parse the property value flexibly
-        if (walkable != null) {
-            if (walkable instanceof Boolean) {
-                return (Boolean) walkable;
-            } else {
-                String value = walkable.toString().toLowerCase();
-                return value.equals("true") || value.equals("1") || value.equals("yes");
-            }
-        }
-
-        // If no property found, determine default behavior
-        // You could change this to true if most tiles should be walkable
-        return false;
-    }
 
     // For compatibility with existing code
     public int[][] getMapData() {
@@ -124,14 +78,52 @@ public class IsometricMap {
         return data;
     }
 
-    // For compatibility with existing texture system
-    public String getTileTexturePath(int tileType) {
-        // In a TMX map, we don't need this since textures are defined in the map
-        // Return null or a default texture path if needed
-        return "tiles/default.png";
+    public boolean isWalkable(int x, int y) {
+        // First check if coordinates are within map bounds
+        if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight) {
+            return false;
+        }
+
+        // Check if the tile exists at this position
+        TiledMapTileLayer.Cell cell = baseLayer.getCell(x, y);
+        if (cell == null) {
+            return false;
+        }
+
+        // If you have a "walkable" property in your tiles, you can check it:
+        // TiledMapTile tile = cell.getTile();
+        // if (tile != null && tile.getProperties().containsKey("walkable")) {
+        //     return tile.getProperties().get("walkable", Boolean.class);
+        // }
+
+        // If there's no specific property, assume tiles with ID > 0 are walkable
+        return getTileId(x, y) > 0;
+    }
+    public void setTiledMap(TiledMap tiledMap) {
+        this.tiledMap = tiledMap;
     }
 
-    public String getTileTexturePath() {
-        return "tiles/default.png";
+    public void setTileWidth(int tileWidth) {
+        this.tileWidth = tileWidth;
+    }
+
+    public void setTileHeight(int tileHeight) {
+        this.tileHeight = tileHeight;
+    }
+
+    public void setMapWidth(int mapWidth) {
+        this.mapWidth = mapWidth;
+    }
+
+    public void setMapHeight(int mapHeight) {
+        this.mapHeight = mapHeight;
+    }
+
+    public TiledMapTileLayer getBaseLayer() {
+        return baseLayer;
+    }
+
+    public void setBaseLayer(TiledMapTileLayer baseLayer) {
+        this.baseLayer = baseLayer;
     }
 }

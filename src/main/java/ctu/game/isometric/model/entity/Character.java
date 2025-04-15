@@ -3,15 +3,17 @@ package ctu.game.isometric.model.entity;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
+import ctu.game.isometric.model.world.IsometricMap;
 
 public class Character {
     private float gridX, gridY;
-    private String texturePath;
     private String direction = "down";
     private boolean isMoving = false;
     private float animationTime = 0;
 
     // For smooth movement
+
+    private IsometricMap gameMap;
     private float targetX, targetY;
     private float moveSpeed = 2.0f; // Grid cells per second
     private static final float DIAGONAL_THRESHOLD = 0.3f; // For determining diagonal movement
@@ -20,8 +22,7 @@ public class Character {
             "up", "down", "left", "right", "left_down", "right_down", "left_up", "right_up"
     };
 
-    public Character(String texturePath, float startX, float startY) {
-        this.texturePath = texturePath;
+    public Character(float startX, float startY) {
         this.gridX = startX;
         this.gridY = startY;
         this.targetX = startX;
@@ -31,14 +32,23 @@ public class Character {
     // Existing getters/setters...
 
     public void moveToward(float targetX, float targetY) {
-        this.targetX = targetX;
-        this.targetY = targetY;
-        this.isMoving = true;
+        // Ensure target is within map bounds and walkable
+        int tx = (int) Math.floor(targetX);
+        int ty = (int) Math.floor(targetY);
 
-        // Calculate initial direction
-        float dx = targetX - gridX;
-        float dy = targetY - gridY;
-        updateDirectionFromVector(dx, dy);
+        if (tx >= 0 && tx < gameMap.getMapWidth() &&
+                ty >= 0 && ty < gameMap.getMapHeight() &&
+                gameMap.isWalkable(tx, ty)) {
+
+            this.targetX = targetX;
+            this.targetY = targetY;
+            this.isMoving = true;
+
+            // Calculate initial direction
+            float dx = targetX - gridX;
+            float dy = targetY - gridY;
+            updateDirectionFromVector(dx, dy);
+        }
     }
 
     // Optimized update method
@@ -48,9 +58,9 @@ public class Character {
 
         if (!isMoving) return;
 
-            float dx = targetX - gridX;
-            float dy = targetY - gridY;
-            float distanceSquared = dx * dx + dy * dy;
+        float dx = targetX - gridX;
+        float dy = targetY - gridY;
+        float distanceSquared = dx * dx + dy * dy;
 
         if (distanceSquared < 0.0001f) {
             gridX = targetX;
@@ -62,19 +72,40 @@ public class Character {
             float distance = (float) Math.sqrt(distanceSquared);
 
             if (moveAmount >= distance) {
-                gridX = targetX;
-                gridY = targetY;
+                // Check if target position is still valid
+                int tx = (int) Math.floor(targetX);
+                int ty = (int) Math.floor(targetY);
+
+                if (tx >= 0 && tx < gameMap.getMapWidth() &&
+                        ty >= 0 && ty < gameMap.getMapHeight() &&
+                        gameMap.isWalkable(tx, ty)) {
+
+                    gridX = targetX;
+                    gridY = targetY;
+                }
                 isMoving = false;
-                animationTime = 0; // Reset animation time when stopping
+                animationTime = 0;
             } else {
                 float ratio = moveAmount / distance;
                 float newX = gridX + dx * ratio;
                 float newY = gridY + dy * ratio;
 
-                // Ensure we're not moving out of bounds
-                gridX = newX;
-                gridY = newY;
-                updateDirectionFromVector(dx, dy);
+                // Check if new position is valid before moving
+                int nx = (int) Math.floor(newX);
+                int ny = (int) Math.floor(newY);
+
+                if (nx >= 0 && nx < gameMap.getMapWidth() &&
+                        ny >= 0 && ny < gameMap.getMapHeight() &&
+                        gameMap.isWalkable(nx, ny)) {
+
+                    gridX = newX;
+                    gridY = newY;
+                    updateDirectionFromVector(dx, dy);
+                } else {
+                    // Stop movement if we hit an invalid tile
+                    isMoving = false;
+                    animationTime = 0;
+                }
             }
         }
     }
@@ -86,23 +117,14 @@ public class Character {
             return;
         }
 
-        // Determine primary direction based on vector components
-        if (Math.abs(dx) > Math.abs(dy)) {
-            // Horizontal movement dominant
-            if (dx > 0) {
-                direction = (dy > DIAGONAL_THRESHOLD) ? "right_down" :
-                        (dy < -DIAGONAL_THRESHOLD) ? "right" : "right_up";
-            } else {
-                direction = (dy > DIAGONAL_THRESHOLD) ? "left_down" :
-                        (dy < -DIAGONAL_THRESHOLD) ? "left_up" : "left";
-            }
+        if (dx > 0) {
+            direction = "right_up";
+        } else if (dx < 0) {
+            direction = "left_down";
+        } else if (dy > 0) {
+            direction = "left_up";
         } else {
-            // Vertical movement dominant
-            if (dy > 0) {
-                direction = "left_up";
-            } else {
-                direction = "up";
-            }
+            direction = "up";
         }
     }
 
@@ -147,5 +169,9 @@ public class Character {
         this.gridY = y;
         this.targetX = x;
         this.targetY = y;
+    }
+
+    public void setGameMap(IsometricMap gameMap) {
+        this.gameMap = gameMap;
     }
 }

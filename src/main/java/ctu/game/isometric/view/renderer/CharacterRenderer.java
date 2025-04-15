@@ -14,6 +14,7 @@ public class CharacterRenderer {
 
     public CharacterRenderer(Character character, AssetManager assetManager, MapRenderer mapRenderer) {
         this.character = character;
+        character.setGameMap(mapRenderer.getMap());
         this.assetManager = assetManager;
         this.mapRenderer = mapRenderer;
         this.animationManager = assetManager.getAnimationManager();
@@ -40,9 +41,13 @@ public class CharacterRenderer {
                 character.getAnimationTime()
         );
 
-        // Correct offsets for character sprite alignment
-        float offsetPlayerX = -24; // Half of sprite width (48/2)
-        float offsetPlayerY = -32; // Position the feet at tile base (character sprite height - tile height)
+        // Calculate offsets based on tile dimensions
+        float tileWidth = mapRenderer.getMap().getTileWidth();
+        float tileHeight = mapRenderer.getMap().getTileHeight();
+
+        // Position character at the center of the tile
+        float offsetPlayerX = 11; // Half of sprite width (48/2)
+        float offsetPlayerY = -5; // Position the feet at tile base (character sprite height - tile height)
 
         batch.draw(currentFrame, isoX + offsetPlayerX, isoY + offsetPlayerY);
     }

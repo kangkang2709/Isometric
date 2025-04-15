@@ -37,6 +37,12 @@ public class MapRenderer {
         this.tiledMapRenderer = new IsometricTiledMapRenderer(map.getTiledMap());
     }
 
+    public float[] toIsometric(float x, float y) {
+        float isoX = (x - y) * (map.getTileWidth() / 2.0f);
+        float isoY = (x + y) * (map.getTileHeight() / 2.0f);
+        return new float[]{isoX, isoY};
+    }
+
     public void render(SpriteBatch batch) {
         // Update camera position based on character with proper vertical offset
         float[] isoPos = toIsometric(character.getGridX(), character.getGridY());
@@ -85,28 +91,48 @@ public class MapRenderer {
                 {characterX + 1, characterY + 1}  // right_down
         };
 
-        // Sort by isometric depth (higher x+y is further back)
-        java.util.Arrays.sort(adjacentTiles, (a, b) -> Integer.compare(a[0] + a[1], b[0] + b[1]));
+        // Sort by isometric depth (higher x+y is further back, then by y)
+        java.util.Arrays.sort(adjacentTiles, (a, b) -> {
+            int sumComparison = Integer.compare(a[0] + a[1], b[0] + b[1]);
+            if (sumComparison != 0) {
+                return sumComparison;
+            }
+            return Integer.compare(a[1], b[1]); // Compare y-values for tiles with the same sum
+        });
 
         // Get the base layer for highlighting
         TiledMapTileLayer baseLayer = (TiledMapTileLayer) map.getTiledMap().getLayers().get(0);
 
-        for (int[] tile : adjacentTiles) {
-            int x = tile[0];
-            int y = tile[1];
+        // Ensure walkableTiles array matches map dimensions
+        if (walkableTiles != null &&
+                walkableTiles.length == map.getMapHeight() &&
+                walkableTiles[0].length == map.getMapWidth()) {
 
-            // Check if tile is within bounds and walkable
-            if (x >= 0 && x < walkableTiles[0].length &&
-                    y >= 0 && y < walkableTiles.length &&
-                    walkableTiles[y][x]) {
+            for (int[] tile : adjacentTiles) {
+                int x = tile[0];
+                int y = tile[1];
 
-                TiledMapTileLayer.Cell cell = baseLayer.getCell(x, y);
-                if (cell != null) {
-                    TiledMapTile mapTile = cell.getTile();
-                    if (mapTile != null) {
-                        TextureRegion tileRegion = mapTile.getTextureRegion();
-                        float[] iso = toIsometric(x, y);
-                        batch.draw(tileRegion, iso[0], iso[1], map.getTileWidth(), map.getTileHeight());
+                // Check if tile is within bounds and walkable
+                if (x >= 0 && x < walkableTiles[0].length &&
+                        y >= 0 && y < walkableTiles.length &&
+                        walkableTiles[y][x]) {
+
+                    TiledMapTileLayer.Cell cell = baseLayer.getCell(x, y);
+                    if (cell != null) {
+                        TiledMapTile mapTile = cell.getTile();
+                        if (mapTile != null) {
+                            TextureRegion tileRegion = mapTile.getTextureRegion();
+                            float[] iso = toIsometric(x, y);
+
+                            // Draw at the center position, adjusting for tile dimensions
+                            float tileWidth = map.getTileWidth();
+                            float tileHeight = map.getTileHeight();
+                            batch.draw(tileRegion,
+                                    iso[0],
+                                    iso[1],
+                                    tileWidth,
+                                    tileHeight);
+                        }
                     }
                 }
             }
@@ -114,13 +140,6 @@ public class MapRenderer {
 
         // Restore original color
         batch.setColor(originalColor);
-    }
-
-    public float[] toIsometric(float x, float y) {
-        // Standard isometric projection WITH offsets
-        float isoX = (x - y) * (map.getTileWidth() / 2.0f) + offsetX;
-        float isoY = (x + y) * (map.getTileHeight() / 2.0f) + offsetY;
-        return new float[]{isoX, isoY};
     }
 
     public float getOffsetX() {
