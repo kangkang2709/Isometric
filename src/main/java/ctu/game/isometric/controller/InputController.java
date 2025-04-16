@@ -35,19 +35,24 @@ public class InputController extends InputAdapter {
 
             // Handle continuous movement when keys are held down
             if (Gdx.input.isKeyPressed(Keys.W) || Gdx.input.isKeyPressed(Keys.UP)) {
-                moveCharacter(0, -1);
+//                moveCharacter(0, -1);
+                moveCharacter(1, 0);
                 moved = true;
                 if (debugLog) Gdx.app.log("Input", "Up pressed");
             } else if (Gdx.input.isKeyPressed(Keys.S) || Gdx.input.isKeyPressed(Keys.DOWN)) {
-                moveCharacter(0, 1);
+//              moveCharacter(0, 1);
+                moveCharacter(-1, 0);
+
                 moved = true;
                 if (debugLog) Gdx.app.log("Input", "Down pressed");
             } else if (Gdx.input.isKeyPressed(Keys.A) || Gdx.input.isKeyPressed(Keys.LEFT)) {
-                moveCharacter(-1, 0);
+                moveCharacter(0, -1);
                 moved = true;
                 if (debugLog) Gdx.app.log("Input", "Left pressed");
             } else if (Gdx.input.isKeyPressed(Keys.D) || Gdx.input.isKeyPressed(Keys.RIGHT)) {
-                moveCharacter(1, 0);
+//                moveCharacter(1, 0);
+                moveCharacter(0, 1);
+
                 moved = true;
                 if (debugLog) Gdx.app.log("Input", "Right pressed");
             }

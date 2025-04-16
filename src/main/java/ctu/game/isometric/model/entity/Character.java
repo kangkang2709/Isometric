@@ -118,13 +118,13 @@ public class Character {
         }
 
         if (dx > 0) {
-            direction = "right_up";
-        } else if (dx < 0) {
-            direction = "left_down";
-        } else if (dy > 0) {
-            direction = "left_up";
-        } else {
             direction = "up";
+        } else if (dx < 0) {
+            direction = "left_up";
+        } else if (dy > 0) {
+            direction = "right_up";
+        } else {
+            direction = "left_down";
         }
     }
 

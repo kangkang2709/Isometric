@@ -42,18 +42,7 @@ public class GameController {
         int newX = (int) (character.getGridX() + dx);
         int newY = (int) (character.getGridY() + dy);
 
-        // Check map boundaries with null checks
-        if (map == null || map.getMapData() == null) return false;
-
-        int[][] mapData = map.getMapData();
-        if (mapData.length == 0) return false;
-
-        // Check map boundaries
-        if (newX < 0 || newY < 0) return false;
-        if (newY >= mapData.length) return false;
-        if (newX >= mapData[0].length) return false;
-
-        return mapData[newY][newX] != 0;
+        return map.isWalkable(newX,newY);
     }
 
     // Add a method to change maps safely
