@@ -41,9 +41,6 @@ public class CharacterRenderer {
                 character.getAnimationTime()
         );
 
-        // Calculate offsets based on tile dimensions
-        float tileWidth = mapRenderer.getMap().getTileWidth();
-        float tileHeight = mapRenderer.getMap().getTileHeight();
 
         // Position character at the center of the tile
         float offsetPlayerX = 11; // Half of sprite width (48/2)

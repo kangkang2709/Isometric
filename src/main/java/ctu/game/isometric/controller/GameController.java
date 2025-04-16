@@ -17,7 +17,7 @@ public class GameController {
     public GameController(IsometricGame game) {
         this.game = game;
         this.map = new IsometricMap();
-        this.character = new Character(2, 2);
+        this.character = new Character(0, 0);
         this.inputController = new InputController(this);
         this.dialogController = new DialogController(this);
     }

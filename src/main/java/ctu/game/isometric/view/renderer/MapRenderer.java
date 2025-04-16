@@ -38,8 +38,8 @@ public class MapRenderer {
     }
 
     public float[] toIsometric(float x, float y) {
-        float isoX = (x - y) * (map.getTileWidth() / 2.0f);
-        float isoY = (x + y) * (map.getTileHeight() / 2.0f);
+        float isoX = (x + y) * (map.getTileWidth() / 2.0f);  // Đảo cả phép tính trên X
+        float isoY = (y - x) * (map.getTileHeight() / 2.0f);  // Đảo cả phép tính trên Y
         return new float[]{isoX, isoY};
     }
 
