@@ -2,6 +2,7 @@ package ctu.game.isometric.controller;
 
 import ctu.game.isometric.IsometricGame;
 import ctu.game.isometric.model.entity.Character;
+import ctu.game.isometric.model.game.GameState;
 import ctu.game.isometric.model.world.IsometricMap;
 
 public class GameController {
@@ -11,8 +12,11 @@ public class GameController {
     private Character character;
     private IsometricMap map;
     private InputController inputController;
-
     private DialogController dialogController; // New field
+    private MusicController musicController;
+
+    private GameState currentState = GameState.EXPLORING;
+    private GameState previousState = GameState.EXPLORING;
 
     public GameController(IsometricGame game) {
         this.game = game;
@@ -20,24 +24,68 @@ public class GameController {
         this.character = new Character(0, 0);
         this.inputController = new InputController(this);
         this.dialogController = new DialogController(this);
+        this.musicController = new MusicController();
+
+
+        this.musicController.initialize();
+        this.musicController.playMusicForState(GameState.EXPLORING);
+
     }
 
     public void update(float delta) {
-        // Update input controller
-        // Skip other updates if dialog is active
-        if (dialogController.isDialogActive()) {
-            return;
+        switch (currentState) {
+            case EXPLORING:
+                inputController.update(delta);
+                character.update(delta);
+                break;
+
+            case DIALOG:
+                // Only update dialog controller when in dialog state
+                // dialogController.update(delta);
+                break;
+
+            case MENU:
+                // Update menu-specific logic (if needed)
+                break;
+
+            case CUTSCENE:
+                character.update(delta); // Keep character animations running
+                break;
         }
-
-        inputController.update(delta);
-
-        // Update character animation
-        character.update(delta);
-
-        // Reset character movement flag
-//        character.setMoving(false);
     }
 
+    public GameState getCurrentState() {
+        return currentState;
+    }
+
+    public void setCurrentState(GameState currentState) {
+        this.currentState = currentState;
+    }
+
+    public void setState(GameState newState) {
+        if (currentState == newState) return;
+
+        GameState oldState = currentState;
+        currentState = newState;
+
+        previousState = oldState; // Correctly assign the old state
+        // Update music based on the new state
+        musicController.playMusicForState(newState);
+
+        // Additional state transition logic if needed
+        onStateChanged(oldState, newState);
+    }
+
+    private void onStateChanged(GameState oldState, GameState newState) {
+        // Notify relevant subsystems about state change
+    }
+
+    public void returnToPreviousState() {
+        setState(previousState);
+    }
+    public GameState getPreviousState() {
+        return previousState;
+    }
     public boolean canMove(int dx, int dy) {
         int newX = (int) (character.getGridX() + dx);
         int newY = (int) (character.getGridY() + dy);
@@ -106,7 +154,8 @@ public class GameController {
 
     private void checkPositionEvents(float x, float y) {
         // Example: Show dialog when character reaches specific positions
-        if (x == 3 && y == 3) {
+        if (x == 2 && y == 3) {
+            setState(GameState.DIALOG);
             dialogController.startDialog("chapter_01", "scene_01");
         }
     }
@@ -161,5 +210,8 @@ public class GameController {
 
     public void setDialogController(DialogController dialogController) {
         this.dialogController = dialogController;
+    }
+    public MusicController getMusicController() {
+        return musicController;
     }
 }

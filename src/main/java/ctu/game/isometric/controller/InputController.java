@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.utils.TimeUtils;
+import ctu.game.isometric.model.game.GameState;
 import ctu.game.isometric.view.renderer.DialogUI;
 
 public class InputController extends InputAdapter {
@@ -23,6 +24,7 @@ public class InputController extends InputAdapter {
     public void setDialogUI(DialogUI dialogUI) {
         this.dialogUI = dialogUI;
     }
+
     public void update(float delta) {
         // Update cooldown timer
         if (moveCooldown > 0) {
@@ -72,6 +74,21 @@ public class InputController extends InputAdapter {
 
     @Override
     public boolean keyDown(int keycode) {
+        switch (keycode) {
+            case Keys.ESCAPE:
+                if (gameController.getCurrentState() == GameState.MENU) {
+                    // Return to the previous state if we're already in menu
+                    gameController.returnToPreviousState();
+                    System.out.println("Returning to previous state: " +
+                            gameController.getCurrentState().toString());
+                } else {
+                    // Go to menu, previous state will be saved
+                    gameController.setState(GameState.MENU);
+                    System.out.println("Game state changed to MENU");
+                }
+                return true;
+        }
+
         // Handle dialog input first
         if (gameController.getDialogController().isDialogActive()) {
             switch (keycode) {
@@ -95,18 +112,17 @@ public class InputController extends InputAdapter {
                     if (dialogUI != null && !dialogUI.isTextFullyDisplayed()) {
                         dialogUI.completeTextAnimation();
                     }
-//                    // If text is already complete, act like ENTER key
-//                    else if (dialogUI != null && dialogUI.isTextFullyDisplayed()) {
-//                        if (gameController.getDialogController().hasChoices()) {
-//                            gameController.getDialogController().selectChoice(
-//                                    gameController.getDialogController().getSelectedChoiceIndex()
-//                            );
-//                        } else {
-//                            if (!gameController.getDialogController().nextDialog()) {
-//                                gameController.getDialogController().endDialog();
-//                            }
-//                        }
-//                    }
+                    else if (dialogUI != null && dialogUI.isTextFullyDisplayed()) {
+                        if (gameController.getDialogController().hasChoices()) {
+                            gameController.getDialogController().selectChoice(
+                                    gameController.getDialogController().getSelectedChoiceIndex()
+                            );
+                        } else {
+                            if (!gameController.getDialogController().nextDialog()) {
+                                gameController.getDialogController().endDialog();
+                            }
+                        }
+                    }
                     return true;
 
                 case Keys.UP:
@@ -126,22 +142,6 @@ public class InputController extends InputAdapter {
         }
 
         lastInputTime = TimeUtils.millis();
-
-        switch (keycode) {
-            case Keys.UP:
-                gameController.moveCharacter(0, 1);
-                return true;
-            case Keys.DOWN:
-                gameController.moveCharacter(0, -1);
-                return true;
-            case Keys.LEFT:
-                gameController.moveCharacter(-1, 0);
-                return true;
-            case Keys.RIGHT:
-                gameController.moveCharacter(1, 0);
-                return true;
-        }
-
         return false;
     }
 }

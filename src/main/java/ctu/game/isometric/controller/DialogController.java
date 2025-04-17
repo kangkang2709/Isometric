@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ctu.game.isometric.model.dialog.*;
+import ctu.game.isometric.model.game.GameState;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -194,6 +195,7 @@ public class DialogController {
     }
 
     public void endDialog() {
+        gameController.setState(GameState.EXPLORING);
         dialogActive = false;
         showingChoices = false;
         currentChoices.clear();
