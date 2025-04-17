@@ -67,6 +67,7 @@ public class GameScreen implements Screen {
             gameController.getMenuController().render(batch);
         }
         if (gameController.getCurrentState() == GameState.SETTINGS) {
+            gameController.getSettingsMenuController().update(delta);
             gameController.getSettingsMenuController().render(batch);
         }
         batch.end();

@@ -22,7 +22,7 @@ public class MusicController {
         // Pre-load common music tracks
         loadMusic("exploring_theme", "audio/musics/exploring_theme.mp3");
         loadMusic("menu_theme", "audio/musics/menu_theme.mp3");
-//        loadMusic("cutscene_theme", "audio/music/cutscene_theme.mp3");
+        loadMusic("setting_theme", "audio/musics/menu_theme.mp3");
         loadMusic("dialog_theme", "audio/musics/dialog_theme.mp3");
     }
 
@@ -104,9 +104,19 @@ public class MusicController {
     }
 
     public void setEnabled(boolean enabled) {
+        // neu trang thai dang tat va dang bat lai
+        boolean wasDisabled = !this.enabled && enabled;
         this.enabled = enabled;
+
         if (!enabled) {
             stopCurrentTrack();
+        } else if (wasDisabled && currentTrackId != null) {
+            // Resume playback when re-enabled
+            Music track = musicTracks.get(currentTrackId);
+            if (track != null) {
+                track.setVolume(volume);
+                track.play();
+            }
         }
     }
 

@@ -94,6 +94,32 @@ public class InputController extends InputAdapter {
             return true; // Consume all input in menu state
         }
 
+
+
+        if(gameController.getCurrentState() == GameState.SETTINGS) {
+            switch (keycode) {
+                case Keys.ESCAPE:
+                    gameController.setCurrentState(GameState.MENU);
+                    return true;
+                case Keys.UP:
+                    gameController.getSettingsMenuController().selectPreviousItem();
+                    return true;
+                case Keys.DOWN:
+                    gameController.getSettingsMenuController().selectNextItem();
+                    return true;
+                case Keys.LEFT:
+                    gameController.getSettingsMenuController().adjustSelectedOption(false);
+                    return true;
+                case Keys.RIGHT:
+                    gameController.getSettingsMenuController().adjustSelectedOption(true);
+                    return true;
+                case Keys.ENTER:
+                case Keys.SPACE:
+                    gameController.getSettingsMenuController().activateSelectedItem();
+                    return true;
+            }
+            return true; // Consume all input in settings state
+        }
         switch (keycode) {
             case Keys.ESCAPE:
                 if (gameController.getCurrentState() == GameState.MENU) {
@@ -108,7 +134,6 @@ public class InputController extends InputAdapter {
                 }
                 return true;
         }
-
         // Handle dialog input first
         if (gameController.getDialogController().isDialogActive()) {
             switch (keycode) {

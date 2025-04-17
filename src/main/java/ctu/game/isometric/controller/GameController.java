@@ -75,8 +75,10 @@ public class GameController {
         GameState oldState = currentState;
         currentState = newState;
 
-        previousState = oldState; // Correctly assign the old state
-        // Update music based on the new state
+        if(newState != GameState.SETTINGS){
+            previousState = oldState;
+        }
+
         musicController.playMusicForState(newState);
 
         // Additional state transition logic if needed

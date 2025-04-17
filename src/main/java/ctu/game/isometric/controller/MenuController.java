@@ -62,9 +62,10 @@ public class MenuController {
         // Add default menu items
         addMenuItem("Resume Game", () -> gameController.returnToPreviousState());
         addMenuItem("Options", this::showOptionsMenu);
-        addMenuItem("Credits", this::showCreditsMenu);
+        addMenuItem("Settings", () -> gameController.setCurrentState(GameState.SETTINGS));
+        addMenuItem("Back To Main Menu", this::showOptionsMenu);
         addMenuItem("Quit Game", () -> Gdx.app.exit());
-        addMenuItem("Settings", () -> gameController.setState(GameState.SETTINGS));
+
 
         // Set menu position (center of screen)
         menuWidth = 400f;
