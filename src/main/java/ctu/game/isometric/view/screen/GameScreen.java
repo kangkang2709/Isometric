@@ -8,6 +8,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import ctu.game.isometric.IsometricGame;
 import ctu.game.isometric.controller.GameController;
+import ctu.game.isometric.model.game.GameState;
 import ctu.game.isometric.view.renderer.CharacterRenderer;
 import ctu.game.isometric.view.renderer.DialogUI;
 import ctu.game.isometric.view.renderer.MapRenderer;
@@ -52,12 +53,25 @@ public class GameScreen implements Screen {
         batch.setProjectionMatrix(camera.combined);
 
         batch.begin();
-        mapRenderer.render(batch);
-        mapRenderer.renderWalkableTileHighlights(batch, gameController.getWalkableTiles(), gameController.getCharacter().getAnimationTime());
-        characterRenderer.render(batch);
+
+        if (gameController.getCurrentState() == GameState.EXPLORING) {
+            mapRenderer.render(batch);
+            mapRenderer.renderWalkableTileHighlights(batch, gameController.getWalkableTiles(), gameController.getCharacter().getAnimationTime());
+            characterRenderer.render(batch);
+        }
+        if(gameController.getCurrentState() == GameState.DIALOG) {
+            dialogUI.render();
+        }
+
+        if (gameController.getCurrentState() == GameState.MENU) {
+            gameController.getMenuController().render(batch);
+        }
+        if (gameController.getCurrentState() == GameState.SETTINGS) {
+            gameController.getSettingsMenuController().render(batch);
+        }
         batch.end();
 
-        dialogUI.render();
+
     }
 
     @Override

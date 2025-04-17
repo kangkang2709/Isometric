@@ -4,5 +4,6 @@ public enum GameState {
     EXPLORING,   // Normal gameplay
     DIALOG,      // Dialog active - restrict movement
     MENU,        // Menu open - different input handling
-    CUTSCENE
+    CUTSCENE,
+    SETTINGS,   // Settings menu
 }

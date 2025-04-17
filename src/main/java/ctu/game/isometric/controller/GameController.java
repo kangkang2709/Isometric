@@ -14,6 +14,8 @@ public class GameController {
     private InputController inputController;
     private DialogController dialogController; // New field
     private MusicController musicController;
+    private MenuController menuController;
+    private SettingsMenuController settingsMenuController;
 
     private GameState currentState = GameState.EXPLORING;
     private GameState previousState = GameState.EXPLORING;
@@ -26,10 +28,10 @@ public class GameController {
         this.dialogController = new DialogController(this);
         this.musicController = new MusicController();
 
-
+        this.menuController = new MenuController(this);
+        this.settingsMenuController = new SettingsMenuController(this);
         this.musicController.initialize();
         this.musicController.playMusicForState(GameState.EXPLORING);
-
     }
 
     public void update(float delta) {
@@ -45,12 +47,17 @@ public class GameController {
                 break;
 
             case MENU:
-                // Update menu-specific logic (if needed)
+                menuController.update(delta);
                 break;
 
+
+            case SETTINGS:
+//                settingsMenuController.update(delta);
+                break;
             case CUTSCENE:
                 character.update(delta); // Keep character animations running
                 break;
+
         }
     }
 
@@ -213,5 +220,16 @@ public class GameController {
     }
     public MusicController getMusicController() {
         return musicController;
+    }
+
+    public MenuController getMenuController() {
+        return menuController;
+    }
+
+    public void setMenuController(MenuController menuController) {
+        this.menuController = menuController;
+    }
+    public SettingsMenuController getSettingsMenuController() {
+        return settingsMenuController;
     }
 }

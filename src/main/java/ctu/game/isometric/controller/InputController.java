@@ -74,6 +74,26 @@ public class InputController extends InputAdapter {
 
     @Override
     public boolean keyDown(int keycode) {
+
+        if (gameController.getCurrentState() == GameState.MENU) {
+            switch (keycode) {
+                case Keys.ESCAPE:
+                    gameController.returnToPreviousState();
+                    return true;
+                case Keys.UP:
+                    gameController.getMenuController().selectPreviousItem();
+                    return true;
+                case Keys.DOWN:
+                    gameController.getMenuController().selectNextItem();
+                    return true;
+                case Keys.ENTER:
+                case Keys.SPACE:
+                    gameController.getMenuController().activateSelectedItem();
+                    return true;
+            }
+            return true; // Consume all input in menu state
+        }
+
         switch (keycode) {
             case Keys.ESCAPE:
                 if (gameController.getCurrentState() == GameState.MENU) {
