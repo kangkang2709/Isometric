@@ -136,13 +136,13 @@ public class MenuController {
 
         shapeRenderer.end();
 
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-
-        // Draw menu border
-        shapeRenderer.setColor(0.5f, 0.5f, 0.7f, 1);
-        shapeRenderer.rect(menuX, menuY, menuWidth, menuHeight);
-
-        shapeRenderer.end();
+//        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+//
+//        // Draw menu border
+//        shapeRenderer.setColor(0.5f, 0.5f, 0.7f, 1);
+//        shapeRenderer.rect(menuX, menuY, menuWidth, menuHeight);
+//
+//        shapeRenderer.end();
 
         Gdx.gl.glDisable(GL20.GL_BLEND);
 

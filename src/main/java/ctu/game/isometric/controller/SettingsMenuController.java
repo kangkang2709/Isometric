@@ -52,7 +52,7 @@ public class SettingsMenuController {
 
         addMenuOption("Volume", MenuOption.OptionType.SLIDER,
                 () -> {
-                    // Volume is adjusted in adjustSelectedOption method
+                    // Volume adjustment logic is handled elsewhere
                 });
 
         // Add back option
@@ -107,11 +107,11 @@ public class SettingsMenuController {
                     gameController.getMusicController().setEnabled(option.isToggled());
                 }
             } else if (option.getType() == MenuOption.OptionType.SLIDER) {
-                float newValue = option.getValue() + (increase ? 0.1f : -0.1f);
+                float newValue = option.getValue() + (increase ? 0.01f : -0.01f);
                 newValue = Math.max(0f, Math.min(1f, newValue)); // Clamp between 0 and 1
                 option.setValue(newValue);
                 if (option.getName().equals("Volume")) {
-                    gameController.getMusicController().setVolume(newValue);
+                    gameController.getMusicController().setVolume(option.getValue());
                 }
             }
         }
@@ -133,8 +133,8 @@ public class SettingsMenuController {
         Gdx.gl.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         // Darkened background
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(0, 0, 0, 0.7f);
         shapeRenderer.rect(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
@@ -143,6 +143,7 @@ public class SettingsMenuController {
         shapeRenderer.rect(menuX, menuY, menuWidth, menuHeight);
         shapeRenderer.end();
 
+        // Border
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(0.5f, 0.5f, 0.7f, 1);
         shapeRenderer.rect(menuX, menuY, menuWidth, menuHeight);
@@ -153,7 +154,7 @@ public class SettingsMenuController {
         batch.begin();
 
         // Draw title
-        titleFont.draw(batch, menuTitle, menuX, menuY + menuHeight - padding,
+        titleFont.draw(batch, menuTitle, menuX, menuY + menuHeight - padding - 30,
                 menuWidth, Align.center, false);
 
         // Draw menu options
@@ -163,44 +164,52 @@ public class SettingsMenuController {
             MenuOption option = menuOptions.get(i);
 
             if (i == selectedIndex) {
-                // Animation effect for selected item
-                font.setColor(Color.YELLOW.r, Color.YELLOW.g, Color.YELLOW.b, selectionPulse);
+                font.setColor(Color.YELLOW);
             } else {
                 font.setColor(Color.WHITE);
             }
 
             String displayText = option.getName();
+
             if (option.getType() == MenuOption.OptionType.TOGGLE) {
                 displayText += ": " + (option.isToggled() ? "ON" : "OFF");
             } else if (option.getType() == MenuOption.OptionType.SLIDER) {
                 displayText += ": " + (int) (option.getValue() * 100) + "%";
+            }
 
-                // Draw slider bar
+            font.draw(batch, displayText, menuX + padding, y,
+                    menuWidth - padding * 2, Align.center, false);
+
+            // Draw slider if applicable
+            if (option.getType() == MenuOption.OptionType.SLIDER) {
+                batch.end(); // End batch before using shapeRenderer
+
                 float sliderWidth = 200;
                 float sliderX = menuX + (menuWidth - sliderWidth) / 2;
-                float sliderY = y - 15;
+                float sliderY = y - font.getCapHeight() / 2f - 30;
 
-                // Draw slider background
                 shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
                 shapeRenderer.setColor(0.3f, 0.3f, 0.3f, 0.8f);
                 shapeRenderer.rect(sliderX, sliderY, sliderWidth, 10);
 
-                // Draw filled portion
                 shapeRenderer.setColor(0.7f, 0.7f, 1.0f, 0.8f);
                 shapeRenderer.rect(sliderX, sliderY, sliderWidth * option.getValue(), 10);
                 shapeRenderer.end();
+
+                batch.begin(); // Resume batch after drawing shapes
             }
 
-            font.draw(batch, displayText, menuX + padding, y, menuWidth - padding * 2, Align.center, false);
             y -= itemHeight;
         }
 
-        if (!wasBatchDrawing) {
-            batch.end();
-        } else {
-            batch.setProjectionMatrix(originalMatrix);
+        batch.end();
+        batch.setProjectionMatrix(originalMatrix);
+
+        if (wasBatchDrawing) {
+            batch.begin(); // Restore drawing state if it was originally drawing
         }
     }
+
 
     public void resize(int width, int height) {
         menuX = width / 2 - menuWidth / 2;
