@@ -53,7 +53,10 @@ public class GameScreen implements Screen {
         batch.setProjectionMatrix(camera.combined);
 
         batch.begin();
-
+        GameState currentState = gameController.getCurrentState();
+        if (currentState == GameState.MAIN_MENU) {
+            gameController.getMainMenuController().render(batch);
+        }
         if (gameController.getCurrentState() == GameState.EXPLORING) {
             mapRenderer.render(batch);
             mapRenderer.renderWalkableTileHighlights(batch, gameController.getWalkableTiles(), gameController.getCharacter().getAnimationTime());
@@ -72,7 +75,9 @@ public class GameScreen implements Screen {
         }
         batch.end();
 
-
+        if (currentState == GameState.MAIN_MENU) {
+            gameController.getMainMenuController().handleInput();
+        }
     }
 
     @Override

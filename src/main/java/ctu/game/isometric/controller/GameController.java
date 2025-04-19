@@ -16,9 +16,11 @@ public class GameController {
     private MusicController musicController;
     private MenuController menuController;
     private SettingsMenuController settingsMenuController;
+    private MainMenuController mainMenuController;
 
-    private GameState currentState = GameState.EXPLORING;
-    private GameState previousState = GameState.EXPLORING;
+
+    private GameState currentState = GameState.MAIN_MENU;
+    private GameState previousState = GameState.MAIN_MENU;
 
     public GameController(IsometricGame game) {
         this.game = game;
@@ -30,6 +32,8 @@ public class GameController {
 
         this.menuController = new MenuController(this);
         this.settingsMenuController = new SettingsMenuController(this);
+        this.mainMenuController = new MainMenuController(this);
+
         this.musicController.initialize();
         this.musicController.playMusicForState(GameState.EXPLORING);
     }
@@ -49,7 +53,9 @@ public class GameController {
             case MENU:
                 menuController.update(delta);
                 break;
-
+            case MAIN_MENU:
+                mainMenuController.update(delta);
+                break;
 
             case SETTINGS:
 //                settingsMenuController.update(delta);
@@ -233,5 +239,8 @@ public class GameController {
     }
     public SettingsMenuController getSettingsMenuController() {
         return settingsMenuController;
+    }
+    public MainMenuController getMainMenuController() {
+        return mainMenuController;
     }
 }

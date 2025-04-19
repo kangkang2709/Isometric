@@ -6,4 +6,6 @@ public enum GameState {
     MENU,        // Menu open - different input handling
     CUTSCENE,
     SETTINGS,   // Settings menu
+    MAIN_MENU,  // Main menu
+
 }

@@ -102,12 +102,12 @@ public class SettingsMenuController {
         if (selectedIndex >= 0 && selectedIndex < menuOptions.size()) {
             MenuOption option = menuOptions.get(selectedIndex);
             if (option.getType() == MenuOption.OptionType.TOGGLE) {
-                option.toggle();
-                if (option.getName().equals("Music")) {
-                    gameController.getMusicController().setEnabled(option.isToggled());
-                }
+                        option.toggle();
+//                if (option.getName().equals("Music")) {
+//                    gameController.getMusicController().setEnabled(option.isToggled());
+//                }
             } else if (option.getType() == MenuOption.OptionType.SLIDER) {
-                float newValue = option.getValue() + (increase ? 0.01f : -0.01f);
+                float newValue = option.getValue() + (increase ? 0.02f : -0.02f);
                 newValue = Math.max(0f, Math.min(1f, newValue)); // Clamp between 0 and 1
                 option.setValue(newValue);
                 if (option.getName().equals("Volume")) {
