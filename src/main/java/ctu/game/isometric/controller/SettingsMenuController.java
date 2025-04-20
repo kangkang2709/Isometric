@@ -57,7 +57,7 @@ public class SettingsMenuController {
 
         // Add back option
         addMenuOption("Back", MenuOption.OptionType.BUTTON,
-                () -> gameController.setCurrentState(GameState.MENU));
+                () -> gameController.setCurrentState(GameState.MAIN_MENU));
 
         // Set menu dimensions
         menuWidth = 400f;

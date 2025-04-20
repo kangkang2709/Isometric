@@ -62,8 +62,8 @@ public class MenuController {
         // Add default menu items
         addMenuItem("Resume Game", () -> gameController.returnToPreviousState());
         addMenuItem("Options", this::showOptionsMenu);
-        addMenuItem("Settings", () -> gameController.setCurrentState(GameState.SETTINGS));
-        addMenuItem("Back To Main Menu", this::showOptionsMenu);
+//        addMenuItem("Settings", () -> gameController.setCurrentState(GameState.SETTINGS));
+        addMenuItem("Back To Main Menu",() -> gameController.setState(GameState.MAIN_MENU));
         addMenuItem("Quit Game", () -> Gdx.app.exit());
 
 

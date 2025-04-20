@@ -17,7 +17,7 @@ public class GameController {
     private MenuController menuController;
     private SettingsMenuController settingsMenuController;
     private MainMenuController mainMenuController;
-
+    private TransitionController transitionController;
 
     private GameState currentState = GameState.MAIN_MENU;
     private GameState previousState = GameState.MAIN_MENU;
@@ -33,9 +33,11 @@ public class GameController {
         this.menuController = new MenuController(this);
         this.settingsMenuController = new SettingsMenuController(this);
         this.mainMenuController = new MainMenuController(this);
+        this.transitionController = new TransitionController();
+
 
         this.musicController.initialize();
-        this.musicController.playMusicForState(GameState.EXPLORING);
+        this.musicController.playMusicForState(GameState.MAIN_MENU);
     }
 
     public void update(float delta) {
@@ -65,6 +67,15 @@ public class GameController {
                 break;
 
         }
+
+    }
+
+    public TransitionController getTransitionController() {
+        return transitionController;
+    }
+
+    public void setTransitionController(TransitionController transitionController) {
+        this.transitionController = transitionController;
     }
 
     public GameState getCurrentState() {
@@ -78,17 +89,18 @@ public class GameController {
     public void setState(GameState newState) {
         if (currentState == newState) return;
 
-        GameState oldState = currentState;
-        currentState = newState;
+        final GameState oldState = currentState;
 
         if(newState != GameState.SETTINGS){
             previousState = oldState;
         }
 
-        musicController.playMusicForState(newState);
-
-        // Additional state transition logic if needed
-        onStateChanged(oldState, newState);
+        transitionController.startFadeOut(() -> {
+            // This code runs when fade out is complete
+            currentState = newState;  // Only set state at completion of transition
+            musicController.playMusicForState(newState);
+            onStateChanged(oldState, newState);
+        });
     }
 
     private void onStateChanged(GameState oldState, GameState newState) {
@@ -242,5 +254,18 @@ public class GameController {
     }
     public MainMenuController getMainMenuController() {
         return mainMenuController;
+    }
+    public void cycleTransitionType() {
+        TransitionController.TransitionType[] types = TransitionController.TransitionType.values();
+        int nextIndex = (transitionController.getCurrentType().ordinal() + 1) % types.length;
+        transitionController.setTransitionType(types[nextIndex]);
+        System.out.println("Changed transition to: " + types[nextIndex]);
+    }
+    public void dispose() {
+        transitionController.dispose();
+        musicController.dispose();
+        menuController.dispose();
+        settingsMenuController.dispose();
+        mainMenuController.dispose();
     }
 }

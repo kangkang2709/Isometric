@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Matrix4;
 import ctu.game.isometric.model.game.GameState;
 
 public class MainMenuController {
@@ -46,6 +47,13 @@ public class MainMenuController {
     }
 
     public void render(SpriteBatch batch) {
+        // Store original projection matrix
+        Matrix4 originalMatrix = new Matrix4(batch.getProjectionMatrix());
+
+        // Set projection matrix for UI rendering
+        batch.setProjectionMatrix(new Matrix4().setToOrtho2D(0, 0,
+                Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
+
         // Draw full-screen background
         batch.draw(backgroundImage, 0, 0, screenWidth, screenHeight);
 
@@ -63,6 +71,9 @@ public class MainMenuController {
 
             font.draw(batch, menuOptions[i], menuX, startY - (i * spacing));
         }
+
+        // Restore original projection matrix
+        batch.setProjectionMatrix(originalMatrix);
     }
 
     public void handleInput() {

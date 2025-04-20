@@ -53,7 +53,7 @@ public class InputController extends InputAdapter {
                 if (debugLog) Gdx.app.log("Input", "Left pressed");
             } else if (Gdx.input.isKeyPressed(Keys.D) || Gdx.input.isKeyPressed(Keys.RIGHT)) {
 //                moveCharacter(1, 0);
-                moveCharacter(0, 1);
+                 moveCharacter(0, 1);
 
                 moved = true;
                 if (debugLog) Gdx.app.log("Input", "Right pressed");
@@ -99,7 +99,7 @@ public class InputController extends InputAdapter {
         if(gameController.getCurrentState() == GameState.SETTINGS) {
             switch (keycode) {
                 case Keys.ESCAPE:
-                    gameController.setCurrentState(GameState.MENU);
+                    gameController.setCurrentState(GameState.MAIN_MENU);
                     return true;
                 case Keys.UP:
                     gameController.getSettingsMenuController().selectPreviousItem();

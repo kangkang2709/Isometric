@@ -19,8 +19,8 @@ public class MusicController {
     }
 
     public void initialize() {
-        // Pre-load common music tracks
         loadMusic("exploring_theme", "audio/musics/exploring_theme.mp3");
+        loadMusic("main_theme", "audio/musics/main_theme.mp3");
         loadMusic("menu_theme", "audio/musics/menu_theme.mp3");
         loadMusic("setting_theme", "audio/musics/menu_theme.mp3");
         loadMusic("dialog_theme", "audio/musics/dialog_theme.mp3");
@@ -81,6 +81,9 @@ public class MusicController {
                 break;
             case DIALOG:
                 playMusic("dialog_theme");
+                break;
+            case MAIN_MENU:
+                playMusic("main_theme");
                 break;
             case MENU:
                 playMusic("menu_theme");

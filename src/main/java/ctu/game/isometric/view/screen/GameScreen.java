@@ -49,11 +49,15 @@ public class GameScreen implements Screen {
     public void render(float delta) {
         // Update game state
         gameController.update(delta);
+        gameController.getTransitionController().update(delta);
 
         batch.setProjectionMatrix(camera.combined);
 
         batch.begin();
         GameState currentState = gameController.getCurrentState();
+        gameController.getTransitionController().render(batch);
+
+
         if (currentState == GameState.MAIN_MENU) {
             gameController.getMainMenuController().render(batch);
         }
@@ -74,10 +78,6 @@ public class GameScreen implements Screen {
             gameController.getSettingsMenuController().render(batch);
         }
         batch.end();
-
-        if (currentState == GameState.MAIN_MENU) {
-            gameController.getMainMenuController().handleInput();
-        }
     }
 
     @Override
@@ -103,6 +103,7 @@ public class GameScreen implements Screen {
     @Override
     public void dispose() {
         batch.dispose();
+        gameController.dispose();
         dialogUI.dispose(); // Dispose DialogUI
     }
 }
