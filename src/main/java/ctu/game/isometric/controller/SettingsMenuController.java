@@ -55,9 +55,9 @@ public class SettingsMenuController {
                     // Volume adjustment logic is handled elsewhere
                 });
 
-        // Add back option
+//        // Add back option
         addMenuOption("Back", MenuOption.OptionType.BUTTON,
-                () -> gameController.setCurrentState(GameState.MAIN_MENU));
+                () -> gameController.returnToPreviousState());
 
         // Set menu dimensions
         menuWidth = 400f;

@@ -74,119 +74,124 @@ public class InputController extends InputAdapter {
 
     @Override
     public boolean keyDown(int keycode) {
-
-        if (gameController.getCurrentState() == GameState.MENU) {
+        GameState state = gameController.getCurrentState();
+        if(state == GameState.MAIN_MENU){
             switch (keycode) {
-                case Keys.ESCAPE:
-                    gameController.returnToPreviousState();
+                case Keys.ESCAPE -> {
                     return true;
-                case Keys.UP:
-                    gameController.getMenuController().selectPreviousItem();
-                    return true;
-                case Keys.DOWN:
-                    gameController.getMenuController().selectNextItem();
-                    return true;
-                case Keys.ENTER:
-                case Keys.SPACE:
-                    gameController.getMenuController().activateSelectedItem();
-                    return true;
-            }
-            return true; // Consume all input in menu state
-        }
-
-
-
-        if(gameController.getCurrentState() == GameState.SETTINGS) {
-            switch (keycode) {
-                case Keys.ESCAPE:
-                    gameController.setCurrentState(GameState.MAIN_MENU);
-                    return true;
-                case Keys.UP:
-                    gameController.getSettingsMenuController().selectPreviousItem();
-                    return true;
-                case Keys.DOWN:
-                    gameController.getSettingsMenuController().selectNextItem();
-                    return true;
-                case Keys.LEFT:
-                    gameController.getSettingsMenuController().adjustSelectedOption(false);
-                    return true;
-                case Keys.RIGHT:
-                    gameController.getSettingsMenuController().adjustSelectedOption(true);
-                    return true;
-                case Keys.ENTER:
-                case Keys.SPACE:
-                    gameController.getSettingsMenuController().activateSelectedItem();
-                    return true;
-            }
-            return true; // Consume all input in settings state
-        }
-        switch (keycode) {
-            case Keys.ESCAPE:
-                if (gameController.getCurrentState() == GameState.MENU) {
-                    // Return to the previous state if we're already in menu
-                    gameController.returnToPreviousState();
-                    System.out.println("Returning to previous state: " +
-                            gameController.getCurrentState().toString());
-                } else {
-                    // Go to menu, previous state will be saved
-                    gameController.setState(GameState.MENU);
-                    System.out.println("Game state changed to MENU");
                 }
-                return true;
-        }
-        // Handle dialog input first
-        if (gameController.getDialogController().isDialogActive()) {
-            switch (keycode) {
-                case Keys.ENTER:
-                    // Only advance dialogue if text is fully displayed
-                    if (dialogUI != null && dialogUI.isTextFullyDisplayed()) {
-                        if (gameController.getDialogController().hasChoices()) {
-                            gameController.getDialogController().selectChoice(
-                                    gameController.getDialogController().getSelectedChoiceIndex()
-                            );
-                        } else {
-                            if (!gameController.getDialogController().nextDialog()) {
-                                gameController.getDialogController().endDialog();
-                            }
-                        }
-                    }
-                    return true;
-
-                case Keys.SPACE:
-                    // If text is still animating, complete it
-                    if (dialogUI != null && !dialogUI.isTextFullyDisplayed()) {
-                        dialogUI.completeTextAnimation();
-                    }
-                    else if (dialogUI != null && dialogUI.isTextFullyDisplayed()) {
-                        if (gameController.getDialogController().hasChoices()) {
-                            gameController.getDialogController().selectChoice(
-                                    gameController.getDialogController().getSelectedChoiceIndex()
-                            );
-                        } else {
-                            if (!gameController.getDialogController().nextDialog()) {
-                                gameController.getDialogController().endDialog();
-                            }
-                        }
-                    }
-                    return true;
-
-                case Keys.UP:
-                    gameController.getDialogController().selectPreviousChoice();
-                    return true;
-
-                case Keys.DOWN:
-                    gameController.getDialogController().selectNextChoice();
-                    return true;
             }
-            return false;
+        }
+        // Ưu tiên xử lý dialog nếu đang hiện
+        if (gameController.getDialogController().isDialogActive()) {
+            return handleDialogInput(keycode);
         }
 
-        // Handle character movement when no dialog is active
+        // Menu / Settings
+        switch (state) {
+            case MENU:
+                return handleMenuInput(keycode);
+            case SETTINGS:
+                return handleSettingsInput(keycode);
+            default:
+                break;
+        }
+
+        // ESC dùng để mở/tắt menu
+        if (keycode == Keys.ESCAPE) {
+            if (state == GameState.MENU) {
+                gameController.returnToPreviousState();
+            } else {
+                gameController.setState(GameState.MENU);
+                System.out.println("Game state changed to MENU");
+            }
+            return true;
+        }
+
+        // Delay đầu vào
         if (TimeUtils.timeSinceMillis(lastInputTime) < INPUT_DELAY) {
             return false;
         }
 
         lastInputTime = TimeUtils.millis();
         return false;
+    }
+
+// ===== Helper methods =====
+
+    private boolean handleMenuInput(int keycode) {
+        switch (keycode) {
+            case Keys.ESCAPE:
+                gameController.returnToPreviousState();
+                return true;
+            case Keys.UP:
+                gameController.getMenuController().selectPreviousItem();
+                return true;
+            case Keys.DOWN:
+                gameController.getMenuController().selectNextItem();
+                return true;
+            case Keys.ENTER:
+            case Keys.SPACE:
+                gameController.getMenuController().activateSelectedItem();
+                return true;
+            default:
+                return true;
+        }
+    }
+
+    private boolean handleSettingsInput(int keycode) {
+        switch (keycode) {
+            case Keys.ESCAPE:
+                gameController.setCurrentState(GameState.MAIN_MENU);
+                return true;
+            case Keys.UP:
+                gameController.getSettingsMenuController().selectPreviousItem();
+                return true;
+            case Keys.DOWN:
+                gameController.getSettingsMenuController().selectNextItem();
+                return true;
+            case Keys.LEFT:
+                gameController.getSettingsMenuController().adjustSelectedOption(false);
+                return true;
+            case Keys.RIGHT:
+                gameController.getSettingsMenuController().adjustSelectedOption(true);
+                return true;
+            case Keys.ENTER:
+            case Keys.SPACE:
+                gameController.getSettingsMenuController().activateSelectedItem();
+                return true;
+            default:
+                return true;
+        }
+    }
+
+    private boolean handleDialogInput(int keycode) {
+        if (dialogUI == null) return false;
+
+        switch (keycode) {
+            case Keys.ENTER:
+            case Keys.SPACE:
+                if (!dialogUI.isTextFullyDisplayed()) {
+                    dialogUI.completeTextAnimation();
+                } else {
+                    if (gameController.getDialogController().hasChoices()) {
+                        gameController.getDialogController().selectChoice(
+                                gameController.getDialogController().getSelectedChoiceIndex());
+                    } else if (!gameController.getDialogController().nextDialog()) {
+                        gameController.getDialogController().endDialog();
+                    }
+                }
+                return true;
+
+            case Keys.UP:
+                gameController.getDialogController().selectPreviousChoice();
+                return true;
+
+            case Keys.DOWN:
+                gameController.getDialogController().selectNextChoice();
+                return true;
+            default:
+                return false;
+        }
     }
 }

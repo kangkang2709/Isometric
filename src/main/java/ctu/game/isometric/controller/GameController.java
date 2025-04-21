@@ -246,6 +246,10 @@ public class GameController {
         return menuController;
     }
 
+    public void setPreviousState(GameState previousState) {
+        this.previousState = previousState;
+    }
+
     public void setMenuController(MenuController menuController) {
         this.menuController = menuController;
     }

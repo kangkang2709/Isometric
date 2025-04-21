@@ -1,7 +1,9 @@
 package ctu.game.isometric.view.renderer;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
@@ -20,6 +22,7 @@ public class MapRenderer {
     private Character character;
     private IsometricTiledMapRenderer tiledMapRenderer;
     private OrthographicCamera camera;
+    Texture backgroundTexture;
 
     // In MapRenderer.java - modify constructor to take an existing camera
     public MapRenderer(IsometricMap map, AssetManager assetManager, Character character, OrthographicCamera camera) {
@@ -32,7 +35,7 @@ public class MapRenderer {
 
         // Use the provided camera instead of creating a new one
         this.camera = camera;
-
+        backgroundTexture = new Texture(Gdx.files.internal("maps/background.png"));
         // Create the tiled map renderer
         this.tiledMapRenderer = new IsometricTiledMapRenderer(map.getTiledMap());
     }
@@ -44,23 +47,28 @@ public class MapRenderer {
     }
 
     public void render(SpriteBatch batch) {
-        // Update camera position based on character with proper vertical offset
+        // Vẽ background toàn màn hình
+        float bgX = camera.position.x - (Gdx.graphics.getWidth() / 2f);
+        float bgY = camera.position.y - (Gdx.graphics.getHeight() / 2f);
+        batch.draw(backgroundTexture, bgX, bgY, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
+        // Update camera position dựa trên vị trí của nhân vật
         float[] isoPos = toIsometric(character.getGridX(), character.getGridY());
-        // Add vertical offset to camera to better position character in view
         camera.position.set(isoPos[0], isoPos[1], 0);
         camera.update();
 
-        // End SpriteBatch (if it's begun) to use the renderer
+        // Kết thúc batch nếu đang vẽ để sử dụng renderer
         boolean batchWasDrawing = batch.isDrawing();
+
         if (batchWasDrawing) {
             batch.end();
         }
 
-        // Render the tiled map
+        // Render tile map
         tiledMapRenderer.setView(camera);
         tiledMapRenderer.render();
 
-        // Start batch again if it was drawing before
+        // Bắt đầu batch lại nếu nó đang vẽ trước đó
         if (batchWasDrawing) {
             batch.begin();
             batch.setProjectionMatrix(camera.combined);
@@ -141,6 +149,8 @@ public class MapRenderer {
         // Restore original color
         batch.setColor(originalColor);
     }
+
+
 
     public float getOffsetX() {
         return offsetX;

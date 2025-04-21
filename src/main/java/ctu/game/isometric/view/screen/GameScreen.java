@@ -47,38 +47,54 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta) {
-        // Update game state
+        // Cập nhật trạng thái game
         gameController.update(delta);
         gameController.getTransitionController().update(delta);
 
         batch.setProjectionMatrix(camera.combined);
-
         batch.begin();
-        GameState currentState = gameController.getCurrentState();
+
+        // Vẽ transition overlay (nếu có)
         gameController.getTransitionController().render(batch);
 
+        GameState currentState = gameController.getCurrentState();
 
-        if (currentState == GameState.MAIN_MENU) {
-            gameController.getMainMenuController().render(batch);
-        }
-        if (gameController.getCurrentState() == GameState.EXPLORING) {
-            mapRenderer.render(batch);
-            mapRenderer.renderWalkableTileHighlights(batch, gameController.getWalkableTiles(), gameController.getCharacter().getAnimationTime());
-            characterRenderer.render(batch);
-        }
-        if(gameController.getCurrentState() == GameState.DIALOG) {
-            dialogUI.render();
+        switch (currentState) {
+            case MAIN_MENU:
+                gameController.getMainMenuController().render(batch);
+                break;
+
+            case EXPLORING:
+                mapRenderer.render(batch);
+                mapRenderer.renderWalkableTileHighlights(
+                        batch,
+                        gameController.getWalkableTiles(),
+                        gameController.getCharacter().getAnimationTime()
+                );
+                characterRenderer.render(batch);
+                break;
+
+            case DIALOG:
+                dialogUI.render();
+                break;
+
+            case MENU:
+                gameController.getMenuController().render(batch);
+                break;
+
+            case SETTINGS:
+                gameController.getSettingsMenuController().update(delta);
+                gameController.getSettingsMenuController().render(batch);
+                break;
+
+            // Nếu có trạng thái khác, thêm ở đây
+            default:
+                break;
         }
 
-        if (gameController.getCurrentState() == GameState.MENU) {
-            gameController.getMenuController().render(batch);
-        }
-        if (gameController.getCurrentState() == GameState.SETTINGS) {
-            gameController.getSettingsMenuController().update(delta);
-            gameController.getSettingsMenuController().render(batch);
-        }
         batch.end();
     }
+
 
     @Override
     public void resize(int width, int height) {

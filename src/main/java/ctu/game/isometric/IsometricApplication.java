@@ -19,7 +19,7 @@ public class IsometricApplication {
 		return args -> {
 			// Configure LibGDX window
 			Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
-			config.setTitle("Isometric Visual Novel");
+			config.setTitle("CHRONO VEIL");
 			config.setWindowedMode(1280, 720);
 			config.setResizable(false);
 

@@ -58,8 +58,8 @@ public class MainMenuController {
         batch.draw(backgroundImage, 0, 0, screenWidth, screenHeight);
 
         // Draw menu options
-        int menuX = 100;
-        int startY = screenHeight - 200;
+        int menuX = screenWidth-250;
+        int startY = screenHeight - 400;
         int spacing = 50;
 
         for (int i = 0; i < menuOptions.length; i++) {
@@ -124,7 +124,9 @@ public class MainMenuController {
     private void selectOption(int option) {
         switch (option) {
             case 0: // Start Game
-                gameController.setState(GameState.EXPLORING);
+                gameController.setCurrentState(GameState.EXPLORING);
+                gameController.getMusicController().playMusicForState(GameState.EXPLORING);
+                gameController.setPreviousState(GameState.MAIN_MENU);
                 break;
             case 1: // Settings
                 gameController.setState(GameState.SETTINGS);
