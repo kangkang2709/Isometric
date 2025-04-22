@@ -3,6 +3,7 @@ package ctu.game.isometric.controller;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.TimeUtils;
 import ctu.game.isometric.model.game.GameState;
 import ctu.game.isometric.view.renderer.DialogUI;
@@ -194,4 +195,30 @@ public class InputController extends InputAdapter {
                 return false;
         }
     }
+
+    @Override
+    public boolean scrolled(float amountX, float amountY) {
+        GameState state = gameController.getCurrentState();
+        if (state != GameState.EXPLORING) {
+            return true;
+        }
+
+        float defaultZoom = 1.0f;
+        float minZoom = 0.1f;
+        float zoomStep = 0.1f;
+
+        if (amountY < 0) { // Scroll up -> Zoom in (closer)
+            gameController.getCamera().zoom -= zoomStep;
+        } else if (amountY > 0 && gameController.getCamera().zoom < defaultZoom) {
+            // Only zoom out if we're already zoomed in and below default zoom
+            gameController.getCamera().zoom += zoomStep;
+        }
+
+        // Limit zoom: Don't allow zooming in beyond minZoom or out beyond defaultZoom
+        gameController.getCamera().zoom = MathUtils.clamp(gameController.getCamera().zoom, minZoom, defaultZoom);
+        gameController.getCamera().update();
+
+        return true;
+    }
+
 }

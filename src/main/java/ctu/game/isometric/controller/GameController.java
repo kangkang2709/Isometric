@@ -1,5 +1,6 @@
 package ctu.game.isometric.controller;
 
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import ctu.game.isometric.IsometricGame;
 import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.game.GameState;
@@ -11,6 +12,7 @@ public class GameController {
     private IsometricGame game;
     private Character character;
     private IsometricMap map;
+    private OrthographicCamera camera;
     private InputController inputController;
     private DialogController dialogController; // New field
     private MusicController musicController;
@@ -116,7 +118,6 @@ public class GameController {
     public boolean canMove(int dx, int dy) {
         int newX = (int) (character.getGridX() + dx);
         int newY = (int) (character.getGridY() + dy);
-
         return map.isWalkable(newX,newY);
     }
 
@@ -181,7 +182,7 @@ public class GameController {
 
     private void checkPositionEvents(float x, float y) {
         // Example: Show dialog when character reaches specific positions
-        if (x == 2 && y == 3) {
+        if (x == 5 && y == 5) {
             setState(GameState.DIALOG);
             dialogController.startDialog("chapter_01", "scene_01");
         }
@@ -271,5 +272,13 @@ public class GameController {
         menuController.dispose();
         settingsMenuController.dispose();
         mainMenuController.dispose();
+    }
+
+    public OrthographicCamera getCamera() {
+        return camera;
+    }
+
+    public void setCamera(OrthographicCamera camera) {
+        this.camera = camera;
     }
 }

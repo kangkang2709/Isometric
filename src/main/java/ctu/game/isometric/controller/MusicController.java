@@ -10,7 +10,7 @@ import java.util.Map;
 public class MusicController {
     private final Map<String, Music> musicTracks;
     private String currentTrackId;
-    private float volume = 1.0f;
+    private float volume = 0.0f;
     private boolean enabled = true;
 
     public MusicController() {

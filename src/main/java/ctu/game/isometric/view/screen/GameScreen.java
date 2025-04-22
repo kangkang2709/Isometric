@@ -1,9 +1,11 @@
 package ctu.game.isometric.view.screen;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import ctu.game.isometric.IsometricGame;
@@ -24,18 +26,21 @@ public class GameScreen implements Screen {
     private MapRenderer mapRenderer;
     private CharacterRenderer characterRenderer;
 
+
+
     public GameScreen(IsometricGame game, GameController gameController) {
         this.game = game;
         this.gameController = gameController;
 
         // Setup camera and viewport
         camera = new OrthographicCamera();
+
         viewport = new FitViewport(1280, 720, camera);
-        camera.position.set(viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2, 0);
+        gameController.setCamera(camera);
+//        camera.setToOrtho(false, 800, 480);
+//        camera.position.set(viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2, 0);
 
         batch = new SpriteBatch();
-
-        // Initialize renderers
         // In GameScreen.java - when initializing MapRenderer
         mapRenderer = new MapRenderer(gameController.getMap(), game.getAssetManager(), gameController.getCharacter(), camera);
         characterRenderer = new CharacterRenderer(gameController.getCharacter(), game.getAssetManager(), mapRenderer);

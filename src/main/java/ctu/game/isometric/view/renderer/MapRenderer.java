@@ -6,9 +6,15 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.maps.MapLayer;
+import com.badlogic.gdx.maps.MapObject;
+import com.badlogic.gdx.maps.objects.PolygonMapObject;
+import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.renderers.IsometricTiledMapRenderer;
+import com.badlogic.gdx.math.Rectangle;
 import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.world.IsometricMap;
 import ctu.game.isometric.util.AnimationManager;
@@ -23,6 +29,12 @@ public class MapRenderer {
     private IsometricTiledMapRenderer tiledMapRenderer;
     private OrthographicCamera camera;
     Texture backgroundTexture;
+
+    private float cameraZoom = 1.0f;
+    private static final float MIN_ZOOM = 0.5f;
+    private static final float MAX_ZOOM = 2.0f;
+    private static final float ZOOM_STEP = 0.1f;
+
 
     // In MapRenderer.java - modify constructor to take an existing camera
     public MapRenderer(IsometricMap map, AssetManager assetManager, Character character, OrthographicCamera camera) {
@@ -40,24 +52,29 @@ public class MapRenderer {
         this.tiledMapRenderer = new IsometricTiledMapRenderer(map.getTiledMap());
     }
 
-    public float[] toIsometric(float x, float y) {
-        float isoX = (x + y) * (map.getTileWidth() / 2.0f);  // Đảo cả phép tính trên X
-        float isoY = (y - x) * (map.getTileHeight() / 2.0f);  // Đảo cả phép tính trên Y
+    public float[] toIsometric(float x, float y, float zoom) {
+        float isoX = (x + y) * (map.getTileWidth() / 2.0f) * zoom;
+        float isoY = (y - x) * (map.getTileHeight() / 2.0f) * zoom;
         return new float[]{isoX, isoY};
     }
 
+    // Add overloaded method to maintain compatibility with existing code
+    public float[] toIsometric(float x, float y) {
+        return toIsometric(x, y, 1.0f);
+    }
+
     public void render(SpriteBatch batch) {
-        // Vẽ background toàn màn hình
+        // Draw background for the entire screen
         float bgX = camera.position.x - (Gdx.graphics.getWidth() / 2f);
         float bgY = camera.position.y - (Gdx.graphics.getHeight() / 2f);
         batch.draw(backgroundTexture, bgX, bgY, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
-        // Update camera position dựa trên vị trí của nhân vật
+        // Update camera position based on character position
         float[] isoPos = toIsometric(character.getGridX(), character.getGridY());
         camera.position.set(isoPos[0], isoPos[1], 0);
         camera.update();
 
-        // Kết thúc batch nếu đang vẽ để sử dụng renderer
+        // End batch if currently drawing to use renderer
         boolean batchWasDrawing = batch.isDrawing();
 
         if (batchWasDrawing) {
@@ -68,11 +85,172 @@ public class MapRenderer {
         tiledMapRenderer.setView(camera);
         tiledMapRenderer.render();
 
-        // Bắt đầu batch lại nếu nó đang vẽ trước đó
+        // Resume batch if it was drawing before
         if (batchWasDrawing) {
             batch.begin();
             batch.setProjectionMatrix(camera.combined);
+
+            // Render collision areas
+//            renderCollisionAreas(batch);
+            renderCollisionDebug(batch);
+//            renderObjectLayer(batch, "object_layer");
         }
+    }
+    private void renderObjectLayer(SpriteBatch batch, String layerName) {
+        MapLayer objectLayer = map.getTiledMap().getLayers().get(layerName);
+        if (objectLayer != null) {
+            for (MapObject object : objectLayer.getObjects()) {
+
+                float x = object.getProperties().get("x", Float.class);
+                float y = object.getProperties().get("y", Float.class);
+
+                // Check if this is a tile object
+                if (object.getProperties().containsKey("gid")) {
+                    int gid = object.getProperties().get("gid", Integer.class);
+                    float width = object.getProperties().containsKey("width") ?
+                            object.getProperties().get("width", Float.class) : map.getTileWidth();
+                    float height = object.getProperties().containsKey("height") ?
+                            object.getProperties().get("height", Float.class) : map.getTileHeight();
+
+                    // Find the tile in all map tilesets
+                    TiledMapTile tile = null;
+                    for (com.badlogic.gdx.maps.tiled.TiledMapTileSet tileset : map.getTiledMap().getTileSets()) {
+                        tile = tileset.getTile(gid);
+                        if (tile != null) break;
+                    }
+
+                    if (tile != null) {
+                        // Draw the tile's texture region at the object position
+                        TextureRegion region = tile.getTextureRegion();
+                        batch.draw(region,
+                                x, y - height,  // Adjust for isometric positioning
+                                width, height);
+                    }
+                }
+            }
+        }
+    }
+
+    //
+
+
+    public void renderCollisionDebug(SpriteBatch batch) {
+        // Tạo một đối tượng ShapeRenderer để vẽ các vùng va chạm
+        ShapeRenderer shapeRenderer = new ShapeRenderer();
+        shapeRenderer.setProjectionMatrix(camera.combined);
+
+        // Lưu lại trạng thái vẽ của batch (nếu batch đang vẽ, ta sẽ kết thúc vẽ trước khi dùng ShapeRenderer)
+        boolean wasDrawing = batch.isDrawing();
+        if (wasDrawing) {
+            batch.end();
+        }
+
+        // Bắt đầu vẽ các hình bằng ShapeRenderer
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line); // Dùng vẽ đường viền
+
+        // Lấy lớp va chạm từ bản đồ
+        MapLayer collisionLayer = map.getTiledMap().getLayers().get("collision_layer");
+
+        if (collisionLayer != null) {
+            // Duyệt qua tất cả các đối tượng trong lớp va chạm
+            for (MapObject object : collisionLayer.getObjects()) {
+                if (object instanceof RectangleMapObject) {
+                    // Nếu đối tượng là hình chữ nhật
+                    Rectangle rect = ((RectangleMapObject) object).getRectangle();
+
+
+
+                    float[] isoStart = toIsometric(rect.x, rect.y);
+                    float isoWidth = rect.width * (map.getTileWidth() / 2f);
+                    float isoHeight = rect.height * (map.getTileHeight() / 2f);
+
+                    shapeRenderer.setColor(1f, 0f, 0f, 1f);
+                    shapeRenderer.rect(isoStart[0], isoStart[1] - isoHeight, isoWidth, isoHeight);
+
+                } else if (object instanceof PolygonMapObject) {
+                    // Nếu đối tượng là đa giác
+                    PolygonMapObject polygonObject = (PolygonMapObject) object;
+
+                    // Vẽ các điểm của đa giác
+                    shapeRenderer.setColor(0f, 0f, 1f, 1f); // Màu xanh dương
+                    float[] vertices = polygonObject.getPolygon().getTransformedVertices();
+                    for (int i = 0; i < vertices.length; i += 2) {
+                        float x = vertices[i];
+                        float y = vertices[i + 1];
+                        shapeRenderer.point(x, y, 0);
+                    }
+                }
+            }
+        }
+
+        // Kết thúc việc vẽ các hình
+        shapeRenderer.end();
+        shapeRenderer.dispose();
+
+        // Nếu trước đó batch đang vẽ, ta sẽ bắt đầu vẽ lại batch
+        if (wasDrawing) {
+            batch.begin();
+        }
+    }
+
+
+    public void renderCollisionAreas(SpriteBatch batch) {
+        // Store original batch color
+        Color originalColor = batch.getColor().cpy();
+
+        // Get the collision layer from the map
+        MapLayer collisionLayer = map.getTiledMap().getLayers().get("collision_layer");
+
+        if (collisionLayer != null) {
+            ShapeRenderer shapeRenderer = new ShapeRenderer();
+            shapeRenderer.setProjectionMatrix(camera.combined);
+
+            boolean wasDrawing = batch.isDrawing();
+            if (wasDrawing) {
+                batch.end();
+            }
+
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+            shapeRenderer.setColor(1f, 0.2f, 0.2f, 0.4f);
+
+            for (MapObject object : collisionLayer.getObjects()) {
+                if (object instanceof RectangleMapObject) {
+                    // Handle rectangle objects
+                    Rectangle rect = ((RectangleMapObject) object).getRectangle();
+                    shapeRenderer.rect(rect.x, rect.y, rect.width, rect.height);
+                } else if (object instanceof PolygonMapObject polygonObject && polygonObject.getPolygon() != null) {
+                    // Handle polygon objects - either draw as triangles or as bounding rectangles
+                    float[] vertices = polygonObject.getPolygon().getTransformedVertices();
+
+                    // Find bounding rectangle
+                    float minX = Float.MAX_VALUE, minY = Float.MAX_VALUE;
+                    float maxX = Float.MIN_VALUE, maxY = Float.MIN_VALUE;
+
+                    for (int i = 0; i < vertices.length; i += 2) {
+                        float x = vertices[i];
+                        float y = vertices[i + 1];
+
+                        minX = Math.min(minX, x);
+                        minY = Math.min(minY, y);
+                        maxX = Math.max(maxX, x);
+                        maxY = Math.max(maxY, y);
+                    }
+
+                    // Draw rectangle
+                    shapeRenderer.rect(minX, minY, maxX - minX, maxY - minY);
+                }
+            }
+
+            shapeRenderer.end();
+            shapeRenderer.dispose();
+
+            if (wasDrawing) {
+                batch.begin();
+            }
+        }
+
+        // Restore original color
+        batch.setColor(originalColor);
     }
 
     public void renderWalkableTileHighlights(SpriteBatch batch, boolean[][] walkableTiles, float stateTime) {
@@ -109,7 +287,7 @@ public class MapRenderer {
         });
 
         // Get the base layer for highlighting
-        TiledMapTileLayer baseLayer = (TiledMapTileLayer) map.getTiledMap().getLayers().get(0);
+        TiledMapTileLayer baseLayer = (TiledMapTileLayer) map.getTiledMap().getLayers().get("ground_layer");
 
         // Ensure walkableTiles array matches map dimensions
         if (walkableTiles != null &&
