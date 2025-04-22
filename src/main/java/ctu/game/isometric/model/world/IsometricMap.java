@@ -14,6 +14,8 @@ import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
+import java.util.Arrays;
+
 public class IsometricMap {
     private TiledMap tiledMap;
     private int tileWidth = 64;
@@ -81,50 +83,36 @@ public class IsometricMap {
         }
         return data;
     }
-    public Vector2 orthogonalToIsometric(float x, float y) {
-        float isoX = (x - y);
-        float isoY = (x + y) / 2;
-        return new Vector2(isoX, isoY);
+    public Vector2 tileToWorld(int x, int y) {
+        float worldX = (x - y) * (tileWidth / 2f);
+        float worldY = (x + y) * (tileHeight / 2f);
+        return new Vector2(worldX, worldY);
     }
 
     public boolean isWalkable(int x, int y) {
-        // 1. Kiểm tra tọa độ hợp lệ
+        // 1. Check valid coordinates
         if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight) {
             return false;
         }
 
-        // 2. Lấy tile tại vị trí (x, y)
+        // 2. Check for valid tile
         TiledMapTileLayer.Cell cell = baseLayer.getCell(x, y);
         if (cell == null || cell.getTile() == null || cell.getTile().getId() <= 0) {
             return false;
         }
 
-        // 3. Chuyển đổi tile grid (x, y) sang tọa độ pixel thực (orthogonal)
-        float tilePixelX = x * tileWidth;
-        float tilePixelY = y * tileHeight;
-
-        // 4. Chuyển sang tọa độ isometric
-        Vector2 isoPos = orthogonalToIsometric(tilePixelX, tilePixelY);
-        float worldX = isoPos.x;
-        float worldY = isoPos.y;
-
-        System.out.println("Isometric coordinates: isoX=" + worldX + ", isoY=" + worldY);
-
-        // 5. Kiểm tra va chạm với object trong layer collision
-        MapLayer collisionLayer = tiledMap.getLayers().get("collision_layer");
-        if (collisionLayer != null) {
-            for (MapObject object : collisionLayer.getObjects()) {
-                if (object instanceof PolygonMapObject) {
-                    Polygon polygon = ((PolygonMapObject) object).getPolygon();
-                    if (polygon.contains(worldX, worldY)) {
-
-                        return false;
-                    }
+        // 3. Check for cell properties
+        TiledMapTileLayer collision = (TiledMapTileLayer) tiledMap.getLayers().get("terrain_layer");
+        if (collision != null) {
+            TiledMapTileLayer.Cell cell2 = collision.getCell(x, y);
+            if (cell2 != null && cell2.getTile() != null) {
+                MapProperties properties = cell2.getTile().getProperties();
+                if (properties.containsKey("walkable")) {
+                    return properties.get("walkable", Boolean.class);
                 }
             }
         }
 
-        System.out.println("No collision detected. Position is walkable.");
         return true;
     }
 

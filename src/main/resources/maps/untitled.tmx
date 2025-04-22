@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="isometric" renderorder="right-down" width="20" height="20" tilewidth="64" tileheight="32" infinite="0" nextlayerid="9" nextobjectid="66">
+<map version="1.10" tiledversion="1.11.2" orientation="isometric" renderorder="right-down" width="20" height="20" tilewidth="64" tileheight="32" infinite="0" nextlayerid="9" nextobjectid="85">
  <tileset firstgid="1" name="tile3" tilewidth="64" tileheight="32" tilecount="1" columns="1">
   <image source="tiles/tile3.png" trans="ff00ff" width="64" height="32"/>
  </tileset>
@@ -11,19 +11,17 @@
  </tileset>
  <tileset firstgid="4" name="tire1" tilewidth="64" tileheight="32" tilecount="1" columns="1">
   <image source="tiles/city_game_tileset/city_game_tileset/tire1.png" trans="ff00ff" width="64" height="32"/>
+  <tile id="0">
+   <properties>
+    <property name="walkable" type="bool" value="false"/>
+   </properties>
+  </tile>
  </tileset>
  <tileset firstgid="5" name="tree1" tilewidth="64" tileheight="128" tilecount="1" columns="1">
   <image source="tiles/city_game_tileset/city_game_tileset/tree1.png" trans="ff00ff" width="64" height="128"/>
  </tileset>
- <objectgroup id="8" name="collision_layer">
-  <object id="57" x="42" y="607">
-   <polygon points="0,0 -11.5,-12.5 -15,-23 -8.25,-30.75 -0.5,-34.5 7,-33 15.75,-27.75 22.25,-20.25 26.25,-13.25 27.25,-7.25 21.5,-0.5 17.25,3.75 8,6"/>
-  </object>
-  <object id="65" x="103.93" y="637.537">
-   <polygon points="0,0 -15.855,-14.5062 -20.6805,-26.6914 -11.3743,-35.6852 -0.689349,-40.037 9.65089,-38.2963 21.7145,-32.2037 30.676,-23.5 36.1908,-15.3765 37.5695,-8.41358 29.642,-0.580247 23.7825,4.35185 11.0296,6.96296"/>
-  </object>
- </objectgroup>
- <layer id="1" name="ground_layer" width="20" height="20" visible="0">
+ <objectgroup id="8" name="collision_layer" locked="1"/>
+ <layer id="1" name="ground_layer" width="20" height="20">
   <data encoding="csv">
 0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -47,7 +45,7 @@
 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0
 </data>
  </layer>
- <layer id="3" name="terrain_layer" width="20" height="20" locked="1">
+ <layer id="3" name="terrain_layer" width="20" height="20">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -65,14 +63,23 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
  <objectgroup id="4" name="object_layer">
-  <object id="47" gid="5" x="69.3333" y="550" width="54.6667" height="116.333"/>
+  <object id="78" x="30.25" y="509.125" width="35.625" height="36.625">
+   <properties>
+    <property name="type" value="story"/>
+   </properties>
+  </object>
+  <object id="82" x="29.625" y="603.75" width="37.5" height="37.75">
+   <properties>
+    <property name="type" value="story"/>
+   </properties>
+  </object>
  </objectgroup>
  <objectgroup id="7" name="overlay"/>
 </map>
