@@ -7,5 +7,7 @@ public enum GameState {
     CUTSCENE,
     SETTINGS,   // Settings menu
     MAIN_MENU,  // Main menu
+    COMBAT,
+    GAMEPLAY// Combat state
 
 }

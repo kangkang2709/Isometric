@@ -15,7 +15,7 @@ public class Character {
 
     private IsometricMap gameMap;
     private float targetX, targetY;
-    private float moveSpeed = 2.0f; // Grid cells per second
+    private float moveSpeed = 2.5f; // Grid cells per second
     private static final float DIAGONAL_THRESHOLD = 0.3f; // For determining diagonal movement
 
     public static final String[] VALID_DIRECTIONS = {

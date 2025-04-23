@@ -23,6 +23,7 @@ public class MusicController {
         loadMusic("main_theme", "audio/musics/main_theme.mp3");
         loadMusic("menu_theme", "audio/musics/menu_theme.mp3");
         loadMusic("setting_theme", "audio/musics/menu_theme.mp3");
+        loadMusic("combat_theme", "audio/musics/menu_theme.mp3");
         loadMusic("dialog_theme", "audio/musics/dialog_theme.mp3");
     }
 
@@ -76,6 +77,9 @@ public class MusicController {
 
     public void playMusicForState(GameState state) {
         switch (state) {
+            case  GAMEPLAY:
+                playMusic("combat_theme");
+                break;
             case EXPLORING:
                 playMusic("exploring_theme");
                 break;

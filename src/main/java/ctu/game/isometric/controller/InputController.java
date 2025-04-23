@@ -12,7 +12,7 @@ public class InputController extends InputAdapter {
     private GameController gameController;
     private DialogUI dialogUI;
     private float moveCooldown = 0;
-    private final float MOVE_DELAY = 0.6f; // Delay between moves in seconds
+    private final float MOVE_DELAY = 0.45f; // Delay between moves in seconds
     private static final long INPUT_DELAY = 200; // milliseconds
     private long lastInputTime = 0;
 

@@ -6,6 +6,7 @@ import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.math.Rectangle;
 import ctu.game.isometric.IsometricGame;
+import ctu.game.isometric.controller.gameplay.GameplayController;
 import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.game.GameState;
 import ctu.game.isometric.model.world.IsometricMap;
@@ -24,6 +25,7 @@ public class GameController {
     private SettingsMenuController settingsMenuController;
     private MainMenuController mainMenuController;
     private TransitionController transitionController;
+    private GameplayController gameplayController;
 
     private GameState currentState = GameState.MAIN_MENU;
     private GameState previousState = GameState.MAIN_MENU;
@@ -35,6 +37,8 @@ public class GameController {
         this.inputController = new InputController(this);
         this.dialogController = new DialogController(this);
         this.musicController = new MusicController();
+        this.gameplayController = new GameplayController(this);
+
 
         this.menuController = new MenuController(this);
         this.settingsMenuController = new SettingsMenuController(this);
@@ -57,7 +61,9 @@ public class GameController {
                 // Only update dialog controller when in dialog state
                 // dialogController.update(delta);
                 break;
-
+            case GAMEPLAY:
+                gameplayController.update(delta);
+                break;
             case MENU:
                 menuController.update(delta);
                 break;
@@ -188,10 +194,16 @@ public class GameController {
         float isoX = (x - y) * (map.getTileWidth() / 2.0f);
         float isoY = (y + x) * (map.getTileHeight() / 2.0f);
         return new float[]{isoX, isoY};
-    }
+    } 
 
 
     private void checkPositionEvents(float x, float y) {
+    if(x == 4 && y == 4){
+        setState(GameState.GAMEPLAY);
+        gameplayController.activate();
+    }
+
+
         // Convert player's position from grid to isometric pixel coordinates
         float[] playerIsoPos = toIsometric(x, y);
         float playerIsoX = playerIsoPos[0];
@@ -335,5 +347,13 @@ public class GameController {
 
     public void setCamera(OrthographicCamera camera) {
         this.camera = camera;
+    }
+
+    public GameplayController getGameplayController() {
+        return gameplayController;
+    }
+
+    public void setGameplayController(GameplayController gameplayController) {
+        this.gameplayController = gameplayController;
     }
 }
