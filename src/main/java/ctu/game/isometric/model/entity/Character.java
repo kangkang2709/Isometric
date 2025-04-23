@@ -5,11 +5,17 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
 import ctu.game.isometric.model.world.IsometricMap;
 
+import java.util.List;
+import java.util.Map;
+
 public class Character {
     private float gridX, gridY;
     private String direction = "down";
     private boolean isMoving = false;
     private float animationTime = 0;
+    private int health = 100; // Health points
+    private Map<String,?> items; // Inventory items
+    private List<String> flags; // Flags for quests or events
 
     // For smooth movement
 

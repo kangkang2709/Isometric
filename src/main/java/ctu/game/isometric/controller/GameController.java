@@ -201,6 +201,7 @@ public class GameController {
     if(x == 4 && y == 4){
         setState(GameState.GAMEPLAY);
         gameplayController.activate();
+        gameplayController.startCombat("enemy_01",100);
     }
 
 
