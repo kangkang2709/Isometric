@@ -13,6 +13,7 @@ public class Character {
     private String direction = "down";
     private boolean isMoving = false;
     private float animationTime = 0;
+    private String name = "player"; // Character name
     private int health = 100; // Health points
     private Map<String,?> items; // Inventory items
     private List<String> flags; // Flags for quests or events
@@ -175,6 +176,22 @@ public class Character {
         this.gridY = y;
         this.targetX = x;
         this.targetY = y;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getHealth() {
+        return health;
+    }
+
+    public void setHealth(int health) {
+        this.health = health;
     }
 
     public void setGameMap(IsometricMap gameMap) {

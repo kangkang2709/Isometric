@@ -198,13 +198,6 @@ public class GameController {
 
 
     private void checkPositionEvents(float x, float y) {
-    if(x == 4 && y == 4){
-        setState(GameState.GAMEPLAY);
-        gameplayController.activate();
-        gameplayController.startCombat("enemy_01",100);
-    }
-
-
         // Convert player's position from grid to isometric pixel coordinates
         float[] playerIsoPos = toIsometric(x, y);
         float playerIsoX = playerIsoPos[0];
@@ -248,8 +241,19 @@ public class GameController {
                         setState(GameState.DIALOG);
                         dialogController.startDialog("chapter_01", "scene_01");
                     }
-                } else {
-                    System.out.println("Player does not intersect with object.");
+                    else if ("puzzle".equals(type)) {
+                        String enemy = object.getProperties().get("enemy", String.class);
+                        int health;
+                        Object healthObj = object.getProperties().get("health");
+                        if (healthObj instanceof String) {
+                            health = Integer.parseInt((String) healthObj);
+                        } else {
+                            health = object.getProperties().get("health", Integer.class);
+                        }
+                        setState(GameState.GAMEPLAY);
+                        gameplayController.activate();
+                        gameplayController.startCombat(enemy,health);
+                    }
                 }
             }
         }

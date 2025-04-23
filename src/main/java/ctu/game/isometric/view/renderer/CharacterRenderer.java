@@ -12,6 +12,7 @@ public class CharacterRenderer {
     private AnimationManager animationManager;
     private MapRenderer mapRenderer;
 
+
     public CharacterRenderer(Character character, AssetManager assetManager, MapRenderer mapRenderer) {
         this.character = character;
         character.setGameMap(mapRenderer.getMap());

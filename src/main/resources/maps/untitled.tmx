@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="isometric" renderorder="right-down" width="20" height="20" tilewidth="64" tileheight="32" infinite="0" nextlayerid="9" nextobjectid="85">
+<map version="1.10" tiledversion="1.11.2" orientation="isometric" renderorder="right-down" width="20" height="20" tilewidth="64" tileheight="32" infinite="0" nextlayerid="9" nextobjectid="89">
  <tileset firstgid="1" name="tile3" tilewidth="64" tileheight="32" tilecount="1" columns="1">
   <image source="tiles/tile3.png" trans="ff00ff" width="64" height="32"/>
  </tileset>
@@ -75,9 +75,16 @@
     <property name="type" value="story"/>
    </properties>
   </object>
-  <object id="82" x="29.625" y="603.75" width="37.5" height="37.75">
+  <object id="82" x="63.7917" y="604.25" width="37.5" height="37.75">
    <properties>
     <property name="type" value="story"/>
+   </properties>
+  </object>
+  <object id="88" x="160.717" y="543.571" width="33.5469" height="32.4019" rotation="179.164">
+   <properties>
+    <property name="enemy" value="enemy_01"/>
+    <property name="health" value="10"/>
+    <property name="type" value="puzzle"/>
    </properties>
   </object>
  </objectgroup>
