@@ -69,7 +69,7 @@
           "choices": [
             {
               "text": "Bước vào trong căn hộ.",
-              "next_scene": "scene_04",
+              "next_scene": "scene_end",
               "required_item": null,
               "sanity_change": -1
             },

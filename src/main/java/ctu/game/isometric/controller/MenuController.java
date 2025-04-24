@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Align;
@@ -48,13 +49,18 @@ public class MenuController {
         this.selectedIndex = 0;
         this.menuItems = new ArrayList<>();
 
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/Creepster-Regular.ttf"));
+        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
         // Initialize fonts
-        this.titleFont = new BitmapFont();
-        titleFont.getData().setScale(2.0f);
-        titleFont.setColor(Color.GOLD);
 
-        this.itemFont = new BitmapFont();
-        itemFont.getData().setScale(1.5f);
+        parameter.size = 42;
+        parameter.color = com.badlogic.gdx.graphics.Color.WHITE;
+        this.titleFont = generator.generateFont(parameter);
+
+
+        parameter.size = 32;
+        parameter.color = com.badlogic.gdx.graphics.Color.WHITE;
+        this.itemFont = generator.generateFont(parameter);
 
         // Initialize rendering tools
         this.shapeRenderer = new ShapeRenderer();
@@ -63,7 +69,11 @@ public class MenuController {
         addMenuItem("Resume Game", () -> gameController.returnToPreviousState());
         addMenuItem("Options", this::showOptionsMenu);
 //        addMenuItem("Settings", () -> gameController.setCurrentState(GameState.SETTINGS));
-        addMenuItem("Back To Main Menu",() -> gameController.setState(GameState.MAIN_MENU));
+        // In MenuController.java, modify the "Back To Main Menu" menu item:
+        addMenuItem("Back To Main Menu", () -> {
+            gameController.resetGame();
+            gameController.setState(GameState.MAIN_MENU);
+        });
         addMenuItem("Quit Game", () -> Gdx.app.exit());
 
 

@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.math.Matrix4;
 import ctu.game.isometric.model.game.GameState;
 
@@ -26,14 +27,18 @@ public class MainMenuController {
     private final float INPUT_DELAY = 0.2f;
 
     public MainMenuController(GameController gameController) {
+
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/Creepster-Regular.ttf"));
+        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        parameter.size = 42;
+        parameter.color = com.badlogic.gdx.graphics.Color.WHITE;
+        this.font = generator.generateFont(parameter);
+
+
         this.gameController = gameController;
 
         // Load background image
         backgroundImage = new Texture(Gdx.files.internal("backgrounds/main_menu_bg.png"));
-
-        // Initialize font
-        font = new BitmapFont();
-        font.getData().setScale(2);
     }
 
     public void update(float delta) {
@@ -58,7 +63,7 @@ public class MainMenuController {
         batch.draw(backgroundImage, 0, 0, screenWidth, screenHeight);
 
         // Draw menu options
-        int menuX = screenWidth-250;
+        int menuX = screenWidth-350;
         int startY = screenHeight - 400;
         int spacing = 50;
 

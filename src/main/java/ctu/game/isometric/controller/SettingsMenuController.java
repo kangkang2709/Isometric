@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Align;
@@ -36,12 +37,17 @@ public class SettingsMenuController {
         this.gameController = gameController;
         this.menuOptions = new ArrayList<>();
         this.selectedIndex = 0;
-        this.font = new BitmapFont();
-        font.getData().setScale(1.5f);
 
-        this.titleFont = new BitmapFont();
-        titleFont.getData().setScale(2.0f);
-        titleFont.setColor(Color.GOLD);
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/Creepster-Regular.ttf"));
+        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+
+        parameter.size = 32;
+        parameter.color = com.badlogic.gdx.graphics.Color.WHITE;
+        this.font = generator.generateFont(parameter);
+
+        parameter.size = 48;
+        parameter.color = com.badlogic.gdx.graphics.Color.WHITE;
+        titleFont= generator.generateFont(parameter);
 
         this.shapeRenderer = new ShapeRenderer();
 

@@ -10,6 +10,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import ctu.game.isometric.IsometricGame;
 import ctu.game.isometric.controller.GameController;
+import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.game.GameState;
 import ctu.game.isometric.view.renderer.CharacterRenderer;
 import ctu.game.isometric.view.renderer.DialogUI;
@@ -42,7 +43,6 @@ public class GameScreen implements Screen {
 
         batch = new SpriteBatch();
         // In GameScreen.java - when initializing MapRenderer
-        mapRenderer = new MapRenderer(gameController.getMap(), game.getAssetManager(), gameController.getCharacter(), camera);
         dialogUI = new DialogUI(gameController.getDialogController());
         gameController.getInputController().setDialogUI(dialogUI);
         // Set input processor
@@ -51,14 +51,28 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta) {
-        // Cập nhật trạng thái game
+        // Cập nhật game
         gameController.update(delta);
         gameController.getTransitionController().update(delta);
+
+        // Chỉ khởi tạo 1 lần khi gameController vừa tạo xong
+        if (gameController.isCreated()) {
+            this.mapRenderer = new MapRenderer(
+                    gameController.getMap(),
+                    game.getAssetManager(),
+                    gameController.getCharacter(),
+                    camera
+            );
+
+            initCharacterRenderer(); // khởi tạo characterRenderer
+            dialogUI = new DialogUI(gameController.getDialogController());
+
+            gameController.setCreated(false);
+        }
 
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
 
-        // Vẽ transition overlay (nếu có)
         gameController.getTransitionController().render(batch);
 
         GameState currentState = gameController.getCurrentState();
@@ -68,28 +82,21 @@ public class GameScreen implements Screen {
                 gameController.getMainMenuController().render(batch);
                 break;
             case CHARACTER_CREATION:
-                gameController.getCharacterCreationController().update(delta);
                 gameController.getCharacterCreationController().render(batch);
                 break;
-
             case EXPLORING:
-                if(gameController.isCreated()){
-                    characterRenderer = new CharacterRenderer(gameController.getCharacter(), game.getAssetManager(), mapRenderer);
-                }
                 mapRenderer.render(batch);
                 mapRenderer.renderWalkableTileHighlights(
                         batch,
                         gameController.getWalkableTiles(),
                         gameController.getCharacter().getAnimationTime()
                 );
-                characterRenderer.render(batch);
+                if (characterRenderer != null) characterRenderer.render(batch);
                 break;
-
             case DIALOG:
                 dialogUI.render();
                 break;
             case CUTSCENE:
-                gameController.getCutsceneController().update(delta);
                 gameController.getCutsceneController().render(batch);
                 break;
             case GAMEPLAY:
@@ -98,13 +105,9 @@ public class GameScreen implements Screen {
             case MENU:
                 gameController.getMenuController().render(batch);
                 break;
-
             case SETTINGS:
-                gameController.getSettingsMenuController().update(delta);
                 gameController.getSettingsMenuController().render(batch);
                 break;
-
-            // Nếu có trạng thái khác, thêm ở đây
             default:
                 break;
         }
@@ -113,6 +116,13 @@ public class GameScreen implements Screen {
     }
 
 
+    private void initCharacterRenderer() {
+        this.characterRenderer = new CharacterRenderer(
+                gameController.getCharacter(),
+                game.getAssetManager(),
+                mapRenderer
+        );
+    }
     @Override
     public void resize(int width, int height) {
         viewport.update(width, height);

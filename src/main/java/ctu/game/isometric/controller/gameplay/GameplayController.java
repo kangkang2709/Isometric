@@ -115,6 +115,8 @@ public class GameplayController {
         }
     }
 
+
+
     private void updateCombat(float delta) {
         // Process enemy turn
         if (!isPlayerTurn) {
@@ -198,7 +200,6 @@ public class GameplayController {
 
     public void render(SpriteBatch batch) {
         if (!active) {
-            System.out.println("GameplayController not active, skipping render");
             return;
         }
 
