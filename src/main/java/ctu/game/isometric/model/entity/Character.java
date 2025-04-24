@@ -14,6 +14,7 @@ public class Character {
     private boolean isMoving = false;
     private float animationTime = 0;
     private String name = "player"; // Character name
+    private Gender gender = Gender.MALE;
     private int health = 100; // Health points
     private Map<String,?> items; // Inventory items
     private List<String> flags; // Flags for quests or events
@@ -196,5 +197,29 @@ public class Character {
 
     public void setGameMap(IsometricMap gameMap) {
         this.gameMap = gameMap;
+    }
+
+    public List<String> getFlags() {
+        return flags;
+    }
+
+    public void setFlags(List<String> flags) {
+        this.flags = flags;
+    }
+
+    public Map<String, ?> getItems() {
+        return items;
+    }
+
+    public void setItems(Map<String, ?> items) {
+        this.items = items;
+    }
+
+    public Gender getGender() {
+        return gender;
+    }
+
+    public void setGender(Gender gender) {
+        this.gender = gender;
     }
 }

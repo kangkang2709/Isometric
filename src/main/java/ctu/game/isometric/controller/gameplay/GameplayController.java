@@ -255,7 +255,7 @@ public class GameplayController {
         batch.draw(whiteTexture, 0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
 
         // Draw player in top-left corner
-        drawCombatCharacter(batch, playerName, playerHealth, 100, 50, 600, true);
+        drawCombatCharacter(batch, gameController.getCharacter().getName(), playerHealth, 100, 50, 600, true);
 
         // Draw enemy in top-right corner
         drawCombatCharacter(batch, enemyName, enemyHealth, enemyMaxHealth,

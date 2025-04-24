@@ -8,6 +8,7 @@ public enum GameState {
     SETTINGS,   // Settings menu
     MAIN_MENU,  // Main menu
     COMBAT,
+    CHARACTER_CREATION,
     GAMEPLAY// Combat state
 
 }

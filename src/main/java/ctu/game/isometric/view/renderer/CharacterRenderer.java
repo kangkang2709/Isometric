@@ -3,6 +3,7 @@ package ctu.game.isometric.view.renderer;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import ctu.game.isometric.model.entity.Character;
+import ctu.game.isometric.model.entity.Gender;
 import ctu.game.isometric.util.AssetManager;
 import ctu.game.isometric.util.AnimationManager;
 
@@ -11,7 +12,7 @@ public class CharacterRenderer {
     private AssetManager assetManager;
     private AnimationManager animationManager;
     private MapRenderer mapRenderer;
-
+    Gender gender;
 
     public CharacterRenderer(Character character, AssetManager assetManager, MapRenderer mapRenderer) {
         this.character = character;
@@ -20,8 +21,12 @@ public class CharacterRenderer {
         this.mapRenderer = mapRenderer;
         this.animationManager = assetManager.getAnimationManager();
 
-        // Initialize animations with both sprite sheets
-        this.animationManager.loadCharacterAnimations("characters/idle.png", "characters/walk.png");
+        // Use the character's gender instead of the uninitialized field
+        Gender characterGender = character.getGender();
+        if (characterGender == null || characterGender.equals(Gender.MALE))
+            this.animationManager.loadCharacterAnimations("characters/idle.png", "characters/walk.png");
+        else
+            this.animationManager.loadCharacterAnimations("characters/female_idle.png", "characters/female_walk.png");
     }
 
     public void render(SpriteBatch batch) {

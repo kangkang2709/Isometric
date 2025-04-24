@@ -18,7 +18,7 @@ public class MainMenuController {
     private final int screenHeight = 720;
 
     // Menu options
-    private String[] menuOptions = {"Start Game", "Settings", "Exit"};
+    private String[] menuOptions = {"Start New Game", "Settings", "Exit"};
     private int selectedOption = 0;
 
     // Input cooldown to prevent rapid selection
@@ -124,7 +124,7 @@ public class MainMenuController {
     private void selectOption(int option) {
         switch (option) {
             case 0: // Start Game
-                gameController.setCurrentState(GameState.EXPLORING);
+                gameController.setCurrentState(GameState.CHARACTER_CREATION);
                 gameController.getMusicController().playMusicForState(GameState.EXPLORING);
                 gameController.setPreviousState(GameState.MAIN_MENU);
                 break;

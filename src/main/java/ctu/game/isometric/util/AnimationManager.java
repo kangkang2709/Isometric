@@ -69,7 +69,7 @@ public class AnimationManager {
         Animation<TextureRegion> animation = characterAnimations.get(animKey);
         if (animation == null) {
             // Ultimate fallback
-            return characterAnimations.get("right_down_idle").getKeyFrame(0);
+            return characterAnimations.get("right_down").getKeyFrame(0);
         }
 
         // Return proper frame with looping enabled

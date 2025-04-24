@@ -25,7 +25,7 @@ public class GameScreen implements Screen {
     // Renderers
     private MapRenderer mapRenderer;
     private CharacterRenderer characterRenderer;
-
+    private boolean isCharacterCreated = false;
 
 
     public GameScreen(IsometricGame game, GameController gameController) {
@@ -43,7 +43,6 @@ public class GameScreen implements Screen {
         batch = new SpriteBatch();
         // In GameScreen.java - when initializing MapRenderer
         mapRenderer = new MapRenderer(gameController.getMap(), game.getAssetManager(), gameController.getCharacter(), camera);
-        characterRenderer = new CharacterRenderer(gameController.getCharacter(), game.getAssetManager(), mapRenderer);
         dialogUI = new DialogUI(gameController.getDialogController());
         gameController.getInputController().setDialogUI(dialogUI);
         // Set input processor
@@ -68,8 +67,15 @@ public class GameScreen implements Screen {
             case MAIN_MENU:
                 gameController.getMainMenuController().render(batch);
                 break;
+            case CHARACTER_CREATION:
+                gameController.getCharacterCreationController().update(delta);
+                gameController.getCharacterCreationController().render(batch);
+                break;
 
             case EXPLORING:
+                if(gameController.isCreated()){
+                    characterRenderer = new CharacterRenderer(gameController.getCharacter(), game.getAssetManager(), mapRenderer);
+                }
                 mapRenderer.render(batch);
                 mapRenderer.renderWalkableTileHighlights(
                         batch,

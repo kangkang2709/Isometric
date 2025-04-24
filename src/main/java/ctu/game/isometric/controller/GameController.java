@@ -26,9 +26,13 @@ public class GameController {
     private MainMenuController mainMenuController;
     private TransitionController transitionController;
     private GameplayController gameplayController;
+    private CharacterCreationController characterCreationController;
 
     private GameState currentState = GameState.MAIN_MENU;
     private GameState previousState = GameState.MAIN_MENU;
+
+
+    boolean isCreated = false;
 
     public GameController(IsometricGame game) {
         this.game = game;
@@ -38,7 +42,7 @@ public class GameController {
         this.dialogController = new DialogController(this);
         this.musicController = new MusicController();
         this.gameplayController = new GameplayController(this);
-
+        characterCreationController = new CharacterCreationController(this);
 
         this.menuController = new MenuController(this);
         this.settingsMenuController = new SettingsMenuController(this);
@@ -194,8 +198,21 @@ public class GameController {
         float isoX = (x - y) * (map.getTileWidth() / 2.0f);
         float isoY = (y + x) * (map.getTileHeight() / 2.0f);
         return new float[]{isoX, isoY};
-    } 
+    }
 
+    public boolean isCreated() {
+        return isCreated;
+    }
+
+    public void setCreated(boolean created) {
+        this.isCreated = created;
+
+        // Clean up character creation resources if creation is complete
+        if (created && characterCreationController != null) {
+            setState(GameState.EXPLORING);
+            characterCreationController.dispose();
+        }
+    }
 
     private void checkPositionEvents(float x, float y) {
         // Convert player's position from grid to isometric pixel coordinates
@@ -360,5 +377,13 @@ public class GameController {
 
     public void setGameplayController(GameplayController gameplayController) {
         this.gameplayController = gameplayController;
+    }
+
+    public CharacterCreationController getCharacterCreationController() {
+        return characterCreationController;
+    }
+
+    public void setCharacterCreationController(CharacterCreationController characterCreationController) {
+        this.characterCreationController = characterCreationController;
     }
 }
