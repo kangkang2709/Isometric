@@ -1,11 +1,14 @@
 package ctu.game.isometric.controller;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.math.Rectangle;
 import ctu.game.isometric.IsometricGame;
+import ctu.game.isometric.controller.cutscene.CutsceneController;
 import ctu.game.isometric.controller.gameplay.GameplayController;
 import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.game.GameState;
@@ -30,7 +33,7 @@ public class GameController {
 
     private GameState currentState = GameState.MAIN_MENU;
     private GameState previousState = GameState.MAIN_MENU;
-
+    private CutsceneController cutsceneController;
 
     boolean isCreated = false;
 
@@ -48,7 +51,7 @@ public class GameController {
         this.settingsMenuController = new SettingsMenuController(this);
         this.mainMenuController = new MainMenuController(this);
         this.transitionController = new TransitionController();
-
+        this.cutsceneController = new CutsceneController(this);
 
         this.musicController.initialize();
         this.musicController.playMusicForState(GameState.MAIN_MENU);
@@ -57,10 +60,16 @@ public class GameController {
     public void update(float delta) {
         switch (currentState) {
             case EXPLORING:
+                if (character.getFlags() != null && !character.getFlags().isEmpty()) {
+                    String flags = character.getFlags().get(0);
+                    if (flags != null) {
+                        startCutscene(flags);
+                        character.getFlags().remove(0);
+                    }
+                }
                 inputController.update(delta);
                 character.update(delta);
                 break;
-
             case DIALOG:
                 // Only update dialog controller when in dialog state
                 // dialogController.update(delta);
@@ -79,7 +88,7 @@ public class GameController {
 //                settingsMenuController.update(delta);
                 break;
             case CUTSCENE:
-                character.update(delta); // Keep character animations running
+                cutsceneController.update(delta);
                 break;
 
         }
@@ -122,6 +131,17 @@ public class GameController {
     private void onStateChanged(GameState oldState, GameState newState) {
         // Notify relevant subsystems about state change
     }
+
+    public void startCutscene(String cutsceneName) {
+        setPreviousState(currentState);
+        setState(GameState.CUTSCENE);
+        cutsceneController.loadCutscene(cutsceneName);
+    }
+
+    public CutsceneController getCutsceneController() {
+        return cutsceneController;
+    }
+
 
     public void returnToPreviousState() {
         setState(previousState);

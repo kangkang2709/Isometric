@@ -88,7 +88,9 @@ public class GameScreen implements Screen {
             case DIALOG:
                 dialogUI.render();
                 break;
-            case COMBAT:
+            case CUTSCENE:
+                gameController.getCutsceneController().update(delta);
+                gameController.getCutsceneController().render(batch);
                 break;
             case GAMEPLAY:
                 gameController.getGameplayController().render(batch);

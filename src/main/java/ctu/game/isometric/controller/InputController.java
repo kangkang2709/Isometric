@@ -94,6 +94,8 @@ public class InputController extends InputAdapter {
                 return handleMenuInput(keycode);
             case SETTINGS:
                 return handleSettingsInput(keycode);
+            case CUTSCENE:
+                return handleCutSceneInput(keycode);
             default:
                 break;
         }
@@ -119,7 +121,13 @@ public class InputController extends InputAdapter {
     }
 
 // ===== Helper methods =====
-
+    private boolean handleCutSceneInput(int keycode) {
+        if (keycode == Keys.ENTER || keycode == Keys.SPACE) {
+            gameController.getCutsceneController().nextPage();
+            return true;
+        }
+        return false;
+    }
     private boolean handleMenuInput(int keycode) {
         switch (keycode) {
             case Keys.ESCAPE:

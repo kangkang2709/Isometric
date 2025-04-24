@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
 import ctu.game.isometric.model.world.IsometricMap;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +36,8 @@ public class Character {
         this.gridY = startY;
         this.targetX = startX;
         this.targetY = startY;
+        this.flags = new ArrayList<>();
+        flags.add("intro");
     }
 
     // Existing getters/setters...
