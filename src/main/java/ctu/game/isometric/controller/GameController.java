@@ -62,7 +62,7 @@ public class GameController {
             case EXPLORING:
                 if (character.getFlags() != null && !character.getFlags().isEmpty()) {
                     String flags = character.getFlags().get(0);
-                    if (flags != null) {
+                    if (flags != null && flags == "intro") {
                         startCutscene(flags);
                         character.getFlags().remove(0);
                     }
@@ -234,9 +234,22 @@ public class GameController {
         }
     }
     // Add to GameController.java
+    // In GameController.java, enhance resetGame method
+    // In GameController.java - update the resetGame method
     public void resetGame() {
-        this.character = new Character(0,0);
+        // Reset character with a new instance
+        character = new Character(0, 0);
+
+        // Reset map with a new instance
         this.map = new IsometricMap();
+
+        // Force recreation of renderers by setting isCreated flag
+        isCreated = true;
+
+        // Reset controllers to initial state - make sure to reset character creation controller
+        if (characterCreationController != null) {
+            characterCreationController = new CharacterCreationController(this);
+        }
 
         if (cutsceneController != null) {
             cutsceneController.dispose();
@@ -251,7 +264,14 @@ public class GameController {
             gameplayController = new GameplayController(this);
         }
 
+        // Reset to main menu state
+        currentState = GameState.MAIN_MENU;
+        previousState = GameState.MAIN_MENU;
+
+        // Reset music
+        musicController.playMusicForState(GameState.MAIN_MENU);
     }
+
     private void checkPositionEvents(float x, float y) {
         // Convert player's position from grid to isometric pixel coordinates
         float[] playerIsoPos = toIsometric(x, y);

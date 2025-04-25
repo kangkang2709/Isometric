@@ -57,16 +57,36 @@ public class GameScreen implements Screen {
 
         // Chỉ khởi tạo 1 lần khi gameController vừa tạo xong
         if (gameController.isCreated()) {
-            this.mapRenderer = new MapRenderer(
+//            // Dispose existing renderers if they exist
+//            if (mapRenderer != null) {
+//                mapRenderer.dispose();
+//            }
+//            if (characterRenderer != null) {
+//                characterRenderer.dispose();
+//            }
+
+            // Create new renderers
+            mapRenderer = new MapRenderer(
                     gameController.getMap(),
                     game.getAssetManager(),
                     gameController.getCharacter(),
                     camera
             );
 
-            initCharacterRenderer(); // khởi tạo characterRenderer
-            dialogUI = new DialogUI(gameController.getDialogController());
+            characterRenderer = new CharacterRenderer(
+                    gameController.getCharacter(),
+                    game.getAssetManager(),
+                    mapRenderer
+            );
 
+            // Reset dialog UI
+            if (dialogUI != null) {
+                dialogUI.dispose();
+            }
+            dialogUI = new DialogUI(gameController.getDialogController());
+            gameController.getInputController().setDialogUI(dialogUI);
+
+            // Reset flag
             gameController.setCreated(false);
         }
 

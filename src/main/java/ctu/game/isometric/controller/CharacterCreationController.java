@@ -8,14 +8,14 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.entity.Gender;
-import ctu.game.isometric.model.game.GameState;
-import ctu.game.isometric.util.AssetManager;
 
 public class CharacterCreationController {
     private GameController gameController;
+    private boolean initialized = false;
 
     private BitmapFont font;
     private ShapeRenderer shapeRenderer;
@@ -23,8 +23,9 @@ public class CharacterCreationController {
 
     private String playerName = "";
     private String playerGender = "MALE"; // Default
+    private static final int MAX_NAME_LENGTH = 20;
 
-    // Replace animation with static textures
+    // Static textures
     private Texture maleAvatar;
     private Texture femaleAvatar;
     private Texture currentAvatar;
@@ -40,13 +41,31 @@ public class CharacterCreationController {
 
     public CharacterCreationController(GameController gameController) {
         this.gameController = gameController;
+        initResources();
+    }
 
-        font = new BitmapFont();
-        font.getData().setScale(1.5f);
-        shapeRenderer = new ShapeRenderer();
-        layout = new GlyphLayout();
+    private void initResources() {
+        // Initialize resources needed for rendering
+        if (!initialized) {
+            font = new BitmapFont();
+            font.getData().setScale(1.5f);
 
-        // Define UI element positions
+            shapeRenderer = new ShapeRenderer();
+            layout = new GlyphLayout();
+
+            // Load static avatars
+            try {
+                maleAvatar = new Texture(Gdx.files.internal("characters/male_avatar.png"));
+                femaleAvatar = new Texture(Gdx.files.internal("characters/female_avatar.png"));
+                currentAvatar = maleAvatar;
+            } catch (Exception e) {
+                Gdx.app.error("CharacterCreation", "Failed to load avatars", e);
+            }
+
+            initialized = true;
+        }
+
+        // Define UI element positions - always update these in case of resize
         int screenWidth = Gdx.graphics.getWidth();
         int screenHeight = Gdx.graphics.getHeight();
 
@@ -54,11 +73,21 @@ public class CharacterCreationController {
         maleButton = new Rectangle(screenWidth / 2 - 160, screenHeight / 2 - 20, 150, 40);
         femaleButton = new Rectangle(screenWidth / 2 + 10, screenHeight / 2 - 20, 150, 40);
         confirmButton = new Rectangle(screenWidth / 2 - 100, screenHeight / 2 - 100, 200, 40);
+    }
 
-        // Load static avatars instead of animations
-        maleAvatar = new Texture(Gdx.files.internal("characters/male_avatar.png"));
-        femaleAvatar = new Texture(Gdx.files.internal("characters/female_avatar.png"));
+    public void reset() {
+        // Reset text fields and selection
+        playerName = "";
+        playerGender = "MALE";
         currentAvatar = maleAvatar;
+        isNameFieldActive = false;
+        cursorBlinkTime = 0;
+        showCursor = false;
+
+        // No need to recreate resources if already initialized
+        if (!initialized) {
+            initResources();
+        }
     }
 
     public void update(float delta) {
@@ -93,35 +122,51 @@ public class CharacterCreationController {
 
         // Handle text input
         if (isNameFieldActive) {
-            for (int i = 0; i < Input.Keys.MAX_KEYCODE; i++) {
-                if (Gdx.input.isKeyJustPressed(i)) {
-                    if (i == Input.Keys.BACKSPACE && playerName.length() > 0) {
-                        playerName = playerName.substring(0, playerName.length() - 1);
-                    } else if (i == Input.Keys.ENTER) {
-                        isNameFieldActive = false;
-                    } else {
-                        char c = Input.Keys.toString(i).charAt(0);
-                        if (java.lang.Character.isLetterOrDigit(c) || c == ' ') {
-                            playerName += c;
-                        }
-                    }
-                }
+            handleTextInput();
+        }
+    }
+
+    private void handleTextInput() {
+        // Handle backspace
+        if (Gdx.input.isKeyJustPressed(Input.Keys.BACKSPACE) && playerName.length() > 0) {
+            playerName = playerName.substring(0, playerName.length() - 1);
+            return;
+        }
+
+        // Handle enter/escape to deactivate field
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER) ||
+                Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+            isNameFieldActive = false;
+            return;
+        }
+
+        // Handle typed characters
+        for (int key = Input.Keys.A; key <= Input.Keys.Z; key++) {
+            if (Gdx.input.isKeyJustPressed(key) && playerName.length() < MAX_NAME_LENGTH) {
+                char c = (char) (key - Input.Keys.A + 'A');
+                playerName += c;
             }
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) && playerName.length() < MAX_NAME_LENGTH) {
+            playerName += ' ';
         }
     }
 
     public void render(SpriteBatch batch) {
-        batch.end(); // End SpriteBatch to use ShapeRenderer
+        // Save original projection matrix and batch state
+        Matrix4 originalMatrix = batch.getProjectionMatrix().cpy();
+        boolean batchWasDrawing = batch.isDrawing();
 
-        // Draw UI boxes
+        if (batchWasDrawing) {
+            batch.end();
+        }
+
+        // Configure and use ShapeRenderer
+        shapeRenderer.setProjectionMatrix(new Matrix4().setToOrtho2D(0, 0, 1280, 720));
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
         // Draw name input box
-        if (isNameFieldActive) {
-            shapeRenderer.setColor(0.9f, 0.9f, 1f, 1);
-        } else {
-            shapeRenderer.setColor(0.8f, 0.8f, 0.8f, 1);
-        }
+        shapeRenderer.setColor(isNameFieldActive ? new Color(0.9f, 0.9f, 1f, 1) : new Color(0.8f, 0.8f, 0.8f, 1));
         shapeRenderer.rect(nameInputBox.x, nameInputBox.y, nameInputBox.width, nameInputBox.height);
 
         // Draw gender buttons
@@ -137,7 +182,9 @@ public class CharacterCreationController {
 
         shapeRenderer.end();
 
-        batch.begin(); // Resume SpriteBatch
+        // Start batch with original matrix
+        batch.begin();
+        batch.setProjectionMatrix(new Matrix4().setToOrtho2D(0, 0, 1280, 720));
 
         // Draw text elements
         float titleY = Gdx.graphics.getHeight() - 100;
@@ -147,7 +194,7 @@ public class CharacterCreationController {
 
         font.draw(batch, "Name:", nameInputBox.x, nameInputBox.y + nameInputBox.height + 20);
 
-        // Draw input text
+        // Draw input text with cursor
         font.setColor(Color.BLACK);
         String displayText = playerName;
         if (isNameFieldActive && showCursor) {
@@ -173,6 +220,11 @@ public class CharacterCreationController {
             float y = Gdx.graphics.getHeight() / 2f;
             batch.draw(currentAvatar, x, y, 96, 96);
         }
+
+        // If batch wasn't drawing originally, end it
+        if (!batchWasDrawing) {
+            batch.end();
+        }
     }
 
     private void confirmCharacter() {
@@ -180,15 +232,16 @@ public class CharacterCreationController {
         Character character = gameController.getCharacter();
         character.setName(playerName);
         character.setGender(Gender.valueOf(playerGender));
+
         // Signal that character has been created
-        // Change game state to start playing
         gameController.setCreated(true);
-
-
     }
 
     public void dispose() {
-        maleAvatar.dispose();
-        femaleAvatar.dispose();
+        if (font != null) font.dispose();
+        if (shapeRenderer != null) shapeRenderer.dispose();
+        if (maleAvatar != null) maleAvatar.dispose();
+        if (femaleAvatar != null) femaleAvatar.dispose();
+        initialized = false;
     }
 }
