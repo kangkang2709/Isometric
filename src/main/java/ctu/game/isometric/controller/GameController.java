@@ -248,6 +248,7 @@ public class GameController {
 
         // Reset controllers to initial state - make sure to reset character creation controller
         if (characterCreationController != null) {
+            characterCreationController.dispose();
             characterCreationController = new CharacterCreationController(this);
         }
 
@@ -261,6 +262,7 @@ public class GameController {
         }
 
         if (gameplayController != null) {
+//            getCutsceneController().dispose();
             gameplayController = new GameplayController(this);
         }
 

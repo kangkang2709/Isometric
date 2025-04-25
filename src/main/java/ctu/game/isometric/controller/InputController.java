@@ -83,8 +83,18 @@ public class InputController extends InputAdapter {
                 }
             }
         }
+        if (keycode == Keys.ESCAPE) {
+            if (state == GameState.MENU) {
+                gameController.returnToPreviousState();
+            } else {
+                gameController.setState(GameState.MENU);
+                System.out.println("Game state changed to MENU");
+            }
+            return true;
+        }
+
         // Ưu tiên xử lý dialog nếu đang hiện
-        if (gameController.getDialogController().isDialogActive()) {
+        if (gameController.getDialogController().isDialogActive() && state == GameState.DIALOG) {
             return handleDialogInput(keycode);
         }
 
@@ -101,15 +111,7 @@ public class InputController extends InputAdapter {
         }
 
         // ESC dùng để mở/tắt menu
-        if (keycode == Keys.ESCAPE) {
-            if (state == GameState.MENU) {
-                gameController.returnToPreviousState();
-            } else {
-                gameController.setState(GameState.MENU);
-                System.out.println("Game state changed to MENU");
-            }
-            return true;
-        }
+
 
         // Delay đầu vào
         if (TimeUtils.timeSinceMillis(lastInputTime) < INPUT_DELAY) {
@@ -130,9 +132,6 @@ public class InputController extends InputAdapter {
     }
     private boolean handleMenuInput(int keycode) {
         switch (keycode) {
-            case Keys.ESCAPE:
-                gameController.returnToPreviousState();
-                return true;
             case Keys.UP:
                 gameController.getMenuController().selectPreviousItem();
                 return true;
@@ -178,6 +177,9 @@ public class InputController extends InputAdapter {
         if (dialogUI == null) return false;
 
         switch (keycode) {
+            case Keys.ESCAPE:
+                gameController.setState(GameState.MENU);
+                gameController.setState(GameState.MENU);
             case Keys.ENTER:
             case Keys.SPACE:
                 if (!dialogUI.isTextFullyDisplayed()) {
