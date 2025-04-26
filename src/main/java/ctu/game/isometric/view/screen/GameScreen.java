@@ -93,45 +93,48 @@ public class GameScreen implements Screen {
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
 
-        gameController.getTransitionController().render(batch);
 
         GameState currentState = gameController.getCurrentState();
+            if(gameController.getTransitionController().isTransitioning()){
+                gameController.getTransitionController().render(batch);
+            }
+            else {
 
-        switch (currentState) {
-            case MAIN_MENU:
-                gameController.getMainMenuController().render(batch);
-                break;
-            case CHARACTER_CREATION:
-                gameController.getCharacterCreationController().render(batch);
-                break;
-            case EXPLORING:
-                mapRenderer.render(batch);
-                mapRenderer.renderWalkableTileHighlights(
-                        batch,
-                        gameController.getWalkableTiles(),
-                        gameController.getCharacter().getAnimationTime()
-                );
-                if (characterRenderer != null) characterRenderer.render(batch);
-                break;
-            case DIALOG:
-                dialogUI.render();
-                break;
-            case CUTSCENE:
-                gameController.getCutsceneController().render(batch);
-                break;
-            case GAMEPLAY:
-                gameController.getGameplayController().render(batch);
-                break;
-            case MENU:
-                gameController.getMenuController().render(batch);
-                break;
-            case SETTINGS:
-                gameController.getSettingsMenuController().render(batch);
-                break;
-            default:
-                break;
-        }
-
+                switch (currentState) {
+                    case MAIN_MENU:
+                        gameController.getMainMenuController().render(batch);
+                        break;
+                    case CHARACTER_CREATION:
+                        gameController.getCharacterCreationController().render(batch);
+                        break;
+                    case EXPLORING:
+                        mapRenderer.render(batch);
+                        mapRenderer.renderWalkableTileHighlights(
+                                batch,
+                                gameController.getWalkableTiles(),
+                                gameController.getCharacter().getAnimationTime()
+                        );
+                        if (characterRenderer != null) characterRenderer.render(batch);
+                        break;
+                    case DIALOG:
+                        dialogUI.render();
+                        break;
+                    case CUTSCENE:
+                        gameController.getCutsceneController().render(batch);
+                        break;
+                    case GAMEPLAY:
+                        gameController.getGameplayController().render(batch);
+                        break;
+                    case MENU:
+                        gameController.getMenuController().render(batch);
+                        break;
+                    case SETTINGS:
+                        gameController.getSettingsMenuController().render(batch);
+                        break;
+                    default:
+                        break;
+                }
+            }
         batch.end();
     }
 

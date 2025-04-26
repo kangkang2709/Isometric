@@ -1,18 +1,32 @@
 package ctu.game.isometric.controller;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Matrix4;
 
 public class TransitionController {
     private float alpha = 0f;
-    private float duration = 0.3f; // transition duration in seconds
+    private float duration = 0.5f; // transition duration in seconds
     private boolean isTransitioning = false;
     private boolean isFadingIn = false;
     private Runnable onCompleteAction;
     private ShapeRenderer shapeRenderer;
+    private boolean showLoadingScreen = false;
+
+    // Loading screen properties
+    private float loadingProgress = 0f;
+    private BitmapFont loadingFont;
+    private String loadingText = "Loading...";
+    private GlyphLayout glyphLayout = new GlyphLayout();
+    private float loadingBarWidth = 300f;
+    private float loadingBarHeight = 20f;
+    private float loadingAnimTime = 0f;
 
     // Transition type enum
     public enum TransitionType {
@@ -20,32 +34,50 @@ public class TransitionController {
         RADIAL_WIPE
     }
 
-    private TransitionType currentType = TransitionType.RADIAL_WIPE;
+    private TransitionType currentType = TransitionType.FADE;
 
     public TransitionController() {
         shapeRenderer = new ShapeRenderer();
+        loadingFont = new BitmapFont();
+        loadingFont.setColor(Color.WHITE);
+        loadingFont.getData().setScale(2.0f);
     }
 
-    public void setTransitionType(TransitionType type) {
-        this.currentType = type;
-    }
-
+    // Start a fade out transition
     public void startFadeOut(Runnable onComplete) {
         alpha = 0f;
-        isTransitioning = true;
         isFadingIn = false;
-        onCompleteAction = onComplete;
+        isTransitioning = true;
+        this.onCompleteAction = onComplete;
     }
 
+    // Start a fade in transition
     public void startFadeIn() {
         alpha = 1f;
-        isTransitioning = true;
         isFadingIn = true;
-        onCompleteAction = null;
+        isTransitioning = true;
+        this.onCompleteAction = null;
+    }
+
+    public void startLoadingScreen(Runnable onComplete) {
+        showLoadingScreen = true;
+        loadingProgress = 0f;
+        startFadeOut(() -> {
+            if (onComplete != null) {
+                onComplete.run();
+            }
+            showLoadingScreen = false;
+            startFadeIn();
+        });
     }
 
     public void update(float delta) {
         if (!isTransitioning) return;
+
+        // Update loading animation time
+        if (showLoadingScreen) {
+            loadingAnimTime += delta;
+        }
 
         if (isFadingIn) {
             alpha -= (delta / duration);
@@ -67,7 +99,7 @@ public class TransitionController {
     }
 
     public void render(SpriteBatch batch) {
-        if (alpha <= 0) return;
+        if (alpha <= 0 && !showLoadingScreen) return;
 
         boolean wasBatchDrawing = batch.isDrawing();
         if (wasBatchDrawing) batch.end();
@@ -88,9 +120,43 @@ public class TransitionController {
 
         shapeRenderer.end();
 
+        // Draw loading screen elements if needed
+        if (showLoadingScreen) {
+            renderLoadingScreen(batch);
+        }
+
         Gdx.gl.glDisable(GL20.GL_BLEND);
 
         if (wasBatchDrawing) batch.begin();
+    }
+
+    private void renderLoadingScreen(SpriteBatch batch) {
+        float screenWidth = Gdx.graphics.getWidth();
+        float screenHeight = Gdx.graphics.getHeight();
+
+        // Start batch for text rendering
+        batch.setProjectionMatrix(new Matrix4().setToOrtho2D(0, 0, screenWidth, screenHeight));
+        batch.begin();
+
+        // Draw loading text
+        glyphLayout.setText(loadingFont, loadingText);
+        loadingFont.draw(batch, loadingText,
+                50,
+                80);
+        // Draw loading text
+//        glyphLayout.setText(loadingFont, loadingText);
+//        loadingFont.draw(batch, loadingText,
+//                (screenWidth - glyphLayout.width) / 2,
+//                (screenHeight + glyphLayout.height) / 2);
+        batch.end();
+    }
+
+    public void setLoadingProgress(float progress) {
+        this.loadingProgress = MathUtils.clamp(progress, 0f, 1f);
+    }
+
+    public void setLoadingText(String text) {
+        this.loadingText = text;
     }
 
     private void renderFadeTransition() {
@@ -99,11 +165,9 @@ public class TransitionController {
     }
 
     private void renderRadialWipeTransition() {
-        int segments = 36; // Number of triangles to use for the circle
+        int segments = 36;
         float centerX = Gdx.graphics.getWidth() / 2f;
         float centerY = Gdx.graphics.getHeight() / 2f;
-
-        // Calculate the radius based on the screen size
         float maxRadius = (float) Math.sqrt(centerX * centerX + centerY * centerY);
         float currentRadius = isFadingIn ?
                 maxRadius * (1 - alpha) :
@@ -112,12 +176,10 @@ public class TransitionController {
         shapeRenderer.setColor(0, 0, 0, 1);
 
         if (isFadingIn) {
-            // When fading in, draw the outer area
             for (int i = 0; i < segments; i++) {
                 float angle1 = MathUtils.PI2 * i / segments;
                 float angle2 = MathUtils.PI2 * (i + 1) / segments;
 
-                // Create a triangle from the center to the edge of the screen
                 shapeRenderer.triangle(
                         centerX + currentRadius * MathUtils.cos(angle1),
                         centerY + currentRadius * MathUtils.sin(angle1),
@@ -137,12 +199,10 @@ public class TransitionController {
                 );
             }
         } else {
-            // When fading out, draw the inner circle
             for (int i = 0; i < segments; i++) {
                 float angle1 = MathUtils.PI2 * i / segments;
                 float angle2 = MathUtils.PI2 * (i + 1) / segments;
 
-                // Create a triangle from the center to the current radius
                 shapeRenderer.triangle(
                         centerX,
                         centerY,
@@ -159,9 +219,21 @@ public class TransitionController {
         return isTransitioning;
     }
 
+    public boolean isShowingLoadingScreen() {
+        return showLoadingScreen;
+    }
+
+    // Set transition duration in seconds
+    public void setTransitionDuration(float seconds) {
+        this.duration = Math.max(0.1f, seconds);
+    }
+
     public void dispose() {
         if (shapeRenderer != null) {
             shapeRenderer.dispose();
+        }
+        if (loadingFont != null) {
+            loadingFont.dispose();
         }
     }
 
@@ -169,7 +241,7 @@ public class TransitionController {
         return currentType;
     }
 
-    public void setCurrentType(TransitionType currentType) {
-        this.currentType = currentType;
+    public void setTransitionType(TransitionType type) {
+        this.currentType = type;
     }
 }

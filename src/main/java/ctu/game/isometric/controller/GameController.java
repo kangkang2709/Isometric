@@ -62,7 +62,7 @@ public class GameController {
             case EXPLORING:
                 if (character.getFlags() != null && !character.getFlags().isEmpty()) {
                     String flags = character.getFlags().get(0);
-                    if (flags != null && flags == "intro") {
+                    if (flags != null && flags == "intro" && getTransitionController().isTransitioning() == false) {
                         startCutscene(flags);
                         character.getFlags().remove(0);
                     }
@@ -123,12 +123,19 @@ public class GameController {
             previousState = oldState;
         }
 
-        transitionController.startFadeOut(() -> {
-            // This code runs when fade out is complete
-            currentState = newState;  // Only set state at completion of transition
+        transitionController.startLoadingScreen(() -> {
+            // This code executes after the fade out, during loading
+            currentState = newState;
+
+            // Reset controllers when entering specific states
+            if (currentState == GameState.CHARACTER_CREATION) {
+                characterCreationController.reset();
+            }
+
+            // Update music for the new state
             musicController.playMusicForState(newState);
-            onStateChanged(oldState, newState);
         });
+
     }
 
     private void onStateChanged(GameState oldState, GameState newState) {
@@ -409,6 +416,7 @@ public class GameController {
     public MainMenuController getMainMenuController() {
         return mainMenuController;
     }
+
     public void cycleTransitionType() {
         TransitionController.TransitionType[] types = TransitionController.TransitionType.values();
         int nextIndex = (transitionController.getCurrentType().ordinal() + 1) % types.length;
