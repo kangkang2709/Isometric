@@ -284,11 +284,9 @@ public class GameController {
     }
 
     private void checkPositionEvents(float x, float y) {
-
-        float[] isoCoords = toIsometric(x, y);
         // Convert player grid position to Tiled map pixel coordinates
-        float playerMapX = isoCoords[0];
-        float playerMapY = isoCoords[1];
+        float playerMapX = x * map.getTileWidth();
+        float playerMapY = y * map.getTileHeight();
 
         System.out.println("Player Map Position: (" + playerMapX + ", " + playerMapY + ")");
 
@@ -298,6 +296,7 @@ public class GameController {
             System.out.println("No object layer found.");
             return;
         }
+        float mapHeightInPixels = map.getMapHeight() * map.getTileHeight();
 
         // Iterate through all objects in the layer
         for (MapObject object : objectLayer.getObjects()) {
@@ -305,9 +304,11 @@ public class GameController {
                 RectangleMapObject rectObject = (RectangleMapObject) object;
                 Rectangle rect = rectObject.getRectangle();
 
+
+
                 // Use object's raw coordinates - they're already in map space
                 float objectX = rect.x;
-                float objectY = rect.y;
+                float objectY = rect.y;  // ← ĐẢO Y
                 float objWidth = rect.width;
                 float objHeight = rect.height;
 

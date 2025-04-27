@@ -70,7 +70,7 @@
 </data>
  </layer>
  <objectgroup id="4" name="object_layer">
-  <object id="78" x="-1.75" y="477.792" width="32.2917" height="33.2917">
+  <object id="78" x="-0.0833333" y="479.458" width="32.2917" height="33.2917">
    <properties>
     <property name="type" value="story"/>
    </properties>
