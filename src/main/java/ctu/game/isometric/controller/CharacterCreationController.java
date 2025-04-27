@@ -232,7 +232,6 @@ public class CharacterCreationController {
         Character character = gameController.getCharacter();
         character.setName(playerName);
         character.setGender(Gender.valueOf(playerGender));
-
         // Signal that character has been created
         gameController.setCreated(true);
     }

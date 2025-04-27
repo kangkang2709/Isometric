@@ -130,7 +130,6 @@ public class MainMenuController {
         switch (option) {
             case 0: // Start Game
                 gameController.setCurrentState(GameState.CHARACTER_CREATION);
-                gameController.getMusicController().playMusicForState(GameState.EXPLORING);
                 gameController.setPreviousState(GameState.MAIN_MENU);
                 break;
             case 1: // Settings

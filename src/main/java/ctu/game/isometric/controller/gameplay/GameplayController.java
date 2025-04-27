@@ -789,10 +789,10 @@ public class GameplayController {
 
     public void dispose() {
         active = false;
-        titleFont.dispose();
-        regularFont.dispose();
-        bigFont.dispose();
-        whiteTexture.dispose();
+//        titleFont.dispose();
+//        regularFont.dispose();
+//        bigFont.dispose();
+//        whiteTexture.dispose();
 
         // Dispose all cached textures
         for (Texture texture : textureCache.values()) {

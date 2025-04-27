@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Array;
 import ctu.game.isometric.controller.GameController;
+import ctu.game.isometric.model.game.GameState;
 
 public class CutsceneController {
     private Array<Texture> pages;
@@ -91,9 +92,10 @@ public class CutsceneController {
         }
     }
 
-    private void endCutscene() {
+    public void endCutscene() {
         if (gameController != null) {
-            gameController.setState(gameController.getPreviousState());
+            gameController.setState(GameState.EXPLORING);
+            gameController.setPreviousState(GameState.EXPLORING);
         }
         dispose();
     }

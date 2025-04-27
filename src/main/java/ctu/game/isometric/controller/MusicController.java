@@ -10,7 +10,7 @@ import java.util.Map;
 public class MusicController {
     private final Map<String, Music> musicTracks;
     private String currentTrackId;
-    private float volume = 0.0f;
+    private float volume = 1.0f;
     private boolean enabled = true;
 
     public MusicController() {
@@ -23,7 +23,7 @@ public class MusicController {
         loadMusic("main_theme", "audio/musics/main_theme.mp3");
         loadMusic("menu_theme", "audio/musics/menu_theme.mp3");
         loadMusic("setting_theme", "audio/musics/menu_theme.mp3");
-        loadMusic("combat_theme", "audio/musics/menu_theme.mp3");
+        loadMusic("combat_theme", "audio/musics/combat_theme.mp3");
         loadMusic("dialog_theme", "audio/musics/dialog_theme.mp3");
     }
 
@@ -93,7 +93,7 @@ public class MusicController {
                 playMusic("menu_theme");
                 break;
             case CUTSCENE:
-                playMusic("cutscene_theme");
+                stopCurrentTrack();
                 break;
         }
     }

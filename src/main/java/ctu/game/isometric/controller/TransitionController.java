@@ -22,11 +22,8 @@ public class TransitionController {
     // Loading screen properties
     private float loadingProgress = 0f;
     private BitmapFont loadingFont;
-    private String loadingText = "Loading...";
+    private String loadingText = "Loading....";
     private GlyphLayout glyphLayout = new GlyphLayout();
-    private float loadingBarWidth = 300f;
-    private float loadingBarHeight = 20f;
-    private float loadingAnimTime = 0f;
 
     // Transition type enum
     public enum TransitionType {
@@ -73,11 +70,6 @@ public class TransitionController {
 
     public void update(float delta) {
         if (!isTransitioning) return;
-
-        // Update loading animation time
-        if (showLoadingScreen) {
-            loadingAnimTime += delta;
-        }
 
         if (isFadingIn) {
             alpha -= (delta / duration);

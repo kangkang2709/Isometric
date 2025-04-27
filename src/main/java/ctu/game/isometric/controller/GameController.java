@@ -58,15 +58,10 @@ public class GameController {
     }
 
     public void update(float delta) {
+
+
         switch (currentState) {
             case EXPLORING:
-                if (character.getFlags() != null && !character.getFlags().isEmpty()) {
-                    String flags = character.getFlags().get(0);
-                    if (flags != null && flags == "intro" && getTransitionController().isTransitioning() == false) {
-                        startCutscene(flags);
-                        character.getFlags().remove(0);
-                    }
-                }
                 inputController.update(delta);
                 character.update(delta);
                 break;
@@ -91,6 +86,13 @@ public class GameController {
                 settingsMenuController.update(delta);
                 break;
             case CUTSCENE:
+                if (character.getFlags() != null && !character.getFlags().isEmpty()) {
+                    String flags = character.getFlags().get(0);
+                    if (flags != null && flags == "intro" && getTransitionController().isTransitioning() == false) {
+                        startCutscene(flags);
+                        character.getFlags().remove(0);
+                    }
+                }
                 cutsceneController.update(delta);
                 break;
 
@@ -237,7 +239,7 @@ public class GameController {
     public void setCreated(boolean created) {
         this.isCreated = created;
         if (created && characterCreationController != null) {
-            setState(GameState.EXPLORING);
+                setState(GameState.CUTSCENE);
         }
     }
     // Add to GameController.java
@@ -282,19 +284,19 @@ public class GameController {
     }
 
     private void checkPositionEvents(float x, float y) {
-        // Convert player's position from grid to isometric pixel coordinates
-        float[] playerIsoPos = toIsometric(x, y);
-        float playerIsoX = playerIsoPos[0];
-        float playerIsoY = playerIsoPos[1];
 
-        // Log the player's isometric position
-        System.out.println("Player Isometric Position: (" + playerIsoX + ", " + playerIsoY + ")");
+        float[] isoCoords = toIsometric(x, y);
+        // Convert player grid position to Tiled map pixel coordinates
+        float playerMapX = isoCoords[0];
+        float playerMapY = isoCoords[1];
+
+        System.out.println("Player Map Position: (" + playerMapX + ", " + playerMapY + ")");
 
         // Get the object layer from the map
         MapLayer objectLayer = map.getTiledMap().getLayers().get("object_layer");
         if (objectLayer == null) {
             System.out.println("No object layer found.");
-            return; // No object layer found
+            return;
         }
 
         // Iterate through all objects in the layer
@@ -303,21 +305,22 @@ public class GameController {
                 RectangleMapObject rectObject = (RectangleMapObject) object;
                 Rectangle rect = rectObject.getRectangle();
 
-                // Convert object's position to isometric coordinates
-                float[] objectIsoPos = toIsometric(rect.x / map.getTileWidth(), rect.y / map.getTileHeight());
-                float objectIsoX = objectIsoPos[0];
-                float objectIsoY = objectIsoPos[1];
+                // Use object's raw coordinates - they're already in map space
+                float objectX = rect.x;
+                float objectY = rect.y;
+                float objWidth = rect.width;
+                float objHeight = rect.height;
 
-                // Adjust object's width and height to isometric space
-                float isoWidth = rect.width * (map.getTileWidth()) / map.getTileWidth();
-                float isoHeight = rect.height * (map.getTileHeight()) / map.getTileHeight();
+                System.out.println("Object Position: (" + objectX + ", " + objectY +
+                        "), Width: " + objWidth + ", Height: " + objHeight);
 
-                // Log the object's isometric position and dimensions
-                System.out.println("Object Isometric Position: (" + objectIsoX + ", " + objectIsoY + "), Width: " + isoWidth + ", Height: " + isoHeight);
+                // Add a small margin for easier collision detection
+                float margin = 5.0f;
 
-                // Check if the player's isometric position is within the object's rectangle
-                if (playerIsoX >= objectIsoX && playerIsoX <= objectIsoX + isoWidth &&
-                        playerIsoY >= objectIsoY && playerIsoY <= objectIsoY + isoHeight) {
+                // Check if the player's position is within the object's rectangle
+                if (playerMapX >= objectX - margin && playerMapX <= objectX + objWidth + margin &&
+                        playerMapY >= objectY - margin && playerMapY <= objectY + objHeight + margin) {
+
                     System.out.println("Player intersects with object!");
                     // Trigger events based on object properties
                     String type = object.getProperties().get("type", String.class);
@@ -336,7 +339,7 @@ public class GameController {
                         }
                         setState(GameState.GAMEPLAY);
                         gameplayController.activate();
-                        gameplayController.startCombat(enemy,health);
+                        gameplayController.startCombat(enemy, health);
                     }
                 }
             }
