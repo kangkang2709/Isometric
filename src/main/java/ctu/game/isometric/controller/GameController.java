@@ -288,7 +288,10 @@ public class GameController {
         float playerMapX = x * map.getTileWidth();
         float playerMapY = y * map.getTileHeight();
 
+        float[] playerMapPos = toIsometric(x, y);
+
         System.out.println("Player Map Position: (" + playerMapX + ", " + playerMapY + ")");
+        System.out.println("Player Map Position: (" + playerMapPos[0] + ", " + playerMapPos[1]  + ")");
 
         // Get the object layer from the map
         MapLayer objectLayer = map.getTiledMap().getLayers().get("object_layer");
