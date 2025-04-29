@@ -57,15 +57,6 @@ public class GameScreen implements Screen {
 
         // Chỉ khởi tạo 1 lần khi gameController vừa tạo xong
         if (gameController.isCreated()) {
-//            // Dispose existing renderers if they exist
-//            if (mapRenderer != null) {
-//                mapRenderer.dispose();
-//            }
-//            if (characterRenderer != null) {
-//                characterRenderer.dispose();
-//            }
-
-            // Create new renderers
             mapRenderer = new MapRenderer(
                     gameController.getMap(),
                     game.getAssetManager(),
@@ -95,57 +86,47 @@ public class GameScreen implements Screen {
 
 
         GameState currentState = gameController.getCurrentState();
-            if(gameController.getTransitionController().isTransitioning()){
-                gameController.getTransitionController().render(batch);
+        if (gameController.getTransitionController().isTransitioning()) {
+            gameController.getTransitionController().render(batch);
+        } else {
+            switch (currentState) {
+                case MAIN_MENU:
+                    gameController.getMainMenuController().render(batch);
+                    break;
+                case CHARACTER_CREATION:
+                    gameController.getCharacterCreationController().render(batch);
+                    break;
+                case EXPLORING:
+                    mapRenderer.render(batch);
+                    mapRenderer.renderWalkableTileHighlights(
+                            batch,
+                            gameController.getWalkableTiles(),
+                            gameController.getCharacter().getAnimationTime()
+                    );
+                    if (characterRenderer != null) characterRenderer.render(batch);
+                    break;
+                case DIALOG:
+                    dialogUI.render();
+                    break;
+                case CUTSCENE:
+                    gameController.getCutsceneController().render(batch);
+                    break;
+                case GAMEPLAY:
+                    gameController.getGameplayController().render(batch);
+                    break;
+                case MENU:
+                    gameController.getMenuController().render(batch);
+                    break;
+                case SETTINGS:
+                    gameController.getSettingsMenuController().render(batch);
+                    break;
+                default:
+                    break;
             }
-            else {
-
-                switch (currentState) {
-                    case MAIN_MENU:
-                        gameController.getMainMenuController().render(batch);
-                        break;
-                    case CHARACTER_CREATION:
-                        gameController.getCharacterCreationController().render(batch);
-                        break;
-                    case EXPLORING:
-                        mapRenderer.render(batch);
-                        mapRenderer.renderWalkableTileHighlights(
-                                batch,
-                                gameController.getWalkableTiles(),
-                                gameController.getCharacter().getAnimationTime()
-                        );
-                        if (characterRenderer != null) characterRenderer.render(batch);
-                        break;
-                    case DIALOG:
-                        dialogUI.render();
-                        break;
-                    case CUTSCENE:
-                        gameController.getCutsceneController().render(batch);
-                        break;
-                    case GAMEPLAY:
-                        gameController.getGameplayController().render(batch);
-                        break;
-                    case MENU:
-                        gameController.getMenuController().render(batch);
-                        break;
-                    case SETTINGS:
-                        gameController.getSettingsMenuController().render(batch);
-                        break;
-                    default:
-                        break;
-                }
-            }
+        }
         batch.end();
     }
 
-
-    private void initCharacterRenderer() {
-        this.characterRenderer = new CharacterRenderer(
-                gameController.getCharacter(),
-                game.getAssetManager(),
-                mapRenderer
-        );
-    }
     @Override
     public void resize(int width, int height) {
         viewport.update(width, height);
@@ -158,13 +139,16 @@ public class GameScreen implements Screen {
     }
 
     @Override
-    public void pause() {}
+    public void pause() {
+    }
 
     @Override
-    public void resume() {}
+    public void resume() {
+    }
 
     @Override
-    public void hide() {}
+    public void hide() {
+    }
 
     @Override
     public void dispose() {

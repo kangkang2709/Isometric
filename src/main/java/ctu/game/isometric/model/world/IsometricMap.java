@@ -1,20 +1,15 @@
 package ctu.game.isometric.model.world;
 
-import com.badlogic.gdx.maps.MapLayer;
-import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.MapProperties;
-import com.badlogic.gdx.maps.objects.PolygonMapObject;
-import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
-import com.badlogic.gdx.math.Intersector;
-import com.badlogic.gdx.math.Polygon;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class IsometricMap {
     private TiledMap tiledMap;
@@ -23,6 +18,13 @@ public class IsometricMap {
     private int mapWidth;
     private int mapHeight;
     private TiledMapTileLayer baseLayer;
+    private boolean[][] walkableCache;
+    private int[][] mapData;
+
+    // Chunking system
+    private Map<Long, MapChunk> chunks = new HashMap<>();
+    private static final int CHUNK_SIZE = 16;
+    private boolean chunkingEnabled = false;
 
     public IsometricMap(String tmxFilePath) {
         // Load the TMX file
@@ -37,13 +39,201 @@ public class IsometricMap {
 
         // Assume the first layer is the base layer
         baseLayer = (TiledMapTileLayer) tiledMap.getLayers().get("ground_layer");
+
+        // Initialize data structures
+        initializeMapData();
+        initializeWalkableCache();
+
+        // Auto-enable chunking for large maps
+        if (mapWidth * mapHeight > 10000) {
+            enableChunking();
+        }
     }
 
     // For backwards compatibility
     public IsometricMap() {
-        this("maps/untitled.tmx"); // Default map path
+        this("maps/untitled1.tmx"); // Default map path
     }
 
+    // Enable chunking for large maps
+    public void enableChunking() {
+        this.chunkingEnabled = true;
+    }
+
+    // Initialize map data efficiently using parallel processing
+    public void initializeMapData() {
+        mapData = new int[mapHeight][mapWidth];
+        Arrays.parallelSetAll(mapData, y -> {
+            int[] row = new int[mapWidth];
+            for (int x = 0; x < mapWidth; x++) {
+                row[x] = getTileIdDirect(x, y);
+            }
+            return row;
+        });
+    }
+
+    // Direct access to tile ID without going through chunks
+    protected int getTileIdDirect(int x, int y) {
+        TiledMapTileLayer.Cell cell = baseLayer.getCell(x, y);
+        if (cell != null && cell.getTile() != null) {
+            return cell.getTile().getId();
+        }
+        return 0; // Empty tile
+    }
+
+    // Get the tile ID at a specific position - uses chunking if enabled
+    public int getTileId(int x, int y) {
+        if (!chunkingEnabled) {
+            return getTileIdDirect(x, y);
+        } else {
+            MapChunk chunk = getOrCreateChunk(x, y);
+            return chunk.getTileId(x % CHUNK_SIZE, y % CHUNK_SIZE);
+        }
+    }
+
+    // Get or create a chunk for the given position
+    private MapChunk getOrCreateChunk(int x, int y) {
+        int chunkX = x / CHUNK_SIZE;
+        int chunkY = y / CHUNK_SIZE;
+        long key = ((long)chunkX << 32) | (chunkY & 0xFFFFFFFFL);
+
+        return chunks.computeIfAbsent(key, k -> new MapChunk(this, chunkX, chunkY));
+    }
+
+    // Initialize walkable cache
+    public void initializeWalkableCache() {
+        walkableCache = new boolean[mapHeight][mapWidth];
+        for (int y = 0; y < mapHeight; y++) {
+            for (int x = 0; x < mapWidth; x++) {
+                walkableCache[y][x] = calculateWalkable(x, y);
+            }
+        }
+    }
+
+    // Made public so chunks can use it
+    public boolean calculateWalkable(int x, int y) {
+        TiledMapTileLayer.Cell cell = baseLayer.getCell(x, y);
+        if (cell == null || cell.getTile() == null || cell.getTile().getId() <= 0) {
+            return false;
+        }
+        TiledMapTileLayer collision = (TiledMapTileLayer) tiledMap.getLayers().get("terrain_layer");
+        if (collision != null) {
+            TiledMapTileLayer.Cell cell2 = collision.getCell(x, y);
+            if (cell2 != null && cell2.getTile() != null) {
+                MapProperties properties = cell2.getTile().getProperties();
+                return properties.containsKey("walkable") && properties.get("walkable", Boolean.class);
+            }
+        }
+        return true;
+    }
+
+    // Check if a tile is walkable - uses chunking if enabled
+    public boolean isWalkable(int x, int y) {
+        if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight) {
+            return false;
+        }
+
+        if (!chunkingEnabled) {
+            return walkableCache[y][x];
+        } else {
+            MapChunk chunk = getOrCreateChunk(x, y);
+            return chunk.isWalkable(x % CHUNK_SIZE, y % CHUNK_SIZE);
+        }
+    }
+
+    // Get map data (cached)
+    public int[][] getMapData() {
+        return mapData;
+    }
+
+    // Get viewport-based data for efficient rendering
+    public int[][] getViewportData(int centerX, int centerY, int width, int height) {
+        int startX = centerX - width / 2;
+        int startY = centerY - height / 2;
+        int[][] viewportData = new int[height][width];
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int mapX = startX + x;
+                int mapY = startY + y;
+                if (mapX >= 0 && mapX < mapWidth && mapY >= 0 && mapY < mapHeight) {
+                    viewportData[y][x] = getTileId(mapX, mapY);
+                } else {
+                    viewportData[y][x] = 0; // Default value for out-of-bounds
+                }
+            }
+        }
+        return viewportData;
+    }
+
+    // Get viewport-based walkable data for efficient rendering
+    public boolean[][] getViewportWalkable(int centerX, int centerY, int width, int height) {
+        int startX = centerX - width / 2;
+        int startY = centerY - height / 2;
+        boolean[][] viewportWalkable = new boolean[height][width];
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int mapX = startX + x;
+                int mapY = startY + y;
+                viewportWalkable[y][x] = isWalkable(mapX, mapY);
+            }
+        }
+        return viewportWalkable;
+    }
+
+    // Update a single tile efficiently
+    public void updateTile(int x, int y, int tileId) {
+        if (x >= 0 && x < mapWidth && y >= 0 && y < mapHeight) {
+            // Update the actual tile in the layer
+            TiledMapTileLayer.Cell cell = baseLayer.getCell(x, y);
+            if (cell != null) {
+                TiledMapTile newTile = tiledMap.getTileSets().getTile(tileId);
+                if (newTile != null) {
+                    cell.setTile(newTile);
+
+                    // Update cached data
+                    mapData[y][x] = tileId;
+                    walkableCache[y][x] = calculateWalkable(x, y);
+
+                    // Update chunk if chunking is enabled
+                    if (chunkingEnabled) {
+                        int chunkX = x / CHUNK_SIZE;
+                        int chunkY = y / CHUNK_SIZE;
+                        long key = ((long)chunkX << 32) | (chunkY & 0xFFFFFFFFL);
+                        chunks.put(key, new MapChunk(this, chunkX, chunkY));
+                    }
+                }
+            }
+        }
+    }
+
+    // Batch update multiple tiles at once for efficiency
+    public void updateTiles(int[][] updates) {
+        for (int[] update : updates) {
+            int x = update[0];
+            int y = update[1];
+            int tileId = update[2];
+            updateTile(x, y, tileId);
+        }
+    }
+
+    // Utility method to convert tile coordinates to world coordinates
+    public Vector2 tileToWorld(int x, int y) {
+        float worldX = (x - y) * (tileWidth / 2f);
+        float worldY = (x + y) * (tileHeight / 2f);
+        return new Vector2(worldX, worldY);
+    }
+
+    // Clear any chunks that haven't been accessed recently
+    // This can be called periodically to free memory
+    public void cleanupUnusedChunks(long olderThanMillis) {
+        long currentTime = System.currentTimeMillis();
+        chunks.entrySet().removeIf(entry ->
+                entry.getValue().getLastAccessTime() < currentTime - olderThanMillis);
+    }
+
+    // Standard getters and setters
     public TiledMap getTiledMap() {
         return tiledMap;
     }
@@ -64,90 +254,8 @@ public class IsometricMap {
         return mapHeight;
     }
 
-    // Get the tile ID at a specific position
-    public int getTileId(int x, int y) {
-        TiledMapTileLayer.Cell cell = baseLayer.getCell(x, y);
-        if (cell != null && cell.getTile() != null) {
-            return cell.getTile().getId();
-        }
-        return 0; // Empty tile
-    }
-
-    // For compatibility with existing code
-    public int[][] getMapData() {
-        int[][] data = new int[mapHeight][mapWidth];
-        for (int y = 0; y < mapHeight; y++) {
-            for (int x = 0; x < mapWidth; x++) {
-                data[y][x] = getTileId(x, y);
-            }
-        }
-        return data;
-    }
-    public Vector2 tileToWorld(int x, int y) {
-        float worldX = (x - y) * (tileWidth / 2f);
-        float worldY = (x + y) * (tileHeight / 2f);
-        return new Vector2(worldX, worldY);
-    }
-
-    public boolean isWalkable(int x, int y) {
-        // 1. Check valid coordinates
-        if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight) {
-            return false;
-        }
-
-        // 2. Check for valid tile
-        TiledMapTileLayer.Cell cell = baseLayer.getCell(x, y);
-        if (cell == null || cell.getTile() == null || cell.getTile().getId() <= 0) {
-            return false;
-        }
-
-        // 3. Check for cell properties
-        TiledMapTileLayer collision = (TiledMapTileLayer) tiledMap.getLayers().get("terrain_layer");
-        if (collision != null) {
-            TiledMapTileLayer.Cell cell2 = collision.getCell(x, y);
-            if (cell2 != null && cell2.getTile() != null) {
-                MapProperties properties = cell2.getTile().getProperties();
-                if (properties.containsKey("walkable")) {
-                    return properties.get("walkable", Boolean.class);
-                }
-            }
-        }
-
-        return true;
-    }
-
-
-
-
-
-    /**
-     * Check if a point is inside a polygon defined by an array of vertices.
-     * @param x X coordinate of the point
-     * @param y Y coordinate of the point
-     * @param vertices Array of vertices (x1,y1,x2,y2,...)
-     * @return true if the point is inside the polygon
-     */
-    private boolean isPointInPolygon(float x, float y, float[] vertices) {
-        boolean inside = false;
-        int j = vertices.length - 2;
-
-        for (int i = 0; i < vertices.length; i += 2) {
-            float xi = vertices[i];
-            float yi = vertices[i + 1];
-            float xj = vertices[j];
-            float yj = vertices[j + 1];
-
-            boolean intersect = ((yi > y) != (yj > y)) &&
-                    (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-
-            if (intersect) {
-                inside = !inside;
-            }
-
-            j = i;
-        }
-
-        return inside;
+    public TiledMapTileLayer getBaseLayer() {
+        return baseLayer;
     }
 
     public void setTiledMap(TiledMap tiledMap) {
@@ -168,10 +276,6 @@ public class IsometricMap {
 
     public void setMapHeight(int mapHeight) {
         this.mapHeight = mapHeight;
-    }
-
-    public TiledMapTileLayer getBaseLayer() {
-        return baseLayer;
     }
 
     public void setBaseLayer(TiledMapTileLayer baseLayer) {

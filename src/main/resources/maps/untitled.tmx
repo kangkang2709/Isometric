@@ -21,22 +21,22 @@
   <image source="tiles/city_game_tileset/city_game_tileset/tree1.png" trans="ff00ff" width="64" height="128"/>
  </tileset>
  <objectgroup id="8" name="collision_layer" locked="1"/>
- <layer id="1" name="ground_layer" width="20" height="20">
+ <layer id="1" name="ground_layer" width="20" height="20" opacity="0.64">
   <data encoding="csv">
 0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-1,1,1,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,
-1,1,1,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,
-1,1,1,1,0,1,0,1,1,1,1,0,0,0,0,0,0,0,0,0,
-1,1,1,1,1,1,0,1,1,1,1,1,1,2,2,2,0,0,0,0,
-1,1,1,1,2,1,1,1,1,1,1,1,1,2,2,2,0,0,0,0,
+1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,
+1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,
+1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,
 1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,0,0,0,0,
-1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,0,0,0,0,
+1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,0,0,0,0,
+1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,0,0,0,0,
+1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,
 1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,0,0,0,
-1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,
+1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,
 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,0,0,
 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,0,0,
-1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,0,0,
+1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,
 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,
 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,
@@ -69,28 +69,8 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="4" name="object_layer">
-  <object id="78" x="99.6667" y="480.708" width="32.2917" height="33.2917">
-   <properties>
-    <property name="type" value="story"/>
-   </properties>
-  </object>
-  <object id="88" x="95.2209" y="640.422" width="30.5677" height="32.3499" rotation="179.403">
-   <properties>
-    <property name="enemy" value="enemy_01"/>
-    <property name="health" value="2"/>
-    <property name="type" value="puzzle"/>
-   </properties>
-  </object>
-  <object id="89" x="65.7907" y="576.57" width="34.0451" height="31.7492" rotation="179.164">
-   <properties>
-    <property name="enemy" value="enemy_02"/>
-    <property name="health" value="2"/>
-    <property name="type" value="puzzle"/>
-   </properties>
-  </object>
- </objectgroup>
+ <objectgroup id="4" name="object_layer"/>
  <objectgroup id="7" name="overlay">
-  <object id="95" gid="5" x="258.5" y="575.5" width="58" height="111.5"/>
+  <object id="95" gid="5" x="34" y="494" width="58" height="111.5"/>
  </objectgroup>
 </map>

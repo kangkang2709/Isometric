@@ -62,7 +62,7 @@ public class GameController {
 
         switch (currentState) {
             case EXPLORING:
-                inputController.update(delta);
+                inputController.updateCooldown(delta);
                 character.update(delta);
                 break;
             case CHARACTER_CREATION:
@@ -284,70 +284,7 @@ public class GameController {
     }
 
     private void checkPositionEvents(float x, float y) {
-        // Convert player grid position to Tiled map pixel coordinates
-        float playerMapX = x * map.getTileWidth();
-        float playerMapY = y * map.getTileHeight();
 
-        float[] playerMapPos = toIsometric(x, y);
-
-        System.out.println("Player Map Position: (" + playerMapX + ", " + playerMapY + ")");
-        System.out.println("Player Map Position: (" + playerMapPos[0] + ", " + playerMapPos[1]  + ")");
-
-        // Get the object layer from the map
-        MapLayer objectLayer = map.getTiledMap().getLayers().get("object_layer");
-        if (objectLayer == null) {
-            System.out.println("No object layer found.");
-            return;
-        }
-        float mapHeightInPixels = map.getMapHeight() * map.getTileHeight();
-
-        // Iterate through all objects in the layer
-        for (MapObject object : objectLayer.getObjects()) {
-            if (object instanceof RectangleMapObject) {
-                RectangleMapObject rectObject = (RectangleMapObject) object;
-                Rectangle rect = rectObject.getRectangle();
-
-
-
-                // Use object's raw coordinates - they're already in map space
-                float objectX = rect.x;
-                float objectY = rect.y;  // ← ĐẢO Y
-                float objWidth = rect.width;
-                float objHeight = rect.height;
-
-                System.out.println("Object Position: (" + objectX + ", " + objectY +
-                        "), Width: " + objWidth + ", Height: " + objHeight);
-
-                // Add a small margin for easier collision detection
-                float margin = 5.0f;
-
-                // Check if the player's position is within the object's rectangle
-                if (playerMapX >= objectX - margin && playerMapX <= objectX + objWidth + margin &&
-                        playerMapY >= objectY - margin && playerMapY <= objectY + objHeight + margin) {
-
-                    System.out.println("Player intersects with object!");
-                    // Trigger events based on object properties
-                    String type = object.getProperties().get("type", String.class);
-                    if ("story".equals(type)) {
-                        setState(GameState.DIALOG);
-                        dialogController.startDialog("chapter_01", "scene_01");
-                    }
-                    else if ("puzzle".equals(type)) {
-                        String enemy = object.getProperties().get("enemy", String.class);
-                        int health;
-                        Object healthObj = object.getProperties().get("health");
-                        if (healthObj instanceof String) {
-                            health = Integer.parseInt((String) healthObj);
-                        } else {
-                            health = object.getProperties().get("health", Integer.class);
-                        }
-                        setState(GameState.GAMEPLAY);
-                        gameplayController.activate();
-                        gameplayController.startCombat(enemy, health);
-                    }
-                }
-            }
-        }
     }
 
     public boolean[][] getWalkableTiles() {
