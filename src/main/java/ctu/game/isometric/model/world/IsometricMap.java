@@ -1,5 +1,6 @@
 package ctu.game.isometric.model.world;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
@@ -134,6 +135,7 @@ public class IsometricMap {
         }
 
         if (!chunkingEnabled) {
+            System.out.println("Using walkable cache");
             return walkableCache[y][x];
         } else {
             MapChunk chunk = getOrCreateChunk(x, y);
@@ -166,7 +168,6 @@ public class IsometricMap {
         return viewportData;
     }
 
-    // Get viewport-based walkable data for efficient rendering
     public boolean[][] getViewportWalkable(int centerX, int centerY, int width, int height) {
         int startX = centerX - width / 2;
         int startY = centerY - height / 2;
@@ -182,41 +183,6 @@ public class IsometricMap {
         return viewportWalkable;
     }
 
-    // Update a single tile efficiently
-    public void updateTile(int x, int y, int tileId) {
-        if (x >= 0 && x < mapWidth && y >= 0 && y < mapHeight) {
-            // Update the actual tile in the layer
-            TiledMapTileLayer.Cell cell = baseLayer.getCell(x, y);
-            if (cell != null) {
-                TiledMapTile newTile = tiledMap.getTileSets().getTile(tileId);
-                if (newTile != null) {
-                    cell.setTile(newTile);
-
-                    // Update cached data
-                    mapData[y][x] = tileId;
-                    walkableCache[y][x] = calculateWalkable(x, y);
-
-                    // Update chunk if chunking is enabled
-                    if (chunkingEnabled) {
-                        int chunkX = x / CHUNK_SIZE;
-                        int chunkY = y / CHUNK_SIZE;
-                        long key = ((long)chunkX << 32) | (chunkY & 0xFFFFFFFFL);
-                        chunks.put(key, new MapChunk(this, chunkX, chunkY));
-                    }
-                }
-            }
-        }
-    }
-
-    // Batch update multiple tiles at once for efficiency
-    public void updateTiles(int[][] updates) {
-        for (int[] update : updates) {
-            int x = update[0];
-            int y = update[1];
-            int tileId = update[2];
-            updateTile(x, y, tileId);
-        }
-    }
 
     // Utility method to convert tile coordinates to world coordinates
     public Vector2 tileToWorld(int x, int y) {
@@ -225,8 +191,7 @@ public class IsometricMap {
         return new Vector2(worldX, worldY);
     }
 
-    // Clear any chunks that haven't been accessed recently
-    // This can be called periodically to free memory
+
     public void cleanupUnusedChunks(long olderThanMillis) {
         long currentTime = System.currentTimeMillis();
         chunks.entrySet().removeIf(entry ->

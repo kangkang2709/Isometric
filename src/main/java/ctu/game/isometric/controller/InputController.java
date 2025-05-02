@@ -1,12 +1,17 @@
 package ctu.game.isometric.controller;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.TimeUtils;
 import ctu.game.isometric.model.game.GameState;
 import ctu.game.isometric.view.renderer.DialogUI;
+import ctu.game.isometric.view.renderer.MapRenderer;
+
+import static com.badlogic.gdx.math.Rectangle.tmp;
 
 public class InputController extends InputAdapter {
     private final GameController gameController;
@@ -15,8 +20,24 @@ public class InputController extends InputAdapter {
     private final float MOVE_DELAY = 0.42f; // seconds
     private static final long INPUT_DELAY = 200; // milliseconds
     private long lastInputTime = 0;
-
+    private MapRenderer mapRenderer;
     private boolean debugLog = true;
+
+
+
+    private int[] toIsometricGrid(float worldX, float worldY) {
+        // Get map properties
+        float tileWidth = mapRenderer.getMap().getTileWidth();
+        float tileHeight = mapRenderer.getMap().getTileHeight();
+
+        // Convert from isometric world coordinates to grid coordinates
+        // This is the inverse of the isometric transformation
+        float gridX = (worldX / (tileWidth/2) + worldY / (tileHeight/2)) / 2;
+        float gridY = (worldY / (tileHeight/2) - worldX / (tileWidth/2)) / 2;
+
+        // Round to nearest grid position
+        return new int[]{Math.round(gridX), Math.round(gridY)};
+    }
 
     public InputController(GameController gameController) {
         this.gameController = gameController;
@@ -80,6 +101,38 @@ public class InputController extends InputAdapter {
         return false;
     }
 
+
+    @Override
+    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        // Only process left clicks during EXPLORING state
+        if (button != Input.Buttons.LEFT || gameController.getCurrentState() != GameState.EXPLORING || mapRenderer == null) {
+            return false;
+        }
+
+        // Convert screen coordinates to world coordinates
+        Vector3 worldCoords = new Vector3(screenX, screenY, 0);
+        gameController.getCamera().unproject(worldCoords);
+
+        // Convert world coordinates to grid coordinates
+        int[] gridPos = toIsometricGrid(worldCoords.x, worldCoords.y);
+
+        int targetX = gridPos[0];
+        int targetY = gridPos[1];
+
+        // Get character's current position
+        int characterX = (int) Math.floor(gameController.getCharacter().getGridX());
+        int characterY = (int) Math.floor(gameController.getCharacter().getGridY());
+
+        // Debug output
+        if (debugLog) {
+            Gdx.app.log("Mouse", "Click at grid: " + targetX + "," + targetY);
+            Gdx.app.log("Mouse", "Character at: " + characterX + "," + characterY);
+        }
+
+        moveCharacter(targetX,targetY);
+        return false;
+    }
+
     private boolean handleExploringInput(int keycode) {
         if (moveCooldown > 0) {
             return false;
@@ -107,6 +160,26 @@ public class InputController extends InputAdapter {
                 moveCharacter(0, 1);
                 moved = true;
                 if (debugLog) Gdx.app.log("Input", "Right pressed");
+            }
+            case Keys.Q -> { // Diagonal Up-Left
+                moveCharacter(1, -1);
+                moved = true;
+                if (debugLog) Gdx.app.log("Input", "Up-Left pressed");
+            }
+            case Keys.E -> { // Diagonal Up-Right
+                moveCharacter(1, 1);
+                moved = true;
+                if (debugLog) Gdx.app.log("Input", "Up-Right pressed");
+            }
+            case Keys.Z -> { // Diagonal Down-Left
+                moveCharacter(-1, -1);
+                moved = true;
+                if (debugLog) Gdx.app.log("Input", "Down-Left pressed");
+            }
+            case Keys.C -> { // Diagonal Down-Right
+                moveCharacter(-1, 1);
+                moved = true;
+                if (debugLog) Gdx.app.log("Input", "Down-Right pressed");
             }
             default -> {}
         }
@@ -185,6 +258,7 @@ public class InputController extends InputAdapter {
         }
     }
 
+
     @Override
     public boolean scrolled(float amountX, float amountY) {
         GameState state = gameController.getCurrentState();
@@ -212,5 +286,13 @@ public class InputController extends InputAdapter {
         if (moveCooldown > 0) {
             moveCooldown -= delta;
         }
+    }
+
+    public MapRenderer getMapRenderer() {
+        return mapRenderer;
+    }
+
+    public void setMapRenderer(MapRenderer mapRenderer) {
+        this.mapRenderer = mapRenderer;
     }
 }

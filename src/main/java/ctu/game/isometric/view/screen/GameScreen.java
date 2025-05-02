@@ -63,7 +63,7 @@ public class GameScreen implements Screen {
                     gameController.getCharacter(),
                     camera
             );
-
+            gameController.getInputController().setMapRenderer(mapRenderer);
             characterRenderer = new CharacterRenderer(
                     gameController.getCharacter(),
                     game.getAssetManager(),
@@ -100,7 +100,6 @@ public class GameScreen implements Screen {
                     mapRenderer.render(batch);
                     mapRenderer.renderWalkableTileHighlights(
                             batch,
-                            gameController.getWalkableTiles(),
                             gameController.getCharacter().getAnimationTime()
                     );
                     if (characterRenderer != null) characterRenderer.render(batch);

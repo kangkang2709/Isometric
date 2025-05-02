@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapObject;
+import com.badlogic.gdx.maps.MapRenderer;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.math.Rectangle;
 import ctu.game.isometric.IsometricGame;
@@ -30,7 +31,6 @@ public class GameController {
     private TransitionController transitionController;
     private GameplayController gameplayController;
     private CharacterCreationController characterCreationController;
-
     private GameState currentState = GameState.MAIN_MENU;
     private GameState previousState = GameState.MAIN_MENU;
     private CutsceneController cutsceneController;
@@ -46,7 +46,6 @@ public class GameController {
         this.musicController = new MusicController();
         this.gameplayController = new GameplayController(this);
         characterCreationController = new CharacterCreationController(this);
-
         this.menuController = new MenuController(this);
         this.settingsMenuController = new SettingsMenuController(this);
         this.mainMenuController = new MainMenuController(this);
@@ -287,46 +286,46 @@ public class GameController {
 
     }
 
-    public boolean[][] getWalkableTiles() {
-        // First check if map is valid
-        if (map == null || map.getMapData() == null || map.getMapData().length == 0) {
-            return new boolean[0][0];
-        }
-
-        int height = map.getMapData().length;
-        int width = map.getMapData()[0].length;
-        boolean[][] walkable = new boolean[height][width];
-
-        // Initialize all tiles as not walkable
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                walkable[y][x] = false;
-            }
-        }
-
-        // Mark only adjacent walkable tiles
-        int charX = (int) character.getGridX();
-        int charY = (int) character.getGridY();
-
-        // Check adjacent tiles (up, down, left, right)
-        int[][] directions = {{0, -1}, {0, 1}, {-1, 0}, {1, 0}};
-        for (int[] dir : directions) {
-            int newX = charX + dir[0];
-            int newY = charY + dir[1];
-
-            // First validate that this position is inside the map
-            if (newX < 0 || newY < 0 || newX >= width || newY >= height) {
-                continue; // Skip this direction if it's outside the map
-            }
-
-            // Then check if we can move there
-            if (canMove(dir[0], dir[1])) {
-                walkable[newY][newX] = true;
-            }
-        }
-
-        return walkable;
-    }
+//    public boolean[][] getWalkableTiles() {
+//        // First check if map is valid
+//        if (map == null || map.getMapData() == null || map.getMapData().length == 0) {
+//            return new boolean[0][0];
+//        }
+//
+//        int height = map.getMapData().length;
+//        int width = map.getMapData()[0].length;
+//        boolean[][] walkable = new boolean[height][width];
+//
+//        // Initialize all tiles as not walkable
+//        for (int y = 0; y < height; y++) {
+//            for (int x = 0; x < width; x++) {
+//                walkable[y][x] = false;
+//            }
+//        }
+//
+//        // Mark only adjacent walkable tiles
+//        int charX = (int) character.getGridX();
+//        int charY = (int) character.getGridY();
+//
+//        // Check adjacent tiles (up, down, left, right)
+//        int[][] directions = {{0, -1}, {0, 1}, {-1, 0}, {1, 0}};
+//        for (int[] dir : directions) {
+//            int newX = charX + dir[0];
+//            int newY = charY + dir[1];
+//
+//            // First validate that this position is inside the map
+//            if (newX < 0 || newY < 0 || newX >= width || newY >= height) {
+//                continue; // Skip this direction if it's outside the map
+//            }
+//
+//            // Then check if we can move there
+//            if (canMove(dir[0], dir[1])) {
+//                walkable[newY][newX] = true;
+//            }
+//        }
+//
+//        return walkable;
+//    }
     // Getters
     public Character getCharacter() { return character; }
     public IsometricMap getMap() { return map; }

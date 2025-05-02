@@ -145,7 +145,18 @@ public class MapRenderer {
 
 
 
-    public void renderWalkableTileHighlights(SpriteBatch batch, boolean[][] walkableTiles, float stateTime) {
+    /**
+     * Renders highlights for walkable tiles around the player's position.
+     * @param batch The sprite batch to render with
+     * @param viewDistance How many tiles away from the player to check
+     * @param stateTime Current animation state time
+     */
+    /**
+     * Renders highlights for walkable tiles in the four cardinal directions from the player.
+     * @param batch The sprite batch to render with
+     * @param stateTime Current animation state time
+     */
+    public void renderWalkableTileHighlights(SpriteBatch batch, float stateTime) {
         // Get character position
         int characterX = (int) Math.floor(character.getGridX());
         int characterY = (int) Math.floor(character.getGridY());
@@ -156,63 +167,54 @@ public class MapRenderer {
         // Set highlight color (semi-transparent green)
         batch.setColor(0.2f, 1f, 0.2f, 0.5f);
 
-        // Define adjacent tiles in correct drawing order for isometric depth
-        int[][] adjacentTiles = {
-                {characterX - 1, characterY - 1}, // left_up
-                {characterX, characterY - 1},     // up
-                {characterX - 1, characterY},     // left
-                {characterX, characterY},         // center
-                {characterX + 1, characterY - 1}, // right_up
-                {characterX - 1, characterY + 1}, // left_down
-                {characterX + 1, characterY},     // right
-                {characterX, characterY + 1},     // down
-                {characterX + 1, characterY + 1}  // right_down
+        // Create a list to hold valid adjacent tiles
+        java.util.List<int[]> validTiles = new java.util.ArrayList<>();
+
+        // Define the four cardinal directions matching the movement controls
+        int[][] directions = {
+                {1, 0},   // Up (W/Up keys)
+                {-1, 0},  // Down (S/Down keys)
+                {0, -1},  // Left (A/Left keys)
+                {0, 1}    // Right (D/Right keys)
         };
 
-        // Sort by isometric depth (higher x+y is further back, then by y)
-        java.util.Arrays.sort(adjacentTiles, (a, b) -> {
-            int sumComparison = Integer.compare(a[0] + a[1], b[0] + b[1]);
-            if (sumComparison != 0) {
-                return sumComparison;
+        // Check only the four cardinal directions
+        for (int[] dir : directions) {
+            int x = characterX + dir[0];
+            int y = characterY + dir[1];
+
+            // Skip if out of bounds
+            if (x < 0 || x >= map.getMapWidth() || y < 0 || y >= map.getMapHeight()) {
+                continue;
             }
-            return Integer.compare(a[1], b[1]); // Compare y-values for tiles with the same sum
+
+            // Check if walkable using map's chunk system
+            if (map.isWalkable(x, y)) {
+                validTiles.add(new int[]{x, y});
+            }
+        }
+
+        // Sort by isometric depth (higher x+y is farther from camera in isometric view)
+        validTiles.sort((a, b) -> {
+            int sumComparison = Integer.compare(b[0] + b[1], a[0] + a[1]);
+            return sumComparison != 0 ? sumComparison : Integer.compare(b[1], a[1]);
         });
 
-        // Get the base layer for highlighting
-        TiledMapTileLayer baseLayer = (TiledMapTileLayer) map.getTiledMap().getLayers().get("ground_layer");
+        // Render each walkable tile
+        for (int[] tile : validTiles) {
+            int x = tile[0];
+            int y = tile[1];
 
-        // Ensure walkableTiles array matches map dimensions
-        if (walkableTiles != null &&
-                walkableTiles.length == map.getMapHeight() &&
-                walkableTiles[0].length == map.getMapWidth()) {
+            TiledMapTileLayer.Cell cell = map.getBaseLayer().getCell(x, y);
+            if (cell != null && cell.getTile() != null) {
+                TextureRegion tileRegion = cell.getTile().getTextureRegion();
+                float[] iso = toIsometric(x, y);
 
-            for (int[] tile : adjacentTiles) {
-                int x = tile[0];
-                int y = tile[1];
-
-                // Check if tile is within bounds and walkable
-                if (x >= 0 && x < walkableTiles[0].length &&
-                        y >= 0 && y < walkableTiles.length &&
-                        walkableTiles[y][x]) {
-
-                    TiledMapTileLayer.Cell cell = baseLayer.getCell(x, y);
-                    if (cell != null) {
-                        TiledMapTile mapTile = cell.getTile();
-                        if (mapTile != null) {
-                            TextureRegion tileRegion = mapTile.getTextureRegion();
-                            float[] iso = toIsometric(x, y);
-
-                            // Draw at the center position, adjusting for tile dimensions
-                            float tileWidth = map.getTileWidth();
-                            float tileHeight = map.getTileHeight();
-                            batch.draw(tileRegion,
-                                    iso[0],
-                                    iso[1],
-                                    tileWidth,
-                                    tileHeight);
-                        }
-                    }
-                }
+                batch.draw(tileRegion,
+                        iso[0],
+                        iso[1],
+                        map.getTileWidth(),
+                        map.getTileHeight());
             }
         }
 
