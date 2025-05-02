@@ -30,12 +30,15 @@ public class InputController extends InputAdapter {
         float tileWidth = mapRenderer.getMap().getTileWidth();
         float tileHeight = mapRenderer.getMap().getTileHeight();
 
-        // Convert from isometric world coordinates to grid coordinates
-        // This is the inverse of the isometric transformation
-        float gridX = (worldX / (tileWidth/2) + worldY / (tileHeight/2)) / 2;
-        float gridY = (worldY / (tileHeight/2) - worldX / (tileWidth/2)) / 2;
+        // These formulas were swapped - fix the inverse isometric transformation
+        float gridX = (worldX / (tileWidth/2) - worldY / (tileHeight/2)) / 2;
+        float gridY = (worldX / (tileWidth/2) + worldY / (tileHeight/2)) / 2;
 
-        // Round to nearest grid position
+        if (debugLog) {
+            Gdx.app.log("Conversion", "World: " + worldX + "," + worldY +
+                    " -> Grid: " + gridX + "," + gridY);
+        }
+
         return new int[]{Math.round(gridX), Math.round(gridY)};
     }
 
@@ -115,21 +118,34 @@ public class InputController extends InputAdapter {
 
         // Convert world coordinates to grid coordinates
         int[] gridPos = toIsometricGrid(worldCoords.x, worldCoords.y);
-
         int targetX = gridPos[0];
-        int targetY = gridPos[1];
+        int targetY = gridPos[1]-1;
 
         // Get character's current position
         int characterX = (int) Math.floor(gameController.getCharacter().getGridX());
         int characterY = (int) Math.floor(gameController.getCharacter().getGridY());
 
+        // Calculate the movement delta - this is what we need to fix
+        int dx = targetX - characterX;
+        int dy = targetY - characterY;
+
         // Debug output
         if (debugLog) {
             Gdx.app.log("Mouse", "Click at grid: " + targetX + "," + targetY);
             Gdx.app.log("Mouse", "Character at: " + characterX + "," + characterY);
+            Gdx.app.log("Mouse", "Delta: " + dx + "," + dy);
         }
 
-        moveCharacter(targetX,targetY);
+        // Only allow movement to adjacent tiles (including diagonals)
+        if (Math.abs(dx) <= 1 && Math.abs(dy) <= 1 && (dx != 0 || dy != 0)) {
+            // Only move if the target tile is walkable
+            if (gameController.getMap().isWalkable(targetX, targetY)) {
+                moveCharacter(dx, dy);
+                moveCooldown = MOVE_DELAY;
+                return true;
+            }
+        }
+
         return false;
     }
 

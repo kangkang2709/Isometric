@@ -133,7 +133,6 @@ public class GameScreen implements Screen {
 
     @Override
     public void show() {
-        camera.position.set(viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2, 0);
         camera.update();
     }
 
