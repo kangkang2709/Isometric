@@ -301,8 +301,8 @@ public class GameController {
             for (MapObject object : objectLayer.getObjects()) {
                 if (object instanceof RectangleMapObject) {
                     Rectangle rect = ((RectangleMapObject) object).getRectangle();
-                    int objGridX = (int) (rect.x / map.getTileWidth())+1;
-                    int objGridY = (int) (rect.y / map.getTileHeight())-1;
+                    int objGridX = (int) (rect.x / map.getTileWidth())+2;
+                    int objGridY = (int) (rect.y / map.getTileHeight())-2;
                     System.out.println("Object position: " + objGridX + "," + objGridY);
                     if (objGridX == gridX && objGridY == gridY) {
                         handleEventProperties(object.getProperties(), gridX, gridY);
