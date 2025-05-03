@@ -51,18 +51,19 @@ public class Character {
                 ty >= 0 && ty < gameMap.getMapHeight() &&
                 gameMap.isWalkable(tx, ty)) {
 
-            this.targetX = targetX;
-            this.targetY = targetY;
+            // Clamp target position to ensure it's safely within grid boundaries
+            this.targetX = Math.max(0.001f, Math.min(gameMap.getMapWidth() - 0.001f, targetX));
+            this.targetY = Math.max(0.001f, Math.min(gameMap.getMapHeight() - 0.001f, targetY));
             this.isMoving = true;
 
             // Calculate initial direction
-            float dx = targetX - gridX;
-            float dy = targetY - gridY;
+            float dx = this.targetX - gridX;
+            float dy = this.targetY - gridY;
             updateDirectionFromVector(dx, dy);
         }
     }
 
-    // Optimized update method
+
     // In Character class
     public void update(float delta) {
         animationTime += delta;
@@ -111,7 +112,10 @@ public class Character {
 
                     gridX = newX;
                     gridY = newY;
-                    updateDirectionFromVector(dx, dy);
+                    // Recalculate direction vector after position update
+                    float newDx = targetX - gridX;
+                    float newDy = targetY - gridY;
+                    updateDirectionFromVector(newDx, newDy);
                 } else {
                     // Stop movement if we hit an invalid tile
                     isMoving = false;
@@ -131,31 +135,24 @@ public class Character {
         if (dx > 0 && dy > 0) {
 //            (1, 1) → "right_up" (Northeast)
             direction = "up";
-            System.out.println("1");
         } else if (dx > 0 && dy < 0) {
 //            (1, -1) → "right_down" (Southeast)
             direction = "down";
-            System.out.println("2");
         } else if (dx < 0 && dy > 0) {
 //            (-1, 1) → "left_up" (Northwest)
             direction = "right_down";
-            System.out.println("3");
         } else if (dx < 0 && dy < 0) {
 //            (-1, -1) → "left_down" (Southwest) *
             direction = "left_down";
-            System.out.println("4");
         } else if (dx > 0) {
 //            (1, 0) → "up" (North)
             direction = "up";
-            System.out.println("5");
         } else if (dx < 0) {
 //            (-1, 0) → "down" (South) *
             direction = "left_up";
-            System.out.println("6");
         } else if (dy > 0) {
 //            (0, 1) → "right" (East)
             direction = "right_up";
-            System.out.println("7");
         } else {
 //            (0, -1) → "left" (West)
             direction = "left_down";

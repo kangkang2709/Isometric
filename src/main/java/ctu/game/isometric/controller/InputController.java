@@ -108,6 +108,11 @@ public class InputController extends InputAdapter {
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         // Only process left clicks during EXPLORING state
+        if (moveCooldown > 0) {
+            return false;
+        }
+        boolean moved = false;
+
         if (button != Input.Buttons.LEFT || gameController.getCurrentState() != GameState.EXPLORING || mapRenderer == null) {
             return false;
         }
@@ -141,11 +146,11 @@ public class InputController extends InputAdapter {
             // Only move if the target tile is walkable
                 moveCharacter(dx, dy);
                 moveCooldown = MOVE_DELAY;
+                lastInputTime = TimeUtils.millis();
                 return true;
 
         }
-
-        return false;
+        return moved;
     }
 
     private boolean handleExploringInput(int keycode) {
