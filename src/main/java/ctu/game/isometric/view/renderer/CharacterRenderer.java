@@ -40,14 +40,11 @@ public class CharacterRenderer {
 
         // Get animation frame with translated direction
         String direction = translateDirection(character.getDirection());
-
         TextureRegion currentFrame = animationManager.getCharacterFrame(
                 direction,
                 character.isMoving(),
                 character.getAnimationTime()
         );
-
-
         // Position character at the center of the tile
         float offsetPlayerX = 11; // Half of sprite width (48/2)
         float offsetPlayerY = -5; // Position the feet at tile base (character sprite height - tile height)

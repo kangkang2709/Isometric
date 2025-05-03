@@ -48,7 +48,7 @@ public class MapRenderer {
 
         // Use the provided camera instead of creating a new one
         this.camera = camera;
-        backgroundTexture = new Texture(Gdx.files.internal("maps/background.png"));
+//        backgroundTexture = new Texture(Gdx.files.internal("maps/background.png"));
         // Create the tiled map renderer
         this.tiledMapRenderer = new IsometricTiledMapRenderer(map.getTiledMap());
     }
@@ -79,7 +79,7 @@ public class MapRenderer {
         // Draw background for the entire screen
         float bgX = camera.position.x - (Gdx.graphics.getWidth() / 2f);
         float bgY = camera.position.y - (Gdx.graphics.getHeight() / 2f);
-        batch.draw(backgroundTexture, bgX, bgY, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+//        batch.draw(backgroundTexture, bgX, bgY, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
         // Update camera position based on character position
         float[] isoPos = toIsometric(character.getGridX(), character.getGridY());
@@ -101,46 +101,68 @@ public class MapRenderer {
         if (batchWasDrawing) {
             batch.begin();
             batch.setProjectionMatrix(camera.combined);
-//            renderObjectLayer(batch, "overlay");
+            renderObjectLayer(batch, "object");
         }
     }
     private void renderObjectLayer(SpriteBatch batch, String layerName) {
         MapLayer objectLayer = map.getTiledMap().getLayers().get(layerName);
         if (objectLayer != null) {
             for (MapObject object : objectLayer.getObjects()) {
-                float x = object.getProperties().get("x", Float.class);
-                float y = object.getProperties().get("y", Float.class);
-
-                if (object.getProperties().containsKey("gid")) {
+                Float x = object.getProperties().get("x", Float.class);
+                Float y = object.getProperties().get("y", Float.class);
+                if (x != null && y != null && object.getProperties().containsKey("gid")) {
                     int gid = object.getProperties().get("gid", Integer.class);
-                    float width = object.getProperties().containsKey("width") ?
-                            object.getProperties().get("width", Float.class) : map.getTileWidth();
-                    float height = object.getProperties().containsKey("height") ?
-                            object.getProperties().get("height", Float.class) : map.getTileHeight();
+                    Float width = object.getProperties().get("width", Float.class);
+                    Float height = object.getProperties().get("height", Float.class);
 
                     // Find the tile in all map tilesets
                     TiledMapTile tile = null;
                     for (TiledMapTileSet tileset : map.getTiledMap().getTileSets()) {
                         tile = tileset.getTile(gid);
-                        if (tile != null) break;
+                        if (tile != null) {
+                            break;
+                        }
                     }
 
                     if (tile != null) {
+                        int[] gridPos = toGrid(x, y);
+
                         // In Tiled, Y is at the bottom of object. Adjust for isometric view.
-                        float gridX = x / map.getTileWidth();
-                        float gridY = (y - height) / map.getTileHeight(); // Key adjustment for Y
+                        float gridX = gridPos[0];
+                        float gridY = gridPos[1];
 
                         float[] isoPos = toIsometric(gridX, gridY);
                         TextureRegion region = tile.getTextureRegion();
                         batch.draw(region,
-                                isoPos[0], isoPos[1],
+                                isoPos[0] - width / 2,      // Center horizontally
+                                isoPos[1] - height / 4,    // Adjust vertical position for better alignment
                                 width, height);
                     }
                 }
             }
         }
     }
+    // Convert world coordinates to grid coordinates
+    private int[] toGrid(float worldX, float worldY) {
+        // Basic conversion: divide by tile dimensions
+        float gridX = worldX / map.getTileWidth();
+        float gridY = worldY / map.getTileHeight();
 
+        // For isometric systems, you might need this transformation instead:
+        // float gridX = (worldX / (map.getTileWidth() / 2) - worldY / (map.getTileHeight() / 2)) / 2;
+        // float gridY = (worldX / (map.getTileWidth() / 2) + worldY / (map.getTileHeight() / 2)) / 2;
+
+        // Round to integers
+        int x = Math.round(gridX);
+        int y = Math.round(gridY);
+
+        // Ensure positive values by adding an offset if needed
+        // If your map can have negative coordinates, add an appropriate offset
+        int mapOffsetX = 0; // Adjust as needed for your map
+        int mapOffsetY = 0; // Adjust as needed for your map
+
+        return new int[]{x + mapOffsetX, y + mapOffsetY};
+    }
     //
 
 

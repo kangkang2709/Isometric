@@ -14,6 +14,7 @@ import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.game.GameState;
 import ctu.game.isometric.view.renderer.CharacterRenderer;
 import ctu.game.isometric.view.renderer.DialogUI;
+import ctu.game.isometric.view.renderer.ExploringUI;
 import ctu.game.isometric.view.renderer.MapRenderer;
 
 public class GameScreen implements Screen {
@@ -23,6 +24,8 @@ public class GameScreen implements Screen {
     private Viewport viewport;
     private SpriteBatch batch;
     private DialogUI dialogUI; // Add DialogUI
+    private ExploringUI exploringUI;
+
     // Renderers
     private MapRenderer mapRenderer;
     private CharacterRenderer characterRenderer;
@@ -70,6 +73,8 @@ public class GameScreen implements Screen {
                     mapRenderer
             );
 
+            exploringUI = new ExploringUI(gameController);
+//            exploringUI.setCharacter(gameController.getCharacter());
             // Reset dialog UI
             if (dialogUI != null) {
                 dialogUI.dispose();
@@ -97,6 +102,7 @@ public class GameScreen implements Screen {
                     gameController.getCharacterCreationController().render(batch);
                     break;
                 case EXPLORING:
+                    exploringUI.render();
                     mapRenderer.render(batch);
                     mapRenderer.renderWalkableTileHighlights(
                             batch,

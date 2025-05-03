@@ -5,8 +5,10 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapObject;
+import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.maps.MapRenderer;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.Rectangle;
 import ctu.game.isometric.IsometricGame;
 import ctu.game.isometric.controller.cutscene.CutsceneController;
@@ -283,9 +285,66 @@ public class GameController {
     }
 
     private void checkPositionEvents(float x, float y) {
+        int gridX = (int) x;
+        int gridY = (int) y;
 
+        // Check for tile-based events
+        TiledMapTileLayer.Cell cell = map.getCell(gridX, gridY);
+        if (cell != null && cell.getTile() != null) {
+            MapProperties properties = cell.getTile().getProperties();
+            handleEventProperties(properties, gridX, gridY);
+        }
+
+        // Check for object-based events (NPCs, triggers, etc.)
+        MapLayer objectLayer = map.getTiledMap().getLayers().get("object");
+        if (objectLayer != null) {
+            for (MapObject object : objectLayer.getObjects()) {
+                if (object instanceof RectangleMapObject) {
+                    Rectangle rect = ((RectangleMapObject) object).getRectangle();
+                    int objGridX = (int) (rect.x / map.getTileWidth())+1;
+                    int objGridY = (int) (rect.y / map.getTileHeight())-1;
+                    System.out.println("Object position: " + objGridX + "," + objGridY);
+                    if (objGridX == gridX && objGridY == gridY) {
+                        handleEventProperties(object.getProperties(), gridX, gridY);
+                    }
+                }
+            }
+        }
     }
 
+    private void handleEventProperties(MapProperties properties, int x, int y) {
+        if (properties.containsKey("event")) {
+            String event = properties.get("event", String.class);
+            System.out.println("Event triggered: " + event + " at position " + x + "," + y);
+
+            switch (event) {
+                case "battle":
+                    String enemyId = (properties != null && properties.containsKey("enemy")) ?
+                            properties.get("enemy", String.class) : "enemy_01";
+                    int health;
+                    Object healthObj = properties.get("health");
+                    if (healthObj instanceof String) {
+                        health = Integer.parseInt((String) healthObj);
+                    } else {
+                        health = properties.get("health", Integer.class);
+                    }
+
+                    setState(GameState.GAMEPLAY);
+                    gameplayController.activate();
+                    gameplayController.startCombat(enemyId, health);
+                    break;
+
+                case "cutscene":
+                    if (properties.containsKey("cutsceneId")) {
+                        String cutsceneId = properties.get("cutsceneId", String.class);
+                        startCutscene(cutsceneId);
+                    }
+                    break;
+
+
+            }
+        }
+    }
 //    public boolean[][] getWalkableTiles() {
 //        // First check if map is valid
 //        if (map == null || map.getMapData() == null || map.getMapData().length == 0) {

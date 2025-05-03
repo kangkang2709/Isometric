@@ -50,7 +50,11 @@ public class IsometricMap {
             enableChunking();
         }
     }
-
+    public TiledMapTileLayer.Cell getCell(int x, int y) {
+        TiledMapTileLayer tiledMapLayer = (TiledMapTileLayer) tiledMap.getLayers().get("terrain_layer");
+        if (tiledMapLayer == null) return null; // Ensure the layer exists
+        return tiledMapLayer.getCell(x, y); // Delegate to the TiledMapTileLayer
+    }
     // For backwards compatibility
     public IsometricMap() {
         this("maps/untitled1.tmx"); // Default map path

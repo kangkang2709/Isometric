@@ -117,10 +117,12 @@ public class InputController extends InputAdapter {
             return false;
         }
 
+
+
         // Convert screen coordinates to world coordinates
         Vector3 worldCoords = new Vector3(screenX, screenY, 0);
         gameController.getCamera().unproject(worldCoords);
-
+        System.out.println("World coordinates: " + worldCoords.x + ", " + worldCoords.y);
         // Convert world coordinates to grid coordinates
         int[] gridPos = toIsometricGrid(worldCoords.x, worldCoords.y);
         int targetX = gridPos[0];
@@ -213,10 +215,10 @@ public class InputController extends InputAdapter {
     }
 
     private boolean handleCutSceneInput(int keycode) {
-        if (keycode == Keys.ENTER || keycode == Keys.SPACE) {
-            gameController.getCutsceneController().nextPage();
-            return true;
-        }
+//        if (keycode == Keys.ENTER || keycode == Keys.SPACE) {
+//            gameController.getCutsceneController().nextPage();
+//            return true;
+//        }
         return false;
     }
 
