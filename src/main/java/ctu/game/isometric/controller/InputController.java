@@ -8,8 +8,13 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.TimeUtils;
 import ctu.game.isometric.model.game.GameState;
+import ctu.game.isometric.model.world.AStarPathfinder;
+import ctu.game.isometric.model.world.GridPoint;
 import ctu.game.isometric.view.renderer.DialogUI;
 import ctu.game.isometric.view.renderer.MapRenderer;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.badlogic.gdx.math.Rectangle.tmp;
 
@@ -22,8 +27,10 @@ public class InputController extends InputAdapter {
     private long lastInputTime = 0;
     private MapRenderer mapRenderer;
     private boolean debugLog = true;
+    private AStarPathfinder pathfinder;
 
-
+    private int chunkSize = 16; // Default chunk size, adjust as needed
+    private boolean isChangingChunk = false;
 
     private int[] toIsometricGrid(float worldX, float worldY) {
         // Get map properties
@@ -108,11 +115,6 @@ public class InputController extends InputAdapter {
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         // Only process left clicks during EXPLORING state
-        if (moveCooldown > 0) {
-            return false;
-        }
-        boolean moved = false;
-
         if (button != Input.Buttons.LEFT || gameController.getCurrentState() != GameState.EXPLORING || mapRenderer == null) {
             return false;
         }
@@ -130,27 +132,76 @@ public class InputController extends InputAdapter {
         int characterX = (int) Math.floor(gameController.getCharacter().getGridX());
         int characterY = (int) Math.floor(gameController.getCharacter().getGridY());
 
-        // Calculate the movement delta - this is what we need to fix
-        int dx = targetX - characterX;
-        int dy = targetY - characterY;
-
         // Debug output
         if (debugLog) {
             Gdx.app.log("Mouse", "Click at grid: " + targetX + "," + targetY);
             Gdx.app.log("Mouse", "Character at: " + characterX + "," + characterY);
-            Gdx.app.log("Mouse", "Delta: " + dx + "," + dy);
         }
 
-        // Only allow movement to adjacent tiles (including diagonals)
-        if (Math.abs(dx) <= 1 && Math.abs(dy) <= 1 && (dx != 0 || dy != 0)) {
-            // Only move if the target tile is walkable
-                moveCharacter(dx, dy);
+        // Check if target is walkable
+        if (targetX >= 0 && targetX < gameController.getMap().getMapWidth() &&
+                targetY >= 0 && targetY < gameController.getMap().getMapHeight() &&
+                gameController.getMap().isWalkable(targetX, targetY)) {
+
+            // Use moveTo direct method when target is close
+            if (Math.abs(targetX - characterX) <= 1 && Math.abs(targetY - characterY) <= 1) {
+                gameController.getCharacter().moveToward(targetX, targetY);
                 moveCooldown = MOVE_DELAY;
                 lastInputTime = TimeUtils.millis();
                 return true;
-
+            } else {
+                // Otherwise, find path and start following it
+                findAndFollowPath(characterX, characterY, targetX, targetY);
+                return true;
+            }
         }
-        return moved;
+
+        return false;
+    }
+
+    private void findAndFollowPath(int startX, int startY, int targetX, int targetY) {
+        if (pathfinder == null) {
+            pathfinder = new AStarPathfinder(gameController.getMap());
+        }
+
+        List<GridPoint> path = pathfinder.findPath(startX, startY, targetX, targetY);
+
+        if (path != null && !path.isEmpty()) {
+            // Remove the first point as it's the current position
+            if (path.size() > 1) {
+                path.remove(0);
+            }
+
+            // Start moving to the first point in the path
+            if (!path.isEmpty()) {
+                GridPoint nextPoint = path.get(0);
+                gameController.getCharacter().moveToward(nextPoint.x, nextPoint.y);
+
+                // Store the path for continued movement
+                gameController.setCharacterPath(path);
+            }
+        }
+    }
+
+    // Add this method to update path following logic
+    public void updatePathFollowing() {
+        // If character is not moving and there's a path to follow
+        if (!gameController.getCharacter().isMoving() &&
+                gameController.hasCharacterPath() &&
+                !gameController.getCharacterPath().isEmpty()) {
+
+            // Get the next point in the path
+            GridPoint nextPoint = gameController.getCharacterPath().get(0);
+            gameController.getCharacterPath().remove(0);
+
+            // Move character to the next point
+            gameController.getCharacter().moveToward(nextPoint.x, nextPoint.y);
+        }
+    }
+
+    public void update(float delta) {
+        updateCooldown(delta);
+        updatePathFollowing();
     }
 
     private boolean handleExploringInput(int keycode) {

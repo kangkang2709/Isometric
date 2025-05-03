@@ -98,10 +98,10 @@ public class GameScreen implements Screen {
                     break;
                 case EXPLORING:
                     mapRenderer.render(batch);
-                    mapRenderer.renderWalkableTileHighlights(
-                            batch,
-                            gameController.getCharacter().getAnimationTime()
-                    );
+//                    mapRenderer.renderWalkableTileHighlights(
+//                            batch,
+//                            gameController.getCharacter().getAnimationTime()
+//                    );
                     if (characterRenderer != null) characterRenderer.render(batch);
                     break;
                 case DIALOG:

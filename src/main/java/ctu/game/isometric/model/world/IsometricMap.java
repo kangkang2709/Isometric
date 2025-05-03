@@ -149,53 +149,52 @@ public class IsometricMap {
     }
 
     // Get viewport-based data for efficient rendering
-    public int[][] getViewportData(int centerX, int centerY, int width, int height) {
-        int startX = centerX - width / 2;
-        int startY = centerY - height / 2;
-        int[][] viewportData = new int[height][width];
-
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                int mapX = startX + x;
-                int mapY = startY + y;
-                if (mapX >= 0 && mapX < mapWidth && mapY >= 0 && mapY < mapHeight) {
-                    viewportData[y][x] = getTileId(mapX, mapY);
-                } else {
-                    viewportData[y][x] = 0; // Default value for out-of-bounds
-                }
-            }
-        }
-        return viewportData;
-    }
-
-    public boolean[][] getViewportWalkable(int centerX, int centerY, int width, int height) {
-        int startX = centerX - width / 2;
-        int startY = centerY - height / 2;
-        boolean[][] viewportWalkable = new boolean[height][width];
-
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                int mapX = startX + x;
-                int mapY = startY + y;
-                viewportWalkable[y][x] = isWalkable(mapX, mapY);
-            }
-        }
-        return viewportWalkable;
-    }
+//    public int[][] getViewportData(int centerX, int centerY, int width, int height) {
+//        int startX = centerX - width / 2;
+//        int startY = centerY - height / 2;
+//        int[][] viewportData = new int[height][width];
+//
+//        for (int y = 0; y < height; y++) {
+//            for (int x = 0; x < width; x++) {
+//                int mapX = startX + x;
+//                int mapY = startY + y;
+//                if (mapX >= 0 && mapX < mapWidth && mapY >= 0 && mapY < mapHeight) {
+//                    viewportData[y][x] = getTileId(mapX, mapY);
+//                } else {
+//                    viewportData[y][x] = 0; // Default value for out-of-bounds
+//                }
+//            }
+//        }
+//        return viewportData;
+//    }
+//
+//    public boolean[][] getViewportWalkable(int centerX, int centerY, int width, int height) {
+//        int startX = centerX - width / 2;
+//        int startY = centerY - height / 2;
+//        boolean[][] viewportWalkable = new boolean[height][width];
+//
+//        for (int y = 0; y < height; y++) {
+//            for (int x = 0; x < width; x++) {
+//                int mapX = startX + x;
+//                int mapY = startY + y;
+//                viewportWalkable[y][x] = isWalkable(mapX, mapY);
+//            }
+//        }
+//        return viewportWalkable;
+//    }
 
 
     // Utility method to convert tile coordinates to world coordinates
-    public Vector2 tileToWorld(int x, int y) {
-        float worldX = (x - y) * (tileWidth / 2f);
-        float worldY = (x + y) * (tileHeight / 2f);
-        return new Vector2(worldX, worldY);
-    }
+//    public Vector2 tileToWorld(int x, int y) {
+//        float worldX = (x - y) * (tileWidth / 2f);
+//        float worldY = (x + y) * (tileHeight / 2f);
+//        return new Vector2(worldX, worldY);
+//    }
 
 
     public void cleanupUnusedChunks(long olderThanMillis) {
         long currentTime = System.currentTimeMillis();
-        chunks.entrySet().removeIf(entry ->
-                entry.getValue().getLastAccessTime() < currentTime - olderThanMillis);
+        chunks.values().removeIf(chunk -> chunk.getLastAccessTime() < currentTime - olderThanMillis);
     }
 
     // Standard getters and setters

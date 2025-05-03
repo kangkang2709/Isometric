@@ -13,7 +13,11 @@ import ctu.game.isometric.controller.cutscene.CutsceneController;
 import ctu.game.isometric.controller.gameplay.GameplayController;
 import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.game.GameState;
+import ctu.game.isometric.model.world.GridPoint;
 import ctu.game.isometric.model.world.IsometricMap;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class GameController {
 
@@ -37,6 +41,22 @@ public class GameController {
 
     boolean isCreated = false;
 
+
+    private List<GridPoint> characterPath = new ArrayList<>();
+
+    public List<GridPoint> getCharacterPath() {
+        return characterPath;
+    }
+
+    public void setCharacterPath(List<GridPoint> path) {
+        this.characterPath = path;
+    }
+
+    public boolean hasCharacterPath() {
+        return characterPath != null && !characterPath.isEmpty();
+    }
+
+
     public GameController(IsometricGame game) {
         this.game = game;
         this.map = new IsometricMap();
@@ -56,12 +76,21 @@ public class GameController {
         this.musicController.playMusicForState(GameState.MAIN_MENU);
     }
 
+
+    private float chunkCleanupTimer = 0;
+    private static final float CHUNK_CLEANUP_INTERVAL = 5f;
+    // seconds
     public void update(float delta) {
 
 
         switch (currentState) {
             case EXPLORING:
-                inputController.updateCooldown(delta);
+                chunkCleanupTimer += delta;
+                if (chunkCleanupTimer >= CHUNK_CLEANUP_INTERVAL) {
+                    map.cleanupUnusedChunks(30000); // Remove chunks not accessed in the last 30 seconds
+                    chunkCleanupTimer = 0;
+                }
+                inputController.update(delta);
                 character.update(delta);
                 break;
             case CHARACTER_CREATION:
@@ -87,7 +116,7 @@ public class GameController {
             case CUTSCENE:
                 if (character.getFlags() != null && !character.getFlags().isEmpty()) {
                     String flags = character.getFlags().get(0);
-                    if (flags != null && flags == "intro" && getTransitionController().isTransitioning() == false) {
+                    if ("intro".equals(flags) && !getTransitionController().isTransitioning()) {
                         startCutscene(flags);
                         character.getFlags().remove(0);
                     }
