@@ -34,10 +34,10 @@ public class InputController extends InputAdapter {
         float gridX = (worldX / (tileWidth/2) - worldY / (tileHeight/2)) / 2;
         float gridY = (worldX / (tileWidth/2) + worldY / (tileHeight/2)) / 2;
 
-        if (debugLog) {
-            Gdx.app.log("Conversion", "World: " + worldX + "," + worldY +
-                    " -> Grid: " + gridX + "," + gridY);
-        }
+//        if (debugLog) {
+//            Gdx.app.log("Conversion", "World: " + worldX + "," + worldY +
+//                    " -> Grid: " + gridX + "," + gridY);
+//        }
 
         return new int[]{Math.round(gridX), Math.round(gridY)};
     }
@@ -139,11 +139,10 @@ public class InputController extends InputAdapter {
         // Only allow movement to adjacent tiles (including diagonals)
         if (Math.abs(dx) <= 1 && Math.abs(dy) <= 1 && (dx != 0 || dy != 0)) {
             // Only move if the target tile is walkable
-            if (gameController.getMap().isWalkable(targetX, targetY)) {
                 moveCharacter(dx, dy);
                 moveCooldown = MOVE_DELAY;
                 return true;
-            }
+
         }
 
         return false;

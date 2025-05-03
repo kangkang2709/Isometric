@@ -128,13 +128,36 @@ public class Character {
             return;
         }
 
-        if (dx > 0) {
+        if (dx > 0 && dy > 0) {
+//            (1, 1) → "right_up" (Northeast)
             direction = "up";
+            System.out.println("1");
+        } else if (dx > 0 && dy < 0) {
+//            (1, -1) → "right_down" (Southeast)
+            direction = "down";
+            System.out.println("2");
+        } else if (dx < 0 && dy > 0) {
+//            (-1, 1) → "left_up" (Northwest)
+            direction = "right_down";
+            System.out.println("3");
+        } else if (dx < 0 && dy < 0) {
+//            (-1, -1) → "left_down" (Southwest) *
+            direction = "left_down";
+            System.out.println("4");
+        } else if (dx > 0) {
+//            (1, 0) → "up" (North)
+            direction = "up";
+            System.out.println("5");
         } else if (dx < 0) {
+//            (-1, 0) → "down" (South) *
             direction = "left_up";
+            System.out.println("6");
         } else if (dy > 0) {
+//            (0, 1) → "right" (East)
             direction = "right_up";
+            System.out.println("7");
         } else {
+//            (0, -1) → "left" (West)
             direction = "left_down";
         }
     }

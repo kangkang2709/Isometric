@@ -101,7 +101,7 @@ public class MapRenderer {
         if (batchWasDrawing) {
             batch.begin();
             batch.setProjectionMatrix(camera.combined);
-            renderObjectLayer(batch, "overlay");
+//            renderObjectLayer(batch, "overlay");
         }
     }
     private void renderObjectLayer(SpriteBatch batch, String layerName) {
@@ -172,10 +172,14 @@ public class MapRenderer {
 
         // Define the four cardinal directions matching the movement controls
         int[][] directions = {
-                {1, 0},   // Up (W/Up keys)
-                {-1, 0},  // Down (S/Down keys)
-                {0, -1},  // Left (A/Left keys)
-                {0, 1}    // Right (D/Right keys)
+                {1, 0},   // Up
+                {-1, 0},  // Down
+                {0, -1},  // Left
+                {0, 1},   // Right
+                {1, -1},  // Up-Left
+                {1, 1},   // Up-Right
+                {-1, -1}, // Down-Left
+                {-1, 1}   // Down-Right
         };
 
         // Check only the four cardinal directions
