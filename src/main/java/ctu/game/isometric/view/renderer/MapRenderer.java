@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
@@ -49,17 +50,22 @@ public class MapRenderer {
         this.animationManager = assetManager.getAnimationManager();
         this.offsetX = 640;
         this.offsetY = 150;
+
         buttonTexture = new Texture(Gdx.files.internal("ui/action_icon.png"));
 
-//
-//
-//        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/GrenzeGotisch.ttf"));
-//        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-//
-//        // Dialog text font
-//        parameter.size = 18;
-//        parameter.color = Color.WHITE;
-//        this.font = generator.generateFont(parameter);
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/Tektur-Bold.ttf"));
+        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        // Initialize fonts
+
+        parameter.size = 8; // Increased from 10 to 14
+        parameter.color = Color.WHITE; // Changed to white for better visibility
+        parameter.borderWidth = 1.5f; // Add outline
+        parameter.borderColor = Color.BLACK; // Black outline for contrast
+        parameter.shadowOffsetX = 1; // Add shadow for depth
+        parameter.shadowOffsetY = 1;
+        parameter.shadowColor = new Color(0, 0, 0, 0.5f);
+        this.font = generator.generateFont(parameter);
+        generator.dispose();
 
 
         // Use the provided camera instead of creating a new one
@@ -80,7 +86,7 @@ public class MapRenderer {
         return toIsometric(x, y, 1.0f);
     }
 
-    public float[] toIsometric2(float x, float y,float width,float height, float zoom) {
+    public float[] toIsometric2(float x, float y, float width, float height, float zoom) {
         float isoX = (x + y) * (width / 2.0f) * zoom;
         float isoY = (y - x) * (height / 2.0f) * zoom;
         return new float[]{isoX, isoY};
@@ -120,6 +126,7 @@ public class MapRenderer {
             renderObjectLayer(batch, "object");
         }
     }
+
     private void renderObjectLayer(SpriteBatch batch, String layerName) {
         MapLayer objectLayer = map.getTiledMap().getLayers().get(layerName);
         if (objectLayer != null) {
@@ -158,6 +165,7 @@ public class MapRenderer {
             }
         }
     }
+
     // Convert world coordinates to grid coordinates
     private int[] toGrid(float worldX, float worldY) {
         // Basic conversion: divide by tile dimensions
@@ -199,12 +207,13 @@ public class MapRenderer {
                 break;
             case "teleport":
                 buttonText = "Enter";
+                break;
             case "item":
                 buttonText = "Take";
+                break;
         }
 
         if (buttonTexture != null) {
-            System.out.println("Button texture loaded successfully");
             // Convert grid coordinates to isometric screen coordinates
             float[] isoPos = toIsometric(x, y);
             // Position the button above the tile
@@ -217,11 +226,12 @@ public class MapRenderer {
             batch.draw(buttonTexture, buttonX, buttonY + offsetY);
 
             // Draw the text if font exists
-//      if (font != null) {
-//          font.draw(batch, buttonText,
-//                  buttonX + buttonTexture.getWidth()/2 - font.getBounds(buttonText).width/2,
-//                  buttonY + buttonTexture.getHeight() + offsetY + 15);
-//      }
+            if (font != null) {
+                GlyphLayout layout = new GlyphLayout(font, buttonText);
+                font.draw(batch, buttonText,
+                        buttonX + buttonTexture.getWidth() / 2 - layout.width / 2,
+                        buttonY + buttonTexture.getHeight() + offsetY - 5); // Adjusted Y position
+            }
         }
     }
 
@@ -233,7 +243,8 @@ public class MapRenderer {
      */
     /**
      * Renders highlights for walkable tiles in the four cardinal directions from the player.
-     * @param batch The sprite batch to render with
+     *
+     * @param batch     The sprite batch to render with
      * @param stateTime Current animation state time
      */
     public void renderWalkableTileHighlights(SpriteBatch batch, float stateTime) {
@@ -305,7 +316,6 @@ public class MapRenderer {
         // Restore original color
         batch.setColor(originalColor);
     }
-
 
 
     public float getOffsetX() {
