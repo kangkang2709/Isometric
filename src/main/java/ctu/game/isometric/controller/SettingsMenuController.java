@@ -48,7 +48,7 @@ public class SettingsMenuController {
         parameter.size = 48;
         parameter.color = com.badlogic.gdx.graphics.Color.WHITE;
         titleFont= generator.generateFont(parameter);
-
+        generator.dispose();
         this.shapeRenderer = new ShapeRenderer();
 
         // Add adjustable options connected to MusicController
@@ -74,6 +74,8 @@ public class SettingsMenuController {
         // Initialize toggle states based on current settings
         menuOptions.get(0).setToggled(gameController.getMusicController().isEnabled());
         menuOptions.get(1).setValue(gameController.getMusicController().getVolume());
+
+
     }
 
     public void update(float delta) {

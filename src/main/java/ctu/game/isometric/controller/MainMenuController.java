@@ -33,7 +33,7 @@ public class MainMenuController {
         parameter.size = 42;
         parameter.color = com.badlogic.gdx.graphics.Color.WHITE;
         this.font = generator.generateFont(parameter);
-
+        generator.dispose();
 
         this.gameController = gameController;
 

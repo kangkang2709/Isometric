@@ -12,7 +12,7 @@ import com.badlogic.gdx.math.Matrix4;
 
 public class TransitionController {
     private float alpha = 0f;
-    private float duration = 0.5f; // transition duration in seconds
+    private float duration = 0.2f; // transition duration in seconds
     private boolean isTransitioning = false;
     private boolean isFadingIn = false;
     private Runnable onCompleteAction;

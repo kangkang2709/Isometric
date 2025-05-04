@@ -61,7 +61,7 @@ public class MenuController {
         parameter.size = 32;
         parameter.color = com.badlogic.gdx.graphics.Color.WHITE;
         this.itemFont = generator.generateFont(parameter);
-
+        generator.dispose();
         // Initialize rendering tools
         this.shapeRenderer = new ShapeRenderer();
 
@@ -72,7 +72,6 @@ public class MenuController {
         // In MenuController.java, modify the "Back To Main Menu" menu item:
         addMenuItem("Back To Main Menu", () -> {
             gameController.resetGame();
-            gameController.setState(GameState.MAIN_MENU);
         });
         addMenuItem("Quit Game", () -> Gdx.app.exit());
 

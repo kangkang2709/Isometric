@@ -239,22 +239,24 @@ public class GameController {
 
     public void setCreated(boolean created) {
         this.isCreated = created;
-        if (created && characterCreationController != null) {
-                setState(GameState.CUTSCENE);
+        if (created && characterCreationController != null && currentState != GameState.MAIN_MENU) {
+            setState(GameState.CUTSCENE);
         }
     }
     // Add to GameController.java
     // In GameController.java, enhance resetGame method
     // In GameController.java - update the resetGame method
     public void resetGame() {
+
+        currentState = GameState.MAIN_MENU;
+        previousState = GameState.MAIN_MENU;
         // Reset character with a new instance
         character = new Character(0, 0);
 
         // Reset map with a new instance
         this.map = new IsometricMap();
-
         // Force recreation of renderers by setting isCreated flag
-        isCreated = true;
+        isCreated = false;
 
         // Reset controllers to initial state - make sure to reset character creation controller
         if (characterCreationController != null) {
@@ -277,8 +279,7 @@ public class GameController {
         }
 
         // Reset to main menu state
-        currentState = GameState.MAIN_MENU;
-        previousState = GameState.MAIN_MENU;
+
 
         // Reset music
         musicController.playMusicForState(GameState.MAIN_MENU);

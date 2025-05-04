@@ -66,15 +66,11 @@ public class InputController extends InputAdapter {
             }
         }
 
-        if (keycode == Keys.ESCAPE) {
-            if (state == GameState.MENU) {
-                gameController.returnToPreviousState();
-            } else {
-                gameController.setState(GameState.MENU);
-                System.out.println("Game state changed to MENU");
-            }
-            return true;
-        }
+//        if (keycode == Keys.ESCAPE) {
+//            if (state != GameState.MENU) {
+//                gameController.setState(GameState.MENU);
+//            }
+//        }
 
         // Xử lý Dialog trước
         if (gameController.getDialogController().isDialogActive() && state == GameState.DIALOG) {
@@ -91,6 +87,9 @@ public class InputController extends InputAdapter {
                 return handleCutSceneInput(keycode);
             case EXPLORING:
                 return handleExploringInput(keycode);
+            case GAMEPLAY:
+                // Handle gameplay input here
+                return handleGamePlayInput(keycode);
             default:
                 break;
         }
@@ -173,6 +172,7 @@ public class InputController extends InputAdapter {
         }
 
         switch (keycode) {
+            case Keys.ESCAPE -> gameController.setState(GameState.MENU);
             case Keys.W, Keys.UP -> {
                 moveCharacter(1, 0);
                 moved = true;
@@ -229,14 +229,30 @@ public class InputController extends InputAdapter {
 //            gameController.getCutsceneController().nextPage();
 //            return true;
 //        }
+        switch (keycode){
+            case Keys.ESCAPE -> gameController.setState(GameState.MENU);
+            default -> {}
+        }
+        return false;
+    }
+    private boolean handleGamePlayInput(int keycode) {
+//        if (keycode == Keys.ENTER || keycode == Keys.SPACE) {
+//            gameController.getCutsceneController().nextPage();
+//            return true;
+//        }
+        switch (keycode){
+            case Keys.ESCAPE -> gameController.setState(GameState.MENU);
+            default -> {}
+        }
         return false;
     }
 
     private boolean handleMenuInput(int keycode) {
         switch (keycode) {
+            case Keys.ESCAPE -> gameController.returnToPreviousState();
             case Keys.UP -> gameController.getMenuController().selectPreviousItem();
             case Keys.DOWN -> gameController.getMenuController().selectNextItem();
-            case Keys.ENTER, Keys.SPACE -> gameController.getMenuController().activateSelectedItem();
+            case Keys.ENTER,Keys.SPACE-> gameController.getMenuController().activateSelectedItem();
             default -> {}
         }
         return true;
