@@ -284,17 +284,18 @@ public class GameController {
         musicController.playMusicForState(GameState.MAIN_MENU);
     }
 
+
+
+    private String currentEventType;
+    private int currentEventX;
+    private int currentEventY;
+    private boolean hasActiveEvent = false;
+    private MapProperties properties;
     private void checkPositionEvents(float x, float y) {
         int gridX = (int) x;
         int gridY = (int) y;
 
-        // Check for tile-based events
-        TiledMapTileLayer.Cell cell = map.getCell(gridX, gridY);
-        if (cell != null && cell.getTile() != null) {
-            MapProperties properties = cell.getTile().getProperties();
-            handleEventProperties(properties, gridX, gridY);
-        }
-
+        hasActiveEvent = false; // Reset event flag
         // Check for object-based events (NPCs, triggers, etc.)
         MapLayer objectLayer = map.getTiledMap().getLayers().get("object");
         if (objectLayer != null) {
@@ -305,18 +306,26 @@ public class GameController {
                     int objGridY = (int) (rect.y / map.getTileHeight())-2;
                     System.out.println("Object position: " + objGridX + "," + objGridY);
                     if (objGridX == gridX && objGridY == gridY) {
-                        handleEventProperties(object.getProperties(), gridX, gridY);
+                        properties = object.getProperties();
+                         if (properties.containsKey("event")){
+                            currentEventType = properties.get("event", String.class);
+                            currentEventX = gridX;
+                            currentEventY = gridY;
+                            hasActiveEvent = true;
+                        }
+                        else properties = null;
+//                        handleEventProperties(object.getProperties(), gridX, gridY);
                     }
                 }
             }
         }
     }
 
-    private void handleEventProperties(MapProperties properties, int x, int y) {
-        if (properties.containsKey("event")) {
-            String event = properties.get("event", String.class);
-            System.out.println("Event triggered: " + event + " at position " + x + "," + y);
+    public MapProperties getProperties() {
+        return properties;
+    }
 
+    public void handleEventProperties(MapProperties properties, String event) {
             switch (event) {
                 case "battle":
                     String enemyId = (properties != null && properties.containsKey("enemy")) ?
@@ -343,8 +352,26 @@ public class GameController {
 
 
             }
-        }
+
     }
+
+
+    public boolean hasActiveEvent() {
+        return hasActiveEvent && currentState == GameState.EXPLORING;
+    }
+
+    public String getCurrentEventType() {
+        return currentEventType;
+    }
+
+    public int getCurrentEventX() {
+        return currentEventX;
+    }
+
+    public int getCurrentEventY() {
+        return currentEventY;
+    }
+
 //    public boolean[][] getWalkableTiles() {
 //        // First check if map is valid
 //        if (map == null || map.getMapData() == null || map.getMapData().length == 0) {

@@ -104,11 +104,22 @@ public class GameScreen implements Screen {
                 case EXPLORING:
                     exploringUI.render();
                     mapRenderer.render(batch);
-                    mapRenderer.renderWalkableTileHighlights(
-                            batch,
-                            gameController.getCharacter().getAnimationTime()
-                    );
+
+                    if (gameController.hasActiveEvent()) {
+                        mapRenderer.renderActionButton(
+                                batch,
+                                gameController.getCurrentEventType(),
+                                gameController.getCurrentEventX(),
+                                gameController.getCurrentEventY()
+                        );
+                    }
+//                    mapRenderer.renderWalkableTileHighlights(
+//                            batch,
+//                            gameController.getCharacter().getAnimationTime()
+//                    );
                     if (characterRenderer != null) characterRenderer.render(batch);
+
+
                     break;
                 case DIALOG:
                     dialogUI.render();

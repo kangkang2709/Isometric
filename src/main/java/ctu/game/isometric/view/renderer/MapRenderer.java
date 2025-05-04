@@ -4,8 +4,10 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapObject;
@@ -31,11 +33,13 @@ public class MapRenderer {
     private OrthographicCamera camera;
     Texture backgroundTexture;
 
+    private BitmapFont font;
+
     private float cameraZoom = 1.0f;
     private static final float MIN_ZOOM = 0.5f;
     private static final float MAX_ZOOM = 2.0f;
     private static final float ZOOM_STEP = 0.1f;
-
+    Texture buttonTexture;
 
     // In MapRenderer.java - modify constructor to take an existing camera
     public MapRenderer(IsometricMap map, AssetManager assetManager, Character character, OrthographicCamera camera) {
@@ -45,6 +49,18 @@ public class MapRenderer {
         this.animationManager = assetManager.getAnimationManager();
         this.offsetX = 640;
         this.offsetY = 150;
+        buttonTexture = new Texture(Gdx.files.internal("ui/action_icon.png"));
+
+//
+//
+//        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/GrenzeGotisch.ttf"));
+//        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+//
+//        // Dialog text font
+//        parameter.size = 18;
+//        parameter.color = Color.WHITE;
+//        this.font = generator.generateFont(parameter);
+
 
         // Use the provided camera instead of creating a new one
         this.camera = camera;
@@ -165,7 +181,49 @@ public class MapRenderer {
     }
     //
 
+    public void renderActionButton(SpriteBatch batch, String eventType, float x, float y) {
+        if (eventType == null) return;
 
+        String buttonText = "Action";
+
+        // Set text based on event type
+        switch (eventType) {
+            case "battle":
+                buttonText = "Battle";
+                break;
+            case "dialog":
+                buttonText = "Talk";
+                break;
+            case "cutscene":
+                buttonText = "Watch";
+                break;
+            case "teleport":
+                buttonText = "Enter";
+            case "item":
+                buttonText = "Take";
+        }
+
+        if (buttonTexture != null) {
+            System.out.println("Button texture loaded successfully");
+            // Convert grid coordinates to isometric screen coordinates
+            float[] isoPos = toIsometric(x, y);
+            // Position the button above the tile
+
+            float buttonX = isoPos[0] - buttonTexture.getWidth() / 2;
+            float buttonY = isoPos[1] + map.getTileHeight() / 2;
+
+            // Draw button with subtle animation (floating effect)
+            float offsetY = (float) Math.sin(Gdx.graphics.getDeltaTime() * 3) * 5;
+            batch.draw(buttonTexture, buttonX, buttonY + offsetY);
+
+            // Draw the text if font exists
+//      if (font != null) {
+//          font.draw(batch, buttonText,
+//                  buttonX + buttonTexture.getWidth()/2 - font.getBounds(buttonText).width/2,
+//                  buttonY + buttonTexture.getHeight() + offsetY + 15);
+//      }
+        }
+    }
 
     /**
      * Renders highlights for walkable tiles around the player's position.

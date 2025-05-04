@@ -162,6 +162,16 @@ public class InputController extends InputAdapter {
 
         boolean moved = false;
 
+
+        if(gameController.hasActiveEvent()) {
+           switch (keycode) {
+               case Keys.ENTER, Keys.SPACE -> {
+                   gameController.handleEventProperties(gameController.getProperties(),gameController.getCurrentEventType());
+               }
+               default -> {}
+           }
+        }
+
         switch (keycode) {
             case Keys.W, Keys.UP -> {
                 moveCharacter(1, 0);
