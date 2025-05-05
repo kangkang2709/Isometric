@@ -38,7 +38,6 @@ public class GameScreen implements Screen {
 
         // Setup camera and viewport
         camera = new OrthographicCamera();
-
         viewport = new FitViewport(1280, 720, camera);
         gameController.setCamera(camera);
 //        camera.setToOrtho(false, 800, 480);
@@ -59,6 +58,7 @@ public class GameScreen implements Screen {
         gameController.getTransitionController().update(delta);
 
         // Chỉ khởi tạo 1 lần khi gameController vừa tạo xong
+
         if (gameController.isCreated()) {
             mapRenderer = new MapRenderer(
                     gameController.getMap(),
@@ -102,7 +102,7 @@ public class GameScreen implements Screen {
                     gameController.getCharacterCreationController().render(batch);
                     break;
                 case EXPLORING:
-                    exploringUI.render();
+                    gameController.setCharacterCreationController(null);
                     mapRenderer.render(batch);
 
                     if (gameController.hasActiveEvent()) {
@@ -113,13 +113,16 @@ public class GameScreen implements Screen {
                                 gameController.getCurrentEventY()
                         );
                     }
-//                    mapRenderer.renderWalkableTileHighlights(
-//                            batch,
-//                            gameController.getCharacter().getAnimationTime()
-//                    );
                     if (characterRenderer != null) characterRenderer.render(batch);
 
+                    // End the batch before rendering UI
+                    batch.end();
 
+                    // Render the UI on top
+                    if (exploringUI != null) exploringUI.render();
+
+                    // Begin the batch again for any subsequent rendering
+                    batch.begin();
                     break;
                 case DIALOG:
                     dialogUI.render();

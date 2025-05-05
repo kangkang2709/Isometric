@@ -42,7 +42,7 @@ public class GameController {
     public GameController(IsometricGame game) {
         this.game = game;
         this.map = new IsometricMap();
-        this.character = new Character(0, 0);
+        this.character = new Character(10, 10);
         this.inputController = new InputController(this);
         this.dialogController = new DialogController(this);
         this.musicController = new MusicController();
@@ -54,8 +54,10 @@ public class GameController {
         this.transitionController = new TransitionController();
         this.cutsceneController = new CutsceneController(this);
 
+
         this.musicController.initialize();
         this.musicController.playMusicForState(GameState.MAIN_MENU);
+
     }
 
     public void update(float delta) {
@@ -251,7 +253,7 @@ public class GameController {
         currentState = GameState.MAIN_MENU;
         previousState = GameState.MAIN_MENU;
         // Reset character with a new instance
-        character = new Character(0, 0);
+        character = new Character(20, 20);
 
         // Reset map with a new instance
         this.map = new IsometricMap();
@@ -259,10 +261,8 @@ public class GameController {
         isCreated = false;
 
         // Reset controllers to initial state - make sure to reset character creation controller
-        if (characterCreationController != null) {
-            characterCreationController.dispose();
-            characterCreationController = new CharacterCreationController(this);
-        }
+        characterCreationController = new CharacterCreationController(this);
+
 
         if (cutsceneController != null) {
             cutsceneController.dispose();

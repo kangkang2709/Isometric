@@ -314,8 +314,8 @@ public class InputController extends InputAdapter {
             return true;
         }
 
-        float defaultZoom = 1.0f;
-        float minZoom = 0.1f;
+        float defaultZoom = 0.7f;
+        float minZoom = 0.2f;
         float zoomStep = 0.1f;
 
         if (amountY < 0) {
