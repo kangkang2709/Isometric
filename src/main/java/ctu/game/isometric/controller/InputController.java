@@ -107,10 +107,15 @@ public class InputController extends InputAdapter {
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         // Only process left clicks during EXPLORING state
+        GameState state = gameController.getCurrentState();
+
         if (moveCooldown > 0) {
             return false;
         }
         boolean moved = false;
+
+
+
 
         if (button != Input.Buttons.LEFT || gameController.getCurrentState() != GameState.EXPLORING || mapRenderer == null) {
             return false;
@@ -254,7 +259,9 @@ public class InputController extends InputAdapter {
 
     private boolean handleSettingsInput(int keycode) {
         switch (keycode) {
-            case Keys.ESCAPE -> gameController.setCurrentState(GameState.MAIN_MENU);
+            case Keys.ESCAPE -> {
+                gameController.setCurrentState(GameState.MAIN_MENU);
+            }
             case Keys.UP -> gameController.getSettingsMenuController().selectPreviousItem();
             case Keys.DOWN -> gameController.getSettingsMenuController().selectNextItem();
             case Keys.LEFT -> gameController.getSettingsMenuController().adjustSelectedOption(false);
@@ -264,6 +271,27 @@ public class InputController extends InputAdapter {
         }
         return true;
     }
+
+//    @Override
+//    public boolean touchDragged(int screenX, int screenY, int pointer) {
+//        GameState state = gameController.getCurrentState();
+//        if (state == GameState.SETTINGS) {
+//            return gameController.getSettingsMenuController().handleMouseDrag(screenX, screenY);
+//        }
+//
+//        // Rest of your existing touchDragged code
+//        return false;
+//    }
+//    @Override
+//    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+//        GameState state = gameController.getCurrentState();
+//        if (state == GameState.SETTINGS) {
+//            gameController.getSettingsMenuController().handleMouseUp();
+//        }
+//
+//        // Return true to indicate we've handled this touch event
+//        return state == GameState.SETTINGS;
+//    }
 
     private boolean handleDialogInput(int keycode) {
         if (dialogUI == null) return false;

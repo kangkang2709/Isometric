@@ -72,7 +72,6 @@ public class MenuController {
         // In MenuController.java, modify the "Back To Main Menu" menu item:
         addMenuItem("Back To Main Menu", () -> {
             gameController.setCurrentState(GameState.MAIN_MENU);
-            gameController.setPreviousState(GameState.MAIN_MENU);
             gameController.resetGame();
             // Ensure we're still in the main menu after reset
             gameController.setCurrentState(GameState.MAIN_MENU);

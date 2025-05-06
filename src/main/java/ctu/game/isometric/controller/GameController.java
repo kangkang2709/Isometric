@@ -263,8 +263,6 @@ public class GameController {
         if(characterCreationController == null) {
             characterCreationController = new CharacterCreationController(this);
         }
-        setCurrentState(GameState.MAIN_MENU);
-        setPreviousState(GameState.MAIN_MENU);
 
         if (cutsceneController != null) {
             cutsceneController.dispose();

@@ -3,11 +3,14 @@ package ctu.game.isometric.controller;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Align;
 import ctu.game.isometric.model.game.GameState;
 
@@ -33,10 +36,21 @@ public class SettingsMenuController {
     private float selectionPulse = 0;
     private String menuTitle = "SETTINGS";
 
+    private Texture sliderKnobTexture;    // For sliders
+    private Texture sliderBarTexture;
+
+    // Mouse interaction properties
+    private List<Rectangle> buttonRectangles; // Store button positions for hit detection
+    private List<Rectangle> sliderRectangles; // Store slider positions for hit detection
+    private boolean isDraggingSlider = false;
+    private int draggingSliderIndex = -1;
+
     public SettingsMenuController(GameController gameController) {
         this.gameController = gameController;
         this.menuOptions = new ArrayList<>();
         this.selectedIndex = 0;
+        this.buttonRectangles = new ArrayList<>();
+        this.sliderRectangles = new ArrayList<>();
 
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/Creepster-Regular.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
@@ -47,9 +61,13 @@ public class SettingsMenuController {
 
         parameter.size = 48;
         parameter.color = com.badlogic.gdx.graphics.Color.WHITE;
-        titleFont= generator.generateFont(parameter);
+        titleFont = generator.generateFont(parameter);
         generator.dispose();
         this.shapeRenderer = new ShapeRenderer();
+
+        // Load textures
+        sliderKnobTexture = new Texture(Gdx.files.internal("ui/slider_knob.png"));
+        sliderBarTexture = new Texture(Gdx.files.internal("ui/slider_bar.png"));
 
         // Add adjustable options connected to MusicController
         addMenuOption("Music", MenuOption.OptionType.TOGGLE,
@@ -61,21 +79,36 @@ public class SettingsMenuController {
                     // Volume adjustment logic is handled elsewhere
                 });
 
-//        // Add back option
+        // Add back option
         addMenuOption("Back", MenuOption.OptionType.BUTTON,
-                () -> gameController.returnToPreviousState());
+                () -> {
+                    gameController.setState(GameState.MAIN_MENU);
+                });
 
         // Set menu dimensions
         menuWidth = 400f;
-        menuHeight = (menuOptions.size() * itemHeight) + (padding * 3) + 60; // Extra for title
         menuX = Gdx.graphics.getWidth() / 2 - menuWidth / 2;
-        menuY = Gdx.graphics.getHeight() / 2 - menuHeight / 2;
+        menuY = Gdx.graphics.getHeight() / 2 - menuHeight / 2 -150;
+
+
+        // In the constructor, update:
+        float extraHeightForSliders = 0;
+        for (MenuOption option : menuOptions) {
+            if (option.getType() == MenuOption.OptionType.SLIDER) {
+                extraHeightForSliders += 20; // Extra space for each slider
+            }
+        }
+        menuHeight = (menuOptions.size() * itemHeight) + (padding * 3) + 60 + extraHeightForSliders;
 
         // Initialize toggle states based on current settings
         menuOptions.get(0).setToggled(gameController.getMusicController().isEnabled());
         menuOptions.get(1).setValue(gameController.getMusicController().getVolume());
 
-
+        // Initialize rectangles for hit detection
+        for (int i = 0; i < menuOptions.size(); i++) {
+            buttonRectangles.add(new Rectangle());
+            sliderRectangles.add(new Rectangle());
+        }
     }
 
     public void update(float delta) {
@@ -85,6 +118,8 @@ public class SettingsMenuController {
 
     public void addMenuOption(String name, MenuOption.OptionType type, Runnable onChange) {
         menuOptions.add(new MenuOption(name, type, onChange));
+        buttonRectangles.add(new Rectangle());
+        sliderRectangles.add(new Rectangle());
     }
 
     public void selectNextItem() {
@@ -110,10 +145,7 @@ public class SettingsMenuController {
         if (selectedIndex >= 0 && selectedIndex < menuOptions.size()) {
             MenuOption option = menuOptions.get(selectedIndex);
             if (option.getType() == MenuOption.OptionType.TOGGLE) {
-                        option.toggle();
-//                if (option.getName().equals("Music")) {
-//                    gameController.getMusicController().setEnabled(option.isToggled());
-//                }
+                option.toggle();
             } else if (option.getType() == MenuOption.OptionType.SLIDER) {
                 float newValue = option.getValue() + (increase ? 0.02f : -0.02f);
                 newValue = Math.max(0f, Math.min(1f, newValue)); // Clamp between 0 and 1
@@ -124,6 +156,8 @@ public class SettingsMenuController {
             }
         }
     }
+
+
 
     public void render(SpriteBatch batch) {
         Matrix4 originalMatrix = new Matrix4(batch.getProjectionMatrix());
@@ -162,62 +196,81 @@ public class SettingsMenuController {
         batch.begin();
 
         // Draw title
-        titleFont.draw(batch, menuTitle, menuX, menuY + menuHeight - padding - 30,
+        titleFont.draw(batch, menuTitle, menuX, menuY + menuHeight - padding,
                 menuWidth, Align.center, false);
 
-        // Draw menu options
+        // Draw menu options with buttons
         float y = menuY + menuHeight - padding - 60 - itemHeight / 2;
+        float buttonWidth = menuWidth - padding * 4;
+        float buttonHeight = itemHeight - 10;
 
         for (int i = 0; i < menuOptions.size(); i++) {
             MenuOption option = menuOptions.get(i);
+            boolean isSelected = i == selectedIndex;
 
-            if (i == selectedIndex) {
+            // Button rectangle position
+            float buttonX = menuX + padding * 2;
+            float buttonY = y - buttonHeight;
+
+            // Update rectangle for hit detection
+            buttonRectangles.get(i).set(buttonX, buttonY, buttonWidth, buttonHeight);
+
+            // Draw button background
+//            batch.draw(buttonBg, buttonX, buttonY, buttonWidth, buttonHeight);
+
+            // Prepare text color based on selection
+            if (isSelected) {
                 font.setColor(Color.YELLOW);
             } else {
                 font.setColor(Color.WHITE);
             }
 
+            // Create display text
             String displayText = option.getName();
-
             if (option.getType() == MenuOption.OptionType.TOGGLE) {
                 displayText += ": " + (option.isToggled() ? "ON" : "OFF");
             } else if (option.getType() == MenuOption.OptionType.SLIDER) {
                 displayText += ": " + (int) (option.getValue() * 100) + "%";
             }
 
-            font.draw(batch, displayText, menuX + padding, y,
-                    menuWidth - padding * 2, Align.center, false);
+            // Draw text centered on button
+            font.draw(batch, displayText, buttonX, y + font.getCapHeight() / 2,
+                    buttonWidth, Align.center, false);
 
             // Draw slider if applicable
+            // Modify the render method's slider section:
             if (option.getType() == MenuOption.OptionType.SLIDER) {
-                batch.end(); // End batch before using shapeRenderer
+                float sliderWidth = buttonWidth - 40;
+                float sliderX = buttonX + 20;
+                float sliderY = buttonY - 15; // Increase this value to move slider further down
+                float sliderHeight = 15;
 
-                float sliderWidth = 200;
-                float sliderX = menuX + (menuWidth - sliderWidth) / 2;
-                float sliderY = y - font.getCapHeight() / 2f - 30;
+                // Update slider rectangle for hit detection
+                sliderRectangles.get(i).set(sliderX, sliderY, sliderWidth, sliderHeight);
 
-                shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-                shapeRenderer.setColor(0.3f, 0.3f, 0.3f, 0.8f);
-                shapeRenderer.rect(sliderX, sliderY, sliderWidth, 10);
+                // Draw slider bar
+                batch.draw(sliderBarTexture, sliderX, sliderY, sliderWidth, sliderHeight);
 
-                shapeRenderer.setColor(0.7f, 0.7f, 1.0f, 0.8f);
-                shapeRenderer.rect(sliderX, sliderY, sliderWidth * option.getValue(), 10);
-                shapeRenderer.end();
+                // Draw slider knob
+                float knobSize = 25;
+                float knobX = sliderX + (sliderWidth * option.getValue()) - (knobSize / 2);
+                float knobY = sliderY - (knobSize - sliderHeight) / 2;
+                batch.draw(sliderKnobTexture, knobX, knobY, knobSize, knobSize);
 
-                batch.begin(); // Resume batch after drawing shapes
+                // Add extra space after slider options
+                y -= 35; // Extra space for slider controls
             }
 
-            y -= itemHeight;
+            y -= itemHeight + 10; // Add some extra spacing between buttons
         }
 
         batch.end();
         batch.setProjectionMatrix(originalMatrix);
 
         if (wasBatchDrawing) {
-            batch.begin(); // Restore drawing state if it was originally drawing
+            batch.begin();
         }
     }
-
 
     public void resize(int width, int height) {
         menuX = width / 2 - menuWidth / 2;
@@ -234,10 +287,14 @@ public class SettingsMenuController {
         if (shapeRenderer != null) {
             shapeRenderer.dispose();
         }
+        // Dispose textures
+        if (sliderKnobTexture != null) sliderKnobTexture.dispose();
+        if (sliderBarTexture != null) sliderBarTexture.dispose();
     }
 
     public class MenuOption {
-        public enum OptionType { TOGGLE, SLIDER, BUTTON }
+        public enum OptionType {TOGGLE, SLIDER, BUTTON}
+
         private String name;
         private OptionType type;
         private float value; // For sliders
