@@ -135,10 +135,10 @@ public class GameController {
             // This code executes after the fade out, during loading
             currentState = newState;
 
-            // Reset controllers when entering specific states
-            if (currentState == GameState.CHARACTER_CREATION) {
-                characterCreationController.reset();
-            }
+//             Reset controllers when entering specific states
+//            if (currentState == GameState.CHARACTER_CREATION) {
+//                characterCreationController.reset();
+//            }
 
             // Update music for the new state
             musicController.playMusicForState(newState);
@@ -252,20 +252,19 @@ public class GameController {
     // In GameController.java, enhance resetGame method
     // In GameController.java - update the resetGame method
     public void resetGame() {
-
-        currentState = GameState.MAIN_MENU;
-        previousState = GameState.MAIN_MENU;
         // Reset character with a new instance
         character = new Character(20, 20);
 
         // Reset map with a new instance
         this.map = new IsometricMap();
-        // Force recreation of renderers by setting isCreated flag
-        isCreated = false;
 
         // Reset controllers to initial state - make sure to reset character creation controller
-        characterCreationController = new CharacterCreationController(this);
 
+        if(characterCreationController == null) {
+            characterCreationController = new CharacterCreationController(this);
+        }
+        setCurrentState(GameState.MAIN_MENU);
+        setPreviousState(GameState.MAIN_MENU);
 
         if (cutsceneController != null) {
             cutsceneController.dispose();

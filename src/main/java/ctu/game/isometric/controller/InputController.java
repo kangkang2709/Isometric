@@ -18,7 +18,7 @@ public class InputController extends InputAdapter {
     private DialogUI dialogUI;
     private float moveCooldown = 0;
     private final float MOVE_DELAY = 0.42f; // seconds
-    private static final long INPUT_DELAY = 200; // milliseconds
+    private static final long INPUT_DELAY = 700; // milliseconds
     private long lastInputTime = 0;
     private MapRenderer mapRenderer;
     private boolean debugLog = true;
