@@ -43,6 +43,11 @@ public class GameplayController {
     private Texture whiteTexture;
     private Map<String, Texture> textureCache = new HashMap<>();
 
+    private Texture gridBackgroundTexture;
+    private Texture buttonTexture;
+    private Texture messageBoxTexture;
+    private Texture cellTexture;
+    private Texture selectedCellTexture;
     // Button areas
     private Rectangle submitButtonRect, clearButtonRect, exitButtonRect;
 
@@ -87,11 +92,27 @@ public class GameplayController {
         whiteTexture = new Texture(pixmap);
         pixmap.dispose();
 
+        // Load UI textures
+        gridBackgroundTexture = new Texture(Gdx.files.internal("ui/grid_bg.png"));
+        buttonTexture = new Texture(Gdx.files.internal("ui/button.png"));
+        messageBoxTexture = new Texture(Gdx.files.internal("ui/message_box.png"));
+        cellTexture = new Texture(Gdx.files.internal("ui/cell.png"));
+        selectedCellTexture = new Texture(Gdx.files.internal("ui/selected_cell.png"));
+
         // Initialize button rectangles
         submitButtonRect = new Rectangle(900, 350, 200, 50);
         clearButtonRect = new Rectangle(900, 280, 200, 50);
     }
+    private void drawMessageBox(SpriteBatch batch, String message, float x, float y, float width, float height) {
+        batch.setColor(Color.WHITE);
+        batch.draw(messageBoxTexture, x, y, width, height);
 
+        layout.setText(regularFont, message);
+        regularFont.setColor(Color.WHITE);
+        regularFont.draw(batch, message,
+                x + (width - layout.width) / 2,
+                y + (height + layout.height) / 2);
+    }
     public void update(float delta) {
         if (!active) return;
 
@@ -200,9 +221,9 @@ public class GameplayController {
             regularFont.draw(batch, currentMessage, 900, 420);
         }
 
-        // Draw buttons
-        drawButton(batch, submitButtonRect, "Submit Word");
-        drawButton(batch, clearButtonRect, "Clear Selection");
+//        // Draw buttons
+//        drawButton(batch, submitButtonRect, "Submit Word");
+//        drawButton(batch, clearButtonRect, "Clear Selection");
     }
 
     private void renderCombatUI(SpriteBatch batch) {
@@ -215,28 +236,31 @@ public class GameplayController {
         drawCombatCharacter(batch, enemyName, enemyHealth, enemyMaxHealth, viewport.getWorldWidth() - 300, 600, false);
 
         // Draw combat log
-        drawDialogBox(batch, 50, 50, 300, 150);
+        drawMessageBox(batch, combatLog, 50, 50, 300, 150);
+
+
+
         regularFont.setColor(Color.WHITE);
-        regularFont.draw(batch, combatLog, 80, 170);
+//        regularFont.draw(batch, combatLog, 80, 170);
         drawCenteredText(batch, regularFont, (isPlayerTurn ? "Player" : enemyName) + " TURN", viewport.getWorldWidth()/2, 700, Color.WHITE);
 
         // Update and draw buttons
-        float buttonX = viewport.getWorldWidth() - 250;
-        float buttonY = 50;
-        float buttonWidth = 200;
+        float buttonX = ((viewport.getWorldWidth() - 70) / 2);
+        float buttonY = 105;
+        float buttonWidth = 130;
         float buttonHeight = 50;
         float buttonSpacing = 60;
 
-        submitButtonRect = new Rectangle(buttonX, buttonY + buttonSpacing*2, buttonWidth, buttonHeight);
-        clearButtonRect = new Rectangle(buttonX, buttonY + buttonSpacing, buttonWidth, buttonHeight);
+        submitButtonRect = new Rectangle(buttonX-90, buttonY, buttonWidth, buttonHeight);
+        clearButtonRect = new Rectangle(buttonX + 32, buttonY, buttonWidth, buttonHeight);
 
-        drawPokemonButton(batch, submitButtonRect, "CAST WORD", isPlayerTurn);
-        drawPokemonButton(batch, clearButtonRect, "CLEAR", isPlayerTurn);
+
 
         // Draw compact letter grid and word info during player turn
         if (isPlayerTurn) {
             drawCompactLetterGrid(batch);
-
+            drawButton(batch, submitButtonRect, "CAST WORD");
+            drawButton(batch, clearButtonRect, "CLEAR");
             String currentWord = letterGrid.getCurrentWord();
             if (currentWord.length() > 0) {
                 drawCenteredText(batch, regularFont, "Spell: " + currentWord, viewport.getWorldWidth()/2, 600, Color.WHITE);
@@ -275,6 +299,10 @@ public class GameplayController {
         float gridX = (viewport.getWorldWidth() - gridSize) / 2;
         float gridY = 150;
 
+        // Draw grid background
+        batch.setColor(Color.WHITE);
+        batch.draw(gridBackgroundTexture, gridX- 16, gridY -48, 380, 450);
+
         char[][] grid = letterGrid.getGrid();
         boolean[][] selected = letterGrid.getSelectedCells();
 
@@ -283,16 +311,13 @@ public class GameplayController {
                 float screenX = gridX + x * cellSize;
                 float screenY = gridY + (4-y) * cellSize;
 
-                // Cell background
-                batch.setColor(selected[y][x] ? new Color(0.2f, 0.6f, 1f, 1) : new Color(0.9f, 0.9f, 0.8f, 1));
-                batch.draw(whiteTexture, screenX, screenY, cellSize, cellSize);
-
-                // Cell border
-                batch.setColor(0.3f, 0.3f, 0.3f, 1);
-                batch.draw(whiteTexture, screenX, screenY, cellSize, 1); // Bottom
-                batch.draw(whiteTexture, screenX, screenY, 1, cellSize); // Left
-                batch.draw(whiteTexture, screenX + cellSize - 1, screenY, 1, cellSize); // Right
-                batch.draw(whiteTexture, screenX, screenY + cellSize - 1, cellSize, 1); // Top
+                // Draw cell background
+                batch.setColor(Color.WHITE);
+                if (selected[y][x]) {
+                    batch.draw(selectedCellTexture, screenX, screenY, cellSize, cellSize);
+                } else {
+                    batch.draw(cellTexture, screenX, screenY, cellSize, cellSize);
+                }
 
                 // Draw letter
                 String letter = String.valueOf(grid[y][x]);
@@ -351,37 +376,6 @@ public class GameplayController {
         batch.draw(whiteTexture, x, y + height - thickness, width, thickness); // Top
     }
 
-    private void drawDialogBox(SpriteBatch batch, float x, float y, float width, float height) {
-        // Background
-        batch.setColor(0.1f, 0.1f, 0.1f, 0.85f);
-        batch.draw(whiteTexture, x, y, width, height);
-
-        // Border
-        batch.setColor(0.7f, 0.7f, 0.7f, 1);
-        drawRect(batch, x, y, width, height, 2);
-
-        // Inner shadow
-        batch.setColor(0.3f, 0.3f, 0.3f, 0.5f);
-        batch.draw(whiteTexture, x + 4, y + 4, width - 8, height - 8);
-    }
-
-    private void drawPokemonButton(SpriteBatch batch, Rectangle buttonRect, String text, boolean enabled) {
-        // Background
-        batch.setColor(enabled ? new Color(0.4f, 0.4f, 0.8f, 0.9f) : new Color(0.3f, 0.3f, 0.4f, 0.6f));
-        batch.draw(whiteTexture, buttonRect.x, buttonRect.y, buttonRect.width, buttonRect.height);
-
-        // Border
-        batch.setColor(0.7f, 0.7f, 0.9f, 1);
-        drawRect(batch, buttonRect.x, buttonRect.y, buttonRect.width, buttonRect.height, 2);
-
-        // Text
-        layout.setText(regularFont, text);
-        regularFont.setColor(enabled ? Color.WHITE : Color.GRAY);
-        regularFont.draw(batch, text,
-                buttonRect.x + (buttonRect.width - layout.width) / 2,
-                buttonRect.y + (buttonRect.height + layout.height) / 2);
-    }
-
     private void drawLetterGrid(SpriteBatch batch) {
         float gridX = 250;
         float gridY = 110;
@@ -425,20 +419,14 @@ public class GameplayController {
     }
 
     private void drawButton(SpriteBatch batch, Rectangle buttonRect, String text) {
-        batch.setColor(0.4f, 0.4f, 0.8f, 1);
-        batch.draw(whiteTexture, buttonRect.x, buttonRect.y, buttonRect.width, buttonRect.height);
-
-        batch.setColor(0.2f, 0.2f, 0.6f, 1);
-        batch.draw(whiteTexture, buttonRect.x, buttonRect.y, buttonRect.width, 2);
-        batch.draw(whiteTexture, buttonRect.x, buttonRect.y, 2, buttonRect.height);
+        batch.setColor(Color.WHITE);
+        batch.draw(buttonTexture, buttonRect.x, buttonRect.y, buttonRect.width, buttonRect.height);
 
         layout.setText(regularFont, text);
         regularFont.setColor(Color.WHITE);
         regularFont.draw(batch, text,
                 buttonRect.x + (buttonRect.width - layout.width) / 2,
                 buttonRect.y + (buttonRect.height + layout.height) / 2);
-
-        batch.setColor(Color.WHITE);
     }
 
     private void performEnemyAction() {
@@ -534,27 +522,6 @@ public class GameplayController {
         }
     }
 
-    // Public methods for combat difficulty
-    public void startCombatWithDifficulty(int difficulty) {
-        switch(difficulty) {
-            case 1: startEasyCombat(); break;
-            case 2: startMediumCombat(); break;
-            case 3: startHardCombat(); break;
-            default: startEasyCombat(); break;
-        }
-    }
-
-    public void startEasyCombat() {
-        startCombat("Word Goblin", 50, 1, 1);
-    }
-
-    public void startMediumCombat() {
-        startCombat("Word Troll", 100, 1, 2);
-    }
-
-    public void startHardCombat() {
-        startCombat("Word Dragon", 200, 1, 3);
-    }
 
     public void startCombat(String enemyName, int enemyHealth) {
         startCombat(enemyName, enemyHealth, wordDamageMultiplier, enemyDamageMultiplier);
@@ -631,6 +598,7 @@ public class GameplayController {
             texture.dispose();
         }
         textureCache.clear();
+
     }
 
     // Getters

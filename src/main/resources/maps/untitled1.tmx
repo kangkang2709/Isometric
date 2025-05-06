@@ -539,7 +539,7 @@
   <object id="27" gid="3" x="288" y="15456" width="49" height="60"/>
   <object id="34" x="256" y="15424" width="32" height="32">
    <properties>
-    <property name="enemy" value="enemy_01"/>
+    <property name="enemy" value="enemy_02"/>
     <property name="event" value="battle"/>
     <property name="health" value="2"/>
    </properties>
