@@ -5,10 +5,10 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
-import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import ctu.game.isometric.controller.GameController;
 import ctu.game.isometric.model.entity.Character;
@@ -28,6 +28,7 @@ public class ExploringUI {
     private Label questLabel;
     private ProgressBar healthBar;
     private Label healthLabel;
+    private Image healthIndicator;
 
     // Images
     private Image timeFrameImage;
@@ -44,11 +45,14 @@ public class ExploringUI {
     private Texture healthBarTexture;
     private Texture questBoxTexture;
 
+    // UI visibility control
+    private boolean uiVisible = true;
+
     public ExploringUI(GameController gameController) {
         this.gameController = gameController;
         this.character = gameController.getCharacter();
         this.stage = new Stage(new ScreenViewport());
-
+        gameController.setExploringUI(this);
         loadTextures();
         createSkin();
         setupUI();
@@ -63,13 +67,31 @@ public class ExploringUI {
     private void createSkin() {
         skin = new Skin();
 
-        // Add default font
-        BitmapFont font = new BitmapFont();
-        skin.add("default-font", font);
+        // Load custom font
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/Tektur-Bold.ttf"));
+        FreeTypeFontGenerator.FreeTypeFontParameter params = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        params.size = 16;
+        params.color = Color.WHITE;
+        params.borderWidth = 1;
+        params.borderColor = Color.BLACK;
+        BitmapFont customFont = generator.generateFont(params);
+
+        // Create another font for different purposes if needed
+        FreeTypeFontGenerator.FreeTypeFontParameter titleParams = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        titleParams.size = 20;
+        titleParams.color = Color.WHITE;
+        titleParams.borderWidth = 1.5f;
+        titleParams.borderColor = Color.BLACK;
+        BitmapFont titleFont = generator.generateFont(titleParams);
+
+        generator.dispose();
+
+        skin.add("default-font", customFont);
+        skin.add("title-font", titleFont);
 
         // Create label styles
         Label.LabelStyle defaultStyle = new Label.LabelStyle();
-        defaultStyle.font = font;
+        defaultStyle.font = customFont;
         defaultStyle.fontColor = Color.WHITE;
         skin.add("default", defaultStyle);
 
@@ -77,15 +99,19 @@ public class ExploringUI {
         timeStyle.fontColor = Color.YELLOW;
         skin.add("time", timeStyle);
 
+        Label.LabelStyle titleStyle = new Label.LabelStyle();
+        titleStyle.font = titleFont;
+        titleStyle.fontColor = Color.WHITE;
+        skin.add("title", titleStyle);
+
         Label.LabelStyle questStyle = new Label.LabelStyle(defaultStyle);
         questStyle.fontColor = Color.WHITE;
         skin.add("quest", questStyle);
 
         // Create progress bar style
-        // Create progress bar style
         ProgressBar.ProgressBarStyle progressBarStyle = new ProgressBar.ProgressBarStyle();
 
-// Create colored pixmaps for health bar
+        // Create colored pixmaps for health bar
         Pixmap backgroundPixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         backgroundPixmap.setColor(new Color(0, 0, 0, 0)); // Transparent background
         backgroundPixmap.fill();
@@ -98,12 +124,12 @@ public class ExploringUI {
         knobBeforePixmap.setColor(new Color(0.2f, 0.8f, 0.2f, 1f)); // Slightly adjusted green for better visibility
         knobBeforePixmap.fill();
 
-// Create drawables from pixmaps
+        // Create drawables from pixmaps
         progressBarStyle.background = new TextureRegionDrawable(new Texture(backgroundPixmap));
         progressBarStyle.knob = new TextureRegionDrawable(new Texture(knobPixmap));
         progressBarStyle.knobBefore = new TextureRegionDrawable(new Texture(knobBeforePixmap));
 
-// Dispose pixmaps after creating textures
+        // Dispose pixmaps after creating textures
         backgroundPixmap.dispose();
         knobPixmap.dispose();
         knobBeforePixmap.dispose();
@@ -153,22 +179,27 @@ public class ExploringUI {
         timeStack.add(timeLabelTable);
 
         // Player name and health
-        playerNameLabel = new Label(character.getName(), skin);
+        playerNameLabel = new Label(character.getName(), skin, "title");
         healthBarImage = new Image(new TextureRegionDrawable(healthBarTexture));
 
-        // Health bar setup - fully match the health_bar.png dimensions
-        healthBar = new ProgressBar(0, 100, 1, false, skin, "default-horizontal");
-        healthBar.setValue(character.getHealth());
+        // Create initial Pixmap for health display
+        Pixmap healthPixmap = new Pixmap(1, 10, Pixmap.Format.RGBA8888);
+        Color healthColor = Color.GREEN;
+        healthPixmap.setColor(healthColor);
+        healthPixmap.fill();
+        Texture healthTexture = new Texture(healthPixmap);
+        healthIndicator = new Image(new TextureRegionDrawable(healthTexture));
+        healthPixmap.dispose();
 
-        // Create health stack with bar UNDER the image
+        // Create health stack with components
         Stack healthStack = new Stack();
 
-        // First add the health bar (will be underneath)
-        Table healthBarTable = new Table();
-        healthBarTable.add(healthBar).width(healthBarWidth - 6).height(healthBarHeight - 8).padLeft(3).padTop(0);
-        healthStack.add(healthBarTable);
+        // Add the colored health indicator (bottom layer)
+        Table healthIndicatorTable = new Table();
+        healthIndicatorTable.add(healthIndicator).width((healthBarWidth - 12) * (character.getHealth() / 100f)).height(11).padLeft(0).padTop(0).left();
+        healthStack.add(healthIndicatorTable);
 
-        // Then add the image on top (with transparent areas to see the bar)
+        // Add the bar image on top (with transparent areas)
         healthStack.add(healthBarImage);
 
         // Add to top left table
@@ -197,7 +228,7 @@ public class ExploringUI {
     }
 
     public void update() {
-        if (character != null) {
+        if (character != null && uiVisible) {
             // Update time
             LocalTime now = LocalTime.now();
             timeLabel.setText(now.format(DateTimeFormatter.ofPattern("HH:mm")));
@@ -208,7 +239,6 @@ public class ExploringUI {
             // Update health
             int health = character.getHealth();
             int maxHealth = 100; // Could get this from the character
-            healthBar.setValue(health);
 
             // Update health bar color based on health percentage
             float healthPercent = health / (float)maxHealth;
@@ -219,23 +249,51 @@ public class ExploringUI {
                     1f                   // Fully opaque
             );
 
-            ((TextureRegionDrawable)((ProgressBar.ProgressBarStyle)healthBar.getStyle()).knobBefore).getRegion().getTexture().dispose();
-
-            Pixmap healthPixmap = new Pixmap(5, 8, Pixmap.Format.RGBA8888);
+            // Update health indicator with Pixmap
+            Pixmap healthPixmap = new Pixmap(1, 10, Pixmap.Format.RGBA8888);
             healthPixmap.setColor(healthColor);
             healthPixmap.fill();
 
-            ((ProgressBar.ProgressBarStyle)healthBar.getStyle()).knobBefore =
-                    new TextureRegionDrawable(new Texture(healthPixmap));
+            // Dispose old texture before setting new one
+            if (healthIndicator.getDrawable() != null) {
+                ((TextureRegionDrawable)healthIndicator.getDrawable()).getRegion().getTexture().dispose();
+            }
 
+            healthIndicator.setDrawable(new TextureRegionDrawable(new Texture(healthPixmap)));
+            healthIndicator.setWidth((healthBarTexture.getWidth() - 12) * (health / 100f));
             healthPixmap.dispose();
         }
     }
 
     public void render() {
-        update();
-        stage.act(Gdx.graphics.getDeltaTime());
-        stage.draw();
+        if (uiVisible) {
+            update();
+            stage.act(Gdx.graphics.getDeltaTime());
+            stage.draw();
+        }
+    }
+
+    /**
+     * Toggles UI visibility
+     */
+    public void toggleUI() {
+        uiVisible = !uiVisible;
+    }
+
+    /**
+     * Explicitly sets UI visibility
+     * @param visible true to show UI, false to hide
+     */
+    public void setUIVisible(boolean visible) {
+        uiVisible = visible;
+    }
+
+    /**
+     * Returns current UI visibility
+     * @return true if UI is visible, false otherwise
+     */
+    public boolean isUIVisible() {
+        return uiVisible;
     }
 
     public void resize(int width, int height) {

@@ -16,6 +16,7 @@ import ctu.game.isometric.controller.gameplay.GameplayController;
 import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.game.GameState;
 import ctu.game.isometric.model.world.IsometricMap;
+import ctu.game.isometric.view.renderer.ExploringUI;
 
 public class GameController {
 
@@ -36,8 +37,8 @@ public class GameController {
     private GameState currentState = GameState.MAIN_MENU;
     private GameState previousState = GameState.MAIN_MENU;
     private CutsceneController cutsceneController;
-
     boolean isCreated = false;
+    private ExploringUI exploringUI;
 
     public GameController(IsometricGame game) {
         this.game = game;
@@ -54,11 +55,13 @@ public class GameController {
         this.transitionController = new TransitionController();
         this.cutsceneController = new CutsceneController(this);
 
-
         this.musicController.initialize();
         this.musicController.playMusicForState(GameState.MAIN_MENU);
 
     }
+
+
+
 
     public void update(float delta) {
 
@@ -487,5 +490,13 @@ public class GameController {
 
     public void setCharacter(Character character) {
         this.character = character;
+    }
+
+    public ExploringUI getExploringUI() {
+        return exploringUI;
+    }
+
+    public void setExploringUI(ExploringUI exploringUI) {
+        this.exploringUI = exploringUI;
     }
 }

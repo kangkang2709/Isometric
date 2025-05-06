@@ -172,46 +172,40 @@ public class InputController extends InputAdapter {
         }
 
         switch (keycode) {
+
             case Keys.ESCAPE -> gameController.setState(GameState.MENU);
+            case Keys.TAB ->  gameController.getExploringUI().toggleUI();
             case Keys.W, Keys.UP -> {
                 moveCharacter(1, 0);
                 moved = true;
-                if (debugLog) Gdx.app.log("Input", "Up pressed");
             }
             case Keys.S, Keys.DOWN -> {
                 moveCharacter(-1, 0);
                 moved = true;
-                if (debugLog) Gdx.app.log("Input", "Down pressed");
             }
             case Keys.A, Keys.LEFT -> {
                 moveCharacter(0, -1);
                 moved = true;
-                if (debugLog) Gdx.app.log("Input", "Left pressed");
             }
             case Keys.D, Keys.RIGHT -> {
                 moveCharacter(0, 1);
                 moved = true;
-                if (debugLog) Gdx.app.log("Input", "Right pressed");
             }
             case Keys.Q -> { // Diagonal Up-Left
                 moveCharacter(1, -1);
                 moved = true;
-                if (debugLog) Gdx.app.log("Input", "Up-Left pressed");
             }
             case Keys.E -> { // Diagonal Up-Right
                 moveCharacter(1, 1);
                 moved = true;
-                if (debugLog) Gdx.app.log("Input", "Up-Right pressed");
             }
             case Keys.Z -> { // Diagonal Down-Left
                 moveCharacter(-1, -1);
                 moved = true;
-                if (debugLog) Gdx.app.log("Input", "Down-Left pressed");
             }
             case Keys.C -> { // Diagonal Down-Right
                 moveCharacter(-1, 1);
                 moved = true;
-                if (debugLog) Gdx.app.log("Input", "Down-Right pressed");
             }
             default -> {}
         }
@@ -314,8 +308,8 @@ public class InputController extends InputAdapter {
             return true;
         }
 
-        float defaultZoom = 0.7f;
-        float minZoom = 0.2f;
+        float defaultZoom = 1.0f;
+        float minZoom = 0.5f;
         float zoomStep = 0.1f;
 
         if (amountY < 0) {

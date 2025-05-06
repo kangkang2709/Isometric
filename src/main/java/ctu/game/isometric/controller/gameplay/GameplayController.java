@@ -23,57 +23,53 @@ import java.util.Map;
 import java.util.Random;
 
 public class GameplayController {
+    // Core components
     private final GameController gameController;
     private final LetterGrid letterGrid;
     private final WordValidator wordValidator;
+    private final Random random = new Random();
 
+    // Game state
     private int currentScore;
     private int highScore;
     private boolean active;
-
-    // Direct drawing components
-    private BitmapFont titleFont;
-    private BitmapFont regularFont;
-    private BitmapFont bigFont;
-    private GlyphLayout layout;
-    private Viewport viewport;
-    private Texture whiteTexture; // White texture for drawing colored rectangles
-    private Map<String, Texture> textureCache = new HashMap<>();
-
-    // UI components
     private String currentMessage = "";
     private float messageTimer = 0;
 
-    // Button rectangles for hit detection
-    private Rectangle submitButtonRect;
-    private Rectangle clearButtonRect;
-    private Rectangle exitButtonRect;
-    private String playerName;
-    // Combat related fields
+    // UI components
+    private BitmapFont titleFont, regularFont, bigFont;
+    private GlyphLayout layout;
+    private Viewport viewport;
+    private Texture whiteTexture;
+    private Map<String, Texture> textureCache = new HashMap<>();
+
+    // Button areas
+    private Rectangle submitButtonRect, clearButtonRect, exitButtonRect;
+
+    // Combat state
     private boolean isCombatMode = false;
     private boolean isPlayerTurn = true;
     private int playerHealth = 100;
     private int enemyHealth = 100;
+    private int enemyMaxHealth = 100;
     private String enemyName = "Enemy";
     private float enemyActionTimer = 0;
     private static final float ENEMY_TURN_DELAY = 2.5f;
     private String combatLog = "";
-    private Random random = new Random();
-
-    // Combat balance parameters
-    private int enemyDamageMultiplier = 1; // Controls enemy damage scaling
-    private int wordDamageMultiplier = 1;  // Controls how much damage your words do
-    private int enemyMaxHealth = 100;      // Starting enemy health
-    private boolean autoStartCombat = false; // If true, starts combat automatically when activating controller
+    private int enemyDamageMultiplier = 1;
+    private int wordDamageMultiplier = 1;
+    private boolean autoStartCombat = false;
+    private String playerName;
 
     public GameplayController(GameController gameController) {
         this.gameController = gameController;
         this.letterGrid = new LetterGrid();
         this.wordValidator = new WordValidator();
-        this.currentScore = 0;
-        this.highScore = 0;
-        this.active = false;
         this.playerName = gameController.getCharacter().getName();
+        initializeUI();
+    }
+
+    private void initializeUI() {
         // Initialize fonts
         titleFont = new BitmapFont();
         titleFont.getData().setScale(2.0f);
@@ -94,7 +90,6 @@ public class GameplayController {
         // Initialize button rectangles
         submitButtonRect = new Rectangle(900, 350, 200, 50);
         clearButtonRect = new Rectangle(900, 280, 200, 50);
-//        exitButtonRect = new Rectangle(900, 210, 200, 50);
     }
 
     public void update(float delta) {
@@ -103,19 +98,13 @@ public class GameplayController {
         // Update message timer
         if (messageTimer > 0) {
             messageTimer -= delta;
-            if (messageTimer <= 0) {
-                currentMessage = "";
-            }
+            if (messageTimer <= 0) currentMessage = "";
         }
 
-        if (isCombatMode) {
-            updateCombat(delta);
-        } else {
-            updateWordPuzzle(delta);
-        }
+        // Update appropriate mode
+        if (isCombatMode) updateCombat(delta);
+        else updateWordPuzzle(delta);
     }
-
-
 
     private void updateCombat(float delta) {
         // Process enemy turn
@@ -128,80 +117,55 @@ public class GameplayController {
             return;
         }
 
-        // Handle player input during their turn
+        // Handle player input
         if (Gdx.input.justTouched()) {
-            Vector3 touchPos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
-            viewport.unproject(touchPos);
+            Vector3 touchPos = getTouchPosition();
 
             if (submitButtonRect.contains(touchPos.x, touchPos.y)) {
-                submitWord(); // Use the word puzzle system for attacks
+                submitWord();
             } else if (clearButtonRect.contains(touchPos.x, touchPos.y)) {
                 clearSelection();
             } else {
-                // Check for letter grid selection
                 checkGridClick(touchPos.x, touchPos.y);
             }
         }
     }
 
     private void updateWordPuzzle(float delta) {
-        // Handle input
         if (Gdx.input.justTouched()) {
-            Vector3 touchPos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
-            viewport.unproject(touchPos);
+            Vector3 touchPos = getTouchPosition();
 
-            // Check button clicks
             if (submitButtonRect.contains(touchPos.x, touchPos.y)) {
                 submitWord();
             } else if (clearButtonRect.contains(touchPos.x, touchPos.y)) {
                 clearSelection();
-            }else {
-                // Check grid clicks
+            } else {
                 checkGridClick(touchPos.x, touchPos.y);
             }
         }
     }
 
+    private Vector3 getTouchPosition() {
+        Vector3 touchPos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
+        viewport.unproject(touchPos);
+        return touchPos;
+    }
+
     private void checkGridClick(float x, float y) {
-        if (isCombatMode) {
-            // Use compact grid dimensions for combat mode
-            float gridSize = 350;
-            float gridX = (viewport.getWorldWidth() - gridSize) / 2;
-            float gridY = 150;
-            float cellSize = gridSize / 5;
+        float gridSize = isCombatMode ? 350 : 500;
+        float gridX = isCombatMode ? (viewport.getWorldWidth() - gridSize) / 2 : 250;
+        float gridY = isCombatMode ? 150 : 110;
+        float cellSize = gridSize / 5;
 
-            // Check if click is within grid bounds
-            if (x >= gridX && x < gridX + gridSize && y >= gridY && y < gridY + gridSize) {
-                // Convert to grid coordinates
-                int cellX = (int)((x - gridX) / cellSize);
-                int cellY = 4 - (int)((y - gridY) / cellSize);
-
-                // Try to select this cell
-                selectCell(cellX, cellY);
-            }
-        } else {
-            // Original grid dimensions for word puzzle mode
-            float gridSize = 500;
-            float gridX = 250;
-            float gridY = 110;
-            float cellSize = gridSize / 5;
-
-            // Check if click is within grid bounds
-            if (x >= gridX && x < gridX + gridSize && y >= gridY && y < gridY + gridSize) {
-                // Convert to grid coordinates
-                int cellX = (int)((x - gridX) / cellSize);
-                int cellY = 4 - (int)((y - gridY) / cellSize);
-
-                // Try to select this cell
-                selectCell(cellX, cellY);
-            }
+        if (x >= gridX && x < gridX + gridSize && y >= gridY && y < gridY + gridSize) {
+            int cellX = (int)((x - gridX) / cellSize);
+            int cellY = 4 - (int)((y - gridY) / cellSize);
+            selectCell(cellX, cellY);
         }
     }
 
     public void render(SpriteBatch batch) {
-        if (!active) {
-            return;
-        }
+        if (!active) return;
 
         viewport.apply();
         batch.setProjectionMatrix(viewport.getCamera().combined);
@@ -211,33 +175,24 @@ public class GameplayController {
         batch.draw(whiteTexture, 0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
         batch.setColor(Color.WHITE);
 
-        if (isCombatMode) {
-            renderCombatUI(batch);
-        } else {
-            renderWordPuzzleUI(batch);
-        }
+        if (isCombatMode) renderCombatUI(batch);
+        else renderWordPuzzleUI(batch);
     }
 
     private void renderWordPuzzleUI(SpriteBatch batch) {
         // Draw title
-        layout.setText(titleFont, "WORD PUZZLE");
-        titleFont.setColor(Color.WHITE);
-        titleFont.draw(batch, "WORD PUZZLE",
-                (viewport.getWorldWidth() - layout.width) / 2, 650);
+        drawCenteredText(batch, titleFont, "WORD PUZZLE", viewport.getWorldWidth()/2, 650, Color.WHITE);
 
         // Draw letter grid
         drawLetterGrid(batch);
 
-        // Draw current word
+        // Draw current word and score
         String currentWord = letterGrid.getCurrentWord();
-        layout.setText(bigFont, currentWord);
         bigFont.setColor(Color.WHITE);
         bigFont.draw(batch, currentWord, 900, 500);
 
-        // Draw score
-        String scoreText = "Score: " + currentScore + "   High Score: " + highScore;
         regularFont.setColor(Color.WHITE);
-        regularFont.draw(batch, scoreText, 900, 450);
+        regularFont.draw(batch, "Score: " + currentScore + "   High Score: " + highScore, 900, 450);
 
         // Draw message
         if (!currentMessage.isEmpty()) {
@@ -255,109 +210,84 @@ public class GameplayController {
         batch.setColor(0.15f, 0.15f, 0.3f, 1);
         batch.draw(whiteTexture, 0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
 
-        // Draw player in top-left corner
-        drawCombatCharacter(batch, gameController.getCharacter().getName(), playerHealth, 100, 50, 600, true);
+        // Draw player and enemy
+        drawCombatCharacter(batch, playerName, playerHealth, 100, 50, 600, true);
+        drawCombatCharacter(batch, enemyName, enemyHealth, enemyMaxHealth, viewport.getWorldWidth() - 300, 600, false);
 
-        // Draw enemy in top-right corner
-        drawCombatCharacter(batch, enemyName, enemyHealth, enemyMaxHealth,
-                viewport.getWorldWidth() - 300, 600, false);
-
-        // Draw battle message log in bottom-left
+        // Draw combat log
         drawDialogBox(batch, 50, 50, 300, 150);
         regularFont.setColor(Color.WHITE);
         regularFont.draw(batch, combatLog, 80, 170);
-        regularFont.draw(batch,  (isPlayerTurn ? "Player" : enemyName) + " TURN",
-                (viewport.getWorldWidth()) / 2 - 90,
-                700);
-        // Draw action buttons in bottom-right
+        drawCenteredText(batch, regularFont, (isPlayerTurn ? "Player" : enemyName) + " TURN", viewport.getWorldWidth()/2, 700, Color.WHITE);
+
+        // Update and draw buttons
         float buttonX = viewport.getWorldWidth() - 250;
         float buttonY = 50;
         float buttonWidth = 200;
         float buttonHeight = 50;
         float buttonSpacing = 60;
 
-        // Update button rectangles for new positions
         submitButtonRect = new Rectangle(buttonX, buttonY + buttonSpacing*2, buttonWidth, buttonHeight);
         clearButtonRect = new Rectangle(buttonX, buttonY + buttonSpacing, buttonWidth, buttonHeight);
-        exitButtonRect = new Rectangle(buttonX, buttonY, buttonWidth, buttonHeight);
 
-        // Draw action buttons in Pokémon style
         drawPokemonButton(batch, submitButtonRect, "CAST WORD", isPlayerTurn);
         drawPokemonButton(batch, clearButtonRect, "CLEAR", isPlayerTurn);
-//        drawPokemonButton(batch, exitButtonRect, "RUN", true);
 
-        // Draw compact letter grid in center only during player turn
+        // Draw compact letter grid and word info during player turn
         if (isPlayerTurn) {
             drawCompactLetterGrid(batch);
 
-            // Show current word in progress above the grid
             String currentWord = letterGrid.getCurrentWord();
             if (currentWord.length() > 0) {
-                String wordText = "Spell: " + currentWord;
-                layout.setText(regularFont, wordText);
-                regularFont.draw(batch, wordText,
-                        (viewport.getWorldWidth() - layout.width) / 2,
-                        600);
+                drawCenteredText(batch, regularFont, "Spell: " + currentWord, viewport.getWorldWidth()/2, 600, Color.WHITE);
 
-                // Show potential damage
                 int potentialScore = WordScorer.getTotalScore(currentWord);
-                if(wordValidator.isValidWord(currentWord)){
-                    String damageText = "Power: " + (potentialScore * wordDamageMultiplier);
-                    layout.setText(regularFont, damageText);
-                    regularFont.draw(batch, damageText,
-                            (viewport.getWorldWidth() - layout.width) / 2,
-                            570);
+                if(wordValidator.isValidWord(currentWord)) {
+                    drawCenteredText(batch, regularFont, "Power: " + (potentialScore * wordDamageMultiplier),
+                            viewport.getWorldWidth()/2, 570, Color.WHITE);
                 }
-
             }
         }
     }
 
+    private void drawCenteredText(SpriteBatch batch, BitmapFont font, String text, float x, float y, Color color) {
+        layout.setText(font, text);
+        font.setColor(color);
+        font.draw(batch, text, x - layout.width/2, y);
+    }
+
     private void drawCombatCharacter(SpriteBatch batch, String name, int currentHealth,
                                      int maxHealth, float x, float y, boolean isPlayer) {
-        // Draw character image based on name
+        // Draw character image
         batch.setColor(1, 1, 1, 1);
-        Texture characterTexture = null;
-        if (isPlayer) {
-            characterTexture = getCharacterTexture("characters/player.png");
-        }
-        else{
-            characterTexture = getCharacterTexture("enemy/" + name + ".png");
-        }
+        Texture characterTexture = getCharacterTexture(isPlayer ? "characters/player.png" : "enemy/" + name + ".png");
         if (characterTexture != null) {
             float imgSize = 150;
             batch.draw(characterTexture, x + 60, y - imgSize - 100, imgSize, imgSize);
         }
 
-        // Draw character name and health bar
         drawPokemonHealthBar(batch, name, currentHealth, maxHealth, x, y);
     }
 
     private void drawCompactLetterGrid(SpriteBatch batch) {
-        float gridSize = 350; // Smaller than the original 500
+        float gridSize = 350;
         float cellSize = gridSize / 5;
-        float gridX = (viewport.getWorldWidth() - gridSize) / 2; // Center horizontally
-        float gridY = 150; // Position vertically
+        float gridX = (viewport.getWorldWidth() - gridSize) / 2;
+        float gridY = 150;
 
         char[][] grid = letterGrid.getGrid();
         boolean[][] selected = letterGrid.getSelectedCells();
 
-        // Draw cells
         for (int y = 0; y < 5; y++) {
             for (int x = 0; x < 5; x++) {
                 float screenX = gridX + x * cellSize;
                 float screenY = gridY + (4-y) * cellSize;
 
-                // Draw cell background
-                if (selected[y][x]) {
-                    batch.setColor(0.2f, 0.6f, 1f, 1); // Selected cell color
-                } else {
-                    batch.setColor(0.9f, 0.9f, 0.8f, 1); // Regular cell color
-                }
-
+                // Cell background
+                batch.setColor(selected[y][x] ? new Color(0.2f, 0.6f, 1f, 1) : new Color(0.9f, 0.9f, 0.8f, 1));
                 batch.draw(whiteTexture, screenX, screenY, cellSize, cellSize);
 
-                // Draw cell border
+                // Cell border
                 batch.setColor(0.3f, 0.3f, 0.3f, 1);
                 batch.draw(whiteTexture, screenX, screenY, cellSize, 1); // Bottom
                 batch.draw(whiteTexture, screenX, screenY, 1, cellSize); // Left
@@ -367,14 +297,13 @@ public class GameplayController {
                 // Draw letter
                 String letter = String.valueOf(grid[y][x]);
                 layout.setText(regularFont, letter);
-                batch.setColor(Color.BLACK);
+                regularFont.setColor(Color.BLACK);
                 regularFont.draw(batch, letter,
                         screenX + (cellSize - layout.width) / 2,
                         screenY + cellSize - (cellSize - layout.height) / 2);
             }
         }
-
-        batch.setColor(Color.WHITE); // Reset color
+        batch.setColor(Color.WHITE);
     }
 
     private Texture getCharacterTexture(String name) {
@@ -383,80 +312,67 @@ public class GameplayController {
         }
         return textureCache.get(name);
     }
-    // Helper method to draw Pokémon-style health bars
+
     private void drawPokemonHealthBar(SpriteBatch batch, String name, int current, int max, float x, float y) {
-        // Draw name tag background
+        // Name tag background
         batch.setColor(0.2f, 0.2f, 0.2f, 0.8f);
         batch.draw(whiteTexture, x, y, 250, 50);
 
-        // Draw border
+        // Border
         batch.setColor(0.8f, 0.8f, 0.8f, 1);
-        batch.draw(whiteTexture, x, y, 250, 2); // Top
-        batch.draw(whiteTexture, x, y, 2, 50); // Left
-        batch.draw(whiteTexture, x + 250, y, 2, 50); // Right
-        batch.draw(whiteTexture, x, y + 50, 250, 2); // Bottom
+        drawRect(batch, x, y, 250, 50, 2);
 
-        // Draw name
+        // Name and HP label
         regularFont.setColor(Color.WHITE);
         regularFont.draw(batch, name, x + 10, y + 40);
-
-        // Draw "HP" label
         regularFont.draw(batch, "HP:", x + 8, y + 20);
 
-        // Draw health bar background
+        // Health bar background
         batch.setColor(0.3f, 0.3f, 0.3f, 1);
         batch.draw(whiteTexture, x + 40, y + 10, 180, 10);
 
-        // Calculate health percentage
+        // Health bar fill
         float healthPercentage = (float)current / max;
-
-        // Determine color based on health percentage
-        if (healthPercentage > 0.5f) {
-            batch.setColor(0.3f, 0.9f, 0.3f, 1); // Green
-        } else if (healthPercentage > 0.2f) {
-            batch.setColor(0.9f, 0.9f, 0.2f, 1); // Yellow
-        } else {
-            batch.setColor(0.9f, 0.2f, 0.2f, 1); // Red
-        }
-
-        // Draw health bar
+        batch.setColor(getHealthColor(healthPercentage));
         batch.draw(whiteTexture, x + 40, y + 10, 180 * healthPercentage, 10);
     }
 
-    // Helper method to draw Pokémon-style dialog box
+    private Color getHealthColor(float percentage) {
+        if (percentage > 0.5f) return new Color(0.3f, 0.9f, 0.3f, 1);
+        else if (percentage > 0.2f) return new Color(0.9f, 0.9f, 0.2f, 1);
+        else return new Color(0.9f, 0.2f, 0.2f, 1);
+    }
+
+    // Helper to draw rectangle borders
+    private void drawRect(SpriteBatch batch, float x, float y, float width, float height, float thickness) {
+        batch.draw(whiteTexture, x, y, width, thickness); // Bottom
+        batch.draw(whiteTexture, x, y, thickness, height); // Left
+        batch.draw(whiteTexture, x + width - thickness, y, thickness, height); // Right
+        batch.draw(whiteTexture, x, y + height - thickness, width, thickness); // Top
+    }
+
     private void drawDialogBox(SpriteBatch batch, float x, float y, float width, float height) {
-        // Draw main dialog background
+        // Background
         batch.setColor(0.1f, 0.1f, 0.1f, 0.85f);
         batch.draw(whiteTexture, x, y, width, height);
 
-        // Draw border
+        // Border
         batch.setColor(0.7f, 0.7f, 0.7f, 1);
-        batch.draw(whiteTexture, x, y, width, 2); // Top
-        batch.draw(whiteTexture, x, y, 2, height); // Left
-        batch.draw(whiteTexture, x + width, y, 2, height); // Right
-        batch.draw(whiteTexture, x, y + height, width, 2); // Bottom
+        drawRect(batch, x, y, width, height, 2);
 
-        // Inner shadow for depth
+        // Inner shadow
         batch.setColor(0.3f, 0.3f, 0.3f, 0.5f);
         batch.draw(whiteTexture, x + 4, y + 4, width - 8, height - 8);
     }
 
-    // Helper method to draw Pokémon-style buttons
     private void drawPokemonButton(SpriteBatch batch, Rectangle buttonRect, String text, boolean enabled) {
         // Background
-        if (enabled) {
-            batch.setColor(0.4f, 0.4f, 0.8f, 0.9f);
-        } else {
-            batch.setColor(0.3f, 0.3f, 0.4f, 0.6f); // Disabled appearance
-        }
+        batch.setColor(enabled ? new Color(0.4f, 0.4f, 0.8f, 0.9f) : new Color(0.3f, 0.3f, 0.4f, 0.6f));
         batch.draw(whiteTexture, buttonRect.x, buttonRect.y, buttonRect.width, buttonRect.height);
 
         // Border
         batch.setColor(0.7f, 0.7f, 0.9f, 1);
-        batch.draw(whiteTexture, buttonRect.x, buttonRect.y, buttonRect.width, 2); // Bottom
-        batch.draw(whiteTexture, buttonRect.x, buttonRect.y, 2, buttonRect.height); // Left
-        batch.draw(whiteTexture, buttonRect.x + buttonRect.width, buttonRect.y, 2, buttonRect.height); // Right
-        batch.draw(whiteTexture, buttonRect.x, buttonRect.y + buttonRect.height, buttonRect.width, 2); // Top
+        drawRect(batch, buttonRect.x, buttonRect.y, buttonRect.width, buttonRect.height, 2);
 
         // Text
         layout.setText(regularFont, text);
@@ -466,75 +382,46 @@ public class GameplayController {
                 buttonRect.y + (buttonRect.height + layout.height) / 2);
     }
 
-    // Method to draw the health bar
-    private void drawHealthBar(SpriteBatch batch, String label, int current, int max,
-                               float x, float y, float width, float height, Color color) {
-        // Draw label
-        regularFont.setColor(Color.WHITE);
-        regularFont.draw(batch, label + ": " + current + "/" + max, x, y);
-
-        // Draw background
-        batch.setColor(0.2f, 0.2f, 0.2f, 1);
-        batch.draw(whiteTexture, x, y - height - 5, width, height);
-
-        // Draw health bar
-        float healthRatio = (float)current / max;
-        batch.setColor(color);
-        batch.draw(whiteTexture, x, y - height - 5, width * healthRatio, height);
-
-        // Draw border
-        batch.setColor(0.7f, 0.7f, 0.7f, 1);
-        batch.draw(whiteTexture, x, y - height - 5, width, 1); // Top
-        batch.draw(whiteTexture, x, y - 5, 1, height); // Left
-        batch.draw(whiteTexture, x + width, y - height - 5, 1, height); // Right
-        batch.draw(whiteTexture, x, y - 5, width, 1); // Bottom
-
-        batch.setColor(Color.WHITE);
-    }
-
     private void drawLetterGrid(SpriteBatch batch) {
         float gridX = 250;
         float gridY = 110;
         float gridSize = 500;
         float cellSize = gridSize / 5;
+        float padding = 4;
+
+        // Grid background
+        batch.setColor(0.3f, 0.3f, 0.4f, 0.7f);
+        batch.draw(whiteTexture, gridX - padding, gridY - padding, gridSize + padding*2, gridSize + padding*2);
 
         char[][] grid = letterGrid.getGrid();
         boolean[][] selected = letterGrid.getSelectedCells();
 
-        // Draw cells
         for (int y = 0; y < 5; y++) {
             for (int x = 0; x < 5; x++) {
-                float screenX = gridX + x * cellSize;
-                float screenY = gridY + (4-y) * cellSize;
+                float screenX = gridX + x * cellSize + padding/2;
+                float screenY = gridY + (4-y) * cellSize + padding/2;
+                float actualCellSize = cellSize - padding;
 
-                // Draw cell background
+                // Cell background
                 if (selected[y][x]) {
-                    batch.setColor(0.2f, 0.6f, 1f, 1); // Selected cell color
+                    batch.setColor(0.3f, 0.7f, 1f, 0.5f);
+                    batch.draw(whiteTexture, screenX - 3, screenY - 3, actualCellSize + 6, actualCellSize + 6);
+                    batch.setColor(0.2f, 0.6f, 1f, 1);
                 } else {
-                    batch.setColor(0.9f, 0.9f, 0.8f, 1); // Regular cell color
+                    batch.setColor(0.85f, 0.85f, 0.7f, 1);
                 }
+                batch.draw(whiteTexture, screenX, screenY, actualCellSize, actualCellSize);
 
-                // Draw with the white texture
-                batch.draw(whiteTexture, screenX, screenY, cellSize, cellSize);
-
-                // Draw cell border
-                batch.setColor(0.3f, 0.3f, 0.3f, 1);
-                batch.draw(whiteTexture, screenX, screenY, cellSize, 1); // Bottom
-                batch.draw(whiteTexture, screenX, screenY, 1, cellSize); // Left
-                batch.draw(whiteTexture, screenX, screenY + cellSize - 1, cellSize, 1); // Top
-                batch.draw(whiteTexture, screenX + cellSize - 1, screenY, 1, cellSize); // Right
-
-                // Draw letter
+                // Letter
                 String letter = String.valueOf(grid[y][x]);
                 layout.setText(regularFont, letter);
-                batch.setColor(Color.BLACK);
+                regularFont.setColor(Color.BLACK);
                 regularFont.draw(batch, letter,
-                        screenX + (cellSize - layout.width) / 2,
-                        screenY + cellSize - (cellSize - layout.height) / 2);
+                        screenX + (actualCellSize - layout.width) / 2,
+                        screenY + actualCellSize - (actualCellSize - layout.height) / 2);
             }
         }
-
-        batch.setColor(Color.WHITE); // Reset color
+        batch.setColor(Color.WHITE);
     }
 
     private void drawButton(SpriteBatch batch, Rectangle buttonRect, String text) {
@@ -542,8 +429,8 @@ public class GameplayController {
         batch.draw(whiteTexture, buttonRect.x, buttonRect.y, buttonRect.width, buttonRect.height);
 
         batch.setColor(0.2f, 0.2f, 0.6f, 1);
-        batch.draw(whiteTexture, buttonRect.x, buttonRect.y, buttonRect.width, 2); // Bottom
-        batch.draw(whiteTexture, buttonRect.x, buttonRect.y, 2, buttonRect.height); // Left
+        batch.draw(whiteTexture, buttonRect.x, buttonRect.y, buttonRect.width, 2);
+        batch.draw(whiteTexture, buttonRect.x, buttonRect.y, 2, buttonRect.height);
 
         layout.setText(regularFont, text);
         regularFont.setColor(Color.WHITE);
@@ -554,64 +441,26 @@ public class GameplayController {
         batch.setColor(Color.WHITE);
     }
 
-    public void activate() {
-        System.out.println("Activating GameplayController");
-        this.active = true;
-        letterGrid.regenerateGrid();
-        currentScore = 0;
-        currentMessage = "";
-        viewport.update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
-
-        // Automatically start combat if enabled
-        if (autoStartCombat) {
-            startCombat("Word Monster", 100);
-        }
-    }
-
-    public void deactivate() {
-        this.active = false;
-        clearSelection();
-    }
-
-    public void startCombat(String enemyName, int enemyHealth) {
-        this.enemyName = enemyName;
-        this.enemyMaxHealth = enemyHealth;
-        this.enemyHealth = enemyHealth;
-        this.playerHealth = gameController.getCharacter().getHealth();
-        this.isCombatMode = true;
-        this.isPlayerTurn = true;
-        this.combatLog = "Combat with " + enemyName + " has begun!";
-
-        // Generate a new grid of letters for the combat
-        letterGrid.regenerateGrid();
-    }
-
     private void performEnemyAction() {
-        // Enemy deals damage based on word length and multiplier
         int damage = (random.nextInt(8) + 3) * enemyDamageMultiplier;
         playerHealth -= damage;
 
-        // Sometimes the enemy can perform special actions
         int action = random.nextInt(10);
-
-        if (action < 7) { // 70% chance for normal attack
+        if (action < 7) { // 70% normal attack
             combatLog = enemyName + " attacks for " + damage + " damage!";
-        } else if (action < 9) { // 20% chance for a power attack
+        } else if (action < 9) { // 20% power attack
             int extraDamage = random.nextInt(5) + 1;
             playerHealth -= extraDamage;
             combatLog = enemyName + " performs a power attack for " + (damage + extraDamage) + " damage!";
-        } else { // 10% chance to heal
+        } else { // 10% heal
             int heal = random.nextInt(8) + 3;
             enemyHealth = Math.min(enemyMaxHealth, enemyHealth + heal);
             combatLog = enemyName + " recovers " + heal + " health!";
         }
 
         checkCombatEnd();
-
-        // If combat continues, it's player's turn again
         if (isCombatMode) {
             isPlayerTurn = true;
-            // Regenerate letter grid for the next player turn
             letterGrid.regenerateGrid();
         }
     }
@@ -632,15 +481,12 @@ public class GameplayController {
         if (victory) {
             int rewardPoints = random.nextInt(20) + 10;
             currentScore += rewardPoints;
-            if (currentScore > highScore) {
-                highScore = currentScore;
-            }
+            highScore = Math.max(currentScore, highScore);
             showMessage("Victory! +" + rewardPoints + " points!");
         } else {
             showMessage("Defeat! Better luck next time.");
         }
 
-        // Return to word puzzle mode after a short delay
         Timer.schedule(new Timer.Task() {
             @Override
             public void run() {
@@ -650,34 +496,6 @@ public class GameplayController {
                 dispose();
             }
         }, 3.0f);
-    }
-
-    // Add these convenience methods for starting combat with different difficulties
-    public void startEasyCombat() {
-        wordDamageMultiplier = 1;
-        enemyDamageMultiplier = 1;
-        startCombat("Word Goblin", 50);
-    }
-
-    public void startMediumCombat() {
-        wordDamageMultiplier = 1;
-        enemyDamageMultiplier = 2;
-        startCombat("Word Troll", 100);
-    }
-
-    public void startHardCombat() {
-        wordDamageMultiplier = 1;
-        enemyDamageMultiplier = 3;
-        startCombat("Word Dragon", 200);
-    }
-
-    public void startCombatWithDifficulty(int difficulty) {
-        switch(difficulty) {
-            case 1: startEasyCombat(); break;
-            case 2: startMediumCombat(); break;
-            case 3: startHardCombat(); break;
-            default: startEasyCombat(); break;
-        }
     }
 
     public boolean submitWord() {
@@ -692,27 +510,22 @@ public class GameplayController {
         if (wordValidator.isValidWord(word)) {
             int points = WordScorer.getTotalScore(word);
             currentScore += points;
-            if (currentScore > highScore) {
-                highScore = currentScore;
-            }
+            highScore = Math.max(currentScore, highScore);
 
-            // If in combat, deal damage based on word score
             if (isCombatMode && isPlayerTurn) {
                 int damage = points * wordDamageMultiplier;
                 enemyHealth -= damage;
                 combatLog = "Your word '" + word + "' deals " + damage + " damage!";
                 showMessage("+" + points + " points! " + damage + " damage!");
 
-                // Check if enemy is defeated
                 checkCombatEnd();
                 if (isCombatMode) {
-                    isPlayerTurn = false; // End player's turn
+                    isPlayerTurn = false;
                 }
             } else {
                 showMessage("+" + points + " points!");
             }
 
-            // Always regenerate the grid after a valid word
             letterGrid.regenerateGrid();
             return true;
         } else {
@@ -721,6 +534,64 @@ public class GameplayController {
         }
     }
 
+    // Public methods for combat difficulty
+    public void startCombatWithDifficulty(int difficulty) {
+        switch(difficulty) {
+            case 1: startEasyCombat(); break;
+            case 2: startMediumCombat(); break;
+            case 3: startHardCombat(); break;
+            default: startEasyCombat(); break;
+        }
+    }
+
+    public void startEasyCombat() {
+        startCombat("Word Goblin", 50, 1, 1);
+    }
+
+    public void startMediumCombat() {
+        startCombat("Word Troll", 100, 1, 2);
+    }
+
+    public void startHardCombat() {
+        startCombat("Word Dragon", 200, 1, 3);
+    }
+
+    public void startCombat(String enemyName, int enemyHealth) {
+        startCombat(enemyName, enemyHealth, wordDamageMultiplier, enemyDamageMultiplier);
+    }
+
+    public void startCombat(String enemyName, int enemyHealth, int wordMult, int enemyMult) {
+        this.enemyName = enemyName;
+        this.enemyMaxHealth = enemyHealth;
+        this.enemyHealth = enemyHealth;
+        this.wordDamageMultiplier = wordMult;
+        this.enemyDamageMultiplier = enemyMult;
+        this.playerHealth = gameController.getCharacter().getHealth();
+        this.isCombatMode = true;
+        this.isPlayerTurn = true;
+        this.combatLog = "Combat with " + enemyName + " has begun!";
+        letterGrid.regenerateGrid();
+    }
+
+    // Core game functions
+    public void activate() {
+        this.active = true;
+        letterGrid.regenerateGrid();
+        currentScore = 0;
+        currentMessage = "";
+        viewport.update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
+
+        if (autoStartCombat) {
+            startCombat("enemy_01", 100);
+        }
+    }
+
+    public void deactivate() {
+        this.active = false;
+        clearSelection();
+    }
+
+    // Letter grid interaction
     public boolean selectCell(int x, int y) {
         if (!active) return false;
         try {
@@ -730,7 +601,6 @@ public class GameplayController {
             }
             return false;
         } catch (IndexOutOfBoundsException e) {
-            System.err.println("Invalid cell coordinates: " + x + ", " + y);
             return false;
         }
     }
@@ -747,57 +617,29 @@ public class GameplayController {
 
     private void showMessage(String message) {
         currentMessage = message;
-        messageTimer = 3.0f; // Show message for 3 seconds
+        messageTimer = 3.0f;
     }
 
-    // Add getters and other utility methods
-    public boolean isInCombatMode() {
-        return isCombatMode;
-    }
-
-    public int getPlayerHealth() {
-        return playerHealth;
-    }
-
-    public int getEnemyHealth() {
-        return enemyHealth;
-    }
-
-    public LetterGrid getLetterGrid() {
-        return letterGrid;
-    }
-
-    public int getCurrentScore() {
-        return currentScore;
-    }
-
-    public int getHighScore() {
-        return highScore;
-    }
-
-    public String getCurrentWord() {
-        return letterGrid.getCurrentWord();
-    }
-
-    public boolean isActive() {
-        return active;
-    }
-
+    // Utility methods
     public void resize(int width, int height) {
         viewport.update(width, height, true);
     }
 
     public void dispose() {
         active = false;
-//        titleFont.dispose();
-//        regularFont.dispose();
-//        bigFont.dispose();
-//        whiteTexture.dispose();
-
-        // Dispose all cached textures
         for (Texture texture : textureCache.values()) {
             texture.dispose();
         }
         textureCache.clear();
     }
+
+    // Getters
+    public boolean isInCombatMode() { return isCombatMode; }
+    public int getPlayerHealth() { return playerHealth; }
+    public int getEnemyHealth() { return enemyHealth; }
+    public LetterGrid getLetterGrid() { return letterGrid; }
+    public int getCurrentScore() { return currentScore; }
+    public int getHighScore() { return highScore; }
+    public String getCurrentWord() { return letterGrid.getCurrentWord(); }
+    public boolean isActive() { return active; }
 }
