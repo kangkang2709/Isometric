@@ -42,6 +42,8 @@ public class GameController {
     boolean isCreated = false;
     private ExploringUI exploringUI;
 
+    private boolean isLoadGame = false;
+
     public GameController(IsometricGame game) {
         this.game = game;
         this.map = new IsometricMap();
@@ -63,7 +65,24 @@ public class GameController {
     }
 
 
+    public void loadCharacter(Character character) {
+        // Create a new character instance with the same data
+        this.character = character;
+        this.isCreated= true;
+        // Re-initialize map and other references
+        character.setGameMap(this.getMap());
 
+        // Initialize other game state as needed
+        // ...
+    }
+
+    public boolean isLoadGame() {
+        return isLoadGame;
+    }
+
+    public void setLoadGame(boolean loadGame) {
+        isLoadGame = loadGame;
+    }
 
     public void update(float delta) {
 

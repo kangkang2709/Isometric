@@ -50,9 +50,6 @@ public class LoadGameController {
     private float inputCooldown = 0;
     private final float INPUT_DELAY = 0.2f;
 
-    // For date formatting
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
     public LoadGameController(GameController gameController) {
         this.gameController = gameController;
         this.saveService = new GameSaveService();
@@ -65,7 +62,7 @@ public class LoadGameController {
         font = new BitmapFont();
         font.getData().setScale(1.5f);
 
-        // Load background and button textures
+        // Load textures using the same resources as MainMenuController
         backgroundImage = new Texture(Gdx.files.internal("backgrounds/main_menu_bg.png"));
         buttonNormal = new Texture(Gdx.files.internal("ui/button.png"));
         buttonSelected = new Texture(Gdx.files.internal("ui/button_selected.png"));
@@ -232,11 +229,8 @@ public class LoadGameController {
 
             if (save != null) {
                 // Set character data in game controller
-                gameController.setCharacter(save.getCharacter());
-
-                // Start the game
+                gameController.loadCharacter(save.getCharacter());
                 gameController.setState(GameState.EXPLORING);
-
                 System.out.println("Game loaded: " + fileName);
             } else {
                 System.out.println("Failed to load save: " + fileName);

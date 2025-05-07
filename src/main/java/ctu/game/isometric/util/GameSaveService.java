@@ -2,42 +2,51 @@ package ctu.game.isometric.util;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.game.GameSave;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.*;
 
 public class GameSaveService {
     private static final String SAVE_DIRECTORY = "saves/";
     private final ObjectMapper objectMapper;
 
     public GameSaveService() {
+        // Configure ObjectMapper
         this.objectMapper = new ObjectMapper();
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 
+        // Configure visibility to use fields directly and ignore getters/setters
+        objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE);
+        objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+
+        // Create save directory if it doesn't exist
         FileHandle dir = Gdx.files.local(SAVE_DIRECTORY);
         if (!dir.exists()) {
             dir.mkdirs();
         }
     }
 
-    /**
-     * Save game to the specified filename or generate a timestamp-based name
-     */
     public boolean saveGame(Character character, String saveName) {
         try {
+            // Create a clean character copy without LibGDX objects
+            Character saveCharacter = createSerializableCopy(character);
+
+            // Create and populate GameSave
             GameSave gameSave = new GameSave();
-            gameSave.setCharacter(character);
+            gameSave.setCharacter(saveCharacter);
             gameSave.setSaveDate(new Date());
 
+            // Generate filename
             String filename = saveName.isEmpty() ?
-                new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date()) :
-                saveName;
+                    new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date()) :
+                    saveName;
 
-            // Ensure filename has .json extension
             if (!filename.toLowerCase().endsWith(".json")) {
                 filename += ".json";
             }
@@ -49,13 +58,57 @@ public class GameSaveService {
             return true;
         } catch (Exception e) {
             Gdx.app.error("GameSaveService", "Error saving game: " + e.getMessage());
+            e.printStackTrace();
             return false;
         }
     }
 
-    /**
-     * List all available save files
-     */
+    private Character createSerializableCopy(Character original) {
+        Character copy = new Character();
+
+        // Copy primitive properties
+        copy.setName(original.getName());
+        copy.setHealth(original.getHealth());
+        copy.setGender(original.getGender());
+        copy.setDamage(original.getDamage());
+        copy.setMoveSpeed(original.getMoveSpeed());
+
+        // Copy position
+        copy.setGridX(original.getGridX());
+        copy.setGridY(original.getGridY());
+        copy.setTargetX(original.getTargetX());
+        copy.setTargetY(original.getTargetY());
+        copy.setDirection(original.getDirection());
+
+        // Copy collections (create new instances to avoid reference issues)
+        copy.setItems(new HashMap<>(original.getItems()));
+        copy.setFlags(new ArrayList<>(original.getFlags()));
+        copy.setQuests(new ArrayList<>(original.getQuests()));
+
+        // Deep copy status map
+        Map<String, List<String>> statusCopy = new HashMap<>();
+        for (Map.Entry<String, List<String>> entry : original.getStatus().entrySet()) {
+            statusCopy.put(entry.getKey(), new ArrayList<>(entry.getValue()));
+        }
+        copy.setStatus(statusCopy);
+
+        // Do NOT copy gameMap - it will be reinitialized when the game loads
+
+        return copy;
+    }
+
+    public GameSave loadGame(String filename) {
+        try {
+            FileHandle file = Gdx.files.local(SAVE_DIRECTORY + filename);
+            String json = file.readString();
+            return objectMapper.readValue(json, GameSave.class);
+        } catch (Exception e) {
+            Gdx.app.error("GameSaveService", "Error loading game: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     public String[] getSaveFiles() {
         FileHandle dir = Gdx.files.local(SAVE_DIRECTORY);
         FileHandle[] files = dir.list(".json");
@@ -64,19 +117,5 @@ public class GameSaveService {
             filenames[i] = files[i].name();
         }
         return filenames;
-    }
-
-    /**
-     * Load a game from the specified filename
-     */
-    public GameSave loadGame(String filename) {
-        try {
-            FileHandle file = Gdx.files.local(SAVE_DIRECTORY + filename);
-            String json = file.readString();
-            return objectMapper.readValue(json, GameSave.class);
-        } catch (Exception e) {
-            Gdx.app.error("GameSaveService", "Error loading game: " + e.getMessage());
-            return null;
-        }
     }
 }

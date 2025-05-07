@@ -1,0 +1,28 @@
+{
+  "character" : {
+    "isMoving" : false,
+    "animationTime" : 0.0,
+    "direction" : "left_down",
+    "name" : "D",
+    "gender" : "MALE",
+    "health" : 78,
+    "gridX" : 6.0,
+    "gridY" : 14.0,
+    "items" : {
+      "Potion of Healing" : 1
+    },
+    "flags" : [ ],
+    "quests" : [ ],
+    "status" : {
+      "buffs" : [ ],
+      "debuffs" : [ ]
+    },
+    "damage" : 1,
+    "gameMap" : null,
+    "targetX" : 6.0,
+    "targetY" : 14.0,
+    "moveSpeed" : 2.5
+  },
+  "saveDate" : 1746629601841,
+  "saveName" : null
+}
