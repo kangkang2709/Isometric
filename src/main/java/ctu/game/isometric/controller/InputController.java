@@ -90,54 +90,61 @@ public class InputController extends InputAdapter {
         // Only process left clicks during EXPLORING state
         GameState state = gameController.getCurrentState();
 
-        if (moveCooldown > 0) {
-            return false;
-        }
-        boolean moved = false;
+        if (state == GameState.EXPLORING) {
+            if (moveCooldown > 0) return false;
 
+            // Convert screen coordinates to world coordinates
+            Vector3 worldCoords = new Vector3(screenX, screenY, 0);
+            gameController.getCamera().unproject(worldCoords);
 
+            // Convert world coordinates to grid coordinates
+            int[] gridPos = toIsometricGrid(worldCoords.x, worldCoords.y);
+            int targetX = gridPos[0];
+            int targetY = gridPos[1] - 1;
 
+            // Get character's current position
+            int characterX = (int) Math.floor(gameController.getCharacter().getGridX());
+            int characterY = (int) Math.floor(gameController.getCharacter().getGridY());
 
-        if (button != Input.Buttons.LEFT || gameController.getCurrentState() != GameState.EXPLORING || mapRenderer == null) {
-            return false;
-        }
+            // Calculate the movement delta
+            int dx = targetX - characterX;
+            int dy = targetY - characterY;
 
+            // Debug output
+            if (debugLog) {
+                Gdx.app.log("Mouse", "Click at grid: " + targetX + "," + targetY);
+                Gdx.app.log("Mouse", "Character at: " + characterX + "," + characterY);
+                Gdx.app.log("Mouse", "Delta: " + dx + "," + dy);
+            }
 
-
-        // Convert screen coordinates to world coordinates
-        Vector3 worldCoords = new Vector3(screenX, screenY, 0);
-        gameController.getCamera().unproject(worldCoords);
-        System.out.println("World coordinates: " + worldCoords.x + ", " + worldCoords.y);
-        // Convert world coordinates to grid coordinates
-        int[] gridPos = toIsometricGrid(worldCoords.x, worldCoords.y);
-        int targetX = gridPos[0];
-        int targetY = gridPos[1]-1;
-
-        // Get character's current position
-        int characterX = (int) Math.floor(gameController.getCharacter().getGridX());
-        int characterY = (int) Math.floor(gameController.getCharacter().getGridY());
-
-        // Calculate the movement delta - this is what we need to fix
-        int dx = targetX - characterX;
-        int dy = targetY - characterY;
-
-        // Debug output
-        if (debugLog) {
-            Gdx.app.log("Mouse", "Click at grid: " + targetX + "," + targetY);
-            Gdx.app.log("Mouse", "Character at: " + characterX + "," + characterY);
-            Gdx.app.log("Mouse", "Delta: " + dx + "," + dy);
-        }
-
-        // Only allow movement to adjacent tiles (including diagonals)
-        if (Math.abs(dx) <= 1 && Math.abs(dy) <= 1 && (dx != 0 || dy != 0)) {
-            // Only move if the target tile is walkable
+            // Only allow movement to adjacent tiles (including diagonals)
+            if (Math.abs(dx) <= 1 && Math.abs(dy) <= 1 && (dx != 0 || dy != 0)) {
+                // Only move if the target tile is walkable
                 moveCharacter(dx, dy);
                 moveCooldown = MOVE_DELAY;
                 lastInputTime = TimeUtils.millis();
                 return true;
-
+            }
         }
-        return moved;
+
+        if (state == GameState.MENU) {
+            return gameController.getMenuController().handleMouseClick(screenX, screenY);
+        }
+
+        return false;
+    }
+
+
+    @Override
+    public boolean mouseMoved(int screenX, int screenY) {
+        GameState state = gameController.getCurrentState();
+
+        if (state == GameState.MENU) {
+            return gameController.getMenuController().handleMouseMove(screenX, screenY);
+        }
+
+        // Handle other states...
+        return false;
     }
 
     private boolean handleExploringInput(int keycode) {

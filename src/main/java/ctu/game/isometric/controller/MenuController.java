@@ -3,6 +3,7 @@ package ctu.game.isometric.controller;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -10,6 +11,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Align;
 import ctu.game.isometric.model.game.GameState;
 
@@ -31,6 +33,10 @@ public class MenuController {
     private float menuHeight;
     private float itemHeight = 50f;
     private float padding = 20f;
+
+    private TextureRegion buttonTexture;
+    private TextureRegion buttonSelectedTexture;
+    private float buttonPadding = 10f;
 
     // Visual elements
     private ShapeRenderer shapeRenderer;
@@ -54,35 +60,35 @@ public class MenuController {
         // Initialize fonts
 
         parameter.size = 42;
-        parameter.color = com.badlogic.gdx.graphics.Color.WHITE;
+        parameter.color = Color.WHITE;
         this.titleFont = generator.generateFont(parameter);
 
-
         parameter.size = 32;
-        parameter.color = com.badlogic.gdx.graphics.Color.WHITE;
+        parameter.color = Color.WHITE;
         this.itemFont = generator.generateFont(parameter);
         generator.dispose();
+
         // Initialize rendering tools
         this.shapeRenderer = new ShapeRenderer();
+
+        // Load button textures
+        this.buttonTexture = new TextureRegion(new Texture(Gdx.files.internal("ui/button.png")));
+        this.buttonSelectedTexture = new TextureRegion(new Texture(Gdx.files.internal("ui/button_selected.png")));
 
         // Add default menu items
         addMenuItem("Resume Game", () -> gameController.returnToPreviousState());
         addMenuItem("Options", this::showOptionsMenu);
-//        addMenuItem("Settings", () -> gameController.setCurrentState(GameState.SETTINGS));
-        // In MenuController.java, modify the "Back To Main Menu" menu item:
         addMenuItem("Back To Main Menu", () -> {
             gameController.setCurrentState(GameState.MAIN_MENU);
             gameController.resetGame();
         });
         addMenuItem("Quit Game", () -> Gdx.app.exit());
 
-
         // Set menu position (center of screen)
         menuWidth = 400f;
-        menuHeight = (menuItems.size() * itemHeight) + (padding * 3) + 60; // Extra space for title
+        menuHeight = (menuItems.size() * (itemHeight + buttonPadding)) + (padding * 3) + 60; // Extra space for title
         menuX = Gdx.graphics.getWidth() / 2 - menuWidth / 2;
         menuY = Gdx.graphics.getHeight() / 2 - menuHeight / 2;
-
     }
 
     private void showOptionsMenu() {
@@ -123,13 +129,13 @@ public class MenuController {
         if (wasBatchDrawing) {
             batch.end();
         }
+
         // Reset to default orthographic projection for UI rendering
         batch.setProjectionMatrix(new Matrix4().setToOrtho2D(0, 0,
                 Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
 
         // Shape rendering with the same projection
         shapeRenderer.setProjectionMatrix(batch.getProjectionMatrix());
-
 
         Gdx.gl.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
@@ -145,47 +151,89 @@ public class MenuController {
         shapeRenderer.rect(menuX, menuY, menuWidth, menuHeight);
 
         shapeRenderer.end();
-
-//        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-//
-//        // Draw menu border
-//        shapeRenderer.setColor(0.5f, 0.5f, 0.7f, 1);
-//        shapeRenderer.rect(menuX, menuY, menuWidth, menuHeight);
-//
-//        shapeRenderer.end();
-
         Gdx.gl.glDisable(GL20.GL_BLEND);
 
         batch.begin();
+
+        // Draw title
+        titleFont.draw(batch, menuTitle, menuX, menuY + menuHeight - padding,
+                menuWidth, Align.center, false);
+
+        // Draw menu items with button backgrounds
+        float buttonWidth = menuWidth - (padding * 2);
+        float y = menuY + menuHeight - padding - 60;
+
+        for (int i = 0; i < menuItems.size(); i++) {
+            MenuItem item = menuItems.get(i);
+
+            // Update button position
+            item.setPosition(menuX + padding, y - itemHeight, buttonWidth, itemHeight);
+            Rectangle bounds = item.getBounds();
+
+            // Draw button background
+            TextureRegion buttonBg = (i == selectedIndex) ? buttonSelectedTexture : buttonTexture;
+            batch.draw(buttonBg, bounds.x, bounds.y, bounds.width, bounds.height);
+
+            // Draw text centered on button
+            Color textColor = (i == selectedIndex) ? Color.YELLOW : Color.WHITE;
+            itemFont.setColor(textColor);
+
+            layout.setText(itemFont, item.getText());
+            float textX = bounds.x + (bounds.width - layout.width) / 2;
+            float textY = bounds.y + (bounds.height + layout.height) / 2;
+
+            itemFont.draw(batch, item.getText(), textX, textY);
+
+            y -= (itemHeight + buttonPadding);
+        }
+
+        batch.setProjectionMatrix(originalMatrix);
+
         if (!wasBatchDrawing) {
             batch.end();
         }
-        else{
+    }
 
-            // Draw title
-            titleFont.draw(batch, menuTitle, menuX, menuY + menuHeight - padding,
-                    menuWidth, Align.center, false);
 
-            // Draw menu items
-            float y = menuY + menuHeight - padding - 60;
+    public boolean handleMouseClick(int screenX, int screenY) {
+        // Convert screen coordinates to our UI coordinate system
+        float y = Gdx.graphics.getHeight() - screenY; // Flip Y coordinate
 
-            for (int i = 0; i < menuItems.size(); i++) {
-                MenuItem item = menuItems.get(i);
+        // Check if the click is within any menu item
+        for (int i = 0; i < menuItems.size(); i++) {
+            Rectangle bounds = menuItems.get(i).getBounds();
 
-                if (i == selectedIndex) {
-                    itemFont.setColor(Color.YELLOW);
-                } else {
-                    itemFont.setColor(Color.WHITE);
-                }
-
-                itemFont.draw(batch, item.getText(),
-                        menuX + padding, y, menuWidth - padding * 2, Align.center, false);
-                y -= itemHeight;
+            if (bounds.contains(screenX, y)) {
+                // Select and activate this item
+                selectedIndex = i;
+                System.out.println("Selected: " + menuItems.get(i).getText());
+                menuItems.get(i).activate();
+                return true;
             }
-            batch.setProjectionMatrix(originalMatrix);
         }
 
+        return false;
+    }
 
+    public boolean handleMouseMove(int screenX, int screenY) {
+        // Convert screen coordinates to our UI coordinate system
+        float y = Gdx.graphics.getHeight() - screenY; // Flip Y coordinate
+
+        // Check if mouse is over any menu item
+        for (int i = 0; i < menuItems.size(); i++) {
+            Rectangle bounds = menuItems.get(i).getBounds();
+
+            if (bounds.contains(screenX, y)) {
+                // Highlight this item
+                if (selectedIndex != i) {
+                    selectedIndex = i;
+                    return true;
+                }
+                break;
+            }
+        }
+
+        return false;
     }
 
     public void resize(int width, int height) {
@@ -197,15 +245,30 @@ public class MenuController {
         if (titleFont != null) titleFont.dispose();
         if (itemFont != null) itemFont.dispose();
         if (shapeRenderer != null) shapeRenderer.dispose();
+        if (buttonTexture != null && buttonTexture.getTexture() != null) buttonTexture.getTexture().dispose();
+        if (buttonSelectedTexture != null && buttonSelectedTexture.getTexture() != null) buttonSelectedTexture.getTexture().dispose();
     }
 
     private static class MenuItem {
         private String text;
         private Runnable action;
+        private Rectangle bounds; // Rectangle to define button boundaries
 
         public MenuItem(String text, Runnable action) {
             this.text = text;
             this.action = action;
+            this.bounds = new Rectangle();
+        }
+
+        public void setPosition(float x, float y, float width, float height) {
+            this.bounds.x = x;
+            this.bounds.y = y;
+            this.bounds.width = width;
+            this.bounds.height = height;
+        }
+
+        public Rectangle getBounds() {
+            return bounds;
         }
 
         public String getText() {
