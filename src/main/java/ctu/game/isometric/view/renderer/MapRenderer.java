@@ -333,4 +333,17 @@ public class MapRenderer {
     public void setMap(IsometricMap map) {
         this.map = map;
     }
+
+
+    public void dispose() {
+        if (backgroundTexture != null) {
+            backgroundTexture.dispose();
+        }
+        if (buttonTexture != null) {
+            buttonTexture.dispose();
+        }
+        if (font != null) {
+            font.dispose();
+        }
+    }
 }

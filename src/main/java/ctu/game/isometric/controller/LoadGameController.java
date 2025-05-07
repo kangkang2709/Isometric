@@ -13,9 +13,6 @@ import ctu.game.isometric.model.game.GameSave;
 import ctu.game.isometric.model.game.GameState;
 import ctu.game.isometric.util.GameSaveService;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 public class LoadGameController {
     private final GameController gameController;
     private final GameSaveService saveService;
@@ -62,13 +59,13 @@ public class LoadGameController {
         font = new BitmapFont();
         font.getData().setScale(1.5f);
 
-        // Load textures using the same resources as MainMenuController
+        // Load textures
         backgroundImage = new Texture(Gdx.files.internal("backgrounds/main_menu_bg.png"));
         buttonNormal = new Texture(Gdx.files.internal("ui/button.png"));
         buttonSelected = new Texture(Gdx.files.internal("ui/button_selected.png"));
         backButtonTexture = new Texture(Gdx.files.internal("ui/button.png"));
 
-        // Back button at bottom of screen
+        // Back button position
         backButtonRect = new Rectangle(
                 screenWidth / 2 - BACK_BUTTON_WIDTH / 2,
                 50,
@@ -164,7 +161,7 @@ public class LoadGameController {
     }
 
     public void handleInput() {
-        // Check mouse position
+        // Mouse position
         int mouseX = Gdx.input.getX();
         int mouseY = screenHeight - Gdx.input.getY(); // Invert Y coordinate
 
@@ -230,7 +227,13 @@ public class LoadGameController {
             if (save != null) {
                 // Set character data in game controller
                 gameController.loadCharacter(save.getCharacter());
+
+                // THIS IS CRUCIAL: Mark as created to initialize renderers
+                gameController.setCreated(true);
+
+                // Start the game
                 gameController.setState(GameState.EXPLORING);
+
                 System.out.println("Game loaded: " + fileName);
             } else {
                 System.out.println("Failed to load save: " + fileName);

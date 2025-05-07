@@ -10,7 +10,11 @@ import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.game.GameSave;
 
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class GameSaveService {
     private static final String SAVE_DIRECTORY = "saves/";
@@ -21,7 +25,7 @@ public class GameSaveService {
         this.objectMapper = new ObjectMapper();
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 
-        // Configure visibility to use fields directly and ignore getters/setters
+        // Configure visibility to use fields directly
         objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE);
         objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
 
@@ -66,7 +70,7 @@ public class GameSaveService {
     private Character createSerializableCopy(Character original) {
         Character copy = new Character();
 
-        // Copy primitive properties
+        // Copy basic properties
         copy.setName(original.getName());
         copy.setHealth(original.getHealth());
         copy.setGender(original.getGender());
@@ -80,19 +84,8 @@ public class GameSaveService {
         copy.setTargetY(original.getTargetY());
         copy.setDirection(original.getDirection());
 
-        // Copy collections (create new instances to avoid reference issues)
-        copy.setItems(new HashMap<>(original.getItems()));
-        copy.setFlags(new ArrayList<>(original.getFlags()));
-        copy.setQuests(new ArrayList<>(original.getQuests()));
-
-        // Deep copy status map
-        Map<String, List<String>> statusCopy = new HashMap<>();
-        for (Map.Entry<String, List<String>> entry : original.getStatus().entrySet()) {
-            statusCopy.put(entry.getKey(), new ArrayList<>(entry.getValue()));
-        }
-        copy.setStatus(statusCopy);
-
-        // Do NOT copy gameMap - it will be reinitialized when the game loads
+        // Copy any other essential character data
+        // (Items, stats, quests, etc. - add as needed)
 
         return copy;
     }

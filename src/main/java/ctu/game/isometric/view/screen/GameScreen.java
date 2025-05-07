@@ -26,17 +26,15 @@ public class GameScreen implements Screen {
     private SpriteBatch batch;
     private DialogUI dialogUI; // Add DialogUI
     private ExploringUI exploringUI;
-    private LoadGameController loadGameController;
     // Renderers
     private MapRenderer mapRenderer;
     private CharacterRenderer characterRenderer;
     private boolean isCharacterCreated = false;
-
+    private GameState currentState = GameState.MAIN_MENU;
 
     public GameScreen(IsometricGame game, GameController gameController) {
         this.game = game;
         this.gameController = gameController;
-        loadGameController = new LoadGameController(gameController);
         // Setup camera and viewport
         camera = new OrthographicCamera();
         viewport = new FitViewport(1280, 720, camera);
@@ -61,6 +59,7 @@ public class GameScreen implements Screen {
         // Chỉ khởi tạo 1 lần khi gameController vừa tạo xong
 
         if (gameController.isCreated()) {
+            cleanupForMainMenu();
             mapRenderer = new MapRenderer(
                     gameController.getMap(),
                     game.getAssetManager(),
@@ -68,18 +67,19 @@ public class GameScreen implements Screen {
                     camera
             );
             gameController.getInputController().setMapRenderer(mapRenderer);
+
             characterRenderer = new CharacterRenderer(
                     gameController.getCharacter(),
                     game.getAssetManager(),
                     mapRenderer
             );
 
+
             exploringUI = new ExploringUI(gameController);
+
 //            exploringUI.setCharacter(gameController.getCharacter());
             // Reset dialog UI
-            if (dialogUI != null) {
-                dialogUI.dispose();
-            }
+
             dialogUI = new DialogUI(gameController.getDialogController());
             gameController.getInputController().setDialogUI(dialogUI);
 
@@ -91,7 +91,7 @@ public class GameScreen implements Screen {
         batch.begin();
 
 
-        GameState currentState = gameController.getCurrentState();
+        currentState = gameController.getCurrentState();
         if (gameController.getTransitionController().isTransitioning()) {
             gameController.getTransitionController().render(batch);
         } else {
@@ -104,6 +104,7 @@ public class GameScreen implements Screen {
                     break;
                 case EXPLORING:
                     gameController.setCharacterCreationController(null);
+                    gameController.setLoadGameController(null);
                     mapRenderer.render(batch);
 
                     if (gameController.hasActiveEvent()) {
@@ -138,8 +139,7 @@ public class GameScreen implements Screen {
                     gameController.getMenuController().render(batch);
                     break;
                 case LOAD_GAME:
-                    loadGameController.update(Gdx.graphics.getDeltaTime());
-                    loadGameController.render(batch);
+                    gameController.getLoadGameController().render(batch);
                     break;
                 case SETTINGS:
                     gameController.getSettingsMenuController().render(batch);
@@ -149,6 +149,22 @@ public class GameScreen implements Screen {
             }
         }
         batch.end();
+    }
+
+    public void cleanupForMainMenu() {
+        if (mapRenderer != null) {
+            mapRenderer.dispose();
+            mapRenderer = null;
+        }
+        if (exploringUI != null) {
+            exploringUI.dispose();
+            exploringUI = null;
+        }
+        if (dialogUI != null) {
+            dialogUI.dispose();
+            dialogUI = null;
+        }
+        // Consider clearing any cached data in gameController
     }
 
     @Override

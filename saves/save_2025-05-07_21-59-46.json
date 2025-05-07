@@ -1,0 +1,24 @@
+{
+  "character" : {
+    "isMoving" : false,
+    "animationTime" : 0.0,
+    "direction" : "right_down",
+    "name" : "D",
+    "gender" : "MALE",
+    "health" : 61,
+    "gridX" : 7.0,
+    "gridY" : 15.0,
+    "maxHealth" : 100,
+    "items" : null,
+    "flags" : null,
+    "quests" : null,
+    "status" : null,
+    "damage" : 1,
+    "gameMap" : null,
+    "targetX" : 7.0,
+    "targetY" : 15.0,
+    "moveSpeed" : 2.5
+  },
+  "saveDate" : 1746629986303,
+  "saveName" : null
+}

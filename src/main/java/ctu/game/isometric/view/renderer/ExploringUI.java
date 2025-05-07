@@ -29,7 +29,7 @@ public class ExploringUI {
     private ProgressBar healthBar;
     private Label healthLabel;
     private Image healthIndicator;
-
+    private int maxHealth = 100;
     // Images
     private Image timeFrameImage;
     private Image healthBarImage;
@@ -238,7 +238,6 @@ public class ExploringUI {
 
             // Update health
             int health = character.getHealth();
-            int maxHealth = 100; // Could get this from the character
 
             // Update health bar color based on health percentage
             float healthPercent = health / (float)maxHealth;
@@ -259,9 +258,50 @@ public class ExploringUI {
                 ((TextureRegionDrawable)healthIndicator.getDrawable()).getRegion().getTexture().dispose();
             }
 
+            // This is just changing the texture but not the layout
             healthIndicator.setDrawable(new TextureRegionDrawable(new Texture(healthPixmap)));
-            healthIndicator.setWidth((healthBarTexture.getWidth() - 12) * (health / 100f));
+
+            // We should rebuild the entire health section instead of just setting width
+            reinitializeHealthBar(health, healthColor);
+
             healthPixmap.dispose();
+        }
+    }
+    private Stack findHealthStack() {
+        // Navigate through the UI hierarchy to find the health stack
+        if (topLeftTable != null) {
+            Cell<?> cell = topLeftTable.getCells().get(1); // Assuming the second cell in the table
+            if (cell != null && cell.getActor() instanceof Table) {
+                Table playerInfoTable = (Table) cell.getActor();
+                Cell<?> healthCell = playerInfoTable.getCells().get(1); // Assuming the second cell in the player info table
+                if (healthCell != null && healthCell.getActor() instanceof Stack) {
+                    return (Stack) healthCell.getActor();
+                }
+            }
+        }
+        return null;
+    }
+
+    private void reinitializeHealthBar(int health, Color healthColor) {
+        Stack healthStack = findHealthStack();
+        if (healthStack != null) {
+            healthStack.clear();
+
+            Table healthIndicatorTable = new Table();
+            healthIndicatorTable.left().top(); // Align the table itself
+            healthIndicatorTable.add(healthIndicator)
+                    .width((healthBarTexture.getWidth() - 12) * (health / 100f))
+                    .height(11)
+                    .padLeft(6) // Add correct padding to match initial setup
+                    .padTop(3)  // Add correct padding to match initial setup
+                    .left();
+
+            healthStack.add(healthIndicatorTable);
+            healthStack.add(healthBarImage);
+
+            // Force layout update
+            healthStack.invalidate();
+            healthStack.validate();
         }
     }
 

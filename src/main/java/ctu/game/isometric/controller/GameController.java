@@ -35,6 +35,8 @@ public class GameController {
     private MainMenuController mainMenuController;
     private TransitionController transitionController;
     private GameplayController gameplayController;
+    private LoadGameController loadGameController;
+
     private CharacterCreationController characterCreationController;
     private GameState currentState = GameState.MAIN_MENU;
     private GameState previousState = GameState.MAIN_MENU;
@@ -58,6 +60,7 @@ public class GameController {
         this.mainMenuController = new MainMenuController(this);
         this.transitionController = new TransitionController();
         this.cutsceneController = new CutsceneController(this);
+        loadGameController = new LoadGameController(this);
 
         this.musicController.initialize();
         this.musicController.playMusicForState(GameState.MAIN_MENU);
@@ -107,6 +110,9 @@ public class GameController {
                 break;
             case MAIN_MENU:
                 mainMenuController.update(delta);
+                break;
+            case LOAD_GAME:
+                loadGameController.update(delta);
                 break;
 
             case SETTINGS:
@@ -285,6 +291,11 @@ public class GameController {
             characterCreationController = new CharacterCreationController(this);
         }
 
+
+        if(loadGameController == null) {
+            loadGameController = new LoadGameController(this);
+        }
+
         if (cutsceneController != null) {
             cutsceneController.dispose();
             cutsceneController = new CutsceneController(this);
@@ -304,9 +315,18 @@ public class GameController {
         setState(GameState.MAIN_MENU);
         // Reset music
         musicController.playMusicForState(GameState.MAIN_MENU);
+
+        System.gc(); // Request garbage collection
+
     }
 
+    public LoadGameController getLoadGameController() {
+        return loadGameController;
+    }
 
+    public void setLoadGameController(LoadGameController loadGameController) {
+        this.loadGameController = loadGameController;
+    }
 
     private String currentEventType;
     private int currentEventX;

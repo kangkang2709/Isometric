@@ -23,6 +23,8 @@ public class Character {
     private int health = 100; // Health points
     private float gridX, gridY;
 
+    private int maxHealth = 100; // Maximum health points
+
     private Map<String, Integer> items; // Inventory of items
     private List<String> flags; // Flags for events
     private List<String> quests; // List of quests

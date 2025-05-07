@@ -74,4 +74,5 @@ public class CharacterRenderer {
                 return "right_down";
         }
     }
+
 }
