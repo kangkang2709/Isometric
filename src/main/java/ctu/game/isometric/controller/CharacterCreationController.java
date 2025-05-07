@@ -12,6 +12,7 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.entity.Gender;
+import ctu.game.isometric.model.game.GameState;
 
 public class CharacterCreationController {
     private GameController gameController;
@@ -121,23 +122,32 @@ public class CharacterCreationController {
         }
 
         // Handle text input
-        if (isNameFieldActive) {
-            handleTextInput();
-        }
+//        handleTextInput();
     }
 
-    private void handleTextInput() {
+    public boolean handleTextInput(int keycode) {
+        if (!isNameFieldActive) {
+            if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+                gameController.setState(GameState.MAIN_MENU);
+            }
+            return true;
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+            isNameFieldActive = false;
+            return true;
+        }
+
         // Handle backspace
         if (Gdx.input.isKeyJustPressed(Input.Keys.BACKSPACE) && playerName.length() > 0) {
             playerName = playerName.substring(0, playerName.length() - 1);
-            return;
+            return true;
         }
 
-        // Handle enter/escape to deactivate field
-        if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER) ||
-                Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+        // Handle enter to deactivate field
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
             isNameFieldActive = false;
-            return;
+            return true;
         }
 
         // Handle typed characters
@@ -150,6 +160,7 @@ public class CharacterCreationController {
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) && playerName.length() < MAX_NAME_LENGTH) {
             playerName += ' ';
         }
+        return false;
     }
 
     public void render(SpriteBatch batch) {

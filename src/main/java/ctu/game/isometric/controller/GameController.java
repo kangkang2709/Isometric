@@ -280,7 +280,7 @@ public class GameController {
 
         // Reset to main menu state
 
-
+        setState(GameState.MAIN_MENU);
         // Reset music
         musicController.playMusicForState(GameState.MAIN_MENU);
     }

@@ -73,8 +73,6 @@ public class MenuController {
         addMenuItem("Back To Main Menu", () -> {
             gameController.setCurrentState(GameState.MAIN_MENU);
             gameController.resetGame();
-            // Ensure we're still in the main menu after reset
-            gameController.setCurrentState(GameState.MAIN_MENU);
         });
         addMenuItem("Quit Game", () -> Gdx.app.exit());
 

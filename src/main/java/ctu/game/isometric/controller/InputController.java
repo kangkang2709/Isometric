@@ -60,24 +60,12 @@ public class InputController extends InputAdapter {
     public boolean keyDown(int keycode) {
         GameState state = gameController.getCurrentState();
 
-        if (state == GameState.MAIN_MENU) {
-            if (keycode == Keys.ESCAPE) {
-                return true;
-            }
-        }
-
-//        if (keycode == Keys.ESCAPE) {
-//            if (state != GameState.MENU) {
-//                gameController.setState(GameState.MENU);
-//            }
-//        }
-
-        // Xử lý Dialog trước
+        // Handle dialog input first
         if (gameController.getDialogController().isDialogActive() && state == GameState.DIALOG) {
             return handleDialogInput(keycode);
         }
 
-        // Xử lý các menu
+        // Handle different game states
         switch (state) {
             case MENU:
                 return handleMenuInput(keycode);
@@ -88,19 +76,12 @@ public class InputController extends InputAdapter {
             case EXPLORING:
                 return handleExploringInput(keycode);
             case GAMEPLAY:
-                // Handle gameplay input here
                 return handleGamePlayInput(keycode);
+            case CHARACTER_CREATION:
+                return gameController.getCharacterCreationController().handleTextInput(keycode);
             default:
-                break;
+                return false; // Explicitly return false for unhandled states
         }
-
-        // Delay chung
-        if (TimeUtils.timeSinceMillis(lastInputTime) < INPUT_DELAY) {
-            return false;
-        }
-        lastInputTime = TimeUtils.millis();
-
-        return false;
     }
 
 
