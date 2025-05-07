@@ -13,9 +13,13 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Align;
+import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.game.GameState;
+import ctu.game.isometric.util.GameSaveService;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class MenuController {
@@ -82,6 +86,7 @@ public class MenuController {
             gameController.setCurrentState(GameState.MAIN_MENU);
             gameController.resetGame();
         });
+        addMenuItem("Save Game", this::showSaveGameDialog);
         addMenuItem("Quit Game", () -> Gdx.app.exit());
 
         // Set menu position (center of screen)
@@ -90,7 +95,24 @@ public class MenuController {
         menuX = Gdx.graphics.getWidth() / 2 - menuWidth / 2;
         menuY = Gdx.graphics.getHeight() / 2 - menuHeight / 2;
     }
+    private void showSaveGameDialog() {
+        // For now, just generate a timestamp-based name
+        Character character = gameController.getCharacter();
+        GameSaveService saveService = new GameSaveService();
 
+        // Create a timestamped filename
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+        String filename = "save_" + sdf.format(new Date());
+
+        boolean saved = saveService.saveGame(character, filename);
+        if (saved) {
+            System.out.println("Game saved successfully as: " + filename + ".json");
+        } else {
+            System.out.println("Failed to save game");
+        }
+
+        // TODO: Add a proper in-game dialog for save name input
+    }
     private void showOptionsMenu() {
         System.out.println("Options selected");
     }

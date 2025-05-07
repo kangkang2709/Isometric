@@ -10,6 +10,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import ctu.game.isometric.IsometricGame;
 import ctu.game.isometric.controller.GameController;
+import ctu.game.isometric.controller.LoadGameController;
 import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.game.GameState;
 import ctu.game.isometric.view.renderer.CharacterRenderer;
@@ -25,7 +26,7 @@ public class GameScreen implements Screen {
     private SpriteBatch batch;
     private DialogUI dialogUI; // Add DialogUI
     private ExploringUI exploringUI;
-
+    private LoadGameController loadGameController;
     // Renderers
     private MapRenderer mapRenderer;
     private CharacterRenderer characterRenderer;
@@ -35,7 +36,7 @@ public class GameScreen implements Screen {
     public GameScreen(IsometricGame game, GameController gameController) {
         this.game = game;
         this.gameController = gameController;
-
+        loadGameController = new LoadGameController(gameController);
         // Setup camera and viewport
         camera = new OrthographicCamera();
         viewport = new FitViewport(1280, 720, camera);
@@ -135,6 +136,10 @@ public class GameScreen implements Screen {
                     break;
                 case MENU:
                     gameController.getMenuController().render(batch);
+                    break;
+                case LOAD_GAME:
+                    loadGameController.update(Gdx.graphics.getDeltaTime());
+                    loadGameController.render(batch);
                     break;
                 case SETTINGS:
                     gameController.getSettingsMenuController().render(batch);

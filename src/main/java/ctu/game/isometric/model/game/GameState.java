@@ -9,6 +9,6 @@ public enum GameState {
     MAIN_MENU,  // Main menu
     COMBAT,
     CHARACTER_CREATION,
-    GAMEPLAY// Combat state
-
+    GAMEPLAY,// Combat state
+    LOAD_GAME
 }

@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
 import ctu.game.isometric.model.game.Items;
 import ctu.game.isometric.model.world.IsometricMap;
+import ctu.game.isometric.util.ItemLoader;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,17 +14,16 @@ import java.util.Map;
 
 public class Character {
 
-    private String direction = "down";
     private boolean isMoving = false;
     private float animationTime = 0;
 
-
+    private String direction = "down";
     private String name = "player"; // Character name
     private Gender gender = Gender.MALE;
     private int health = 100; // Health points
     private float gridX, gridY;
 
-    private Map<Items,Integer> items; // Inventory items
+    private Map<String, Integer> items; // Inventory of items
     private List<String> flags; // Flags for events
     private List<String> quests; // List of quests
     private Map<String,List<String>> status;  // Status effects (e.g., buffs, debuffs)
@@ -38,6 +38,11 @@ public class Character {
             "up", "down", "left", "right", "left_down", "right_down", "left_up", "right_up"
     };
 
+
+    public Character() {
+    }
+
+
     public Character(float startX, float startY) {
         this.gridX = startX;
         this.gridY = startY;
@@ -46,6 +51,7 @@ public class Character {
         this.flags = new ArrayList<>();
         this.quests = new ArrayList<>();
         this.items = new HashMap<>();
+        this.items.put(ItemLoader.getItemById(1).getItemName(),1);
         this.status = new HashMap<>();
         this.status.put("buffs", new ArrayList<>());
         this.status.put("debuffs", new ArrayList<>());
@@ -253,12 +259,37 @@ public class Character {
         this.gender = gender;
     }
 
-    public Map<Items, Integer> getItems() {
+
+    public Map<String, Integer> getItems() {
         return items;
     }
 
-    public void setItems(Map<Items, Integer> items) {
+    public void setItems(Map<String, Integer> items) {
         this.items = items;
+    }
+
+    public void setAnimationTime(float animationTime) {
+        this.animationTime = animationTime;
+    }
+
+    public IsometricMap getGameMap() {
+        return gameMap;
+    }
+
+    public float getTargetX() {
+        return targetX;
+    }
+
+    public void setTargetX(float targetX) {
+        this.targetX = targetX;
+    }
+
+    public float getTargetY() {
+        return targetY;
+    }
+
+    public void setTargetY(float targetY) {
+        this.targetY = targetY;
     }
 
     public List<String> getQuests() {

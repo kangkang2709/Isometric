@@ -155,7 +155,8 @@ public class MainMenuController {
                 gameController.setCurrentState(GameState.CHARACTER_CREATION);
                 gameController.setPreviousState(GameState.MAIN_MENU);
                 break;
-            case 1:   break;
+            case 1:  gameController.setState(GameState.LOAD_GAME);
+                break;
             case 2: // Settings
                 gameController.setState(GameState.SETTINGS);
                 break;
