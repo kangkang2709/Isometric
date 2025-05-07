@@ -3,24 +3,31 @@ package ctu.game.isometric.model.entity;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
+import ctu.game.isometric.model.game.Items;
 import ctu.game.isometric.model.world.IsometricMap;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class Character {
-    private float gridX, gridY;
+
     private String direction = "down";
     private boolean isMoving = false;
     private float animationTime = 0;
+
+
     private String name = "player"; // Character name
     private Gender gender = Gender.MALE;
     private int health = 100; // Health points
-    private Map<String,?> items; // Inventory items
-    private List<String> flags; // Flags for quests or events
+    private float gridX, gridY;
 
-    // For smooth movement
+    private Map<Items,Integer> items; // Inventory items
+    private List<String> flags; // Flags for events
+    private List<String> quests; // List of quests
+    private Map<String,List<String>> status;  // Status effects (e.g., buffs, debuffs)
+    private int damage = 1; // Damage dealt by the character
 
     private IsometricMap gameMap;
     private float targetX, targetY;
@@ -37,6 +44,12 @@ public class Character {
         this.targetX = startX;
         this.targetY = startY;
         this.flags = new ArrayList<>();
+        this.quests = new ArrayList<>();
+        this.items = new HashMap<>();
+        this.status = new HashMap<>();
+        this.status.put("buffs", new ArrayList<>());
+        this.status.put("debuffs", new ArrayList<>());
+
         flags.add("intro");
     }
 
@@ -230,13 +243,7 @@ public class Character {
         this.flags = flags;
     }
 
-    public Map<String, ?> getItems() {
-        return items;
-    }
 
-    public void setItems(Map<String, ?> items) {
-        this.items = items;
-    }
 
     public Gender getGender() {
         return gender;
@@ -244,5 +251,45 @@ public class Character {
 
     public void setGender(Gender gender) {
         this.gender = gender;
+    }
+
+    public Map<Items, Integer> getItems() {
+        return items;
+    }
+
+    public void setItems(Map<Items, Integer> items) {
+        this.items = items;
+    }
+
+    public List<String> getQuests() {
+        return quests;
+    }
+
+    public void setQuests(List<String> quests) {
+        this.quests = quests;
+    }
+
+    public Map<String, List<String>> getStatus() {
+        return status;
+    }
+
+    public void setStatus(Map<String, List<String>> status) {
+        this.status = status;
+    }
+
+    public int getDamage() {
+        return damage;
+    }
+
+    public void setDamage(int damage) {
+        this.damage = damage;
+    }
+
+    public float getMoveSpeed() {
+        return moveSpeed;
+    }
+
+    public void setMoveSpeed(float moveSpeed) {
+        this.moveSpeed = moveSpeed;
     }
 }

@@ -1,0 +1,14 @@
+[
+  {
+    "rewardID": 1,
+    "itemID": 1,
+    "amount": 3,
+    "description": "Reward for defeating a goblin camp."
+  },
+  {
+    "rewardID": 2,
+    "itemID": 2,
+    "amount": 2,
+    "description": "Reward from a hidden chest."
+  }
+]

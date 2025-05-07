@@ -13,6 +13,7 @@ import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import ctu.game.isometric.controller.GameController;
+import ctu.game.isometric.model.entity.Enemy;
 import ctu.game.isometric.model.game.GameState;
 import ctu.game.isometric.model.word.LetterGrid;
 import ctu.game.isometric.util.WordScorer;
@@ -65,6 +66,8 @@ public class GameplayController {
     private int wordDamageMultiplier = 1;
     private boolean autoStartCombat = false;
     private String playerName;
+    private String enemyTexture;
+    private int rewardID = 1;
 
     public GameplayController(GameController gameController) {
         this.gameController = gameController;
@@ -246,7 +249,7 @@ public class GameplayController {
 
         // Update and draw buttons
         float buttonX = ((viewport.getWorldWidth() - 70) / 2);
-        float buttonY = 105;
+        float buttonY = 103;
         float buttonWidth = 130;
         float buttonHeight = 50;
         float buttonSpacing = 60;
@@ -284,7 +287,7 @@ public class GameplayController {
                                      int maxHealth, float x, float y, boolean isPlayer) {
         // Draw character image
         batch.setColor(1, 1, 1, 1);
-        Texture characterTexture = getCharacterTexture(isPlayer ? "characters/player.png" : "enemy/" + name + ".png");
+        Texture characterTexture = getCharacterTexture(isPlayer ? "characters/player.png" : this.enemyTexture);
         if (characterTexture != null) {
             float imgSize = 150;
             batch.draw(characterTexture, x + 60, y - imgSize - 100, imgSize, imgSize);
@@ -523,17 +526,20 @@ public class GameplayController {
     }
 
 
-    public void startCombat(String enemyName, int enemyHealth) {
-        startCombat(enemyName, enemyHealth, wordDamageMultiplier, enemyDamageMultiplier);
-    }
 
-    public void startCombat(String enemyName, int enemyHealth, int wordMult, int enemyMult) {
-        this.enemyName = enemyName;
-        this.enemyMaxHealth = enemyHealth;
-        this.enemyHealth = enemyHealth;
-        this.wordDamageMultiplier = wordMult;
-        this.enemyDamageMultiplier = enemyMult;
+
+    public void startCombat(Enemy enemy) {
+        this.enemyName = enemy.getEnemyName();
+        this.enemyMaxHealth = enemy.getHealth();
+        this.enemyHealth = enemy.getHealth();
+        this.wordDamageMultiplier = gameController.getCharacter().getDamage();
+        this.enemyDamageMultiplier = enemy.getAttackPower();
+        System.out.println("Enemy " + enemyName + " health: " + enemyHealth);
+        System.out.println("Enemy damage multiplier: " + enemyDamageMultiplier);
+
         this.playerHealth = gameController.getCharacter().getHealth();
+        this.enemyTexture = enemy.getTexturePath();
+        this.rewardID = enemy.getRewardID();
         this.isCombatMode = true;
         this.isPlayerTurn = true;
         this.combatLog = "Combat with " + enemyName + " has begun!";
@@ -549,7 +555,7 @@ public class GameplayController {
         viewport.update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
 
         if (autoStartCombat) {
-            startCombat("enemy_01", 100);
+            startCombat(new Enemy());
         }
     }
 

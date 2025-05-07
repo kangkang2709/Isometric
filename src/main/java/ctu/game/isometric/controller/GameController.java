@@ -14,8 +14,10 @@ import ctu.game.isometric.IsometricGame;
 import ctu.game.isometric.controller.cutscene.CutsceneController;
 import ctu.game.isometric.controller.gameplay.GameplayController;
 import ctu.game.isometric.model.entity.Character;
+import ctu.game.isometric.model.entity.Enemy;
 import ctu.game.isometric.model.game.GameState;
 import ctu.game.isometric.model.world.IsometricMap;
+import ctu.game.isometric.util.EnemyLoader;
 import ctu.game.isometric.view.renderer.ExploringUI;
 
 public class GameController {
@@ -329,19 +331,20 @@ public class GameController {
     public void handleEventProperties(MapProperties properties, String event) {
             switch (event) {
                 case "battle":
-                    String enemyId = (properties != null && properties.containsKey("enemy")) ?
-                            properties.get("enemy", String.class) : "enemy_01";
-                    int health;
-                    Object healthObj = properties.get("health");
-                    if (healthObj instanceof String) {
-                        health = Integer.parseInt((String) healthObj);
-                    } else {
-                        health = properties.get("health", Integer.class);
-                    }
 
+                    int enemyId = 1; // Default to first enemy
+                    if (properties.containsKey("enemy")) {
+                        Object enemyObj = properties.get("enemy");
+                        if (enemyObj instanceof String) {
+                            enemyId = Integer.parseInt((String) enemyObj);
+                        } else if (enemyObj instanceof Integer) {
+                            enemyId = (Integer) enemyObj;
+                        }
+                    }
+                    Enemy enemy = EnemyLoader.getEnemyById(enemyId);
                     setState(GameState.GAMEPLAY);
                     gameplayController.activate();
-                    gameplayController.startCombat(enemyId, health);
+                    gameplayController.startCombat(enemy);
                     break;
 
                 case "cutscene":

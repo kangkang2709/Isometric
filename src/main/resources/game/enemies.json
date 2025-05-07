@@ -1,0 +1,18 @@
+[
+  {
+    "enemyID": 1,
+    "enemyName": "Goblin Warrior",
+    "enemyDescription": "A sneaky forest creature wielding a crude sword.",
+    "texturePath": "enemy/goblin_warrior.png",
+    "health": 2,
+    "attackPower": 1
+  },
+  {
+    "enemyID": 2,
+    "enemyName": "Skeleton Archer",
+    "enemyDescription": "An undead archer that shoots arrows from afar.",
+    "texturePath": "enemy/skeleton_archer.png",
+    "health": 3,
+    "attackPower": 1
+  }
+]
