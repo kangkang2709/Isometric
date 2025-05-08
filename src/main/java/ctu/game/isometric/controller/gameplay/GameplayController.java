@@ -17,7 +17,7 @@ import ctu.game.isometric.model.entity.Enemy;
 import ctu.game.isometric.model.game.GameState;
 import ctu.game.isometric.model.game.Items;
 import ctu.game.isometric.model.game.Reward;
-import ctu.game.isometric.model.word.LetterGrid;
+import ctu.game.isometric.model.game.LetterGrid;
 import ctu.game.isometric.util.RewardLoader;
 import ctu.game.isometric.util.WordScorer;
 import ctu.game.isometric.util.WordValidator;
@@ -53,21 +53,22 @@ public class GameplayController {
     private Texture messageBoxTexture;
     private Texture cellTexture;
     private Texture selectedCellTexture;
+    float playerMaxHealth = 100;
     // Button areas
     private Rectangle submitButtonRect, clearButtonRect, exitButtonRect;
 
     // Combat state
     private boolean isCombatMode = false;
     private boolean isPlayerTurn = true;
-    private int playerHealth = 100;
-    private int enemyHealth = 100;
-    private int enemyMaxHealth = 100;
+    private float playerHealth = 100;
+    private float enemyHealth = 100;
+    private float enemyMaxHealth = 100;
     private String enemyName = "Enemy";
     private float enemyActionTimer = 0;
     private static final float ENEMY_TURN_DELAY = 2.5f;
     private String combatLog = "";
-    private int enemyDamageMultiplier = 1;
-    private int wordDamageMultiplier = 1;
+    private float enemyDamageMultiplier = 1f;
+    private float wordDamageMultiplier = 1f;
     private boolean autoStartCombat = false;
     private String playerName;
     private String enemyTexture;
@@ -311,8 +312,8 @@ public class GameplayController {
         batch.draw(whiteTexture, 0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
 
         // Draw player and enemy
-        drawCombatCharacter(batch, playerName, playerHealth, 100, 50, 600, true);
-        drawCombatCharacter(batch, enemyName, enemyHealth, enemyMaxHealth, viewport.getWorldWidth() - 300, 600, false);
+        drawCombatCharacter(batch, playerName, playerHealth,playerMaxHealth, 50, 600, true);
+        drawCombatCharacter(batch, enemyName, (float)enemyHealth, (float) enemyMaxHealth, viewport.getWorldWidth() - 300, 600, false);
 
         // Draw combat log
         drawMessageBox(batch, combatLog, 50, 50, 300, 150);
@@ -359,8 +360,8 @@ public class GameplayController {
         font.draw(batch, text, x - layout.width/2, y);
     }
 
-    private void drawCombatCharacter(SpriteBatch batch, String name, int currentHealth,
-                                     int maxHealth, float x, float y, boolean isPlayer) {
+    private void drawCombatCharacter(SpriteBatch batch, String name, float currentHealth,
+                                     float maxHealth, float x, float y, boolean isPlayer) {
         // Draw character image
         batch.setColor(1, 1, 1, 1);
         Texture characterTexture = getCharacterTexture(isPlayer ? "characters/player.png" : this.enemyTexture);
@@ -417,7 +418,7 @@ public class GameplayController {
         return textureCache.get(name);
     }
 
-    private void drawPokemonHealthBar(SpriteBatch batch, String name, int current, int max, float x, float y) {
+    private void drawPokemonHealthBar(SpriteBatch batch, String name, float current, float max, float x, float y) {
         // Name tag background
         batch.setColor(0.2f, 0.2f, 0.2f, 0.8f);
         batch.draw(whiteTexture, x, y, 250, 50);
@@ -515,7 +516,7 @@ public class GameplayController {
                 buttonRect.y + (buttonRect.height + layout.height) / 2);
     }
     private void performEnemyAction() {
-        int damage = (random.nextInt(8) + 3) * enemyDamageMultiplier;
+        float damage = (random.nextInt(8) + 3) * enemyDamageMultiplier;
         playerHealth -= damage;
 
         int action = random.nextInt(10);
@@ -580,7 +581,7 @@ public class GameplayController {
             highScore = Math.max(currentScore, highScore);
 
             if (isCombatMode && isPlayerTurn) {
-                int damage = points * wordDamageMultiplier;
+                float damage = points * wordDamageMultiplier;
                 enemyHealth -= damage;
                 combatLog = "Your word '" + word + "' deals " + damage + " damage!";
                 showMessage("+" + points + " points! " + damage + " damage!");
@@ -614,6 +615,7 @@ public class GameplayController {
 
         this.rewardID = enemy.getRewardID();
         this.playerHealth = gameController.getCharacter().getHealth();
+        this.playerMaxHealth = gameController.getCharacter().getMaxHealth();
         this.enemyTexture = enemy.getTexturePath();
         this.rewardID = enemy.getRewardID();
         this.isCombatMode = true;
@@ -685,8 +687,8 @@ public class GameplayController {
 
     // Getters
     public boolean isInCombatMode() { return isCombatMode; }
-    public int getPlayerHealth() { return playerHealth; }
-    public int getEnemyHealth() { return enemyHealth; }
+    public float getPlayerHealth() { return playerHealth; }
+    public float getEnemyHealth() { return enemyHealth; }
     public LetterGrid getLetterGrid() { return letterGrid; }
     public int getCurrentScore() { return currentScore; }
     public int getHighScore() { return highScore; }

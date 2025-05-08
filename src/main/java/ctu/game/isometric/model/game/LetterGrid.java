@@ -1,4 +1,4 @@
-package ctu.game.isometric.model.word;
+package ctu.game.isometric.model.game;
 
 import java.util.ArrayList;
 import java.util.List;

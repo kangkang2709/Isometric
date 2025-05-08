@@ -237,7 +237,7 @@ public class ExploringUI {
             playerNameLabel.setText(character.getName());
 
             // Update health
-            int health = character.getHealth();
+            float health = character.getHealth();
 
             // Update health bar color based on health percentage
             float healthPercent = health / (float)maxHealth;
@@ -282,7 +282,7 @@ public class ExploringUI {
         return null;
     }
 
-    private void reinitializeHealthBar(int health, Color healthColor) {
+    private void reinitializeHealthBar(float health, Color healthColor) {
         Stack healthStack = findHealthStack();
         if (healthStack != null) {
             healthStack.clear();

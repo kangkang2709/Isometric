@@ -4,8 +4,8 @@
     "enemyName": "Goblin Warrior",
     "enemyDescription": "A sneaky forest creature wielding a crude sword.",
     "texturePath": "enemy/goblin_warrior.png",
-    "health": 2,
-    "attackPower": 1,
+    "health": 2.6,
+    "attackPower": 1.2,
     "rewardId": 1
   },
   {

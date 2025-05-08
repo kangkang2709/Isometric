@@ -74,7 +74,7 @@ public class GameSaveService {
         copy.setName(original.getName());
         copy.setHealth(original.getHealth());
         copy.setGender(original.getGender());
-        copy.setDamage(original.getDamage());
+        copy.setDamage((float)original.getDamage());
         copy.setMoveSpeed(original.getMoveSpeed());
 
         // Copy position

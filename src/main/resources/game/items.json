@@ -4,14 +4,16 @@
       "itemName": "Potion of Healing",
       "itemDescription": "A red potion that restores a small amount of health.",
       "texturePath": "game/items/potion_healing.png",
-      "itemEffect": "heal"
+      "itemEffect": "heal",
+      "value": 20.0
     },
     {
       "itemID": 2,
-      "itemName": "Mana Crystal",
+      "itemName": "Slow Potion",
       "itemDescription": "A glowing crystal that restores mana when consumed.",
       "texturePath": "game/items/mana_crystal.png",
-      "itemEffect": "restore_mana"
+      "itemEffect":"debuff",
+      "value": 0.3
     }
   ]
   

@@ -5,7 +5,7 @@ public class Enemy {
     private String enemyName;
     private String enemyDescription;
     private String texturePath;
-    private int health;
+    private float health;
     private int attackPower;
     private int rewardID; // ID of the reward given upon defeat
 
@@ -54,11 +54,11 @@ public class Enemy {
         this.texturePath = texturePath;
     }
 
-    public int getHealth() {
+    public float getHealth() {
         return health;
     }
 
-    public void setHealth(int health) {
+    public void setHealth(float health) {
         this.health = health;
     }
 

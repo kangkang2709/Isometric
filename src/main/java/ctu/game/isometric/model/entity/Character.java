@@ -20,16 +20,16 @@ public class Character {
     private String direction = "down";
     private String name = "player"; // Character name
     private Gender gender = Gender.MALE;
-    private int health = 100; // Health points
+    private float health = 100; // Health points
     private float gridX, gridY;
 
-    private int maxHealth = 100; // Maximum health points
+    private float maxHealth = 100; // Maximum health points
 
     private Map<String, Integer> items; // Inventory of items
     private List<String> flags; // Flags for events
     private List<String> quests; // List of quests
-    private Map<String,List<String>> status;  // Status effects (e.g., buffs, debuffs)
-    private int damage = 1; // Damage dealt by the character
+    private Map<String, List<String>> status;  // Status effects (e.g., buffs, debuffs)
+    private float damage = 1; // Damage dealt by the character
 
     private IsometricMap gameMap;
     private float targetX, targetY;
@@ -82,6 +82,67 @@ public class Character {
         } else {
             items.put(item.getItemName(), amount);
         }
+    }
+
+    public void healing(float amount) {
+        if (amount < 0) {
+            throw new IllegalArgumentException("Healing amount cannot be negative");
+        }
+        this.health = Math.min(this.health + amount, maxHealth);
+    }
+
+    public void buff(String effect, float value) {
+        switch (effect){
+            case "speed":
+                this.moveSpeed = Math.min(3, this.moveSpeed + value);
+                break;
+            case "strength":
+                this.damage = Math.min(10, this.damage + value);
+                break;
+            case "health":
+                this.maxHealth = Math.min(200, this.maxHealth + value);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid buff effect");
+        }
+    }
+
+    public void debuff(String effect, float value) {
+        switch (effect){
+            case "slow":
+                this.moveSpeed = Math.max(2, this.moveSpeed - value);
+                break;
+            case "curse":
+                this.health = Math.max(0, this.health - value);
+                break;
+        }
+    }
+
+    public void useItem(Items item) {
+        if (item == null || item.getItemName() == null) {
+            throw new IllegalArgumentException("Item or item name cannot be null");
+        }
+        switch (item.getItemEffect()) {
+            case "heal":
+                healing(item.getValue());
+                break;
+            case "buff":
+                buff(item.getItemEffect(), item.getValue());
+                break;
+            case "debuff":
+                debuff(item.getItemEffect(), item.getValue());
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid item effect");
+        }
+    }
+
+    public float getMaxHealth() {
+        return maxHealth;
+    }
+
+    public void setMaxHealth(float maxHealth) {
+        this.maxHealth = maxHealth;
     }
 
     public void moveToward(float targetX, float targetY) {
@@ -252,11 +313,11 @@ public class Character {
         this.name = name;
     }
 
-    public int getHealth() {
+    public float getHealth() {
         return health;
     }
 
-    public void setHealth(int health) {
+    public void setHealth(float health) {
         this.health = health;
     }
 
@@ -271,7 +332,6 @@ public class Character {
     public void setFlags(List<String> flags) {
         this.flags = flags;
     }
-
 
 
     public Gender getGender() {
@@ -331,8 +391,12 @@ public class Character {
         this.status = status;
     }
 
-    public int getDamage() {
+    public float getDamage() {
         return damage;
+    }
+
+    public void setDamage(float damage) {
+        this.damage = damage;
     }
 
     public void setDamage(int damage) {
