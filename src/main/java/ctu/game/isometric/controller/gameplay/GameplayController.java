@@ -15,7 +15,10 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import ctu.game.isometric.controller.GameController;
 import ctu.game.isometric.model.entity.Enemy;
 import ctu.game.isometric.model.game.GameState;
+import ctu.game.isometric.model.game.Items;
+import ctu.game.isometric.model.game.Reward;
 import ctu.game.isometric.model.word.LetterGrid;
+import ctu.game.isometric.util.RewardLoader;
 import ctu.game.isometric.util.WordScorer;
 import ctu.game.isometric.util.WordValidator;
 
@@ -46,6 +49,7 @@ public class GameplayController {
 
     private Texture gridBackgroundTexture;
     private Texture buttonTexture;
+    private Texture buttonSelectedTexture;
     private Texture messageBoxTexture;
     private Texture cellTexture;
     private Texture selectedCellTexture;
@@ -98,6 +102,7 @@ public class GameplayController {
         // Load UI textures
         gridBackgroundTexture = new Texture(Gdx.files.internal("ui/grid_bg.png"));
         buttonTexture = new Texture(Gdx.files.internal("ui/button.png"));
+        buttonSelectedTexture = new Texture(Gdx.files.internal("ui/button_selected.png"));
         messageBoxTexture = new Texture(Gdx.files.internal("ui/message_box.png"));
         cellTexture = new Texture(Gdx.files.internal("ui/cell.png"));
         selectedCellTexture = new Texture(Gdx.files.internal("ui/selected_cell.png"));
@@ -127,7 +132,6 @@ public class GameplayController {
 
         // Update appropriate mode
         if (isCombatMode) updateCombat(delta);
-        else updateWordPuzzle(delta);
     }
 
     private void updateCombat(float delta) {
@@ -155,19 +159,7 @@ public class GameplayController {
         }
     }
 
-    private void updateWordPuzzle(float delta) {
-        if (Gdx.input.justTouched()) {
-            Vector3 touchPos = getTouchPosition();
 
-            if (submitButtonRect.contains(touchPos.x, touchPos.y)) {
-                submitWord();
-            } else if (clearButtonRect.contains(touchPos.x, touchPos.y)) {
-                clearSelection();
-            } else {
-                checkGridClick(touchPos.x, touchPos.y);
-            }
-        }
-    }
 
     private Vector3 getTouchPosition() {
         Vector3 touchPos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
@@ -200,33 +192,117 @@ public class GameplayController {
         batch.setColor(Color.WHITE);
 
         if (isCombatMode) renderCombatUI(batch);
-        else renderWordPuzzleUI(batch);
+        else renderReward(batch);
     }
 
-    private void renderWordPuzzleUI(SpriteBatch batch) {
-        // Draw title
-        drawCenteredText(batch, titleFont, "WORD PUZZLE", viewport.getWorldWidth()/2, 650, Color.WHITE);
+    private void renderReward(SpriteBatch batch) {
+        // Draw background
+        batch.setColor(0.1f, 0.1f, 0.2f, 1);
+        batch.draw(whiteTexture, 0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
 
-        // Draw letter grid
-        drawLetterGrid(batch);
+        // Draw victory panel
+        float panelWidth = 600;
+        float panelHeight = 400;
+        float panelX = (viewport.getWorldWidth() - panelWidth) / 2;
+        float panelY = (viewport.getWorldHeight() - panelHeight) / 2;
 
-        // Draw current word and score
-        String currentWord = letterGrid.getCurrentWord();
-        bigFont.setColor(Color.WHITE);
-        bigFont.draw(batch, currentWord, 900, 500);
+        // Panel background
+        batch.setColor(0.2f, 0.2f, 0.4f, 0.9f);
+        batch.draw(whiteTexture, panelX, panelY, panelWidth, panelHeight);
 
-        regularFont.setColor(Color.WHITE);
-        regularFont.draw(batch, "Score: " + currentScore + "   High Score: " + highScore, 900, 450);
+        // Panel border
+        batch.setColor(0.8f, 0.7f, 0.2f, 1); // Gold border
+        drawRect(batch, panelX, panelY, panelWidth, panelHeight, 3);
 
-        // Draw message
-        if (!currentMessage.isEmpty()) {
-            regularFont.setColor(Color.YELLOW);
-            regularFont.draw(batch, currentMessage, 900, 420);
+        // Get reward information
+        Reward reward = RewardLoader.getRewardById(rewardID);
+        Items item = reward.getItemID();
+
+        // Title
+        drawCenteredText(batch, titleFont, "VICTORY!", viewport.getWorldWidth()/2, panelY + panelHeight - 50, new Color(1, 0.9f, 0.3f, 1));
+
+        // Enemy defeated message
+        drawCenteredText(batch, regularFont, "You defeated " + enemyName + "!",
+                viewport.getWorldWidth()/2, panelY + panelHeight - 100, Color.WHITE);
+        Texture itemTexture = null;
+        // Draw reward item
+        if (item != null) {
+            try {
+                itemTexture = getCharacterTexture(item.getTexturePath());
+                float iconSize = 64;
+                float iconX = panelX + 100;
+                float iconY = panelY + panelHeight/2 - iconSize/2;
+                batch.setColor(Color.WHITE);
+                batch.draw(itemTexture, iconX, iconY, iconSize, iconSize);
+            } catch (Exception e) {
+                Gdx.app.error("GameplayController", "Could not load item texture: " + item.getTexturePath());
+            }
+
+            // Item details
+            float textX = panelX + 180;
+            float textY = panelY + panelHeight/2 + 30;
+
+            regularFont.setColor(new Color(0.9f, 0.9f, 0.3f, 1));
+            regularFont.draw(batch, item.getItemName() + " x" + reward.getAmount(), textX, textY);
+
+            regularFont.setColor(Color.WHITE);
+            // Wrap long descriptions
+            String description = reward.getDescription();
+            float wrapWidth = panelWidth - 200;
+            float lineHeight = 25;
+
+            int startIndex = 0;
+            int lastSpace = 0;
+            float lineWidth = 0;
+
+            for (int i = 0; i < description.length(); i++) {
+                char c = description.charAt(i);
+                layout.setText(regularFont, String.valueOf(c));
+                lineWidth += layout.width;
+
+                if (c == ' ') lastSpace = i;
+
+                if (lineWidth > wrapWidth || i == description.length() - 1) {
+                    int endIndex = (lineWidth > wrapWidth && lastSpace > startIndex) ? lastSpace : i + 1;
+                    String line = description.substring(startIndex, endIndex);
+                    regularFont.draw(batch, line, textX, textY - lineHeight);
+                    lineHeight += 25;
+                    startIndex = endIndex;
+                    if (startIndex < description.length() && description.charAt(startIndex) == ' ') startIndex++;
+                    lineWidth = 0;
+                }
+            }
         }
 
-//        // Draw buttons
-//        drawButton(batch, submitButtonRect, "Submit Word");
-//        drawButton(batch, clearButtonRect, "Clear Selection");
+        // Continue button
+        float buttonWidth = 200;
+        float buttonHeight = 50;
+        float buttonX = viewport.getWorldWidth()/2 - buttonWidth/2;
+        float buttonY = panelY + 50;
+
+        Rectangle continueButton = new Rectangle(buttonX, buttonY, buttonWidth, buttonHeight);
+
+        drawButton(batch, continueButton, "CONTINUE");
+
+        // Handle button click
+        if (Gdx.input.justTouched()) {
+            Vector3 touchPos = getTouchPosition();
+            if (continueButton.contains(touchPos.x, touchPos.y)) {
+
+                gameController.getCharacter().addItem(item, reward.getAmount());
+                gameController.getCharacter().setHealth(playerHealth);
+
+                Timer.schedule(new Timer.Task() {
+                    @Override
+                    public void run() {
+                        gameController.setState(GameState.EXPLORING);
+                        dispose();
+                    }
+                }, 1.0f);
+            }
+        }
+
+        batch.setColor(Color.WHITE); // Reset color
     }
 
     private void renderCombatUI(SpriteBatch batch) {
@@ -423,7 +499,14 @@ public class GameplayController {
 
     private void drawButton(SpriteBatch batch, Rectangle buttonRect, String text) {
         batch.setColor(Color.WHITE);
-        batch.draw(buttonTexture, buttonRect.x, buttonRect.y, buttonRect.width, buttonRect.height);
+
+        // Check if mouse is hovering over the button
+        Vector3 mousePos = getTouchPosition();
+        boolean isSelected = buttonRect.contains(mousePos.x, mousePos.y);
+
+        // Draw appropriate button texture based on selection state
+        batch.draw(isSelected ? buttonSelectedTexture : buttonTexture,
+                buttonRect.x, buttonRect.y, buttonRect.width, buttonRect.height);
 
         layout.setText(regularFont, text);
         regularFont.setColor(Color.WHITE);
@@ -431,7 +514,6 @@ public class GameplayController {
                 buttonRect.x + (buttonRect.width - layout.width) / 2,
                 buttonRect.y + (buttonRect.height + layout.height) / 2);
     }
-
     private void performEnemyAction() {
         int damage = (random.nextInt(8) + 3) * enemyDamageMultiplier;
         playerHealth -= damage;
@@ -469,6 +551,8 @@ public class GameplayController {
     }
 
     private void endCombat(boolean victory) {
+        isCombatMode = false;
+
         if (victory) {
             int rewardPoints = random.nextInt(20) + 10;
             currentScore += rewardPoints;
@@ -478,15 +562,7 @@ public class GameplayController {
             showMessage("Defeat! Better luck next time.");
         }
 
-        Timer.schedule(new Timer.Task() {
-            @Override
-            public void run() {
-                isCombatMode = false;
-                gameController.getCharacter().setHealth(playerHealth);
-                gameController.setState(GameState.EXPLORING);
-                dispose();
-            }
-        }, 3.0f);
+
     }
 
     public boolean submitWord() {
@@ -510,7 +586,8 @@ public class GameplayController {
                 showMessage("+" + points + " points! " + damage + " damage!");
 
                 checkCombatEnd();
-                if (isCombatMode) {
+
+                if (isCombatMode && enemyHealth > 0) {
                     isPlayerTurn = false;
                 }
             } else {
@@ -534,9 +611,8 @@ public class GameplayController {
         this.enemyHealth = enemy.getHealth();
         this.wordDamageMultiplier = gameController.getCharacter().getDamage();
         this.enemyDamageMultiplier = enemy.getAttackPower();
-        System.out.println("Enemy " + enemyName + " health: " + enemyHealth);
-        System.out.println("Enemy damage multiplier: " + enemyDamageMultiplier);
 
+        this.rewardID = enemy.getRewardID();
         this.playerHealth = gameController.getCharacter().getHealth();
         this.enemyTexture = enemy.getTexturePath();
         this.rewardID = enemy.getRewardID();

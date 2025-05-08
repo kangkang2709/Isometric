@@ -5,7 +5,8 @@
     "enemyDescription": "A sneaky forest creature wielding a crude sword.",
     "texturePath": "enemy/goblin_warrior.png",
     "health": 2,
-    "attackPower": 1
+    "attackPower": 1,
+    "rewardId": 1
   },
   {
     "enemyID": 2,
@@ -13,6 +14,7 @@
     "enemyDescription": "An undead archer that shoots arrows from afar.",
     "texturePath": "enemy/skeleton_archer.png",
     "health": 3,
-    "attackPower": 1
+    "attackPower": 1,
+    "rewardId": 2
   }
 ]

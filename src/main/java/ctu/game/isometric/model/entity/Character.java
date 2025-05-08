@@ -42,6 +42,12 @@ public class Character {
 
 
     public Character() {
+        this.flags = new ArrayList<>();
+        this.quests = new ArrayList<>();
+        this.items = new HashMap<>();
+        this.status = new HashMap<>();
+        this.status.put("buffs", new ArrayList<>());
+        this.status.put("debuffs", new ArrayList<>());
     }
 
 
@@ -53,7 +59,6 @@ public class Character {
         this.flags = new ArrayList<>();
         this.quests = new ArrayList<>();
         this.items = new HashMap<>();
-        this.items.put(ItemLoader.getItemById(1).getItemName(),1);
         this.status = new HashMap<>();
         this.status.put("buffs", new ArrayList<>());
         this.status.put("debuffs", new ArrayList<>());
@@ -62,6 +67,22 @@ public class Character {
     }
 
     // Existing getters/setters...
+
+    public void addItem(Items item, int amount) {
+        if (item == null || item.getItemName() == null) {
+            throw new IllegalArgumentException("Item or item name cannot be null");
+        }
+
+        if (items == null) {
+            items = new HashMap<>();
+        }
+
+        if (items.containsKey(item.getItemName())) {
+            items.put(item.getItemName(), items.get(item.getItemName()) + amount);
+        } else {
+            items.put(item.getItemName(), amount);
+        }
+    }
 
     public void moveToward(float targetX, float targetY) {
         // Ensure target is within map bounds and walkable
