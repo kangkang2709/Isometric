@@ -74,6 +74,8 @@ public class GameplayController {
     private String enemyTexture;
     private int rewardID = 1;
 
+
+
     public GameplayController(GameController gameController) {
         this.gameController = gameController;
         this.letterGrid = new LetterGrid();
