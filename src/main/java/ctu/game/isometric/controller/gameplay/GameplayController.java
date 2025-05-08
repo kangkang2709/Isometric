@@ -4,11 +4,10 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -25,6 +24,7 @@ import ctu.game.isometric.util.WordValidator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+
 
 public class GameplayController {
     // Core components
@@ -74,7 +74,7 @@ public class GameplayController {
     private String enemyTexture;
     private int rewardID = 1;
 
-
+    private EffectManager effectManager;
 
     public GameplayController(GameController gameController) {
         this.gameController = gameController;
@@ -113,6 +113,12 @@ public class GameplayController {
         // Initialize button rectangles
         submitButtonRect = new Rectangle(900, 350, 200, 50);
         clearButtonRect = new Rectangle(900, 280, 200, 50);
+
+        effectManager = new EffectManager("effects");
+        effectManager.loadEffect("attack", "effects/attack.p");
+//        effectManager.loadEffect("heal", "effects/heal.p");
+//        effectManager.loadEffect("powerup", "effects/powerup.p");
+//        effectManager.loadEffect("defeat", "effects/defeat.p");
     }
     private void drawMessageBox(SpriteBatch batch, String message, float x, float y, float width, float height) {
         batch.setColor(Color.WHITE);
@@ -127,6 +133,9 @@ public class GameplayController {
     public void update(float delta) {
         if (!active) return;
 
+        // Update particle effects
+        effectManager.update(delta);
+
         // Update message timer
         if (messageTimer > 0) {
             messageTimer -= delta;
@@ -135,6 +144,10 @@ public class GameplayController {
 
         // Update appropriate mode
         if (isCombatMode) updateCombat(delta);
+    }
+
+    private void spawnAttackEffect(float x, float y) {
+        effectManager.spawnEffect("attack", x,y);
     }
 
     private void updateCombat(float delta) {
@@ -189,14 +202,19 @@ public class GameplayController {
         viewport.apply();
         batch.setProjectionMatrix(viewport.getCamera().combined);
 
-        // Draw background
+        // Draw background FIRST
         batch.setColor(0.1f, 0.1f, 0.2f, 1);
         batch.draw(whiteTexture, 0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
         batch.setColor(Color.WHITE);
 
         if (isCombatMode) renderCombatUI(batch);
         else renderReward(batch);
+
+        effectManager.render(batch);
+
     }
+
+
 
     private void renderReward(SpriteBatch batch) {
         // Draw background
@@ -587,7 +605,8 @@ public class GameplayController {
                 enemyHealth -= damage;
                 combatLog = "Your word '" + word + "' deals " + damage + " damage!";
                 showMessage("+" + points + " points! " + damage + " damage!");
-
+                // Spawn attack particle effect
+                effectManager.spawnEffect("attack", viewport.getWorldWidth() - 300, 600);
                 checkCombatEnd();
 
                 if (isCombatMode && enemyHealth > 0) {
@@ -685,6 +704,9 @@ public class GameplayController {
         }
         textureCache.clear();
 
+        if (effectManager != null) {
+            effectManager.dispose();
+        }
     }
 
     // Getters

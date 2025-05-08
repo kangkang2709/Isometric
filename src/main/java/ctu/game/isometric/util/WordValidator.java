@@ -18,7 +18,6 @@ public class WordValidator {
 
     public WordValidator() {
         root = new ArrayTrieNode();
-        // LRU cache implementation
         cache = new LinkedHashMap<String, Boolean>(CACHE_SIZE, 0.75f, true) {
             @Override
             protected boolean removeEldestEntry(Map.Entry<String, Boolean> eldest) {
