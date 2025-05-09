@@ -13,6 +13,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Align;
+import ctu.game.isometric.controller.gameplay.EffectManager;
 import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.game.GameState;
 import ctu.game.isometric.util.GameSaveService;
@@ -59,7 +60,7 @@ public class MenuController {
         this.selectedIndex = 0;
         this.menuItems = new ArrayList<>();
 
-        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/Creepster-Regular.ttf"));
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/ModernAntiqua-Regular.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
         // Initialize fonts
 
@@ -95,6 +96,7 @@ public class MenuController {
         menuX = Gdx.graphics.getWidth() / 2 - menuWidth / 2;
         menuY = Gdx.graphics.getHeight() / 2 - menuHeight / 2;
     }
+
     private void showSaveGameDialog() {
         // For now, just generate a timestamp-based name
         Character character = gameController.getCharacter();
@@ -106,6 +108,7 @@ public class MenuController {
 
         boolean saved = saveService.saveGame(character, filename);
         if (saved) {
+            showSaveSuccessNotification(filename);
             System.out.println("Game saved successfully as: " + filename + ".json");
         } else {
             System.out.println("Failed to save game");
@@ -113,6 +116,23 @@ public class MenuController {
 
         // TODO: Add a proper in-game dialog for save name input
     }
+
+    private void showSaveSuccessNotification(String filename) {
+        // Spawn a particle effect at the center of the screen
+        EffectManager effectManager = gameController.getEffectManager();
+        if (effectManager != null) {
+            float centerX = Gdx.graphics.getWidth() / 2f;
+            float centerY = Gdx.graphics.getHeight() / 2f;
+            // Spawn a particle effect (assuming there's an effect named "success")
+            // If this effect name doesn't exist, you'll need to ensure it's loaded
+            effectManager.spawnEffect("attack", centerX, centerY, 2.0f);
+
+        }
+
+        // TODO: Display a temporary text notification
+        // This could be added later as a more comprehensive notification system
+    }
+
     private void showOptionsMenu() {
         System.out.println("Options selected");
     }

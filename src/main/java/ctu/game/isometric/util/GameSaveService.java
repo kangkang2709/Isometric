@@ -10,14 +10,11 @@ import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.game.GameSave;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class GameSaveService {
     private static final String SAVE_DIRECTORY = "saves/";
+    private static final int MAX_SAVE_FILES = 5;
     private final ObjectMapper objectMapper;
 
     public GameSaveService() {
@@ -38,6 +35,7 @@ public class GameSaveService {
 
     public boolean saveGame(Character character, String saveName) {
         try {
+            maintainSaveLimit();
             // Create a clean character copy without LibGDX objects
             Character saveCharacter = createSerializableCopy(character);
 
@@ -64,6 +62,29 @@ public class GameSaveService {
             Gdx.app.error("GameSaveService", "Error saving game: " + e.getMessage());
             e.printStackTrace();
             return false;
+        }
+    }
+
+    private void maintainSaveLimit() {
+        FileHandle dir = Gdx.files.local(SAVE_DIRECTORY);
+        FileHandle[] files = dir.list(".json");
+
+        if (files.length >= MAX_SAVE_FILES) {
+            // Sort files by last modified time (oldest first)
+            List<FileHandle> sortedFiles = new ArrayList<>();
+            for (FileHandle file : files) {
+                sortedFiles.add(file);
+            }
+
+            sortedFiles.sort(Comparator.comparingLong(FileHandle::lastModified));
+
+            // Delete oldest files until we're under the limit
+            int filesToDelete = sortedFiles.size() - MAX_SAVE_FILES + 1; // +1 for the new save
+            for (int i = 0; i < filesToDelete; i++) {
+                FileHandle oldestFile = sortedFiles.get(i);
+                Gdx.app.log("GameSaveService", "Deleting old save: " + oldestFile.name());
+                oldestFile.delete();
+            }
         }
     }
 

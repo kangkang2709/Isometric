@@ -26,7 +26,7 @@ public class WordValidator {
         };
     }
 
-    private void loadDictionary() {
+    public void loadDictionary() {
         if (dictionaryLoaded) return;
 
         try {

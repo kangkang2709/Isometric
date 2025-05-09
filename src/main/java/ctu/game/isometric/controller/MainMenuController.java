@@ -40,7 +40,7 @@ public class MainMenuController {
     private final float INPUT_DELAY = 0.2f;
 
     public MainMenuController(GameController gameController) {
-        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/Creepster-Regular.ttf"));
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/ModernAntiqua-Regular.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
         parameter.size = 36;
         parameter.color = com.badlogic.gdx.graphics.Color.WHITE;

@@ -12,12 +12,14 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.Rectangle;
 import ctu.game.isometric.IsometricGame;
 import ctu.game.isometric.controller.cutscene.CutsceneController;
+import ctu.game.isometric.controller.gameplay.EffectManager;
 import ctu.game.isometric.controller.gameplay.GameplayController;
 import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.entity.Enemy;
 import ctu.game.isometric.model.game.GameState;
 import ctu.game.isometric.model.world.IsometricMap;
 import ctu.game.isometric.util.EnemyLoader;
+import ctu.game.isometric.util.WordValidator;
 import ctu.game.isometric.view.renderer.ExploringUI;
 
 public class GameController {
@@ -44,7 +46,10 @@ public class GameController {
     boolean isCreated = false;
     private ExploringUI exploringUI;
 
-    private boolean isLoadGame = false;
+    private WordValidator wordValidator;
+    private EffectManager effectManager;
+
+
 
     public GameController(IsometricGame game) {
         this.game = game;
@@ -53,7 +58,6 @@ public class GameController {
         this.inputController = new InputController(this);
         this.dialogController = new DialogController(this);
         this.musicController = new MusicController();
-        this.gameplayController = new GameplayController(this);
         characterCreationController = new CharacterCreationController(this);
         this.menuController = new MenuController(this);
         this.settingsMenuController = new SettingsMenuController(this);
@@ -61,6 +65,14 @@ public class GameController {
         this.transitionController = new TransitionController();
         this.cutsceneController = new CutsceneController(this);
         loadGameController = new LoadGameController(this);
+
+        this.wordValidator = new WordValidator();
+        this.wordValidator.loadDictionary();
+
+        effectManager = new EffectManager("effects");
+        effectManager.loadEffect("attack", "effects/attack.p");
+
+        this.gameplayController = new GameplayController(this);
 
         this.musicController.initialize();
         this.musicController.playMusicForState(GameState.MAIN_MENU);
@@ -77,14 +89,6 @@ public class GameController {
 
         // Initialize other game state as needed
         // ...
-    }
-
-    public boolean isLoadGame() {
-        return isLoadGame;
-    }
-
-    public void setLoadGame(boolean loadGame) {
-        isLoadGame = loadGame;
     }
 
     public void update(float delta) {
@@ -537,5 +541,25 @@ public class GameController {
 
     public void setExploringUI(ExploringUI exploringUI) {
         this.exploringUI = exploringUI;
+    }
+
+    public void setInputController(InputController inputController) {
+        this.inputController = inputController;
+    }
+
+    public WordValidator getWordValidator() {
+        return wordValidator;
+    }
+
+    public void setWordValidator(WordValidator wordValidator) {
+        this.wordValidator = wordValidator;
+    }
+
+    public EffectManager getEffectManager() {
+        return effectManager;
+    }
+
+    public void setEffectManager(EffectManager effectManager) {
+        this.effectManager = effectManager;
     }
 }

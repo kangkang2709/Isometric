@@ -30,7 +30,7 @@ public class GameplayController {
     // Core components
     private final GameController gameController;
     private final LetterGrid letterGrid;
-    private final WordValidator wordValidator;
+    private WordValidator wordValidator;
     private final Random random = new Random();
 
     // Game state
@@ -79,7 +79,10 @@ public class GameplayController {
     public GameplayController(GameController gameController) {
         this.gameController = gameController;
         this.letterGrid = new LetterGrid();
-        this.wordValidator = new WordValidator();
+
+        this.wordValidator = gameController.getWordValidator();
+        this.effectManager = gameController.getEffectManager();
+
         this.playerName = gameController.getCharacter().getName();
         initializeUI();
     }
@@ -111,24 +114,20 @@ public class GameplayController {
         selectedCellTexture = new Texture(Gdx.files.internal("ui/selected_cell.png"));
 
         // Initialize button rectangles
-        submitButtonRect = new Rectangle(900, 350, 200, 50);
-        clearButtonRect = new Rectangle(900, 280, 200, 50);
+//        submitButtonRect = new Rectangle(900, 350, 200, 50);
+//        clearButtonRect = new Rectangle(900, 280, 200, 50);
 
-        effectManager = new EffectManager("effects");
-        effectManager.loadEffect("attack", "effects/attack.p");
-//        effectManager.loadEffect("heal", "effects/heal.p");
-//        effectManager.loadEffect("powerup", "effects/powerup.p");
-//        effectManager.loadEffect("defeat", "effects/defeat.p");
+
     }
     private void drawMessageBox(SpriteBatch batch, String message, float x, float y, float width, float height) {
         batch.setColor(Color.WHITE);
-        batch.draw(messageBoxTexture, x, y, width, height);
+        batch.draw(messageBoxTexture, x, y + 10, width, height + 60);
 
         layout.setText(regularFont, message);
         regularFont.setColor(Color.WHITE);
         regularFont.draw(batch, message,
                 x + (width - layout.width) / 2,
-                y + (height + layout.height) / 2);
+                y + (height + layout.height) / 2 + 110);
     }
     public void update(float delta) {
         if (!active) return;
@@ -186,7 +185,7 @@ public class GameplayController {
     private void checkGridClick(float x, float y) {
         float gridSize = isCombatMode ? 350 : 500;
         float gridX = isCombatMode ? (viewport.getWorldWidth() - gridSize) / 2 : 250;
-        float gridY = isCombatMode ? 150 : 110;
+        float gridY = isCombatMode ? 60 : 110;
         float cellSize = gridSize / 5;
 
         if (x >= gridX && x < gridX + gridSize && y >= gridY && y < gridY + gridSize) {
@@ -346,7 +345,7 @@ public class GameplayController {
 
         // Update and draw buttons
         float buttonX = ((viewport.getWorldWidth() - 70) / 2);
-        float buttonY = 103;
+        float buttonY = 10;
         float buttonWidth = 130;
         float buttonHeight = 50;
         float buttonSpacing = 60;
@@ -397,7 +396,7 @@ public class GameplayController {
         float gridSize = 350;
         float cellSize = gridSize / 5;
         float gridX = (viewport.getWorldWidth() - gridSize) / 2;
-        float gridY = 150;
+        float gridY = 60;
 
         // Draw grid background
         batch.setColor(Color.WHITE);
@@ -474,48 +473,6 @@ public class GameplayController {
         batch.draw(whiteTexture, x, y, thickness, height); // Left
         batch.draw(whiteTexture, x + width - thickness, y, thickness, height); // Right
         batch.draw(whiteTexture, x, y + height - thickness, width, thickness); // Top
-    }
-
-    private void drawLetterGrid(SpriteBatch batch) {
-        float gridX = 250;
-        float gridY = 110;
-        float gridSize = 500;
-        float cellSize = gridSize / 5;
-        float padding = 4;
-
-        // Grid background
-        batch.setColor(0.3f, 0.3f, 0.4f, 0.7f);
-        batch.draw(whiteTexture, gridX - padding, gridY - padding, gridSize + padding*2, gridSize + padding*2);
-
-        char[][] grid = letterGrid.getGrid();
-        boolean[][] selected = letterGrid.getSelectedCells();
-
-        for (int y = 0; y < 5; y++) {
-            for (int x = 0; x < 5; x++) {
-                float screenX = gridX + x * cellSize + padding/2;
-                float screenY = gridY + (4-y) * cellSize + padding/2;
-                float actualCellSize = cellSize - padding;
-
-                // Cell background
-                if (selected[y][x]) {
-                    batch.setColor(0.3f, 0.7f, 1f, 0.5f);
-                    batch.draw(whiteTexture, screenX - 3, screenY - 3, actualCellSize + 6, actualCellSize + 6);
-                    batch.setColor(0.2f, 0.6f, 1f, 1);
-                } else {
-                    batch.setColor(0.85f, 0.85f, 0.7f, 1);
-                }
-                batch.draw(whiteTexture, screenX, screenY, actualCellSize, actualCellSize);
-
-                // Letter
-                String letter = String.valueOf(grid[y][x]);
-                layout.setText(regularFont, letter);
-                regularFont.setColor(Color.BLACK);
-                regularFont.draw(batch, letter,
-                        screenX + (actualCellSize - layout.width) / 2,
-                        screenY + actualCellSize - (actualCellSize - layout.height) / 2);
-            }
-        }
-        batch.setColor(Color.WHITE);
     }
 
     private void drawButton(SpriteBatch batch, Rectangle buttonRect, String text) {
@@ -704,9 +661,9 @@ public class GameplayController {
         }
         textureCache.clear();
 
-        if (effectManager != null) {
-            effectManager.dispose();
-        }
+//        if (effectManager != null) {
+//            effectManager.dispose();
+//        }
     }
 
     // Getters
