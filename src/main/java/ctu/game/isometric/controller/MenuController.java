@@ -42,18 +42,18 @@ public class MenuController {
     private TextureRegion buttonTexture;
     private TextureRegion buttonSelectedTexture;
     private float buttonPadding = 10f;
-
     // Visual elements
     private ShapeRenderer shapeRenderer;
     private TextureRegion menuBackground;
-
     private GlyphLayout layout = new GlyphLayout();
 
-    private String menuTitle = "GAME MENU";
+    private String menuTitle = "PAUSE MENU";
+
+    private String notificationMessage = null;
+    private float notificationTimer = 0f;
+    private static final float NOTIFICATION_DURATION = 3f;
 
     // Animation properties
-    private float animationTime = 0;
-    private float selectionPulse = 0;
 
     public MenuController(GameController gameController) {
         this.gameController = gameController;
@@ -118,19 +118,8 @@ public class MenuController {
     }
 
     private void showSaveSuccessNotification(String filename) {
-        // Spawn a particle effect at the center of the screen
-        EffectManager effectManager = gameController.getEffectManager();
-        if (effectManager != null) {
-            float centerX = Gdx.graphics.getWidth() / 2f;
-            float centerY = Gdx.graphics.getHeight() / 2f;
-            // Spawn a particle effect (assuming there's an effect named "success")
-            // If this effect name doesn't exist, you'll need to ensure it's loaded
-            effectManager.spawnEffect("attack", centerX, centerY, 2.0f);
-
-        }
-
-        // TODO: Display a temporary text notification
-        // This could be added later as a more comprehensive notification system
+        notificationMessage = "Game saved successfully as: " + filename + ".json";
+        notificationTimer = NOTIFICATION_DURATION;
     }
 
     private void showOptionsMenu() {
@@ -142,8 +131,12 @@ public class MenuController {
     }
 
     public void update(float delta) {
-        animationTime += delta;
-        selectionPulse = (float) Math.sin(animationTime * 5) * 0.2f + 0.8f;
+        if (notificationTimer > 0) {
+            notificationTimer -= delta;
+            if (notificationTimer <= 0) {
+                notificationMessage = null; // Clear the message when time is up
+            }
+        }
     }
 
     public void addMenuItem(String text, Runnable action) {
@@ -190,7 +183,7 @@ public class MenuController {
 
         // Draw menu panel background
         shapeRenderer.setColor(0.2f, 0.2f, 0.3f, 0.9f);
-        shapeRenderer.rect(menuX, menuY, menuWidth, menuHeight);
+        shapeRenderer.rect(menuX, menuY +15, menuWidth, menuHeight - padding * 4);
 
         shapeRenderer.end();
         Gdx.gl.glDisable(GL20.GL_BLEND);
@@ -198,8 +191,10 @@ public class MenuController {
         batch.begin();
 
         // Draw title
-        titleFont.draw(batch, menuTitle, menuX, menuY + menuHeight - padding,
+        titleFont.draw(batch, menuTitle, menuX, menuY + menuHeight + 15,
                 menuWidth, Align.center, false);
+
+
 
         // Draw menu items with button backgrounds
         float buttonWidth = menuWidth - (padding * 2);
@@ -229,6 +224,10 @@ public class MenuController {
             y -= (itemHeight + buttonPadding);
         }
 
+        if (notificationMessage != null) {
+            itemFont.draw(batch, notificationMessage, 0, Gdx.graphics.getHeight() - 30,
+                    Gdx.graphics.getWidth(), Align.center, false);
+        }
         batch.setProjectionMatrix(originalMatrix);
 
         if (!wasBatchDrawing) {

@@ -75,6 +75,8 @@ public class InputController extends InputAdapter {
                 return handleCutSceneInput(keycode);
             case EXPLORING:
                 return handleExploringInput(keycode);
+            case LOAD_GAME:
+                return gameController.getLoadGameController().handleInput(keycode);
             case GAMEPLAY:
                 return handleGamePlayInput(keycode);
             case CHARACTER_CREATION:
@@ -130,6 +132,10 @@ public class InputController extends InputAdapter {
         if (state == GameState.MENU) {
             return gameController.getMenuController().handleMouseClick(screenX, screenY);
         }
+        if (state == GameState.LOAD_GAME) {
+            return gameController.getLoadGameController().handleMouseClick(screenX, screenY);
+        }
+
 
         return false;
     }
@@ -142,7 +148,9 @@ public class InputController extends InputAdapter {
         if (state == GameState.MENU) {
             return gameController.getMenuController().handleMouseMove(screenX, screenY);
         }
-
+        if (state == GameState.LOAD_GAME) {
+            return gameController.getLoadGameController().handleMouseMove(screenX, screenY);
+        }
         // Handle other states...
         return false;
     }

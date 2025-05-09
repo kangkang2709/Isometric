@@ -159,4 +159,18 @@ public class GameSaveService {
         }
         return filenames;
     }
+
+    public boolean deleteSave(String fileName) {
+        try {
+            FileHandle file = Gdx.files.local("saves/" + fileName);
+            if (file.exists()) {
+                file.delete();
+                return true;
+            }
+            return false;
+        } catch (Exception e) {
+            System.err.println("Error deleting save file: " + e.getMessage());
+            return false;
+        }
+    }
 }

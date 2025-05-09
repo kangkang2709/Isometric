@@ -33,6 +33,7 @@ public class LoadGameController {
     private String[] saveFiles;
     private int selectedFileIndex = 0;
 
+
     // Button rectangles
     private Rectangle[] fileButtonRects;
     private Rectangle backButtonRect;
@@ -46,6 +47,16 @@ public class LoadGameController {
     // Input cooldown
     private float inputCooldown = 0;
     private final float INPUT_DELAY = 0.2f;
+
+
+    // Add these fields at the top of the class
+    private Texture deleteButtonTexture;
+    private Rectangle[] deleteButtonRects;
+
+    private boolean isConfirmationDialogActive = false;
+    private String fileToDelete = null;
+    private Rectangle confirmYesButtonRect;
+    private Rectangle confirmNoButtonRect;
 
     public LoadGameController(GameController gameController) {
         this.gameController = gameController;
@@ -64,14 +75,16 @@ public class LoadGameController {
         buttonNormal = new Texture(Gdx.files.internal("ui/button.png"));
         buttonSelected = new Texture(Gdx.files.internal("ui/button_selected.png"));
         backButtonTexture = new Texture(Gdx.files.internal("ui/button.png"));
-
+// Load delete button texture
+        deleteButtonTexture = new Texture(Gdx.files.internal("ui/button_delete.png")); // Use an appropriate delete icon
         // Back button position
         backButtonRect = new Rectangle(
                 screenWidth / 2 - BACK_BUTTON_WIDTH / 2,
                 50,
                 BACK_BUTTON_WIDTH,
                 BACK_BUTTON_HEIGHT);
-
+        confirmYesButtonRect = new Rectangle(screenWidth / 2 - 150, screenHeight / 2 - 50, 100, 50);
+        confirmNoButtonRect = new Rectangle(screenWidth / 2 + 50, screenHeight / 2 - 50, 100, 50);
         // Load save files
         refreshSaveFiles();
     }
@@ -88,6 +101,7 @@ public class LoadGameController {
 
         // Create button rectangles
         fileButtonRects = new Rectangle[saveFiles.length];
+        deleteButtonRects = new Rectangle[saveFiles.length]; // Create delete buttons
         int startY = screenHeight - 200;
         int spacing = BUTTON_HEIGHT + 20;
 
@@ -97,14 +111,18 @@ public class LoadGameController {
                     startY - (i * spacing),
                     BUTTON_WIDTH,
                     BUTTON_HEIGHT);
+
+            // Create delete button to the right of each save file button
+            deleteButtonRects[i] = new Rectangle(
+                    screenWidth / 2 + BUTTON_WIDTH / 2 + 10, // 10px gap after the file button
+                    startY - (i * spacing),
+                    BUTTON_HEIGHT, // Square button
+                    BUTTON_HEIGHT);
         }
     }
 
     public void update(float delta) {
-        if (inputCooldown > 0) {
-            inputCooldown -= delta;
-        }
-        handleInput();
+
     }
 
     public void render(SpriteBatch batch) {
@@ -144,6 +162,19 @@ public class LoadGameController {
                 font.draw(batch, displayName,
                         rect.x + 20,
                         rect.y + rect.height - (rect.height - layout.height) / 2);
+
+                batch.draw(deleteButtonTexture,
+                        deleteButtonRects[i].x,
+                        deleteButtonRects[i].y,
+                        deleteButtonRects[i].width,
+                        deleteButtonRects[i].height);
+
+                // You can add an X or trash icon inside the button if needed
+                GlyphLayout deleteLayout = new GlyphLayout(font, "X");
+                font.draw(batch, "X",
+                        deleteButtonRects[i].x + (deleteButtonRects[i].width - deleteLayout.width) / 2,
+                        deleteButtonRects[i].y + deleteButtonRects[i].height -
+                                (deleteButtonRects[i].height - deleteLayout.height) / 2);
             }
         }
 
@@ -156,12 +187,67 @@ public class LoadGameController {
                 backButtonRect.x + (backButtonRect.width - backLayout.width) / 2,
                 backButtonRect.y + backButtonRect.height - (backButtonRect.height - backLayout.height) / 2);
 
+        if (isConfirmationDialogActive) {
+            // Draw dialog background
+            batch.draw(buttonNormal, screenWidth / 2 - 200, screenHeight / 2 - 100, 400, 200);
+
+            // Draw dialog text
+            GlyphLayout dialogText = new GlyphLayout(font, "Delete save file?");
+            font.draw(batch, dialogText, screenWidth / 2 - dialogText.width / 2, screenHeight / 2 + 50);
+
+            // Draw Yes button
+            batch.draw(buttonNormal, confirmYesButtonRect.x, confirmYesButtonRect.y, confirmYesButtonRect.width, confirmYesButtonRect.height);
+            GlyphLayout yesText = new GlyphLayout(font, "Yes");
+            font.draw(batch, "Yes", confirmYesButtonRect.x + (confirmYesButtonRect.width - yesText.width) / 2,
+                    confirmYesButtonRect.y + confirmYesButtonRect.height - (confirmYesButtonRect.height - yesText.height) / 2);
+
+            // Draw No button
+            batch.draw(buttonNormal, confirmNoButtonRect.x, confirmNoButtonRect.y, confirmNoButtonRect.width, confirmNoButtonRect.height);
+            GlyphLayout noText = new GlyphLayout(font, "No");
+            font.draw(batch, "No", confirmNoButtonRect.x + (confirmNoButtonRect.width - noText.width) / 2,
+                    confirmNoButtonRect.y + confirmNoButtonRect.height - (confirmNoButtonRect.height - noText.height) / 2);
+        }
+
+
+
         // Restore original matrix
         batch.setProjectionMatrix(originalMatrix);
     }
 
-    public void handleInput() {
-        // Mouse position
+    public boolean handleInput(int keycode) {
+        switch (keycode) {
+            case Input.Keys.UP:
+            case Input.Keys.W:
+                if (saveFiles.length > 0) {
+                    selectedFileIndex = (selectedFileIndex - 1 + saveFiles.length) % saveFiles.length;
+                }
+                break;
+
+            case Input.Keys.DOWN:
+            case Input.Keys.S:
+                if (saveFiles.length > 0) {
+                    selectedFileIndex = (selectedFileIndex + 1) % saveFiles.length;
+                }
+                break;
+
+            case Input.Keys.ENTER:
+            case Input.Keys.SPACE:
+                if (selectedFileIndex >= 0 && selectedFileIndex < saveFiles.length) {
+                    loadSelectedSave();
+                }
+                break;
+
+            case Input.Keys.ESCAPE:
+            case Input.Keys.BACKSPACE:
+                gameController.setState(GameState.MAIN_MENU);
+                break;
+        }
+
+        return true;
+    }
+
+    public boolean handleMouseMove(int x, int y) {
+        // Check if a save file button or delete button was clicked
         int mouseX = Gdx.input.getX();
         int mouseY = screenHeight - Gdx.input.getY(); // Invert Y coordinate
 
@@ -172,49 +258,57 @@ public class LoadGameController {
                 break;
             }
         }
+        return false;
+    }
 
-        if (inputCooldown <= 0) {
-            // Keyboard navigation
-            if (Gdx.input.isKeyJustPressed(Input.Keys.UP) || Gdx.input.isKeyJustPressed(Input.Keys.W)) {
-                if (saveFiles.length > 0) {
-                    selectedFileIndex = (selectedFileIndex - 1 + saveFiles.length) % saveFiles.length;
-                }
-                inputCooldown = INPUT_DELAY;
+    public boolean handleMouseClick(int x, int y) {
+        int mouseX = Gdx.input.getX();
+        int mouseY = screenHeight - Gdx.input.getY(); // Invert Y coordinate
+
+        if (isConfirmationDialogActive) {
+            if (confirmYesButtonRect.contains(mouseX, mouseY)) {
+                deleteSaveFile(fileToDelete);
+                isConfirmationDialogActive = false;
+                fileToDelete = null;
+                return true;
+            } else if (confirmNoButtonRect.contains(mouseX, mouseY)) {
+                isConfirmationDialogActive = false;
+                fileToDelete = null;
+                return true;
             }
+            return false;
+        }
 
-            if (Gdx.input.isKeyJustPressed(Input.Keys.DOWN) || Gdx.input.isKeyJustPressed(Input.Keys.S)) {
-                if (saveFiles.length > 0) {
-                    selectedFileIndex = (selectedFileIndex + 1) % saveFiles.length;
-                }
-                inputCooldown = INPUT_DELAY;
+        if (backButtonRect.contains(mouseX, mouseY)) {
+            gameController.setState(GameState.MAIN_MENU);
+            return true;
+        }
+
+        for (int i = 0; i < fileButtonRects.length; i++) {
+            if (fileButtonRects[i].contains(mouseX, mouseY)) {
+                loadSelectedSave();
+                return true;
             }
-
-            if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
-                if (selectedFileIndex >= 0 && selectedFileIndex < saveFiles.length) {
-                    loadSelectedSave();
-                }
-                inputCooldown = INPUT_DELAY;
-            }
-
-            if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE) || Gdx.input.isKeyJustPressed(Input.Keys.BACKSPACE)) {
-                gameController.setState(GameState.MAIN_MENU);
-                inputCooldown = INPUT_DELAY;
+            if (deleteButtonRects[i].contains(mouseX, mouseY)) {
+                fileToDelete = saveFiles[i];
+                isConfirmationDialogActive = true;
+                return true;
             }
         }
 
-        // Mouse click
-        if (Gdx.input.justTouched()) {
-            // Check save file buttons
-            for (int i = 0; i < fileButtonRects.length; i++) {
-                if (fileButtonRects[i].contains(mouseX, mouseY)) {
-                    loadSelectedSave();
-                    break;
-                }
-            }
+        return false;
+    }
 
-            // Check back button
-            if (backButtonRect.contains(mouseX, mouseY)) {
-                gameController.setState(GameState.MAIN_MENU);
+
+    private void deleteSaveFile(String fileName) {
+        if (fileName != null) {
+            boolean success = saveService.deleteSave(fileName);
+
+            if (success) {
+                System.out.println("Deleted save file: " + fileName);
+                refreshSaveFiles();
+            } else {
+                System.out.println("Failed to delete save file: " + fileName);
             }
         }
     }
