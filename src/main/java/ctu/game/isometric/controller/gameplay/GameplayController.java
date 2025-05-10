@@ -120,15 +120,47 @@ public class GameplayController {
 
     }
     private void drawMessageBox(SpriteBatch batch, String message, float x, float y, float width, float height) {
+        // Draw background
         batch.setColor(Color.WHITE);
-        batch.draw(messageBoxTexture, x, y + 10, width, height + 60);
+        batch.draw(messageBoxTexture, x - 14, y + 10, width + 60, height);
 
-        layout.setText(regularFont, message);
+        // Setup positions
+        float textX = x + 20;
+        float textY = y + height - 20;
+        float maxWidth = width - 40;
+        float lineHeight = regularFont.getLineHeight() + 5;
+
         regularFont.setColor(Color.WHITE);
-        regularFont.draw(batch, message,
-                x + (width - layout.width) / 2,
-                y + (height + layout.height) / 2 + 110);
+
+        // Split message into lines (in case of manual \n)
+        String[] paragraphs = message.split("\n");
+
+        for (String paragraph : paragraphs) {
+            String[] words = paragraph.split(" ");
+            StringBuilder line = new StringBuilder();
+
+            for (String word : words) {
+                String testLine = line.length() == 0 ? word : line + " " + word;
+                layout.setText(regularFont, testLine);
+
+                if (layout.width > maxWidth) {
+                    // Draw current line and reset
+                    regularFont.draw(batch, line.toString(), textX, textY);
+                    textY -= lineHeight;
+                    line = new StringBuilder(word);
+                } else {
+                    line = new StringBuilder(testLine);
+                }
+            }
+
+            // Draw last line of paragraph
+            if (line.length() > 0) {
+                regularFont.draw(batch, line.toString(), textX, textY);
+                textY -= lineHeight;
+            }
+        }
     }
+
     public void update(float delta) {
         if (!active) return;
 
@@ -499,11 +531,12 @@ public class GameplayController {
 
         int action = random.nextInt(10);
         if (action < 7) { // 70% normal attack
-            combatLog = enemyName + " attacks for " + damage + " damage!";
+            combatLog = enemyName + " attack for " + damage + " damage!\n" + "Your current health is " + this.playerHealth + ".";
         } else if (action < 9) { // 20% power attack
             int extraDamage = random.nextInt(5) + 1;
             playerHealth -= extraDamage;
-            combatLog = enemyName + " performs a power attack for " + (damage + extraDamage) + " damage!";
+            combatLog = enemyName + " performs a power attack for " + (damage + extraDamage) + " damage!\n" + "Your current health is " + this.playerHealth + ".";
+
         } else { // 10% heal
             int heal = random.nextInt(8) + 3;
             enemyHealth = Math.min(enemyMaxHealth, enemyHealth + heal);
