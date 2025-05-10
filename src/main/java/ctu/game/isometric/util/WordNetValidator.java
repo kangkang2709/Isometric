@@ -1,6 +1,8 @@
 package ctu.game.isometric.util;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
+import com.sun.tools.javac.Main;
 import ctu.game.isometric.model.dictionary.Word;
 import ctu.game.isometric.model.dictionary.WordDefinition;
 import edu.mit.jwi.Dictionary;
@@ -9,6 +11,7 @@ import edu.mit.jwi.item.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 
@@ -36,16 +39,29 @@ public class WordNetValidator {
         if (dictionaryLoaded) return;
 
         try {
-            String wordNetPath = "src/main/resources/game/dict";
-            URL url = new File(wordNetPath).toURI().toURL();
-            dictionary = new Dictionary(url);
+            // Get the dictionary directory from local files
+            FileHandle dictDir = Gdx.files.local("dict");
+            URL dictionaryURL;
+
+            if (dictDir.exists() && dictDir.isDirectory()) {
+                dictionaryURL = dictDir.file().toURI().toURL();
+            } else {
+                Gdx.app.error("WordNetValidator", "Dictionary folder not found at: " + dictDir.path());
+                return;
+            }
+
+            // Create and open the dictionary
+            dictionary = new Dictionary(dictionaryURL);
             dictionary.open();
             dictionaryLoaded = true;
-            Gdx.app.log("WordNetValidator", "WordNet dictionary loaded");
+            Gdx.app.log("WordNetValidator", "WordNet dictionary loaded successfully");
+
         } catch (IOException e) {
             Gdx.app.error("WordNetValidator", "Failed to load WordNet dictionary", e);
         }
     }
+
+
 
     public boolean isValidWord(String word) {
         if (word == null || word.length() < MIN_WORD_LENGTH || word.length() > MAX_WORD_LENGTH) {
