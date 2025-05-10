@@ -104,7 +104,7 @@ public class MenuController {
 
         // Create a timestamped filename
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
-        String filename = "save_" + sdf.format(new Date());
+        String filename = gameController.getCharacter().getName()+"_" + sdf.format(new Date());
 
         boolean saved = saveService.saveGame(character, filename);
         if (saved) {

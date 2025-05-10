@@ -3,14 +3,12 @@ package ctu.game.isometric.model.entity;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
+import ctu.game.isometric.model.dictionary.Word;
 import ctu.game.isometric.model.game.Items;
 import ctu.game.isometric.model.world.IsometricMap;
 import ctu.game.isometric.util.ItemLoader;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Character {
 
@@ -22,7 +20,6 @@ public class Character {
     private Gender gender = Gender.MALE;
     private float health = 100; // Health points
     private float gridX, gridY;
-
     private float maxHealth = 100; // Maximum health points
 
     private Map<String, Integer> items; // Inventory of items
@@ -40,6 +37,10 @@ public class Character {
             "up", "down", "left", "right", "left_down", "right_down", "left_up", "right_up"
     };
 
+    private String wordFilePath;
+
+    private Set<String> learnedWords;
+    private Set<String> newlearneWords;
 
     public Character() {
         this.flags = new ArrayList<>();
@@ -48,6 +49,10 @@ public class Character {
         this.status = new HashMap<>();
         this.status.put("buffs", new ArrayList<>());
         this.status.put("debuffs", new ArrayList<>());
+
+        this.newlearneWords = new HashSet<>();
+        this.learnedWords = new HashSet<>();
+        this.learnedWords.add("HELLO");
     }
 
 
@@ -63,10 +68,14 @@ public class Character {
         this.status.put("buffs", new ArrayList<>());
         this.status.put("debuffs", new ArrayList<>());
 
-        flags.add("intro");
+        this.learnedWords = new HashSet<>();
+        this.newlearneWords = new HashSet<>();
+
+        this.learnedWords.add("HELLO");
     }
 
     // Existing getters/setters...
+
 
     public void addItem(Items item, int amount) {
         if (item == null || item.getItemName() == null) {
@@ -92,7 +101,7 @@ public class Character {
     }
 
     public void buff(String effect, float value) {
-        switch (effect){
+        switch (effect) {
             case "speed":
                 this.moveSpeed = Math.min(3, this.moveSpeed + value);
                 break;
@@ -108,7 +117,7 @@ public class Character {
     }
 
     public void debuff(String effect, float value) {
-        switch (effect){
+        switch (effect) {
             case "slow":
                 this.moveSpeed = Math.max(2, this.moveSpeed - value);
                 break;
@@ -135,6 +144,37 @@ public class Character {
             default:
                 throw new IllegalArgumentException("Invalid item effect");
         }
+    }
+
+    public void addLearnedWord(String word) {
+        if (newlearneWords == null) {
+            newlearneWords = new HashSet<>();
+        }
+
+        if (word != null && !word.isEmpty()) {
+            if (learnedWords != null && !learnedWords.contains(word.toUpperCase())) {
+                newlearneWords.add(word.toUpperCase());
+            }
+        }
+    }
+
+    // Check if the character has already learned a word
+    public boolean hasLearnedWord(String word) {
+        return word != null && learnedWords.contains(word.toUpperCase());
+    }
+
+    // Get the count of learned words
+    public int getLearnedWordsCount() {
+        return learnedWords.size();
+    }
+
+    // Getter and setter for JSON serialization
+    public Set<String> getLearnedWords() {
+        return learnedWords;
+    }
+
+    public void setLearnedWords(Set<String> learnedWords) {
+        this.learnedWords = learnedWords != null ? learnedWords : new HashSet<>();
     }
 
     public float getMaxHealth() {
@@ -409,5 +449,21 @@ public class Character {
 
     public void setMoveSpeed(float moveSpeed) {
         this.moveSpeed = moveSpeed;
+    }
+
+    public String getWordFilePath() {
+        return wordFilePath;
+    }
+
+    public void setWordFilePath(String wordFilePath) {
+        this.wordFilePath = wordFilePath;
+    }
+
+    public Set<String> getNewlearneWords() {
+        return newlearneWords;
+    }
+
+    public void setNewlearneWords(Set<String> newlearneWords) {
+        this.newlearneWords = newlearneWords;
     }
 }

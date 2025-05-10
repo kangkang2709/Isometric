@@ -13,6 +13,8 @@ import ctu.game.isometric.model.game.GameSave;
 import ctu.game.isometric.model.game.GameState;
 import ctu.game.isometric.util.GameSaveService;
 
+import java.util.Set;
+
 public class LoadGameController {
     private final GameController gameController;
     private final GameSaveService saveService;
@@ -57,6 +59,7 @@ public class LoadGameController {
     private String fileToDelete = null;
     private Rectangle confirmYesButtonRect;
     private Rectangle confirmNoButtonRect;
+    String title = "Load Game";
 
     public LoadGameController(GameController gameController) {
         this.gameController = gameController;
@@ -137,8 +140,8 @@ public class LoadGameController {
         batch.draw(backgroundImage, 0, 0, screenWidth, screenHeight);
 
         // Draw title
-        GlyphLayout titleLayout = new GlyphLayout(titleFont, "Load Game");
-        titleFont.draw(batch, "Load Game",
+        GlyphLayout titleLayout = new GlyphLayout(titleFont, title);
+        titleFont.draw(batch, title,
                 screenWidth / 2 - titleLayout.width / 2,
                 screenHeight - 100);
 
@@ -314,26 +317,35 @@ public class LoadGameController {
     }
 
     private void loadSelectedSave() {
-        if (selectedFileIndex >= 0 && selectedFileIndex < saveFiles.length) {
-            String fileName = saveFiles[selectedFileIndex];
-            GameSave save = saveService.loadGame(fileName);
+        try {
+            if (selectedFileIndex >= 0 && selectedFileIndex < saveFiles.length) {
+                String fileName = saveFiles[selectedFileIndex];
+                GameSave save = saveService.loadGame(fileName);
 
-            if (save != null) {
-                // Set character data in game controller
-                gameController.loadCharacter(save.getCharacter());
+                if (save != null) {
+                    Set<String> words = saveService.loadLearnedWords(save.getCharacter(), save.getWordFilePath());
 
-                // THIS IS CRUCIAL: Mark as created to initialize renderers
-                gameController.setCreated(true);
+                    // Set character data in game controller
+                    gameController.loadCharacter(save.getCharacter());
+                    gameController.getCharacter().setLearnedWords(words);
 
-                // Start the game
-                gameController.setState(GameState.EXPLORING);
+                    // THIS IS CRUCIAL: Mark as created to initialize renderers
+                    gameController.setCreated(true);
 
-                System.out.println("Game loaded: " + fileName);
-            } else {
-                System.out.println("Failed to load save: " + fileName);
+                    // Start the game
+                    gameController.setState(GameState.EXPLORING);
+
+                    System.out.println("Game loaded: " + fileName);
+                } else {
+                    System.out.println("Failed to load save: " + fileName);
+                }
             }
+        } catch (Exception e) {
+                this.title = "Error loading save file";
+                System.out.println("Error loading save file: " + e.getMessage());
         }
     }
+
 
     public void dispose() {
         backgroundImage.dispose();

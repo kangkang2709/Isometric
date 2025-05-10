@@ -19,12 +19,14 @@ import ctu.game.isometric.model.entity.Enemy;
 import ctu.game.isometric.model.game.GameState;
 import ctu.game.isometric.model.world.IsometricMap;
 import ctu.game.isometric.util.EnemyLoader;
+import ctu.game.isometric.util.WordNetValidator;
 import ctu.game.isometric.util.WordValidator;
 import ctu.game.isometric.view.renderer.ExploringUI;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class GameController {
-
-
     private IsometricGame game;
     private Character character;
     private IsometricMap map;
@@ -46,9 +48,8 @@ public class GameController {
     boolean isCreated = false;
     private ExploringUI exploringUI;
 
-    private WordValidator wordValidator;
     private EffectManager effectManager;
-
+    private WordNetValidator wordNetValidator;
 
 
     public GameController(IsometricGame game) {
@@ -65,9 +66,10 @@ public class GameController {
         this.transitionController = new TransitionController();
         this.cutsceneController = new CutsceneController(this);
         loadGameController = new LoadGameController(this);
+//        this.wordValidator.loadDictionary();
+        this.wordNetValidator = new WordNetValidator();
+        this.wordNetValidator.loadDictionary();
 
-        this.wordValidator = new WordValidator();
-        this.wordValidator.loadDictionary();
 
         effectManager = new EffectManager("effects");
         effectManager.loadEffect("attack", "effects/attack.p");
@@ -81,14 +83,23 @@ public class GameController {
 
 
     public void loadCharacter(Character character) {
-        // Create a new character instance with the same data
+        // Save reference to the current character's learned words if it exists
+        Set<String> currentLearnedWords = null;
+        if (this.character != null && this.character.getLearnedWords() != null) {
+            currentLearnedWords = new HashSet<>(this.character.getLearnedWords());
+        }
+
+        // Load the saved character
         this.character = character;
-        this.isCreated= true;
+        this.isCreated = true;
+
         // Re-initialize map and other references
         character.setGameMap(this.getMap());
 
-        // Initialize other game state as needed
-        // ...
+        // Now load the saved dictionary from file
+        if (character.getWordFilePath() != null) {
+
+        }
     }
 
     public void update(float delta) {
@@ -123,12 +134,11 @@ public class GameController {
                 settingsMenuController.update(delta);
                 break;
             case CUTSCENE:
-                if (character.getFlags() != null && !character.getFlags().isEmpty()) {
-                    String flags = character.getFlags().get(0);
-                    if (flags != null && flags == "intro" && getTransitionController().isTransitioning() == false) {
-                        startCutscene(flags);
-                        character.getFlags().remove(0);
-                    }
+                if (character.getFlags() != null) {
+                    if (character.getFlags().isEmpty())
+                        startCutscene("intro");
+//                    if (flags != null && flags != "intro" && getTransitionController().isTransitioning() == false) {
+//                    }
                 }
                 cutsceneController.update(delta);
                 break;
@@ -185,6 +195,7 @@ public class GameController {
         setPreviousState(currentState);
         setState(GameState.CUTSCENE);
         cutsceneController.loadCutscene(cutsceneName);
+        character.getFlags().add(cutsceneName);
     }
 
     public CutsceneController getCutsceneController() {
@@ -547,19 +558,19 @@ public class GameController {
         this.inputController = inputController;
     }
 
-    public WordValidator getWordValidator() {
-        return wordValidator;
-    }
-
-    public void setWordValidator(WordValidator wordValidator) {
-        this.wordValidator = wordValidator;
-    }
-
     public EffectManager getEffectManager() {
         return effectManager;
     }
 
     public void setEffectManager(EffectManager effectManager) {
         this.effectManager = effectManager;
+    }
+
+    public WordNetValidator getWordNetValidator() {
+        return wordNetValidator;
+    }
+
+    public void setWordNetValidator(WordNetValidator wordNetValidator) {
+        this.wordNetValidator = wordNetValidator;
     }
 }

@@ -18,6 +18,7 @@ import ctu.game.isometric.model.game.Items;
 import ctu.game.isometric.model.game.Reward;
 import ctu.game.isometric.model.game.LetterGrid;
 import ctu.game.isometric.util.RewardLoader;
+import ctu.game.isometric.util.WordNetValidator;
 import ctu.game.isometric.util.WordScorer;
 import ctu.game.isometric.util.WordValidator;
 
@@ -30,7 +31,6 @@ public class GameplayController {
     // Core components
     private final GameController gameController;
     private final LetterGrid letterGrid;
-    private WordValidator wordValidator;
     private final Random random = new Random();
 
     // Game state
@@ -75,14 +75,14 @@ public class GameplayController {
     private int rewardID = 1;
 
     private EffectManager effectManager;
+    private WordNetValidator wordValidator;
 
     public GameplayController(GameController gameController) {
         this.gameController = gameController;
         this.letterGrid = new LetterGrid();
 
-        this.wordValidator = gameController.getWordValidator();
         this.effectManager = gameController.getEffectManager();
-
+        this.wordValidator = gameController.getWordNetValidator();
         this.playerName = gameController.getCharacter().getName();
         initializeUI();
     }
@@ -365,8 +365,9 @@ public class GameplayController {
                 drawCenteredText(batch, regularFont, "Spell: " + currentWord, viewport.getWorldWidth()/2, 600, Color.WHITE);
 
                 int potentialScore = WordScorer.getTotalScore(currentWord);
-                if(wordValidator.isValidWord(currentWord)) {
-                    drawCenteredText(batch, regularFont, "Power: " + (potentialScore * wordDamageMultiplier),
+
+                if (gameController.getCharacter().getLearnedWords().contains(currentWord.toUpperCase()) || wordValidator.isValidWord(currentWord)) {
+                    drawCenteredText(batch, regularFont, wordValidator.getWordMeaning(currentWord),
                             viewport.getWorldWidth()/2, 570, Color.WHITE);
                 }
             }
@@ -552,10 +553,10 @@ public class GameplayController {
             return false;
         }
 
-        if (wordValidator.isValidWord(word)) {
+        if (gameController.getCharacter().getLearnedWords().contains(word.toUpperCase()) || wordValidator.isValidWord(word)) {
             int points = WordScorer.getTotalScore(word);
-            currentScore += points;
-            highScore = Math.max(currentScore, highScore);
+
+            gameController.getCharacter().addLearnedWord(word);
 
             if (isCombatMode && isPlayerTurn) {
                 float damage = points * wordDamageMultiplier;

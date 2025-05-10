@@ -7,6 +7,7 @@ public class GameSave {
     private Character character;
     private Date saveDate;
     private String saveName;
+    private String wordFilePath;
 
     // Getters and setters
     public Character getCharacter() {
@@ -31,5 +32,13 @@ public class GameSave {
 
     public void setSaveName(String saveName) {
         this.saveName = saveName;
+    }
+
+    public String getWordFilePath() {
+        return wordFilePath;
+    }
+
+    public void setWordFilePath(String wordFilePath) {
+        this.wordFilePath = wordFilePath;
     }
 }

@@ -9,6 +9,8 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.game.GameSave;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -27,41 +29,90 @@ public class GameSaveService {
         objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
 
         // Create save directory if it doesn't exist
-        FileHandle dir = Gdx.files.local(SAVE_DIRECTORY);
+        FileHandle dir = Gdx.files.local("saves/dictionary/");
         if (!dir.exists()) {
             dir.mkdirs();
         }
     }
 
+
+
+
+
     public boolean saveGame(Character character, String saveName) {
         try {
             maintainSaveLimit();
-            // Create a clean character copy without LibGDX objects
+
+            // Create a serializable copy of the character
             Character saveCharacter = createSerializableCopy(character);
 
-            // Create and populate GameSave
+            // Create GameSave object
             GameSave gameSave = new GameSave();
             gameSave.setCharacter(saveCharacter);
             gameSave.setSaveDate(new Date());
+            gameSave.setWordFilePath("saves/dictionary/" + character.getWordFilePath() + ".json");
 
-            // Generate filename
-            String filename = saveName.isEmpty() ?
-                    new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date()) :
-                    saveName;
+            // Generate file name
+            String baseName = character.getName();
+            String filename;
 
+            FileHandle existingSave = null;
+            FileHandle dir = Gdx.files.local(SAVE_DIRECTORY);
+
+            // Find existing save file with the same character name
+            for (FileHandle file : dir.list()) {
+                if (file.name().startsWith(baseName + "_") && file.name().endsWith(".json")) {
+                    existingSave = file;
+                    break;
+                }
+            }
+
+            filename = (existingSave != null) ? existingSave.name() : saveName;
+            if (filename.isEmpty()) {
+                filename = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date());
+            }
             if (!filename.toLowerCase().endsWith(".json")) {
                 filename += ".json";
             }
 
+            // Save JSON file
             FileHandle file = Gdx.files.local(SAVE_DIRECTORY + filename);
             file.writeString(objectMapper.writeValueAsString(gameSave), false);
 
+            // Save learned words if available
+            saveLearnedWords(character);
+
+            // Log success
             Gdx.app.log("GameSaveService", "Game saved to: " + file.path());
             return true;
+
         } catch (Exception e) {
             Gdx.app.error("GameSaveService", "Error saving game: " + e.getMessage());
             e.printStackTrace();
             return false;
+        }
+    }
+
+    public void saveLearnedWords(Character character) {
+        try {
+            if (character.getWordFilePath() == null) {
+                Gdx.app.error("GameSaveService", "Word file path is null. Skipping save.");
+                return;
+            }
+
+            Set<String> combinedWords = new HashSet<>();
+
+            if (character.getLearnedWords() != null) {
+                combinedWords.addAll(character.getLearnedWords());
+            }
+            if (character.getNewlearneWords() != null) {
+                combinedWords.addAll(character.getNewlearneWords());
+            }
+
+            FileHandle file = Gdx.files.local("saves/dictionary/" + character.getWordFilePath() + ".json");
+            file.writeString(objectMapper.writeValueAsString(combinedWords), false);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -131,10 +182,37 @@ public class GameSaveService {
             copy.setStatus(statusCopy);
         }
 
+        copy.setWordFilePath(original.getWordFilePath());
+
 
         return copy;
     }
+    public Set<String> loadLearnedWords(Character character,String fileName) {
+        try {
+            if (character.getWordFilePath() == null) {
+                Gdx.app.error("GameSaveService", "Word file path is null. Cannot load dictionary.");
+                return new HashSet<>();
+            }
 
+            FileHandle file = Gdx.files.local(fileName);
+
+            if (!file.exists()) {
+                Gdx.app.log("GameSaveService", "Dictionary file does not exist: " + file.path());
+                return new HashSet<>();
+            }
+
+            String json = file.readString();
+            Set<String> learnedWords = objectMapper.readValue(json,
+                    objectMapper.getTypeFactory().constructCollectionType(Set.class, String.class));
+
+            Gdx.app.log("GameSaveService", "Loaded " + learnedWords.size() + " words from dictionary");
+            return learnedWords;
+        } catch (Exception e) {
+            Gdx.app.error("GameSaveService", "Error loading dictionary: " + e.getMessage());
+            e.printStackTrace();
+            return new HashSet<>();
+        }
+    }
     public GameSave loadGame(String filename) {
         if (filename == null || filename.isEmpty()) {
             throw new IllegalArgumentException("Filename cannot be null or empty");

@@ -242,6 +242,9 @@ public class CharacterCreationController {
         // Update character with name and gender
         Character character = gameController.getCharacter();
         character.setName(playerName);
+
+        character.setWordFilePath(playerName+"_dictionary");
+
         character.setGender(Gender.valueOf(playerGender));
         // Signal that character has been created
         gameController.setCreated(true);
