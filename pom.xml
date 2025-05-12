@@ -1,18 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.4.4</version>
-		<relativePath/> <!-- lookup parent from repository -->
-	</parent>
 	<groupId>ctu.game</groupId>
 	<artifactId>isometric</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>isometric</name>
-	<description>Demo project for Spring Boot</description>
+	<description>Game demo</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -30,10 +24,6 @@
 		<java.version>17</java.version>
 	</properties>
 	<dependencies>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>com.badlogicgames.gdx</groupId>
 			<artifactId>gdx</artifactId>
@@ -62,14 +52,12 @@
 			<classifier>natives-desktop</classifier>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
-		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
 			<version>2.13.3</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/net.didion/jwnl -->
-		<!-- https://mvnrepository.com/artifact/net.sf.jwordnet/jwnl -->
 		<dependency>
 			<groupId>edu.mit</groupId>
 			<artifactId>jwi</artifactId>
@@ -79,10 +67,7 @@
 
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
+			<!-- Loại bỏ plugin Spring Boot -->
 		</plugins>
 		<resources>
 			<resource>
@@ -90,5 +75,4 @@
 			</resource>
 		</resources>
 	</build>
-
 </project>
