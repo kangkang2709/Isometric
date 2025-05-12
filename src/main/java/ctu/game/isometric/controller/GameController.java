@@ -72,7 +72,7 @@ public class GameController {
 
 
         effectManager = new EffectManager("effects");
-        effectManager.loadEffect("attack", "effects/attack.p");
+        this.loadEffects();
 
         this.gameplayController = new GameplayController(this);
 
@@ -81,6 +81,10 @@ public class GameController {
 
     }
 
+    public void loadEffects() {
+        effectManager.loadEffect("attack", "effects/blood.p");
+        effectManager.loadEffect("rain", "effects/rain.p");
+    }
 
     public void loadCharacter(Character character) {
         // Save reference to the current character's learned words if it exists
@@ -516,6 +520,13 @@ public class GameController {
         menuController.dispose();
         settingsMenuController.dispose();
         mainMenuController.dispose();
+        characterCreationController.dispose();
+        gameplayController.dispose();
+        loadGameController.dispose();
+        cutsceneController.dispose();
+        effectManager.dispose();
+        exploringUI.dispose();
+        effectManager.dispose();
     }
 
     public OrthographicCamera getCamera() {

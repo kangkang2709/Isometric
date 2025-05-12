@@ -35,31 +35,45 @@ public class WordNetValidator {
         });
     }
 
-    public synchronized void loadDictionary() {
-        if (dictionaryLoaded) return;
+//    public synchronized void loadDictionary() {
+//        if (dictionaryLoaded) return;
+//
+//        try {
+//            // Get the dictionary directory from local files
+//            FileHandle dictDir = Gdx.files.local("dict");
+//            URL dictionaryURL;
+//
+//            if (dictDir.exists() && dictDir.isDirectory()) {
+//                dictionaryURL = dictDir.file().toURI().toURL();
+//            } else {
+//                Gdx.app.error("WordNetValidator", "Dictionary folder not found at: " + dictDir.path());
+//                return;
+//            }
+//
+//            // Create and open the dictionary
+//            dictionary = new Dictionary(dictionaryURL);
+//            dictionary.open();
+//            dictionaryLoaded = true;
+//            Gdx.app.log("WordNetValidator", "WordNet dictionary loaded successfully");
+//
+//        } catch (IOException e) {
+//            Gdx.app.error("WordNetValidator", "Failed to load WordNet dictionary", e);
+//        }
+//    }
+public synchronized void loadDictionary() {
+    if (dictionaryLoaded) return;
 
-        try {
-            // Get the dictionary directory from local files
-            FileHandle dictDir = Gdx.files.local("dict");
-            URL dictionaryURL;
-
-            if (dictDir.exists() && dictDir.isDirectory()) {
-                dictionaryURL = dictDir.file().toURI().toURL();
-            } else {
-                Gdx.app.error("WordNetValidator", "Dictionary folder not found at: " + dictDir.path());
-                return;
-            }
-
-            // Create and open the dictionary
-            dictionary = new Dictionary(dictionaryURL);
-            dictionary.open();
-            dictionaryLoaded = true;
-            Gdx.app.log("WordNetValidator", "WordNet dictionary loaded successfully");
-
-        } catch (IOException e) {
-            Gdx.app.error("WordNetValidator", "Failed to load WordNet dictionary", e);
-        }
+    try {
+        String wordNetPath = "src/main/resources/game/dict";
+        URL url = new File(wordNetPath).toURI().toURL();
+        dictionary = new Dictionary(url);
+        dictionary.open();
+        dictionaryLoaded = true;
+        Gdx.app.log("WordNetValidator", "WordNet dictionary loaded");
+    } catch (IOException e) {
+        Gdx.app.error("WordNetValidator", "Failed to load WordNet dictionary", e);
     }
+}
 
 
 

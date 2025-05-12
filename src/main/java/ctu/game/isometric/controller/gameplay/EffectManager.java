@@ -1,6 +1,7 @@
 package ctu.game.isometric.controller.gameplay;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.g2d.ParticleEffectPool;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -8,26 +9,56 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.ObjectMap;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class EffectManager implements Disposable {
     private final ObjectMap<String, ParticleEffectPool> effectPools = new ObjectMap<>();
     private final Array<ParticleEffectPool.PooledEffect> activeEffects = new Array<>();
     private final ObjectMap<ParticleEffectPool.PooledEffect, EffectData> effectDataMap = new ObjectMap<>();
     private final Array<ScheduledEffect> scheduledEffects = new Array<>();
     private final String imageDir;
+    Map<String, Sound> effectSound;
 
     public EffectManager(String imageDir) {
         this.imageDir = imageDir;
+        this.effectSound = new HashMap<>();
+        this.loadSoundEffects();
+    }
+
+    public void loadSoundEffects() {
+
+    }
+
+    public void loadSound(String effectName, String soundDir) {
+        Sound sound = Gdx.audio.newSound(Gdx.files.internal(soundDir + "/" + effectName + ".ogg"));
+        effectSound.put(effectName, sound);
     }
 
     public void loadEffect(String effectName, String effectPath) {
-        ParticleEffect prototype = new ParticleEffect();
-        prototype.load(Gdx.files.internal(effectPath), Gdx.files.internal(imageDir));
-        effectPools.put(effectName, new ParticleEffectPool(prototype, 5, 30));
+        try {
+            ParticleEffect prototype = new ParticleEffect();
+            prototype.load(Gdx.files.internal(effectPath), Gdx.files.internal(imageDir));
+            effectPools.put(effectName, new ParticleEffectPool(prototype, 5, 30));
+            loadSound(effectName, "effects/sound");
+        } catch (Exception e) {
+            Gdx.app.error("EffectManager", "Error loading effect: " + effectPath, e);
+        }
     }
 
     // Spawn effect immediately
     public void spawnEffect(String effectName, float x, float y) {
-        spawnEffect(effectName, x, y, 1.0f);
+        spawnEffect(effectName, x, y, 2.0f);
+        playSound(effectName);
+    }
+
+    public void playSound(String effectName) {
+        Sound sound = effectSound.get(effectName);
+        if (sound != null) {
+            sound.play();
+        } else {
+            Gdx.app.debug("EffectManager", "Sound not found for effect: " + effectName);
+        }
     }
 
     // Spawn effect with specific duration
@@ -70,7 +101,7 @@ public class EffectManager implements Disposable {
         for (ParticleEffectPool.PooledEffect effect : activeEffects) {
             float dx = effect.getEmitters().first().getX() - x;
             float dy = effect.getEmitters().first().getY() - y;
-            float dist = dx*dx + dy*dy;
+            float dist = dx * dx + dy * dy;
 
             if (dist < minDist) {
                 minDist = dist;
@@ -136,6 +167,10 @@ public class EffectManager implements Disposable {
             pool.clear();
         }
         effectPools.clear();
+        for (Sound sound : effectSound.values()) {
+            sound.dispose();
+        }
+        effectSound.clear();
     }
 
     // Helper classes for tracking effect data

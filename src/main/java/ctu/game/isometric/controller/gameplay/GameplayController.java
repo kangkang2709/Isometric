@@ -180,6 +180,9 @@ public class GameplayController {
     private void spawnAttackEffect(float x, float y) {
         effectManager.spawnEffect("attack", x,y);
     }
+    private void spawnRainEffect(float x, float y) {
+        effectManager.spawnEffect("rain", x,y);
+    }
 
     private void updateCombat(float delta) {
         // Process enemy turn
@@ -367,7 +370,7 @@ public class GameplayController {
         drawCombatCharacter(batch, enemyName, (float)enemyHealth, (float) enemyMaxHealth, viewport.getWorldWidth() - 300, 600, false);
 
         // Draw combat log
-        drawMessageBox(batch, combatLog, 50, 50, 300, 150);
+        drawMessageBox(batch, combatLog, 900, 50, 300, 150);
 
 
 

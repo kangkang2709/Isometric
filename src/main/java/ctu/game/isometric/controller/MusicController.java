@@ -65,7 +65,7 @@ public class MusicController {
     }
 
     public void setVolume(float volume) {
-        this.volume = Math.max(0, Math.min(1, volume));
+        this.volume = Math.max(0, Math.min(0, volume));
 
         if (currentTrackId != null) {
             Music currentTrack = musicTracks.get(currentTrackId);
