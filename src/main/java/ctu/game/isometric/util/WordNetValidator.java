@@ -34,7 +34,7 @@ public class WordNetValidator {
             }
         });
     }
-
+//for build jar
 //    public synchronized void loadDictionary() {
 //        if (dictionaryLoaded) return;
 //
@@ -60,6 +60,8 @@ public class WordNetValidator {
 //            Gdx.app.error("WordNetValidator", "Failed to load WordNet dictionary", e);
 //        }
 //    }
+    
+//    for dev
 public synchronized void loadDictionary() {
     if (dictionaryLoaded) return;
 
