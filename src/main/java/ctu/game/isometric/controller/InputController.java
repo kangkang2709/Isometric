@@ -137,6 +137,10 @@ public class InputController extends InputAdapter {
         }
 
 
+        if (state == GameState.GAMEPLAY) {
+            return gameController.getGameplayController().handleCombatClick(screenX,screenY);
+        }
+
         return false;
     }
 

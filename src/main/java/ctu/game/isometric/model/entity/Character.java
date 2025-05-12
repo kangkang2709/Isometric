@@ -9,6 +9,7 @@ import ctu.game.isometric.model.world.IsometricMap;
 import ctu.game.isometric.util.ItemLoader;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Character {
 
@@ -97,6 +98,9 @@ public class Character {
         if (amount < 0) {
             throw new IllegalArgumentException("Healing amount cannot be negative");
         }
+        if (maxHealth < 0) {
+            throw new IllegalStateException("Maximum health cannot be negative");
+        }
         this.health = Math.min(this.health + amount, maxHealth);
     }
 
@@ -131,19 +135,52 @@ public class Character {
         if (item == null || item.getItemName() == null) {
             throw new IllegalArgumentException("Item or item name cannot be null");
         }
+        if (items == null || !items.containsKey(item.getItemName())) {
+            throw new IllegalArgumentException("Item not found in inventory");
+        }
+        if (items.get(item.getItemName()) <= 0) {
+            throw new IllegalArgumentException("No items left to use");
+        }
+
+        int currentCount = items.get(item.getItemName());
+        if (currentCount > 1) {
+            items.put(item.getItemName(), currentCount - 1);
+        } else {
+            items.remove(item.getItemName());
+        }
+
         switch (item.getItemEffect()) {
             case "heal":
                 healing(item.getValue());
                 break;
             case "buff":
-                buff(item.getItemEffect(), item.getValue());
+                buff("strength", item.getValue());
                 break;
             case "debuff":
-                debuff(item.getItemEffect(), item.getValue());
+                debuff("curse", item.getValue());
                 break;
             default:
                 throw new IllegalArgumentException("Invalid item effect");
         }
+    }
+
+     public void deleteItem(Items item) {
+        if (item == null || item.getItemName() == null) {
+            throw new IllegalArgumentException("Item or item name cannot be null");
+        }
+        if (items == null || !items.containsKey(item.getItemName())) {
+            throw new IllegalArgumentException("Item not found in inventory");
+        }
+        items.remove(item.getItemName());
+    }
+
+    public Map<String, Integer> getItemsWithoutDebuff() {
+        return items.entrySet().stream()
+                .filter(entry -> {
+                    Items item = ItemLoader.getItemByName(entry.getKey());
+                    return item != null && !item.getItemEffect().equals("debuff");
+                })
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     public void addLearnedWord(String word) {

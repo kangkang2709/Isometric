@@ -25,6 +25,8 @@ public class ItemLoader {
                 item.setItemName(itemJson.getString("itemName"));
                 item.setItemDescription(itemJson.getString("itemDescription"));
                 item.setTexturePath(itemJson.getString("texturePath"));
+                item.setItemEffect(itemJson.getString("itemEffect"));
+                item.setValue(itemJson.getFloat("value", 0.0f));
 
                 items.put(item.getItemID(), item);
             }
@@ -48,8 +50,20 @@ public class ItemLoader {
         item.setItemName(template.getItemName());
         item.setItemDescription(template.getItemDescription());
         item.setTexturePath(template.getTexturePath());
-
+        item.setItemEffect(template.getItemEffect());
+        item.setValue(template.getValue());
         return item;
+    }
+
+    public static Items getItemByName(String itemName) {
+        if (!initialized) initialize();
+
+        for (Items item : items.values()) {
+            if (item.getItemName().equalsIgnoreCase(itemName)) {
+                return item;
+            }
+        }
+        return createDefaultItem();
     }
 
     private static Items createDefaultItem() {
