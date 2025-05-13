@@ -14,6 +14,7 @@ import ctu.game.isometric.IsometricGame;
 import ctu.game.isometric.controller.cutscene.CutsceneController;
 import ctu.game.isometric.controller.gameplay.EffectManager;
 import ctu.game.isometric.controller.gameplay.GameplayController;
+import ctu.game.isometric.controller.quiz.QuizController;
 import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.entity.Enemy;
 import ctu.game.isometric.model.game.GameState;
@@ -50,6 +51,7 @@ public class GameController {
 
     private EffectManager effectManager;
     private WordNetValidator wordNetValidator;
+    private QuizController quizController;
 
 
     public GameController(IsometricGame game) {
@@ -75,6 +77,7 @@ public class GameController {
         this.loadEffects();
 
         this.gameplayController = new GameplayController(this);
+        this.quizController = new QuizController(this);
 
         this.musicController.initialize();
         this.musicController.playMusicForState(GameState.MAIN_MENU);
@@ -133,7 +136,9 @@ public class GameController {
             case LOAD_GAME:
                 loadGameController.update(delta);
                 break;
-
+            case QUIZZES:
+                quizController.update(delta);
+                break;
             case SETTINGS:
                 settingsMenuController.update(delta);
                 break;
@@ -150,6 +155,13 @@ public class GameController {
         }
 
     }
+
+    public void startQuiz() {
+        setPreviousState(currentState);
+        setState(GameState.QUIZZES);
+        quizController.startQuiz();
+    }
+
 
     public TransitionController getTransitionController() {
         return transitionController;
@@ -369,10 +381,11 @@ public class GameController {
                     if (objGridX == gridX && objGridY == gridY) {
                         properties = object.getProperties();
                          if (properties.containsKey("event")){
-                            currentEventType = properties.get("event", String.class);
-                            currentEventX = gridX;
-                            currentEventY = gridY;
-                            hasActiveEvent = true;
+//                            currentEventType = properties.get("event", String.class);
+//                            currentEventX = gridX;
+//                            currentEventY = gridY;
+//                            hasActiveEvent = true;
+                             startQuiz();
                         }
                         else properties = null;
 //                        handleEventProperties(object.getProperties(), gridX, gridY);
@@ -527,8 +540,15 @@ public class GameController {
         effectManager.dispose();
         exploringUI.dispose();
         effectManager.dispose();
+        if (quizController != null) {
+            quizController.dispose();
+        }
     }
 
+
+    public QuizController getQuizController() {
+        return quizController;
+    }
     public OrthographicCamera getCamera() {
         return camera;
     }

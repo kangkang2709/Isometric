@@ -38,7 +38,23 @@ public class WordScorer {
         return bonus;
     }
 
+
     public static int getTotalScore(String word) {
         return calculateScore(word) + calculateBonusPoints(word);
+    }
+
+
+    public static int calculateScore(boolean isCorrect, int difficulty, long timeTakenMillis) {
+        if (!isCorrect) {
+            return 0; // No points for incorrect answers
+        }
+
+        // Base score is 10 points per difficulty level
+        int baseScore = difficulty * 10;
+
+        // Time bonus: faster answers get more points
+        int timeBonus = (int) Math.max(0, 1000 - timeTakenMillis / 10);
+
+        return baseScore + timeBonus;
     }
 }

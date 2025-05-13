@@ -7,6 +7,7 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.TimeUtils;
+import ctu.game.isometric.controller.quiz.QuizController;
 import ctu.game.isometric.model.game.GameState;
 import ctu.game.isometric.view.renderer.DialogUI;
 import ctu.game.isometric.view.renderer.MapRenderer;
@@ -79,6 +80,8 @@ public class InputController extends InputAdapter {
                 return gameController.getLoadGameController().handleInput(keycode);
             case GAMEPLAY:
                 return handleGamePlayInput(keycode);
+            case QUIZZES:
+                return handleQuizInput(keycode);
             case CHARACTER_CREATION:
                 return gameController.getCharacterCreationController().handleTextInput(keycode);
             default:
@@ -223,6 +226,29 @@ public class InputController extends InputAdapter {
         return moved;
     }
 
+    private boolean handleQuizInput(int keycode) {
+            // Handle result screen inputs
+        QuizController quizController = gameController.getQuizController();
+
+        if (keycode == Input.Keys.ENTER) {
+            if (quizController.isShowingResults()) {
+                quizController.handleNextQuiz();
+            } else {
+                quizController.submitAnswer();
+            }
+            return true;
+        }
+        else if (keycode == Input.Keys.BACKSPACE) {
+            quizController.backspace();
+            return true;
+        }
+        else if (keycode == Input.Keys.ESCAPE) {
+            quizController.exitQuiz();
+            return true;
+        }
+    return false;
+    }
+
     private boolean handleCutSceneInput(int keycode) {
 //        if (keycode == Keys.ENTER || keycode == Keys.SPACE) {
 //            gameController.getCutsceneController().nextPage();
@@ -328,6 +354,19 @@ public class InputController extends InputAdapter {
         }
     }
 
+    @Override
+    public boolean keyTyped(char character) {
+        if (gameController.getCurrentState() == GameState.QUIZZES) {
+            QuizController quizController = gameController.getQuizController();
+
+            // Only process alphanumeric characters when answering questions
+            if (!quizController.isShowingResults() && Character.isLetterOrDigit(character)) {
+                quizController.processInput(character);
+                return true;
+            }
+        }
+        return false;
+    }
 
     @Override
     public boolean scrolled(float amountX, float amountY) {

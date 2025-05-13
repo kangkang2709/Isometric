@@ -34,6 +34,8 @@ public class Character {
     private float moveSpeed = 2.5f; // Grid cells per second
     private static final float DIAGONAL_THRESHOLD = 0.3f; // For determining diagonal movement
 
+    private float score; // Score for the character
+
     public static final String[] VALID_DIRECTIONS = {
             "up", "down", "left", "right", "left_down", "right_down", "left_up", "right_up"
     };
@@ -54,6 +56,7 @@ public class Character {
         this.newlearneWords = new HashSet<>();
         this.learnedWords = new HashSet<>();
         this.learnedWords.add("HELLO");
+        this.score=0;
     }
 
 
@@ -71,8 +74,10 @@ public class Character {
 
         this.learnedWords = new HashSet<>();
         this.newlearneWords = new HashSet<>();
-
         this.learnedWords.add("HELLO");
+
+        this.score=0;
+
     }
 
     // Existing getters/setters...

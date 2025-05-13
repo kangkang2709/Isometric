@@ -10,5 +10,6 @@ public enum GameState {
     COMBAT,
     CHARACTER_CREATION,
     GAMEPLAY,// Combat state
-    LOAD_GAME
+    LOAD_GAME,
+    QUIZZES, // Quiz state
 }
