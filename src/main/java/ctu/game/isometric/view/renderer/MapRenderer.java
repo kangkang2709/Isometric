@@ -205,6 +205,9 @@ public class MapRenderer {
             case "cutscene":
                 buttonText = "Watch";
                 break;
+            case "quiz":
+                buttonText = "Talk";
+                break;
             case "teleport":
                 buttonText = "Enter";
                 break;

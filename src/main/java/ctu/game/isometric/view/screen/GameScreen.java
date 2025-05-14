@@ -80,6 +80,10 @@ public class GameScreen implements Screen {
 //            exploringUI.setCharacter(gameController.getCharacter());
             // Reset dialog UI
 
+            if (dialogUI != null && gameController.getDialogController().isDialogActive()) {
+                dialogUI.render();
+            }
+
             dialogUI = new DialogUI(gameController.getDialogController());
             gameController.getInputController().setDialogUI(dialogUI);
 
@@ -122,12 +126,11 @@ public class GameScreen implements Screen {
 
                     // Render the UI on top
                     if (exploringUI != null) exploringUI.render();
-
+                    if (dialogUI != null && gameController.getDialogController().isDialogActive()) {
+                        dialogUI.render();
+                    }
                     // Begin the batch again for any subsequent rendering
                     batch.begin();
-                    break;
-                case DIALOG:
-                    dialogUI.render();
                     break;
                 case CUTSCENE:
                     gameController.getCutsceneController().render(batch);

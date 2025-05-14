@@ -19,11 +19,8 @@ public class InputController extends InputAdapter {
     private DialogUI dialogUI;
     private float moveCooldown = 0;
     private final float MOVE_DELAY = 0.42f; // seconds
-    private static final long INPUT_DELAY = 700; // milliseconds
-    private long lastInputTime = 0;
     private MapRenderer mapRenderer;
     private boolean debugLog = true;
-
 
 
     private int[] toIsometricGrid(float worldX, float worldY) {
@@ -32,8 +29,8 @@ public class InputController extends InputAdapter {
         float tileHeight = mapRenderer.getMap().getTileHeight();
 
         // These formulas were swapped - fix the inverse isometric transformation
-        float gridX = (worldX / (tileWidth/2) - worldY / (tileHeight/2)) / 2;
-        float gridY = (worldX / (tileWidth/2) + worldY / (tileHeight/2)) / 2;
+        float gridX = (worldX / (tileWidth / 2) - worldY / (tileHeight / 2)) / 2;
+        float gridY = (worldX / (tileWidth / 2) + worldY / (tileHeight / 2)) / 2;
 
 //        if (debugLog) {
 //            Gdx.app.log("Conversion", "World: " + worldX + "," + worldY +
@@ -75,7 +72,10 @@ public class InputController extends InputAdapter {
             case CUTSCENE:
                 return handleCutSceneInput(keycode);
             case EXPLORING:
-                return handleExploringInput(keycode);
+                if (gameController.getDialogController().isDialogActive())
+                    return handleDialogInput(keycode);
+                else
+                    return handleExploringInput(keycode);
             case LOAD_GAME:
                 return gameController.getLoadGameController().handleInput(keycode);
             case GAMEPLAY:
@@ -127,7 +127,6 @@ public class InputController extends InputAdapter {
                 // Only move if the target tile is walkable
                 moveCharacter(dx, dy);
                 moveCooldown = MOVE_DELAY;
-                lastInputTime = TimeUtils.millis();
                 return true;
             }
         }
@@ -141,7 +140,7 @@ public class InputController extends InputAdapter {
 
 
         if (state == GameState.GAMEPLAY) {
-            return gameController.getGameplayController().handleCombatClick(screenX,screenY);
+            return gameController.getGameplayController().handleCombatClick(screenX, screenY);
         }
 
         return false;
@@ -170,19 +169,20 @@ public class InputController extends InputAdapter {
         boolean moved = false;
 
 
-        if(gameController.hasActiveEvent()) {
-           switch (keycode) {
-               case Keys.ENTER, Keys.SPACE -> {
-                   gameController.handleEventProperties(gameController.getProperties(),gameController.getCurrentEventType());
-               }
-               default -> {}
-           }
+        if (gameController.hasActiveEvent()) {
+            switch (keycode) {
+                case Keys.ENTER, Keys.SPACE -> {
+                    gameController.handleEventProperties(gameController.getProperties(), gameController.getCurrentEventType());
+                }
+                default -> {
+                }
+            }
         }
 
         switch (keycode) {
 
             case Keys.ESCAPE -> gameController.setState(GameState.MENU);
-            case Keys.TAB ->  gameController.getExploringUI().toggleUI();
+            case Keys.TAB -> gameController.getExploringUI().toggleUI();
             case Keys.W, Keys.UP -> {
                 moveCharacter(1, 0);
                 moved = true;
@@ -215,19 +215,19 @@ public class InputController extends InputAdapter {
                 moveCharacter(-1, 1);
                 moved = true;
             }
-            default -> {}
+            default -> {
+            }
         }
 
         if (moved) {
             moveCooldown = MOVE_DELAY;
-            lastInputTime = TimeUtils.millis();
         }
 
         return moved;
     }
 
     private boolean handleQuizInput(int keycode) {
-            // Handle result screen inputs
+        // Handle result screen inputs
         QuizController quizController = gameController.getQuizController();
 
         if (keycode == Input.Keys.ENTER) {
@@ -237,16 +237,14 @@ public class InputController extends InputAdapter {
                 quizController.submitAnswer();
             }
             return true;
-        }
-        else if (keycode == Input.Keys.BACKSPACE) {
+        } else if (keycode == Input.Keys.BACKSPACE) {
             quizController.backspace();
             return true;
-        }
-        else if (keycode == Input.Keys.ESCAPE) {
+        } else if (keycode == Input.Keys.ESCAPE) {
             quizController.exitQuiz();
             return true;
         }
-    return false;
+        return false;
     }
 
     private boolean handleCutSceneInput(int keycode) {
@@ -254,20 +252,23 @@ public class InputController extends InputAdapter {
 //            gameController.getCutsceneController().nextPage();
 //            return true;
 //        }
-        switch (keycode){
+        switch (keycode) {
             case Keys.ESCAPE -> gameController.setState(GameState.MENU);
-            default -> {}
+            default -> {
+            }
         }
         return false;
     }
+
     private boolean handleGamePlayInput(int keycode) {
 //        if (keycode == Keys.ENTER || keycode == Keys.SPACE) {
 //            gameController.getCutsceneController().nextPage();
 //            return true;
 //        }
-        switch (keycode){
+        switch (keycode) {
             case Keys.ESCAPE -> gameController.setState(GameState.MENU);
-            default -> {}
+            default -> {
+            }
         }
         return false;
     }
@@ -277,8 +278,9 @@ public class InputController extends InputAdapter {
             case Keys.ESCAPE -> gameController.returnToPreviousState();
             case Keys.UP -> gameController.getMenuController().selectPreviousItem();
             case Keys.DOWN -> gameController.getMenuController().selectNextItem();
-            case Keys.ENTER,Keys.SPACE-> gameController.getMenuController().activateSelectedItem();
-            default -> {}
+            case Keys.ENTER, Keys.SPACE -> gameController.getMenuController().activateSelectedItem();
+            default -> {
+            }
         }
         return true;
     }
@@ -293,7 +295,8 @@ public class InputController extends InputAdapter {
             case Keys.LEFT -> gameController.getSettingsMenuController().adjustSelectedOption(false);
             case Keys.RIGHT -> gameController.getSettingsMenuController().adjustSelectedOption(true);
             case Keys.ENTER, Keys.SPACE -> gameController.getSettingsMenuController().activateSelectedItem();
-            default -> {}
+            default -> {
+            }
         }
         return true;
     }

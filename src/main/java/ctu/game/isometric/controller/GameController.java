@@ -114,15 +114,16 @@ public class GameController {
 
         switch (currentState) {
             case EXPLORING:
+                if(dialogController.isDialogActive()){
+                    return;
+                }
+                else {
                 inputController.updateCooldown(delta);
                 character.update(delta);
+                }
                 break;
             case CHARACTER_CREATION:
                 characterCreationController.update(delta);
-                break;
-            case DIALOG:
-                // Only update dialog controller when in dialog state
-                // dialogController.update(delta);
                 break;
             case GAMEPLAY:
                 gameplayController.update(delta);
@@ -381,11 +382,10 @@ public class GameController {
                     if (objGridX == gridX && objGridY == gridY) {
                         properties = object.getProperties();
                          if (properties.containsKey("event")){
-//                            currentEventType = properties.get("event", String.class);
-//                            currentEventX = gridX;
-//                            currentEventY = gridY;
-//                            hasActiveEvent = true;
-                             startQuiz();
+                            currentEventType = properties.get("event", String.class);
+                            currentEventX = gridX;
+                            currentEventY = gridY;
+                            hasActiveEvent = true;
                         }
                         else properties = null;
 //                        handleEventProperties(object.getProperties(), gridX, gridY);
@@ -418,14 +418,24 @@ public class GameController {
                     gameplayController.startCombat(enemy);
                     break;
 
-                case "cutscene":
-                    if (properties.containsKey("cutsceneId")) {
-                        String cutsceneId = properties.get("cutsceneId", String.class);
-                        startCutscene(cutsceneId);
+                case "dialog":
+                    if (properties != null) {
+                        String arcId = properties.get("arc", String.class);
+                        String sceneId = properties.get("scene", String.class);
+                        this.dialogController.startDialog(arcId, sceneId);
                     }
                     break;
-
-
+                case "quiz":
+                    System.out.println("Starting quiz...");
+                        dialogController.setOnDialogFinishedAction(() -> startQuiz());
+                        dialogController.startDialog("chapter_01", "scene_01");
+                    break;
+                case "cutscene":
+                    String cutsceneName = properties.get("cutscene", String.class);
+                    if (cutsceneName != null) {
+                        startCutscene(cutsceneName);
+                    }
+                    break;
             }
 
     }

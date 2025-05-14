@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="isometric" renderorder="right-down" width="500" height="500" tilewidth="64" tileheight="32" infinite="0" nextlayerid="7" nextobjectid="45">
+<map version="1.10" tiledversion="1.11.2" orientation="isometric" renderorder="right-down" width="500" height="500" tilewidth="64" tileheight="32" infinite="0" nextlayerid="7" nextobjectid="49">
  <tileset firstgid="1" name="tile3" tilewidth="64" tileheight="32" tilecount="1" columns="1">
   <image source="tiles/tile3.png" trans="ff00ff" width="64" height="32"/>
   <tile id="0">
@@ -559,6 +559,20 @@
     <property name="event" value="battle"/>
    </properties>
   </object>
+  <object id="45" x="320" y="15520" width="32" height="32">
+   <properties>
+    <property name="arc" value="chapter_02"/>
+    <property name="event" value="dialog"/>
+    <property name="scene" value="scene_01"/>
+   </properties>
+  </object>
+  <object id="46" gid="3" x="352" y="15552" width="49" height="60"/>
+  <object id="47" x="416" y="15584" width="32" height="32">
+   <properties>
+    <property name="event" value="quiz"/>
+   </properties>
+  </object>
+  <object id="48" gid="3" x="448" y="15616" width="49" height="60"/>
  </objectgroup>
  <layer id="4" name="terrain_layer" width="500" height="500">
   <data encoding="csv">

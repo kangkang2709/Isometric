@@ -70,7 +70,7 @@ public class DialogUI {
 
     private void loadCharacterImage(String imagePath) {
         // Don't reload the same image
-        imagePath = "visualnovel/character/" + imagePath;
+        imagePath = "characters/" + imagePath;
         if (imagePath != null && !imagePath.equals(currentImagePath)) {
             // Dispose previous image to avoid memory leaks
             if (characterImage != null) {

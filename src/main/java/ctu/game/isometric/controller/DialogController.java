@@ -18,7 +18,7 @@ public class DialogController {
     private String currentArcId;
     private String currentSceneId;
     private int currentDialogIndex = 0;
-
+    private Runnable onDialogFinishedAction;
     // Flag to track if we're showing choices or dialogues
     private boolean showingChoices = false;
 
@@ -35,6 +35,7 @@ public class DialogController {
             ObjectMapper mapper = new ObjectMapper();
             mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             storyData = mapper.readValue(Gdx.files.internal("story/arc1.json").reader(), StoryData.class);
+
             Gdx.app.log("Dialog", "Story data loaded successfully");
         } catch (IOException e) {
             Gdx.app.error("Dialog", "Failed to load story data", e);
@@ -194,10 +195,22 @@ public class DialogController {
         return showingChoices && !currentChoices.isEmpty();
     }
 
+
+
     public void endDialog() {
         gameController.setState(GameState.EXPLORING);
         dialogActive = false;
         showingChoices = false;
         currentChoices.clear();
+
+        // Execute the callback if it exists
+        if (onDialogFinishedAction != null) {
+            onDialogFinishedAction.run();
+            onDialogFinishedAction = null; // Reset after execution
+        }
+    }
+
+    public void setOnDialogFinishedAction(Runnable action) {
+        this.onDialogFinishedAction = action;
     }
 }
