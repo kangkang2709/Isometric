@@ -4,24 +4,20 @@
       "id": "chapter_01",
       "title": "Chương 1: Bóng Tối Sau Cánh Cửa",
       "description": "MC nhận được một tin nhắn bí ẩn yêu cầu đến căn hộ số 404, nơi bị bỏ hoang từ lâu.",
-      "conditions": {},
       "scenes": [
         {
           "id": "scene_01",
-          "background": "night_street.png",
           "music": "ominous.mp3",
-          "sound_effects": [],
+          "sound_effects": ["door_creak.mp3"],
           "dialogues": [
             {
               "character": "MC",
               "characterImage": "mc_default.png",
-              "expression": "thinking",
               "text": "Mình đã nhận được tin nhắn kỳ lạ... Người gửi yêu cầu mình đến căn hộ số 404 ngay lập tức."
             },
             {
               "character": "MC",
               "characterImage": "mc_default2.png",
-              "expression": "nervous",
               "text": "Không hiểu sao, nhưng mình có linh cảm không lành..."
             }
           ],
@@ -29,40 +25,37 @@
             {
               "text": "Tiếp tục tiến về căn hộ.",
               "next_scene": "scene_02",
-              "required_item": null,
-              "sanity_change": 0
+              "required_item": "tone",
+              "reward_item": null
             },
             {
               "text": " tiến về căn hộ.",
               "next_scene": "scene_02",
               "required_item": null,
-              "sanity_change": 0
+              "reward_item": null
             },
             {
               "text": "Dừng lại và kiểm tra tin nhắn lần nữa.",
               "next_scene": "scene_03",
               "required_item": null,
-              "sanity_change": 0
+              "reward_item": null
             }
           ],
           "conditions": {}
         },
         {
           "id": "scene_02",
-          "background": "apartment_hallway.png",
           "music": "suspense.mp3",
           "sound_effects": ["door_creak.mp3"],
           "dialogues": [
             {
               "character": "MC",
               "characterImage": "mc_default.png",
-              "expression": "surprised",
               "text": "Cửa căn hộ 404... đã mở sẵn?"
             },
             {
               "character": "MC",
               "characterImage": "mc_default2.png",
-              "expression": "nervous",
               "text": "Nó đã bị bỏ hoang từ lâu, nhưng tại sao lại như thế này?"
             }
           ],
@@ -71,33 +64,30 @@
               "text": "Bước vào trong căn hộ.",
               "next_scene": "scene_end",
               "required_item": null,
-              "sanity_change": -1
+              "reward_item": null
             },
             {
               "text": "Gõ cửa gọi thử.",
               "next_scene": "scene_05",
               "required_item": null,
-              "sanity_change": 0
+              "reward_item": null
             }
           ],
           "conditions": {}
         },
         {
           "id": "scene_03",
-          "background": "night_street.png",
           "music": "mystery.mp3",
-          "sound_effects": [],
+          "sound_effects": ["door_creak.mp3"],
           "dialogues": [
             {
               "character": "MC",
               "characterImage": "mc_default2.png",
-              "expression": "thinking",
               "text": "Tin nhắn này không có số điện thoại, cũng không có người gửi..."
             },
             {
               "character": "MC",
               "characterImage": "mc_default.png",
-              "expression": "nervous",
               "text": "Có khi nào đây là một cái bẫy?"
             }
           ],
@@ -106,27 +96,25 @@
               "text": "Quay về nhà, không muốn dính vào rắc rối.",
               "next_scene": "scene_end",
               "required_item": null,
-              "sanity_change": 0
+              "reward_item": null
             },
             {
               "text": "Tiếp tục đến căn hộ 404.",
               "next_scene": "scene_02",
               "required_item": null,
-              "sanity_change": 0
+              "reward_item": null
             }
           ],
           "conditions": {}
         },
         {
           "id": "scene_04",
-          "background": "apartment_inside.png",
           "music": "mystery.mp3",
           "sound_effects": ["footsteps.mp3"],
           "dialogues": [
             {
               "character": "MC",
               "characterImage": "mc_default.png",
-              "expression": "curious",
               "text": "Trong này tối quá, mình cần tìm công tắc đèn."
             }
           ],
@@ -135,27 +123,25 @@
               "text": "Tìm công tắc đèn.",
               "next_scene": "scene_06",
               "required_item": null,
-              "sanity_change": 0
+              "reward_item": null
             },
             {
               "text": "Dùng đèn pin.",
               "next_scene": "scene_07",
               "required_item": "flashlight",
-              "sanity_change": 0
+              "reward_item": null
             }
           ],
           "conditions": {}
         },
         {
           "id": "scene_hidden",
-          "background": "secret_room.png",
           "music": "eerie_whispers.mp3",
           "sound_effects": ["whispering.mp3"],
           "dialogues": [
             {
               "character": "Shadow",
               "characterImage": "shadow.png",
-              "expression": "whisper",
               "text": "Cậu không nên đến đây..."
             }
           ],
@@ -167,14 +153,27 @@
         },
         {
           "id": "scene_end",
-          "background": "black.png",
           "music": "sad_piano.mp3",
-          "sound_effects": [],
+          "sound_effects": ["door_creak.mp3"],
           "dialogues": [
             {
               "character": "MC",
               "characterImage": "mc_default.png",
-              "expression": "neutral",
+              "text": "Có lẽ mình đã bỏ lỡ điều gì đó quan trọng..."
+            }
+          ],
+          "choices": []
+        },
+
+
+        {
+          "id": "not_enough_item",
+          "music": "sad_piano.mp3",
+          "sound_effects": ["door_creak.mp3"],
+          "dialogues": [
+            {
+              "character": "MC",
+              "characterImage": "mc_default.png",
               "text": "Có lẽ mình đã bỏ lỡ điều gì đó quan trọng..."
             }
           ],
@@ -186,24 +185,21 @@
       "id": "chapter_02",
       "title": "Chương 1: Bóng Tối Sau Cánh Cửa",
       "description": "MC nhận được một tin nhắn bí ẩn yêu cầu đến căn hộ số 404, nơi bị bỏ hoang từ lâu.",
-      "conditions": {},
+      "conditions": "",
       "scenes": [
         {
           "id": "scene_01",
-          "background": "night_street.png",
           "music": "ominous.mp3",
-          "sound_effects": [],
+          "sound_effects": ["door_creak.mp3"],
           "dialogues": [
             {
               "character": "MC",
               "characterImage": "mc_default.png",
-              "expression": "thinking",
               "text": "Mình đã nhận được tin nhắn kỳ lạ... Người gửi yêu cầu mình đến căn hộ số 404 ngay lập tức."
             },
             {
               "character": "MC",
               "characterImage": "mc_default2.png",
-              "expression": "nervous",
               "text": "Không hiểu sao, nhưng mình có linh cảm không lành..."
             }
           ],
@@ -211,40 +207,37 @@
             {
               "text": "Tiếp tục tiến về căn hộ.",
               "next_scene": "scene_02",
-              "required_item": null,
-              "sanity_change": 0
+              "required_item": "slow",
+              "reward_item": null
             },
             {
               "text": " tiến về căn hộ.",
               "next_scene": "scene_02",
               "required_item": null,
-              "sanity_change": 0
+              "reward_item": null
             },
             {
               "text": "Dừng lại và kiểm tra tin nhắn lần nữa.",
               "next_scene": "scene_03",
               "required_item": null,
-              "sanity_change": 0
+              "reward_item": null
             }
           ],
           "conditions": {}
         },
         {
           "id": "scene_02",
-          "background": "apartment_hallway.png",
           "music": "suspense.mp3",
           "sound_effects": ["door_creak.mp3"],
           "dialogues": [
             {
               "character": "MC",
               "characterImage": "mc_default.png",
-              "expression": "surprised",
               "text": "Cửa căn hộ 404... đã mở sẵn?"
             },
             {
               "character": "MC",
               "characterImage": "mc_default2.png",
-              "expression": "nervous",
               "text": "Nó đã bị bỏ hoang từ lâu, nhưng tại sao lại như thế này?"
             }
           ],
@@ -253,33 +246,30 @@
               "text": "Bước vào trong căn hộ.",
               "next_scene": "scene_end",
               "required_item": null,
-              "sanity_change": -1
+              "reward_item": null
             },
             {
               "text": "Gõ cửa gọi thử.",
               "next_scene": "scene_05",
               "required_item": null,
-              "sanity_change": 0
+              "reward_item": null
             }
           ],
           "conditions": {}
         },
         {
           "id": "scene_03",
-          "background": "night_street.png",
           "music": "mystery.mp3",
-          "sound_effects": [],
+          "sound_effects": ["door_creak.mp3"],
           "dialogues": [
             {
               "character": "MC",
               "characterImage": "mc_default2.png",
-              "expression": "thinking",
               "text": "Tin nhắn này không có số điện thoại, cũng không có người gửi..."
             },
             {
               "character": "MC",
               "characterImage": "mc_default.png",
-              "expression": "nervous",
               "text": "Có khi nào đây là một cái bẫy?"
             }
           ],
@@ -288,27 +278,25 @@
               "text": "Quay về nhà, không muốn dính vào rắc rối.",
               "next_scene": "scene_end",
               "required_item": null,
-              "sanity_change": 0
+              "reward_item": null
             },
             {
               "text": "Tiếp tục đến căn hộ 404.",
               "next_scene": "scene_02",
               "required_item": null,
-              "sanity_change": 0
+              "reward_item": null
             }
           ],
           "conditions": {}
         },
         {
           "id": "scene_04",
-          "background": "apartment_inside.png",
           "music": "mystery.mp3",
           "sound_effects": ["footsteps.mp3"],
           "dialogues": [
             {
               "character": "MC",
               "characterImage": "mc_default.png",
-              "expression": "curious",
               "text": "Trong này tối quá, mình cần tìm công tắc đèn."
             }
           ],
@@ -317,27 +305,25 @@
               "text": "Tìm công tắc đèn.",
               "next_scene": "scene_06",
               "required_item": null,
-              "sanity_change": 0
+              "reward_item": null
             },
             {
               "text": "Dùng đèn pin.",
               "next_scene": "scene_07",
               "required_item": "flashlight",
-              "sanity_change": 0
+              "reward_item": null
             }
           ],
           "conditions": {}
         },
         {
           "id": "scene_hidden",
-          "background": "secret_room.png",
           "music": "eerie_whispers.mp3",
           "sound_effects": ["whispering.mp3"],
           "dialogues": [
             {
               "character": "Shadow",
               "characterImage": "shadow.png",
-              "expression": "whisper",
               "text": "Cậu không nên đến đây..."
             }
           ],
@@ -349,20 +335,148 @@
         },
         {
           "id": "scene_end",
-          "background": "black.png",
           "music": "sad_piano.mp3",
-          "sound_effects": [],
+          "sound_effects": ["door_creak.mp3"],
           "dialogues": [
             {
               "character": "MC",
               "characterImage": "mc_default.png",
-              "expression": "neutral",
               "text": "Có lẽ mình đã bỏ lỡ điều gì đó quan trọng..."
             }
           ],
           "choices": []
         }
       ]
+    },
+    {
+      "id": "chapter_quiz_intro",
+      "title": "Meet the Quiz Guide",
+      "description": "An NPC introduces a vocabulary quiz event. Requires a book to participate.",
+      "scenes": [
+        {
+          "id": "scene_meet_npc",
+          "background": "village_center.jpg",
+          "music": "village_theme.mp3",
+          "sound_effects": [],
+          "dialogues": [
+            {
+              "character": "MC",
+              "characterImage": "mc_default.png",
+              "text": "That person over there looks like a scholar..."
+            },
+            {
+              "character": "NPC_Learna",
+              "characterImage": "npc_teacher.png",
+              "text": "Greetings, traveler. I’m Learna — the quiz guide of this village."
+            },
+            {
+              "character": "NPC_Learna",
+              "characterImage": "npc_teacher.png",
+              "text": "I’m hosting an English Vocabulary Quiz event to help everyone review what they've learned."
+            },
+            {
+              "character": "NPC_Learna",
+              "characterImage": "npc_teacher.png",
+              "text": "If you have the *English Vocabulary Book*, you’re welcome to join!"
+            }
+          ],
+          "choices": [
+            {
+              "text": "I want to join the quiz!",
+              "next_scene": "scene_allow_quiz",
+              "required_item": "English Vocabulary Book",
+              "reward_item": null
+            },
+            {
+              "text": "Not now. Maybe later.",
+              "next_scene": "scene_end",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+
+        {
+          "id": "scene_allow_quiz",
+          "background": "village_center.jpg",
+          "music": "magic_open.mp3",
+          "dialogues": [
+            {
+              "character": "NPC_Learna",
+              "characterImage": "npc_teacher.png",
+              "text": "Ah, I see you have the book! Excellent — you are ready for the quiz."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Let’s start!",
+              "next_scene": "scene_start_quiz",
+              "required_item": null,
+              "reward_item": null
+            },
+            {
+              "text": "Maybe later.",
+              "next_scene": "scene_end",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_not_enough_item",
+          "background": "village_center.jpg",
+          "music": "sad_piano.mp3",
+          "dialogues": [
+            {
+              "character": "NPC_Learna",
+              "characterImage": "npc_teacher.png",
+              "text": "Hmm... it seems you're missing the *English Vocabulary Book*."
+            },
+            {
+              "character": "NPC_Learna",
+              "characterImage": "npc_teacher.png",
+              "text": "Come back once you’ve found one, and I’ll gladly open the quiz for you."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Got it. I’ll be back.",
+              "next_scene": "scene_end",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_start_quiz",
+          "background": "quiz_hall.jpg",
+          "music": "quiz_intro.mp3",
+          "dialogues": [
+            {
+              "character": "MC",
+              "characterImage": "mc_ready.png",
+              "text": "Alright! Time to put my English to the test!"
+            }
+          ],
+          "choices": [
+
+          ]
+        },
+        {
+          "id": "scene_end",
+          "background": "village_center.jpg",
+          "music": "village_theme.mp3",
+          "dialogues": [
+            {
+              "character": "MC",
+              "characterImage": "mc_default.png",
+              "text": "Alright, time to continue my journey..."
+            }
+          ],
+          "choices": []
+        }
+      ]
     }
+
   ]
 }

@@ -82,6 +82,12 @@ public class Character {
 
     // Existing getters/setters...
 
+    public boolean hasItem(String itemName) {
+        if (items == null || items.isEmpty()) {
+            throw new IllegalArgumentException("Item or item name cannot be null");
+        }
+        return items.containsKey(itemName);
+    }
 
     public void addItem(Items item, int amount) {
         if (item == null || item.getItemName() == null) {

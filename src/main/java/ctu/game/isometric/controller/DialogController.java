@@ -24,6 +24,7 @@ public class DialogController {
 
     private List<Choice> currentChoices = new ArrayList<>();
     private int selectedChoiceIndex = 0;
+    boolean performAction = false;
 
     public DialogController(GameController gameController) {
         this.gameController = gameController;
@@ -61,8 +62,6 @@ public class DialogController {
         if (scene.getChoices() != null && !scene.getChoices().isEmpty()) {
             currentChoices = scene.getChoices();
             selectedChoiceIndex = 0;
-        } else {
-            currentChoices.clear();
         }
 
         Gdx.app.log("Dialog", "Started dialog: Arc=" + arcId + ", Scene=" + sceneId);
@@ -80,7 +79,7 @@ public class DialogController {
         Scene scene = findScene(arc, currentSceneId);
 
         if (scene == null || scene.getDialogues() == null) {
-            dialogActive = false;
+            endDialog(); // Use endDialog to reset the state properly
             return false;
         }
 
@@ -92,10 +91,12 @@ public class DialogController {
             // If there are choices, show them
             if (scene.getChoices() != null && !scene.getChoices().isEmpty()) {
                 showingChoices = true;  // Now switch to choice mode
+                currentChoices = scene.getChoices(); // Ensure choices are set
+                selectedChoiceIndex = 0; // Reset selected choice
                 return true;
             } else {
-                // End the dialog if no choices
-                dialogActive = false;
+                System.out.println("End of dialog, no choices available.");
+                endDialog(); // Use endDialog to reset the state properly
                 return false;
             }
         }
@@ -103,29 +104,43 @@ public class DialogController {
         return true;
     }
 
+
+
+
+
+    // After
     public void selectChoice(int index) {
         if (!dialogActive || !showingChoices || currentChoices.isEmpty()) return;
 
         if (index >= 0 && index < currentChoices.size()) {
             Choice choice = currentChoices.get(index);
 
+            // Reset flags before processing the choice
+            showingChoices = false;
+
             // Check if player has required item
             if (choice.getRequired_item() != null) {
-                // TODO: Implement inventory check
-                // if (!playerHasItem(choice.getRequired_item())) return;
-            }
+                if (gameController.getCharacter().hasItem(choice.getRequired_item())) {
+                    performAction = true; // Only set to true when choice has required item
 
-            // Apply sanity change if applicable
-            if (choice.getSanity_change() != 0) {
-                // TODO: Update player sanity
-                // player.changeSanity(choice.getSanity_change());
-            }
-
-            // Move to the next scene if specified
-            if (choice.getNext_scene() != null) {
-                startDialog(currentArcId, choice.getNext_scene());
+                    // Move to the next scene if specified
+                    if (choice.getNext_scene() != null) {
+                        startDialog(currentArcId, choice.getNext_scene());
+                    }
+                    else endDialog();
+                } else {
+                    // If player doesn't have the required item, redirect to scene_not_enough_item
+                    startDialog(currentArcId, "scene_not_enough_item");
+                }
             } else {
-                dialogActive = false;
+                // No item required, proceed normally
+                if (choice.getNext_scene() != null && choice.getNext_scene().equals("scene_end")) {
+                    performAction = false;
+                    startDialog(currentArcId, choice.getNext_scene());
+                }
+                else {
+                    endDialog();
+                }
             }
         }
     }
@@ -198,16 +213,22 @@ public class DialogController {
 
 
     public void endDialog() {
-        gameController.setState(GameState.EXPLORING);
         dialogActive = false;
         showingChoices = false;
-        currentChoices.clear();
+        selectedChoiceIndex = 0;
+        currentDialogIndex = 0;
+        currentArcId = null;
+        currentSceneId = null;
 
-        // Execute the callback if it exists
-        if (onDialogFinishedAction != null) {
+        gameController.setState(GameState.EXPLORING);
+
+        // Execute the callback if it exists and performAction is true
+        if (onDialogFinishedAction != null && performAction == true) {
             onDialogFinishedAction.run();
-            onDialogFinishedAction = null; // Reset after execution
+            onDialogFinishedAction = null;
+            performAction = false;
         }
+
     }
 
     public void setOnDialogFinishedAction(Runnable action) {

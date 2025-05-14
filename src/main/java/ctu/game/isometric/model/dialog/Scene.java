@@ -7,7 +7,6 @@ import java.util.Map;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Scene {
     private String id;
-    private String background;
     private String music;
     private List<Dialog> dialogues;
     private List<String> sound_effects;
@@ -29,14 +28,6 @@ public class Scene {
 
     public void setSound_effects(List<String> sound_effects) {
         this.sound_effects = sound_effects;
-    }
-
-    public String getBackground() {
-        return background;
-    }
-
-    public void setBackground(String background) {
-        this.background = background;
     }
 
     public String getMusic() {

@@ -4,7 +4,6 @@ public class Dialog {
     private String character;
     private String characterImage;
     private String text;
-    private String expression; // Add this missing field
 
     // Getters and setters
     public String getCharacter() {
@@ -31,16 +30,11 @@ public class Dialog {
         this.text = text;
     }
 
-    public String getExpression() {
-        return expression;
-    }
-
-    public void setExpression(String expression) {
-        this.expression = expression;
-    }
 
     // For convenience when accessing character name
     public String getCharacterName() {
         return character != null ? character : "???";
     }
+
+
 }

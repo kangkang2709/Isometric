@@ -428,7 +428,7 @@ public class GameController {
                 case "quiz":
                     System.out.println("Starting quiz...");
                         dialogController.setOnDialogFinishedAction(() -> startQuiz());
-                        dialogController.startDialog("chapter_01", "scene_01");
+                        dialogController.startDialog("chapter_quiz_intro", "scene_meet_npc");
                     break;
                 case "cutscene":
                     String cutsceneName = properties.get("cutscene", String.class);

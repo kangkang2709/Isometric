@@ -183,7 +183,7 @@ public class MapRenderer {
         // Ensure positive values by adding an offset if needed
         // If your map can have negative coordinates, add an appropriate offset
         int mapOffsetX = 1; // Adjust as needed for your map
-        int mapOffsetY = -1; // Adjust as needed for your map
+        int mapOffsetY = -1 ; // Adjust as needed for your map
 
         return new int[]{x + mapOffsetX, y + mapOffsetY};
     }

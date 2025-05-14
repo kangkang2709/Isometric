@@ -9,7 +9,6 @@ public class Arc {
     private String id;
     private String title;
     private String description;
-    private Map<String, Object> conditions;
     private List<Scene> scenes;
 
     // Getters and setters
@@ -37,13 +36,7 @@ public class Arc {
         this.title = title;
     }
 
-    public Map<String, Object> getConditions() {
-        return conditions;
-    }
 
-    public void setConditions(Map<String, Object> conditions) {
-        this.conditions = conditions;
-    }
 
     public List<Scene> getScenes() {
         return scenes;
