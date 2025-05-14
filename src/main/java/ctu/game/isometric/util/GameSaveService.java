@@ -155,7 +155,7 @@ public class GameSaveService {
         copy.setTargetX(original.getTargetX());
         copy.setTargetY(original.getTargetY());
         copy.setDirection(original.getDirection());
-
+        copy.setScore(original.getScore());
         // Copy any other essential character data
         // (Items, stats, quests, etc. - add as needed)
 

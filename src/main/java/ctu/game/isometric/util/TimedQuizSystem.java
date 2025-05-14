@@ -1,6 +1,5 @@
 package ctu.game.isometric.util;
 
-import ctu.game.isometric.util.QuizTimer;
 import java.util.*;
 
 public class TimedQuizSystem extends SymbolicQuizSystem implements QuizTimer.TimerCallback {
@@ -30,6 +29,9 @@ public class TimedQuizSystem extends SymbolicQuizSystem implements QuizTimer.Tim
         timer.reset();
         timeExpired = false;
 
+        // Store the current quiz
+        currentQuiz = quizData;
+
         return quizData;
     }
 
@@ -46,6 +48,7 @@ public class TimedQuizSystem extends SymbolicQuizSystem implements QuizTimer.Tim
     public void startQuiz() {
         timer.reset();
         timer.start();
+        timeExpired = false;
     }
 
     public Map<String, Object> submitAnswer(String answer) {
@@ -53,11 +56,24 @@ public class TimedQuizSystem extends SymbolicQuizSystem implements QuizTimer.Tim
         timer.pause();
 
         if (currentQuiz == null) {
-            currentQuiz = generateContextualSentenceQuiz();
+            // Return error if trying to submit answer without an active quiz
+            Map<String, Object> errorResult = new HashMap<>();
+            errorResult.put("error", "No active quiz");
+            errorResult.put("correct", false);
+            errorResult.put("score", 0);
+            errorResult.put("timeTaken", timeTaken);
+            return errorResult;
         }
 
         String correctAnswer = (String) currentQuiz.get("answer");
-        boolean isCorrect = answer.trim().equalsIgnoreCase(correctAnswer);
+
+        // Thorough normalization: trim spaces and convert to uppercase for consistent comparison
+        String normalizedCorrectAnswer = correctAnswer.trim().toUpperCase();
+        String normalizedUserAnswer = answer.trim().toUpperCase();
+
+        // Exact match after normalization
+        boolean isCorrect = normalizedUserAnswer.equals(normalizedCorrectAnswer);
+
         int difficulty = (int) currentQuiz.getOrDefault("difficulty", 3);
         int score = WordScorer.calculateScore(isCorrect, difficulty, (long)(timeTaken * 1000));
 
@@ -72,6 +88,7 @@ public class TimedQuizSystem extends SymbolicQuizSystem implements QuizTimer.Tim
         result.put("timeTaken", timeTaken);
         result.put("timeExpired", timeExpired);
         result.put("correctAnswer", correctAnswer);
+        result.put("userAnswer", answer);
 
         return result;
     }

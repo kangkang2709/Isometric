@@ -157,9 +157,6 @@ public synchronized void loadDictionary() {
     public Word getWordDetails(String wordText) {
         if (!dictionaryLoaded) {
             loadDictionary();
-            if (!dictionaryLoaded) {
-                return null;
-            }
         }
 
         Word word = new Word(wordText);
@@ -184,29 +181,24 @@ public synchronized void loadDictionary() {
 
                 // Get examples if available (examples are in the gloss after ';')
                 String gloss = iword.getSynset().getGloss();
-                if (gloss.contains(";")) {
-                    String[] parts = gloss.split(";");
-                    if (parts.length > 1) {
-                        List<String> examples = new ArrayList<>();
-                        for (int i = 1; i < parts.length; i++) {
-                            String ex = parts[i].trim();
-                            if (ex.startsWith("\"") && ex.endsWith("\"")) {
-                                ex = ex.substring(1, ex.length() - 1);
-                            }
-                            examples.add(ex);
-                        }
-                        definition.setExamples(examples);
+                String[] parts = gloss.split(";");
+                if (parts.length > 1) {
+                    List<String> examples = new ArrayList<>();
+                    for (int i = 1; i < parts.length; i++) {
+                        String ex = parts[i].trim().replaceAll("^\"|\"$", ""); // Remove surrounding quotes
+                        examples.add(ex);
                     }
+                    definition.setExamples(examples);
                 }
 
                 // Get synonyms
-                List<String> synonyms = new ArrayList<>();
+                Set<String> synonyms = new LinkedHashSet<>();
                 for (IWord synonym : synset.getWords()) {
                     if (!synonym.getLemma().equalsIgnoreCase(wordText)) {
                         synonyms.add(synonym.getLemma());
                     }
                 }
-                definition.setSynonyms(synonyms);
+                definition.setSynonyms(new ArrayList<>(synonyms));
 
                 word.addDefinition(definition);
             }

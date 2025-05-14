@@ -22,6 +22,9 @@ public class QuizController {
     private boolean quizActive = false;
     private boolean showingResults = false;
     private Map<String, Object> lastResult;
+
+    private int totalScore = 0;
+
     private float centerY;
     private BitmapFont font;
     private ShapeRenderer shapeRenderer;
@@ -51,11 +54,13 @@ public class QuizController {
     }
 
     public void startQuiz() {
-        // Refresh quiz system with current learned words
+        // Refresh quiz system with current learned word
+
         this.quizSystem = new TimedQuizSystem(
                 gameController.getCharacter().getLearnedWords(),
                 gameController.getWordNetValidator()
         );
+
 
         // Generate a new quiz
         currentQuiz = quizSystem.generateContextualSentenceQuiz();
@@ -132,10 +137,16 @@ public class QuizController {
         layout.setText(font, "FILL THE BLANK");
         font.draw(batch, "FILL THE BLANK", centerX - layout.width / 2, height * 0.85f);
 
+        String totalScoreText = "Total Score: " + totalScore;
+        layout.setText(font, totalScoreText);
+        font.draw(batch, totalScoreText, 100, height * 0.85f);
+
         // Question
         String question = (String) currentQuiz.get("question");
         font.setColor(Color.WHITE);
         font.draw(batch, question, width * 0.15f, height * 0.7f, width * 0.7f, 1, true);
+
+
 
         // Timer
         float timeRemaining = quizSystem.getTimer().getTimeRemaining();
@@ -169,10 +180,23 @@ public class QuizController {
 
         // Draw answer (centered in input box)
         font.setColor(Color.WHITE);
-        layout.setText(font, currentAnswer);
-        // Important: For vertical centering in LibGDX, we need to adjust for baseline
+        String displayText = currentAnswer;
+
+// If the answer field is empty, show underscores representing each character
+        if (displayText.isEmpty() && currentQuiz != null) {
+            String correctAnswer = (String) currentQuiz.get("answer");
+            StringBuilder underscores = new StringBuilder();
+            for (int i = 0; i < correctAnswer.length(); i++) {
+                underscores.append("_ ");
+            }
+            displayText = underscores.toString().trim();
+            font.setColor(Color.GRAY); // Make underscores appear in gray
+        }
+
+        layout.setText(font, displayText);
+// Important: For vertical centering in LibGDX, we need to adjust for baseline
         float textY = inputFieldY + (inputFieldHeight + layout.height) / 2;
-        font.draw(batch, currentAnswer, centerX - layout.width / 2, textY);
+        font.draw(batch, displayText, centerX - layout.width / 2, textY);
 
         // Draw submit text (centered in button)
         layout.setText(font, "Submit");
@@ -180,6 +204,7 @@ public class QuizController {
         font.draw(batch, "Submit",
                 submitButton.x + (submitButton.width - layout.width) / 2,
                 buttonTextY);
+
     }
 
     private void renderResults(SpriteBatch batch, int width, int height) {
@@ -272,14 +297,19 @@ public class QuizController {
         if (!quizActive || showingResults) return;
 
         // Compare with correct answer
-        String correctAnswer = (String) currentQuiz.get("answer");
-        boolean isCorrect = currentAnswer.trim().equalsIgnoreCase(correctAnswer);
+//        String correctAnswer = (String) currentQuiz.get("answer");
+//        boolean isCorrect = currentAnswer.trim().equalsIgnoreCase(correctAnswer);
 
         lastResult = quizSystem.submitAnswer(currentAnswer);
+
 
         // Make sure userAnswer is included in the result map
         if (!lastResult.containsKey("userAnswer")) {
             lastResult.put("userAnswer", currentAnswer);
+        }
+
+        if (lastResult.containsKey("score")) {
+            totalScore += (Integer) lastResult.get("score");
         }
 
         showingResults = true;
@@ -293,7 +323,9 @@ public class QuizController {
 
     public void exitQuiz() {
         quizActive = false;
+        gameController.getCharacter().setScore(totalScore);
         gameController.setState(GameState.EXPLORING);
+        this.totalScore= 0; // Reset score after exiting
     }
 
     public void processInput(char character) {

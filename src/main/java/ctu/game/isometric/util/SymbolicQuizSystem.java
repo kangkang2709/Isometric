@@ -4,6 +4,7 @@ import ctu.game.isometric.model.dictionary.Word;
 import ctu.game.isometric.model.dictionary.WordDefinition;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class SymbolicQuizSystem {
     private final Set<String> learnedWords;
@@ -49,7 +50,8 @@ public class SymbolicQuizSystem {
             return createErrorResponse("No words available");
         }
 
-        String word = getRandomWord();
+        String wordUpperCase = getRandomWord(); //IS ALL UPPER CASE
+        String word = wordUpperCase.toLowerCase(); // Normalize for dictionary lookup
         Word details = wordNetValidator.getWordDetails(word);
 
         if (details == null || details.getDefinitions().isEmpty()) {
@@ -57,20 +59,28 @@ public class SymbolicQuizSystem {
         }
 
         List<String> examples = new ArrayList<>();
+
         for (WordDefinition def : details.getDefinitions()) {
             if (def.getExamples() != null) {
                 examples.addAll(def.getExamples());
             }
         }
 
-        String sentence = examples.isEmpty()
-                ? "The word ____ means: " + details.getDefinitions().get(0).getDefinition().split(";")[0]
-                : examples.get(random.nextInt(examples.size())).replaceAll("(?i)\\b" + word + "\\b", "____");
+        String sentence;
+        if (examples.isEmpty()) {
+            if (details.getDefinitions().isEmpty()) {
+                return createErrorResponse("No valid definitions available for word: " + word);
+            }
+            sentence = "The word ____ means: " + details.getDefinitions().get(0).getDefinition().split(";")[0];
+        } else {
+            sentence = examples.get(random.nextInt(examples.size()))
+                    .replaceAll("(?i)\\b" + Pattern.quote(word) + "\\b", "____");
+        }
 
         Map<String, Object> quizData = new HashMap<>();
         quizData.put("type", "contextual_sentence");
-        quizData.put("question", "Fill in the blank: " + sentence);
-        quizData.put("answer", word);
+        quizData.put("question", sentence);
+        quizData.put("answer", wordUpperCase); // Use original uppercase for answer
         quizData.put("difficulty", 3);
         quizData.put("points", WordScorer.calculateScore(true, 3, 0)); // Example scoring
 

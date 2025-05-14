@@ -505,6 +505,14 @@ public class Character {
         return newlearneWords;
     }
 
+    public float getScore() {
+        return score;
+    }
+
+    public void setScore(float score) {
+        this.score = score;
+    }
+
     public void setNewlearneWords(Set<String> newlearneWords) {
         this.newlearneWords = newlearneWords;
     }
