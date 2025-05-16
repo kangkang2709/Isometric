@@ -2,6 +2,7 @@ package ctu.game.isometric.controller;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
@@ -10,6 +11,8 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import ctu.game.isometric.model.game.GameState;
+
+import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
 
 public class MainMenuController {
     private GameController gameController;
@@ -25,7 +28,7 @@ public class MainMenuController {
     private final int screenHeight = 720;
 
     // Menu options
-    private String[] menuOptions = {"New Game","Load Game","Settings", "Exit"};
+    private String[] menuOptions = {"Game Mới","Tải Game","Tùy Chỉnh", "Thoát"};
     private int selectedOption = 0;
 
     // Button rectangles
@@ -40,12 +43,7 @@ public class MainMenuController {
     private final float INPUT_DELAY = 0.2f;
 
     public MainMenuController(GameController gameController) {
-        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/ModernAntiqua-Regular.ttf"));
-        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        parameter.size = 36;
-        parameter.color = com.badlogic.gdx.graphics.Color.WHITE;
-        this.font = generator.generateFont(parameter);
-        generator.dispose();
+       this.font = generateVietNameseFont("GrenzeGotisch.ttf", 30);
 
         this.gameController = gameController;
 

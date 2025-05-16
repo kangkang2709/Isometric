@@ -17,6 +17,8 @@ import ctu.game.isometric.model.game.GameState;
 import java.util.ArrayList;
 import java.util.List;
 
+import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
+
 public class SettingsMenuController {
     private GameController gameController;
     private List<MenuOption> menuOptions;
@@ -34,7 +36,7 @@ public class SettingsMenuController {
     // Animation properties
     private float animationTime = 0;
     private float selectionPulse = 0;
-    private String menuTitle = "SETTINGS";
+    private String menuTitle = "Thiết Lập";
 
     private Texture sliderKnobTexture;    // For sliders
     private Texture sliderBarTexture;
@@ -52,17 +54,10 @@ public class SettingsMenuController {
         this.buttonRectangles = new ArrayList<>();
         this.sliderRectangles = new ArrayList<>();
 
-        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/ModernAntiqua-Regular.ttf"));
-        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        this.font = generateVietNameseFont("GrenzeGotisch.ttf", 30);
 
-        parameter.size = 32;
-        parameter.color = com.badlogic.gdx.graphics.Color.WHITE;
-        this.font = generator.generateFont(parameter);
+        this.titleFont = generateVietNameseFont("GrenzeGotisch.ttf", 50);
 
-        parameter.size = 48;
-        parameter.color = com.badlogic.gdx.graphics.Color.WHITE;
-        titleFont = generator.generateFont(parameter);
-        generator.dispose();
         this.shapeRenderer = new ShapeRenderer();
 
         // Load textures
@@ -70,17 +65,17 @@ public class SettingsMenuController {
         sliderBarTexture = new Texture(Gdx.files.internal("ui/slider_bar.png"));
 
         // Add adjustable options connected to MusicController
-        addMenuOption("Music", MenuOption.OptionType.TOGGLE,
+        addMenuOption("Âm Thanh: ", MenuOption.OptionType.TOGGLE,
                 () -> gameController.getMusicController().setEnabled(
                         !gameController.getMusicController().isEnabled()));
 
-        addMenuOption("Volume", MenuOption.OptionType.SLIDER,
+        addMenuOption("Âm Lượng", MenuOption.OptionType.SLIDER,
                 () -> {
                     // Volume adjustment logic is handled elsewhere
                 });
 
         // Add back option
-        addMenuOption("Back", MenuOption.OptionType.BUTTON,
+        addMenuOption("Quay Lại", MenuOption.OptionType.BUTTON,
                 () -> {
                     gameController.setState(GameState.MAIN_MENU);
                 });
@@ -228,7 +223,7 @@ public class SettingsMenuController {
             // Create display text
             String displayText = option.getName();
             if (option.getType() == MenuOption.OptionType.TOGGLE) {
-                displayText += ": " + (option.isToggled() ? "ON" : "OFF");
+                displayText += ": " + (option.isToggled() ? "Bật" : "Tắt");
             } else if (option.getType() == MenuOption.OptionType.SLIDER) {
                 displayText += ": " + (int) (option.getValue() * 100) + "%";
             }

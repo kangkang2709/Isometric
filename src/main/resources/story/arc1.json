@@ -350,8 +350,8 @@
     },
     {
       "id": "chapter_quiz_intro",
-      "title": "Meet the Quiz Guide",
-      "description": "An NPC introduces a vocabulary quiz event. Requires a book to participate.",
+      "title": "Gặp Gỡ Hướng Dẫn Viên Bài Kiểm Tra",
+      "description": "Một NPC giới thiệu sự kiện kiểm tra từ vựng. Cần có sách để tham gia.",
       "scenes": [
         {
           "id": "scene_meet_npc",
@@ -362,33 +362,33 @@
             {
               "character": "MC",
               "characterImage": "mc_default.png",
-              "text": "That person over there looks like a scholar..."
+              "text": "Người kia trông giống một học giả..."
             },
             {
               "character": "NPC_Learna",
               "characterImage": "npc_teacher.png",
-              "text": "Greetings, traveler. I’m Learna — the quiz guide of this village."
+              "text": "Chào mừng, lữ khách. Ta là Learna — người hướng dẫn bài kiểm tra của ngôi làng này."
             },
             {
               "character": "NPC_Learna",
               "characterImage": "npc_teacher.png",
-              "text": "I’m hosting an English Vocabulary Quiz event to help everyone review what they've learned."
+              "text": "Ta đang tổ chức một sự kiện Trắc nghiệm Từ vựng Tiếng Anh để giúp mọi người ôn tập những gì đã học."
             },
             {
               "character": "NPC_Learna",
               "characterImage": "npc_teacher.png",
-              "text": "If you have the *English Vocabulary Book*, you’re welcome to join!"
+              "text": "Nếu ngươi có *Sách Từ Vựng Tiếng Anh*, hãy tham gia cùng ta nhé!"
             }
           ],
           "choices": [
             {
-              "text": "I want to join the quiz!",
+              "text": "Tôi muốn tham gia bài kiểm tra!",
               "next_scene": "scene_allow_quiz",
-              "required_item": "English Vocabulary Book",
+              "required_item": "Sách Từ Vựng Tiếng Anh",
               "reward_item": null
             },
             {
-              "text": "Not now. Maybe later.",
+              "text": "Không phải bây giờ. Có lẽ sau.",
               "next_scene": "scene_end",
               "required_item": null,
               "reward_item": null
@@ -404,18 +404,18 @@
             {
               "character": "NPC_Learna",
               "characterImage": "npc_teacher.png",
-              "text": "Ah, I see you have the book! Excellent — you are ready for the quiz."
+              "text": "À, ta thấy ngươi có sách rồi! Tuyệt vời — ngươi đã sẵn sàng cho bài kiểm tra."
             }
           ],
           "choices": [
             {
-              "text": "Let’s start!",
+              "text": "Bắt đầu thôi!",
               "next_scene": "scene_start_quiz",
               "required_item": null,
               "reward_item": null
             },
             {
-              "text": "Maybe later.",
+              "text": "Để sau đi.",
               "next_scene": "scene_end",
               "required_item": null,
               "reward_item": null
@@ -430,17 +430,17 @@
             {
               "character": "NPC_Learna",
               "characterImage": "npc_teacher.png",
-              "text": "Hmm... it seems you're missing the *English Vocabulary Book*."
+              "text": "Hmm... có vẻ như ngươi chưa có *Sách Từ Vựng Tiếng Anh*."
             },
             {
               "character": "NPC_Learna",
               "characterImage": "npc_teacher.png",
-              "text": "Come back once you’ve found one, and I’ll gladly open the quiz for you."
+              "text": "Hãy quay lại khi ngươi đã tìm thấy quyển sách, ta sẽ mở bài kiểm tra cho ngươi."
             }
           ],
           "choices": [
             {
-              "text": "Got it. I’ll be back.",
+              "text": "Hiểu rồi. Tôi sẽ quay lại.",
               "next_scene": "scene_end",
               "required_item": null,
               "reward_item": null
@@ -455,12 +455,10 @@
             {
               "character": "MC",
               "characterImage": "mc_ready.png",
-              "text": "Alright! Time to put my English to the test!"
+              "text": "Được rồi! Đến lúc kiểm tra trình độ tiếng Anh của mình!"
             }
           ],
-          "choices": [
-
-          ]
+          "choices": []
         },
         {
           "id": "scene_end",
@@ -470,13 +468,14 @@
             {
               "character": "MC",
               "characterImage": "mc_default.png",
-              "text": "Alright, time to continue my journey..."
+              "text": "Được rồi, tiếp tục cuộc hành trình thôi..."
             }
           ],
           "choices": []
         }
       ]
     }
+
 
   ]
 }

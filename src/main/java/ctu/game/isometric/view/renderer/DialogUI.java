@@ -13,6 +13,8 @@ import ctu.game.isometric.model.dialog.Choice;
 
 import java.util.List;
 
+import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
+
 public class DialogUI {
     private DialogController dialogController;
     private BitmapFont font;
@@ -45,25 +47,11 @@ public class DialogUI {
 
     public DialogUI(DialogController dialogController) {
         this.dialogController = dialogController;
-        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/GrenzeGotisch.ttf"));
-        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
 
-        // Dialog text font
-        parameter.size = 18;
-        parameter.color = Color.WHITE;
-        this.dialogFont = generator.generateFont(parameter);
+        this.dialogFont = generateVietNameseFont("GrenzeGotisch.ttf", 20);
+        this.nameFont = generateVietNameseFont("GrenzeGotisch.ttf", 18);
+        this.promptFont = generateVietNameseFont("GrenzeGotisch.ttf", 18);
 
-        // Character name font
-        parameter.size = 22;
-        parameter.color = Color.YELLOW;
-        this.nameFont = generator.generateFont(parameter);
-
-        // Prompt font
-        parameter.size = 16;
-        parameter.color = Color.LIGHT_GRAY;
-        this.promptFont = generator.generateFont(parameter);
-
-        generator.dispose();
         this.batch = new SpriteBatch();
         this.shapeRenderer = new ShapeRenderer();
     }
@@ -155,11 +143,16 @@ public class DialogUI {
 
         if (choices != null && !choices.isEmpty()) {
             for (int i = 0; i < choices.size(); i++) {
+                if (i == selectedIndex) {
+                    dialogFont.setColor(Color.YELLOW);
+                } else {
+                    dialogFont.setColor(Color.WHITE);
+                }
                 String choiceText = (i == selectedIndex ? "> " : "  ") + choices.get(i).getText();
                 dialogFont.draw(batch, choiceText, DIALOG_BOX_X + 150, DIALOG_BOX_Y + 80 - (i * 30));
             }
+            dialogFont.setColor(Color.WHITE); // Reset after loop
         }
-
         batch.end();
     }
 

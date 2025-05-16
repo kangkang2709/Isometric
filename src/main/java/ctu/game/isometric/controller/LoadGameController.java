@@ -15,6 +15,8 @@ import ctu.game.isometric.util.GameSaveService;
 
 import java.util.Set;
 
+import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
+
 public class LoadGameController {
     private final GameController gameController;
     private final GameSaveService saveService;
@@ -59,16 +61,16 @@ public class LoadGameController {
     private String fileToDelete = null;
     private Rectangle confirmYesButtonRect;
     private Rectangle confirmNoButtonRect;
-    String title = "Load Game";
+    String title = "Chọn Tiến Trình";
 
     public LoadGameController(GameController gameController) {
         this.gameController = gameController;
         this.saveService = new GameSaveService();
 
+        this.font = generateVietNameseFont("GrenzeGotisch.ttf", 30);
+        this.titleFont = generateVietNameseFont("GrenzeGotisch.ttf", 50);
+
         // Initialize fonts
-        titleFont = new BitmapFont();
-        titleFont.getData().setScale(2.0f);
-        titleFont.setColor(Color.WHITE);
 
         font = new BitmapFont();
         font.getData().setScale(1.5f);

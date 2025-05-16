@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
+
 public class MenuController {
 
     private GameController gameController;
@@ -47,7 +49,7 @@ public class MenuController {
     private TextureRegion menuBackground;
     private GlyphLayout layout = new GlyphLayout();
 
-    private String menuTitle = "PAUSE MENU";
+    private String menuTitle = "Tạm Dừng";
 
     private String notificationMessage = null;
     private float notificationTimer = 0f;
@@ -60,18 +62,8 @@ public class MenuController {
         this.selectedIndex = 0;
         this.menuItems = new ArrayList<>();
 
-        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/ModernAntiqua-Regular.ttf"));
-        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        // Initialize fonts
-
-        parameter.size = 42;
-        parameter.color = Color.WHITE;
-        this.titleFont = generator.generateFont(parameter);
-
-        parameter.size = 32;
-        parameter.color = Color.WHITE;
-        this.itemFont = generator.generateFont(parameter);
-        generator.dispose();
+        this.titleFont = generateVietNameseFont("GrenzeGotisch.ttf", 50);
+        this.itemFont =  generateVietNameseFont("GrenzeGotisch.ttf", 30);
 
         // Initialize rendering tools
         this.shapeRenderer = new ShapeRenderer();
@@ -81,14 +73,14 @@ public class MenuController {
         this.buttonSelectedTexture = new TextureRegion(new Texture(Gdx.files.internal("ui/button_selected.png")));
 
         // Add default menu items
-        addMenuItem("Resume Game", () -> gameController.returnToPreviousState());
+        addMenuItem("Tiếp Tục", () -> gameController.returnToPreviousState());
         addMenuItem("Options", this::showOptionsMenu);
-        addMenuItem("Back To Main Menu", () -> {
+        addMenuItem("Quay về Menu", () -> {
             gameController.setCurrentState(GameState.MAIN_MENU);
             gameController.resetGame();
         });
-        addMenuItem("Save Game", this::showSaveGameDialog);
-        addMenuItem("Quit Game", () -> Gdx.app.exit());
+        addMenuItem("Lưu Tiến Trình", this::showSaveGameDialog);
+        addMenuItem("Thoát", () -> Gdx.app.exit());
 
         // Set menu position (center of screen)
         menuWidth = 400f;

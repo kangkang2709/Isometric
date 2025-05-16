@@ -14,6 +14,8 @@ import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.entity.Gender;
 import ctu.game.isometric.model.game.GameState;
 
+import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
+
 public class CharacterCreationController {
     private GameController gameController;
     private boolean initialized = false;
@@ -48,8 +50,7 @@ public class CharacterCreationController {
     private void initResources() {
         // Initialize resources needed for rendering
         if (!initialized) {
-            font = new BitmapFont();
-            font.getData().setScale(1.5f);
+            this.font = generateVietNameseFont("GrenzeGotisch.ttf", 30);
 
             shapeRenderer = new ShapeRenderer();
             layout = new GlyphLayout();

@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
+import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
+
 
 public class GameplayController {
     // Core components
@@ -87,11 +89,12 @@ public class GameplayController {
 
     private void initializeUI() {
         // Initialize fonts
-        titleFont = new BitmapFont();
-        titleFont.getData().setScale(2.0f);
-        regularFont = new BitmapFont();
-        bigFont = new BitmapFont();
-        bigFont.getData().setScale(1.5f);
+        titleFont = generateVietNameseFont("GrenzeGotisch.ttf", 20);
+        regularFont = generateVietNameseFont("GrenzeGotisch.ttf", 17);
+        bigFont =  regularFont;
+
+
+
 
         layout = new GlyphLayout();
         viewport = new FitViewport(1280, 720);
