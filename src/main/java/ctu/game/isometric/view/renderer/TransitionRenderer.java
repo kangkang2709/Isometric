@@ -1,4 +1,4 @@
-package ctu.game.isometric.controller;
+package ctu.game.isometric.view.renderer;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
@@ -10,7 +10,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
 
-public class TransitionController {
+public class TransitionRenderer {
     private float alpha = 0f;
     private float duration = 0.2f; // transition duration in seconds
     private boolean isTransitioning = false;
@@ -33,7 +33,7 @@ public class TransitionController {
 
     private TransitionType currentType = TransitionType.FADE;
 
-    public TransitionController() {
+    public TransitionRenderer() {
         shapeRenderer = new ShapeRenderer();
         loadingFont = new BitmapFont();
         loadingFont.setColor(Color.WHITE);

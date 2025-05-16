@@ -2,24 +2,24 @@ package ctu.game.isometric.controller;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
+import ctu.game.isometric.model.dictionary.Word;
 import ctu.game.isometric.model.game.GameSave;
 import ctu.game.isometric.model.game.GameState;
-import ctu.game.isometric.util.GameSaveService;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
 
 public class LoadGameController {
     private final GameController gameController;
-    private final GameSaveService saveService;
+    private final GameSaveController saveService;
     private Texture backgroundImage;
     private BitmapFont titleFont;
     private BitmapFont font;
@@ -65,7 +65,7 @@ public class LoadGameController {
 
     public LoadGameController(GameController gameController) {
         this.gameController = gameController;
-        this.saveService = new GameSaveService();
+        this.saveService = new GameSaveController();
 
         this.font = generateVietNameseFont("GrenzeGotisch.ttf", 30);
         this.titleFont = generateVietNameseFont("GrenzeGotisch.ttf", 50);
@@ -327,9 +327,19 @@ public class LoadGameController {
                 if (save != null) {
                     Set<String> words = saveService.loadLearnedWords(save.getCharacter(), save.getWordFilePath());
 
+//
+//                    for (String learnedWord : words) {
+//                        Word word = gameController.getWordNetValidator().getWordDetails(learnedWord);
+//                        if (word != null) {
+//                            System.out.println("Learned word: " + word.getTerm());
+//                            gameController.getDictionaryView().getDictionary().getLearnedWords().add(word);
+//                        }
+//                    }
                     // Set character data in game controller
                     gameController.loadCharacter(save.getCharacter());
                     gameController.getCharacter().setLearnedWords(words);
+
+
 
                     // THIS IS CRUCIAL: Mark as created to initialize renderers
                     gameController.setCreated(true);

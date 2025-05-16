@@ -377,14 +377,14 @@
             {
               "character": "NPC_Learna",
               "characterImage": "npc_teacher.png",
-              "text": "Nếu ngươi có *Sách Từ Vựng Tiếng Anh*, hãy tham gia cùng ta nhé!"
+              "text": "Nếu ngươi có  [Maigc Book] , hãy tham gia cùng ta nhé!"
             }
           ],
           "choices": [
             {
               "text": "Tôi muốn tham gia bài kiểm tra!",
               "next_scene": "scene_allow_quiz",
-              "required_item": "Sách Từ Vựng Tiếng Anh",
+              "required_item": "Magic Book",
               "reward_item": null
             },
             {
@@ -404,7 +404,7 @@
             {
               "character": "NPC_Learna",
               "characterImage": "npc_teacher.png",
-              "text": "À, ta thấy ngươi có sách rồi! Tuyệt vời — ngươi đã sẵn sàng cho bài kiểm tra."
+              "text": "À, ta thấy ngươi có sách rồi! Tuyệt vời - ngươi đã sẵn sàng cho bài kiểm tra."
             }
           ],
           "choices": [
@@ -430,7 +430,7 @@
             {
               "character": "NPC_Learna",
               "characterImage": "npc_teacher.png",
-              "text": "Hmm... có vẻ như ngươi chưa có *Sách Từ Vựng Tiếng Anh*."
+              "text": "Hmm... có vẻ như ngươi chưa có [Maigc Book]."
             },
             {
               "character": "NPC_Learna",

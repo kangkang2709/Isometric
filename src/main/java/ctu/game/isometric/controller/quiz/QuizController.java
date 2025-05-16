@@ -9,8 +9,6 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import ctu.game.isometric.controller.GameController;
 import ctu.game.isometric.model.game.GameState;
-import ctu.game.isometric.util.QuizTimer;
-import ctu.game.isometric.util.TimedQuizSystem;
 
 import java.util.Map;
 

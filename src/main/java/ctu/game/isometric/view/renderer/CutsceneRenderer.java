@@ -1,4 +1,4 @@
-package ctu.game.isometric.controller.cutscene;
+package ctu.game.isometric.view.renderer;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
@@ -8,7 +8,7 @@ import com.badlogic.gdx.utils.Array;
 import ctu.game.isometric.controller.GameController;
 import ctu.game.isometric.model.game.GameState;
 
-public class CutsceneController {
+public class CutsceneRenderer {
     private Array<Texture> pages;
     private int currentPage;
     private float transitionTimer;
@@ -29,7 +29,7 @@ public class CutsceneController {
         NONE
     }
 
-    public CutsceneController(GameController gameController) {
+    public CutsceneRenderer(GameController gameController) {
         this.gameController = gameController;
         this.pages = new Array<>();
         this.currentPage = 0;

@@ -7,10 +7,10 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import ctu.game.isometric.controller.EffectManager;
 import ctu.game.isometric.controller.GameController;
 import ctu.game.isometric.model.entity.Enemy;
 import ctu.game.isometric.model.game.GameState;
@@ -89,8 +89,8 @@ public class GameplayController {
 
     private void initializeUI() {
         // Initialize fonts
-        titleFont = generateVietNameseFont("GrenzeGotisch.ttf", 20);
-        regularFont = generateVietNameseFont("GrenzeGotisch.ttf", 17);
+        titleFont = generateVietNameseFont("Tektur-Bold.ttf", 18);
+        regularFont = generateVietNameseFont("Tektur-Bold.ttf", 13);
         bigFont =  regularFont;
 
 
@@ -128,7 +128,7 @@ public class GameplayController {
 
         // Setup positions
         float textX = x + 20;
-        float textY = y + height - 90;
+        float textY = y + height - 80;
         float maxWidth = width - 40;
         float lineHeight = regularFont.getLineHeight() + 5;
 
@@ -300,10 +300,10 @@ public class GameplayController {
         Items item = reward.getItemID();
 
         // Title
-        drawCenteredText(batch, titleFont, "VICTORY!", viewport.getWorldWidth()/2, panelY + panelHeight - 50, new Color(1, 0.9f, 0.3f, 1));
+        drawCenteredText(batch, titleFont, "CHIẾN THĂNG!", viewport.getWorldWidth()/2, panelY + panelHeight - 50, new Color(1, 0.9f, 0.3f, 1));
 
         // Enemy defeated message
-        drawCenteredText(batch, regularFont, "You defeated " + enemyName + "!",
+        drawCenteredText(batch, regularFont, "Bạn đã thua " + enemyName + "!",
                 viewport.getWorldWidth()/2, panelY + panelHeight - 100, Color.WHITE);
         Texture itemTexture = null;
         // Draw reward item
@@ -363,7 +363,7 @@ public class GameplayController {
 
         Rectangle continueButton = new Rectangle(buttonX, buttonY, buttonWidth, buttonHeight);
 
-        drawButton(batch, continueButton, "CONTINUE");
+        drawButton(batch, continueButton, "Tiếp tục");
 
         // Handle button click
         if (Gdx.input.justTouched()) {
@@ -415,7 +415,7 @@ public class GameplayController {
 
         regularFont.setColor(Color.WHITE);
 //        regularFont.draw(batch, combatLog, 80, 170);
-        drawCenteredText(batch, regularFont, (isPlayerTurn ? "Player" : enemyName) + " TURN", viewport.getWorldWidth()/2, 700, Color.WHITE);
+        drawCenteredText(batch, regularFont,"Lượt của " + (isPlayerTurn ? "Bạn" : enemyName), viewport.getWorldWidth()/2, 700, Color.WHITE);
 
         // Update and draw buttons
         float buttonX = ((viewport.getWorldWidth() - 70) / 2);
@@ -466,14 +466,13 @@ public class GameplayController {
 
         // Title
         regularFont.setColor(Color.WHITE);
-        regularFont.draw(batch, "Inventory", textX, textY);
         textY -= 25;
 
         // Get character items
         Map<String, Integer> characterItems = gameController.getCharacter().getItemsWithoutDebuff();
 
         if (characterItems == null || characterItems.isEmpty()) {
-            regularFont.draw(batch, "No items", textX, textY);
+            regularFont.draw(batch, "Không có vật phẩm!", textX, textY);
             return;
         }
 
@@ -522,7 +521,7 @@ public class GameplayController {
 
             if (isHovered) {
                 regularFont.setColor(Color.GREEN);
-                regularFont.draw(batch, "[USE]", textX + 120, textY);
+                regularFont.draw(batch, "[DÙNG]", textX + 120, textY);
             }
 
             textY -= itemHeight;
@@ -533,7 +532,7 @@ public class GameplayController {
         int remainingItems = characterItems.size() - maxItemsToShow;
         if (remainingItems > 0) {
             regularFont.setColor(Color.WHITE);
-            regularFont.draw(batch, "... and " + remainingItems + " more", textX, textY);
+            regularFont.draw(batch, "... và " + remainingItems + " thêm", textX, textY);
         }
 
         // Display tooltip for hovered item
@@ -558,8 +557,8 @@ public class GameplayController {
         float value = item.getValue();
 
         String tooltip = item.getItemName() + "\n" +
-                "Effect: " + effect + "\n" +
-                "Value: " + value;
+                "Hiệu quả: " + effect + "\n" +
+                "Chỉ số: " + value;
 
         float tooltipWidth = 200;
         float tooltipHeight = 80;
@@ -633,14 +632,14 @@ public class GameplayController {
             switch (item.getItemEffect()) {
                 case "heal":
                     playerHealth = Math.min(playerMaxHealth, playerHealth + item.getValue());
-                    showMessage("Used " + item.getItemName() + "! Healed " + item.getValue() + " HP");
+                    showMessage("Đã dùng " + item.getItemName() + "! HỒI " + item.getValue() + " Sinh Lực!");
                     break;
                 case "buff":
                     wordDamageMultiplier += item.getValue();
-                    showMessage("Used " + item.getItemName() + "! Damage increased!");
+                    showMessage("Đã dùng " + item.getItemName() + "! MẠNH MẼ!");
                     break;
                 default:
-                    showMessage("Used " + item.getItemName() + "!");
+                    showMessage("Đã dùng " + item.getItemName() + "!");
                     break;
             }
 
@@ -653,7 +652,7 @@ public class GameplayController {
             }
 
             // End player's turn after using an item
-            combatLog += "\nYou used " + item.getItemName() + ".\nEnemy's turn now!";
+            combatLog += "\nBạn đã dùng " + item.getItemName() + ".\nTới Lượt Của Kẻ Địch!";
             isPlayerTurn = false;
         }
     }
@@ -809,11 +808,11 @@ public class GameplayController {
 
     private void checkCombatEnd() {
         if (playerHealth <= 0) {
-            combatLog = "You were defeated by " + enemyName + "!";
+            combatLog = "Bạn bị đánh bại bởi " + enemyName + "!";
             playerHealth = 0;
             endCombat(false);
         } else if (enemyHealth <= 0) {
-            combatLog = "You defeated " + enemyName + "!";
+            combatLog = "Bạn đã hạ gục " + enemyName + "!";
             enemyHealth = 0;
             endCombat(true);
         }
@@ -837,7 +836,9 @@ public class GameplayController {
         if (gameController.getCharacter().getLearnedWords().contains(word.toUpperCase()) || wordValidator.isValidWord(word)) {
             int points = WordScorer.getTotalScore(word);
 
-            gameController.getCharacter().addLearnedWord(word);
+            if(gameController.getCharacter().addLearnedWord(word))
+                gameController.getDictionaryView().addNewWord(word);
+
 
             if (isCombatMode && isPlayerTurn) {
                 float damage = points * wordDamageMultiplier;
@@ -878,7 +879,7 @@ public class GameplayController {
 
         this.isCombatMode = true;
         this.isPlayerTurn = true;
-        this.combatLog = "Combat with " + enemyName + " has begun!";
+        this.combatLog = "Bắt đầu cạnh tranh với " + enemyName + "!";
         letterGrid.regenerateGrid();
     }
 

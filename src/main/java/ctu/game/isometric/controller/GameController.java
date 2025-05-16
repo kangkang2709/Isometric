@@ -1,18 +1,20 @@
 package ctu.game.isometric.controller;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.MapProperties;
-import com.badlogic.gdx.maps.MapRenderer;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
-import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.Rectangle;
 import ctu.game.isometric.IsometricGame;
-import ctu.game.isometric.controller.cutscene.CutsceneController;
-import ctu.game.isometric.controller.gameplay.EffectManager;
+import ctu.game.isometric.model.dictionary.Dictionary;
+import ctu.game.isometric.model.dictionary.Word;
+import ctu.game.isometric.view.menu.CharacterCreation;
+import ctu.game.isometric.view.menu.MainMenu;
+import ctu.game.isometric.view.menu.PauseMenu;
+import ctu.game.isometric.view.menu.SettingsMenu;
+import ctu.game.isometric.view.renderer.CutsceneRenderer;
 import ctu.game.isometric.controller.gameplay.GameplayController;
 import ctu.game.isometric.controller.quiz.QuizController;
 import ctu.game.isometric.model.entity.Character;
@@ -21,11 +23,15 @@ import ctu.game.isometric.model.game.GameState;
 import ctu.game.isometric.model.world.IsometricMap;
 import ctu.game.isometric.util.EnemyLoader;
 import ctu.game.isometric.util.WordNetValidator;
-import ctu.game.isometric.util.WordValidator;
-import ctu.game.isometric.view.renderer.ExploringUI;
+import ctu.game.isometric.view.renderer.TransitionRenderer;
+import ctu.game.isometric.view.ui.ExploringUI;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+
+import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
 
 public class GameController {
     private IsometricGame game;
@@ -35,24 +41,26 @@ public class GameController {
     private InputController inputController;
     private DialogController dialogController; // New field
     private MusicController musicController;
-    private MenuController menuController;
-    private SettingsMenuController settingsMenuController;
-    private MainMenuController mainMenuController;
-    private TransitionController transitionController;
+    private PauseMenu pauseMenu;
+    private SettingsMenu settingsMenu;
+    private MainMenu mainMenuController;
+    private TransitionRenderer transitionRenderer;
     private GameplayController gameplayController;
     private LoadGameController loadGameController;
 
-    private CharacterCreationController characterCreationController;
+    private CharacterCreation characterCreationController;
     private GameState currentState = GameState.MAIN_MENU;
     private GameState previousState = GameState.MAIN_MENU;
-    private CutsceneController cutsceneController;
+    private CutsceneRenderer cutsceneController;
     boolean isCreated = false;
     private ExploringUI exploringUI;
 
     private EffectManager effectManager;
     private WordNetValidator wordNetValidator;
     private QuizController quizController;
-
+    private ctu.game.isometric.view.view.DictionaryView  dictionaryView;
+    private Dictionary dictionary;
+    private BitmapFont font;
 
     public GameController(IsometricGame game) {
         this.game = game;
@@ -61,17 +69,16 @@ public class GameController {
         this.inputController = new InputController(this);
         this.dialogController = new DialogController(this);
         this.musicController = new MusicController();
-        characterCreationController = new CharacterCreationController(this);
-        this.menuController = new MenuController(this);
-        this.settingsMenuController = new SettingsMenuController(this);
-        this.mainMenuController = new MainMenuController(this);
-        this.transitionController = new TransitionController();
-        this.cutsceneController = new CutsceneController(this);
+        characterCreationController = new CharacterCreation(this);
+        this.pauseMenu = new PauseMenu(this);
+        this.settingsMenu = new SettingsMenu(this);
+        this.mainMenuController = new MainMenu(this);
+        this.transitionRenderer = new TransitionRenderer();
+        this.cutsceneController = new CutsceneRenderer(this);
         loadGameController = new LoadGameController(this);
 //        this.wordValidator.loadDictionary();
         this.wordNetValidator = new WordNetValidator();
         this.wordNetValidator.loadDictionary();
-
 
         effectManager = new EffectManager("effects");
         this.loadEffects();
@@ -79,10 +86,35 @@ public class GameController {
         this.gameplayController = new GameplayController(this);
         this.quizController = new QuizController(this);
 
+        initializeDictionary();
         this.musicController.initialize();
         this.musicController.playMusicForState(GameState.MAIN_MENU);
 
     }
+
+    public void initializeDictionary() {
+        if (dictionary == null) {
+            dictionary = new ctu.game.isometric.model.dictionary.Dictionary();
+        }
+
+        if (dictionaryView == null) {
+            dictionaryView = new ctu.game.isometric.view.view.DictionaryView(this,dictionary,this.wordNetValidator);
+        }
+    }
+
+    public void resetLearnedWords() {
+        Set<Word> learnedWordList = new HashSet<>();
+        for (String learnedWord : getCharacter().getLearnedWords()) {
+            Word word = wordNetValidator.getWordDetails(learnedWord);
+            if (word != null) {
+                learnedWordList.add(word);
+            }
+        }
+        dictionary.setLearnedWords(learnedWordList);
+        dictionary.getNewWords().clear();
+
+    }
+
 
     public void loadEffects() {
         effectManager.loadEffect("attack", "effects/blood.p");
@@ -90,18 +122,13 @@ public class GameController {
     }
 
     public void loadCharacter(Character character) {
-        // Save reference to the current character's learned words if it exists
-        Set<String> currentLearnedWords = null;
-        if (this.character != null && this.character.getLearnedWords() != null) {
-            currentLearnedWords = new HashSet<>(this.character.getLearnedWords());
-        }
+        this.character = character;
 
         // Load the saved character
-        this.character = character;
         this.isCreated = true;
 
         // Re-initialize map and other references
-        character.setGameMap(this.getMap());
+        this.character.setGameMap(this.getMap());
 
         // Now load the saved dictionary from file
         if (character.getWordFilePath() != null) {
@@ -129,7 +156,10 @@ public class GameController {
                 gameplayController.update(delta);
                 break;
             case MENU:
-                menuController.update(delta);
+                pauseMenu.update(delta);
+                break;
+            case DICTIONARY:
+                dictionaryView.update(delta);
                 break;
             case MAIN_MENU:
                 mainMenuController.update(delta);
@@ -141,7 +171,7 @@ public class GameController {
                 quizController.update(delta);
                 break;
             case SETTINGS:
-                settingsMenuController.update(delta);
+                settingsMenu.update(delta);
                 break;
             case CUTSCENE:
                 if (character.getFlags() != null) {
@@ -164,12 +194,28 @@ public class GameController {
     }
 
 
-    public TransitionController getTransitionController() {
-        return transitionController;
+    public TransitionRenderer getTransitionController() {
+        return transitionRenderer;
     }
 
-    public void setTransitionController(TransitionController transitionController) {
-        this.transitionController = transitionController;
+    public void setTransitionController(TransitionRenderer transitionRenderer) {
+        this.transitionRenderer = transitionRenderer;
+    }
+
+    public ctu.game.isometric.view.view.DictionaryView getDictionaryView() {
+        return dictionaryView;
+    }
+
+    public void setDictionaryView(ctu.game.isometric.view.view.DictionaryView dictionaryView) {
+        this.dictionaryView = dictionaryView;
+    }
+
+    public Dictionary getDictionary() {
+        return dictionary;
+    }
+
+    public void setDictionary(Dictionary dictionary) {
+        this.dictionary = dictionary;
     }
 
     public GameState getCurrentState() {
@@ -189,7 +235,7 @@ public class GameController {
             previousState = oldState;
         }
 
-        transitionController.startLoadingScreen(() -> {
+        transitionRenderer.startLoadingScreen(() -> {
             // This code executes after the fade out, during loading
             currentState = newState;
 
@@ -215,7 +261,7 @@ public class GameController {
         character.getFlags().add(cutsceneName);
     }
 
-    public CutsceneController getCutsceneController() {
+    public CutsceneRenderer getCutsceneController() {
         return cutsceneController;
     }
 
@@ -320,7 +366,7 @@ public class GameController {
         // Reset controllers to initial state - make sure to reset character creation controller
 
         if(characterCreationController == null) {
-            characterCreationController = new CharacterCreationController(this);
+            characterCreationController = new CharacterCreation(this);
         }
 
 
@@ -330,7 +376,7 @@ public class GameController {
 
         if (cutsceneController != null) {
             cutsceneController.dispose();
-            cutsceneController = new CutsceneController(this);
+            cutsceneController = new CutsceneRenderer(this);
         }
 
         if (dialogController != null) {
@@ -457,7 +503,15 @@ public class GameController {
         return currentEventY;
     }
 
-//    public boolean[][] getWalkableTiles() {
+    public BitmapFont getFont() {
+        return font;
+    }
+
+    public void setFont(BitmapFont font) {
+        this.font = font;
+    }
+
+    //    public boolean[][] getWalkableTiles() {
 //        // First check if map is valid
 //        if (map == null || map.getMapData() == null || map.getMapData().length == 0) {
 //            return new boolean[0][0];
@@ -513,35 +567,35 @@ public class GameController {
         return musicController;
     }
 
-    public MenuController getMenuController() {
-        return menuController;
+    public PauseMenu getMenuController() {
+        return pauseMenu;
     }
 
     public void setPreviousState(GameState previousState) {
         this.previousState = previousState;
     }
 
-    public void setMenuController(MenuController menuController) {
-        this.menuController = menuController;
+    public void setMenuController(PauseMenu pauseMenu) {
+        this.pauseMenu = pauseMenu;
     }
-    public SettingsMenuController getSettingsMenuController() {
-        return settingsMenuController;
+    public SettingsMenu getSettingsMenuController() {
+        return settingsMenu;
     }
-    public MainMenuController getMainMenuController() {
+    public MainMenu getMainMenuController() {
         return mainMenuController;
     }
 
     public void cycleTransitionType() {
-        TransitionController.TransitionType[] types = TransitionController.TransitionType.values();
-        int nextIndex = (transitionController.getCurrentType().ordinal() + 1) % types.length;
-        transitionController.setTransitionType(types[nextIndex]);
+        TransitionRenderer.TransitionType[] types = TransitionRenderer.TransitionType.values();
+        int nextIndex = (transitionRenderer.getCurrentType().ordinal() + 1) % types.length;
+        transitionRenderer.setTransitionType(types[nextIndex]);
         System.out.println("Changed transition to: " + types[nextIndex]);
     }
     public void dispose() {
-        transitionController.dispose();
+        transitionRenderer.dispose();
         musicController.dispose();
-        menuController.dispose();
-        settingsMenuController.dispose();
+        pauseMenu.dispose();
+        settingsMenu.dispose();
         mainMenuController.dispose();
         characterCreationController.dispose();
         gameplayController.dispose();
@@ -575,12 +629,12 @@ public class GameController {
         this.gameplayController = gameplayController;
     }
 
-    public CharacterCreationController getCharacterCreationController() {
+    public CharacterCreation getCharacterCreationController() {
         return characterCreationController;
     }
 
-    public void setCharacterCreationController(CharacterCreationController characterCreationController) {
-        this.characterCreationController = characterCreationController;
+    public void setCharacterCreationController(CharacterCreation characterCreation) {
+        this.characterCreationController = characterCreation;
     }
 
     public void setCharacter(Character character) {

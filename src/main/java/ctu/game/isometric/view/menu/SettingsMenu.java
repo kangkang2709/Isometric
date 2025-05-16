@@ -1,4 +1,4 @@
-package ctu.game.isometric.controller;
+package ctu.game.isometric.view.menu;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
@@ -6,12 +6,11 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Align;
+import ctu.game.isometric.controller.GameController;
 import ctu.game.isometric.model.game.GameState;
 
 import java.util.ArrayList;
@@ -19,7 +18,7 @@ import java.util.List;
 
 import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
 
-public class SettingsMenuController {
+public class SettingsMenu {
     private GameController gameController;
     private List<MenuOption> menuOptions;
     private int selectedIndex;
@@ -47,7 +46,7 @@ public class SettingsMenuController {
     private boolean isDraggingSlider = false;
     private int draggingSliderIndex = -1;
 
-    public SettingsMenuController(GameController gameController) {
+    public SettingsMenu(GameController gameController) {
         this.gameController = gameController;
         this.menuOptions = new ArrayList<>();
         this.selectedIndex = 0;

@@ -1,22 +1,20 @@
 package ctu.game.isometric.view.screen;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import ctu.game.isometric.IsometricGame;
 import ctu.game.isometric.controller.GameController;
-import ctu.game.isometric.controller.LoadGameController;
-import ctu.game.isometric.model.entity.Character;
+import ctu.game.isometric.model.dictionary.Dictionary;
 import ctu.game.isometric.model.game.GameState;
 import ctu.game.isometric.view.renderer.CharacterRenderer;
-import ctu.game.isometric.view.renderer.DialogUI;
-import ctu.game.isometric.view.renderer.ExploringUI;
+import ctu.game.isometric.view.ui.DialogUI;
 import ctu.game.isometric.view.renderer.MapRenderer;
+import ctu.game.isometric.view.ui.ExploringUI;
+import ctu.game.isometric.view.view.DictionaryView;
 
 public class GameScreen implements Screen {
     private final IsometricGame game;
@@ -48,6 +46,7 @@ public class GameScreen implements Screen {
         gameController.getInputController().setDialogUI(dialogUI);
         // Set input processor
         Gdx.input.setInputProcessor(gameController.getInputController());
+
     }
 
     @Override
@@ -80,12 +79,22 @@ public class GameScreen implements Screen {
 //            exploringUI.setCharacter(gameController.getCharacter());
             // Reset dialog UI
 
-            if (dialogUI != null && gameController.getDialogController().isDialogActive()) {
-                dialogUI.render();
-            }
+//            if (dialogUI != null && gameController.getDialogController().isDialogActive()) {
+//                dialogUI.render();
+//            }
+
 
             dialogUI = new DialogUI(gameController.getDialogController());
             gameController.getInputController().setDialogUI(dialogUI);
+
+
+
+            if(gameController.getDictionaryView() != null) {
+                gameController.getDictionaryView().dispose();
+            }
+
+            gameController.resetLearnedWords();
+            gameController.setDictionaryView(new DictionaryView(gameController,gameController.getDictionary(), gameController.getWordNetValidator()));
 
             // Reset flag
             gameController.setCreated(false);
@@ -134,6 +143,11 @@ public class GameScreen implements Screen {
                     break;
                 case CUTSCENE:
                     gameController.getCutsceneController().render(batch);
+                    break;
+                // In GameScreen.java, inside the switch statement in render()
+
+                case DICTIONARY:
+                    gameController.getDictionaryView().render(batch);
                     break;
                 case GAMEPLAY:
                     gameController.getGameplayController().render(batch);

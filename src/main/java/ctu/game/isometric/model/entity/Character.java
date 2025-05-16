@@ -84,7 +84,7 @@ public class Character {
 
     public boolean hasItem(String itemName) {
         if (items == null || items.isEmpty()) {
-            throw new IllegalArgumentException("Item or item name cannot be null");
+            this.items = new HashMap<>();
         }
         return items.containsKey(itemName);
     }
@@ -194,16 +194,18 @@ public class Character {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    public void addLearnedWord(String word) {
+    public boolean addLearnedWord(String word) {
         if (newlearneWords == null) {
             newlearneWords = new HashSet<>();
         }
 
         if (word != null && !word.isEmpty()) {
-            if (learnedWords != null && !learnedWords.contains(word.toUpperCase())) {
+            if (!newlearneWords.contains(word.toUpperCase()) && !learnedWords.contains(word.toUpperCase())) {
                 newlearneWords.add(word.toUpperCase());
+                return true;
             }
         }
+        return false;
     }
 
     // Check if the character has already learned a word

@@ -1,4 +1,4 @@
-package ctu.game.isometric.controller;
+package ctu.game.isometric.view.menu;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
@@ -8,15 +8,14 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Align;
-import ctu.game.isometric.controller.gameplay.EffectManager;
+import ctu.game.isometric.controller.GameController;
+import ctu.game.isometric.controller.GameSaveController;
 import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.game.GameState;
-import ctu.game.isometric.util.GameSaveService;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -25,7 +24,7 @@ import java.util.List;
 
 import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
 
-public class MenuController {
+public class PauseMenu {
 
     private GameController gameController;
     private List<MenuItem> menuItems;
@@ -57,7 +56,7 @@ public class MenuController {
 
     // Animation properties
 
-    public MenuController(GameController gameController) {
+    public PauseMenu(GameController gameController) {
         this.gameController = gameController;
         this.selectedIndex = 0;
         this.menuItems = new ArrayList<>();
@@ -92,7 +91,7 @@ public class MenuController {
     private void showSaveGameDialog() {
         // For now, just generate a timestamp-based name
         Character character = gameController.getCharacter();
-        GameSaveService saveService = new GameSaveService();
+        GameSaveController saveService = new GameSaveController();
 
         // Create a timestamped filename
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");

@@ -1,4 +1,4 @@
-package ctu.game.isometric.util;
+package ctu.game.isometric.controller;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
@@ -9,17 +9,15 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.game.GameSave;
 
-import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class GameSaveService {
+public class GameSaveController {
     private static final String SAVE_DIRECTORY = "saves/";
     private static final int MAX_SAVE_FILES = 5;
     private final ObjectMapper objectMapper;
 
-    public GameSaveService() {
+    public GameSaveController() {
         // Configure ObjectMapper
         this.objectMapper = new ObjectMapper();
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT);

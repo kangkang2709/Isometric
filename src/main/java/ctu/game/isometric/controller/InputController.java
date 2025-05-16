@@ -6,13 +6,10 @@ import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.utils.TimeUtils;
 import ctu.game.isometric.controller.quiz.QuizController;
 import ctu.game.isometric.model.game.GameState;
-import ctu.game.isometric.view.renderer.DialogUI;
+import ctu.game.isometric.view.ui.DialogUI;
 import ctu.game.isometric.view.renderer.MapRenderer;
-
-import static com.badlogic.gdx.math.Rectangle.tmp;
 
 public class InputController extends InputAdapter {
     private final GameController gameController;
@@ -180,7 +177,7 @@ public class InputController extends InputAdapter {
         }
 
         switch (keycode) {
-
+            case Keys.P -> gameController.setState(GameState.DICTIONARY);
             case Keys.ESCAPE -> gameController.setState(GameState.MENU);
             case Keys.TAB -> gameController.getExploringUI().toggleUI();
             case Keys.W, Keys.UP -> {

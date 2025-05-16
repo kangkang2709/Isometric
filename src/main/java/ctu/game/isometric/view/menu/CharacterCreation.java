@@ -1,4 +1,4 @@
-package ctu.game.isometric.controller;
+package ctu.game.isometric.view.menu;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -10,13 +10,14 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
+import ctu.game.isometric.controller.GameController;
 import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.entity.Gender;
 import ctu.game.isometric.model.game.GameState;
 
 import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
 
-public class CharacterCreationController {
+public class CharacterCreation {
     private GameController gameController;
     private boolean initialized = false;
 
@@ -42,7 +43,7 @@ public class CharacterCreationController {
     private float cursorBlinkTime = 0;
     private boolean showCursor = false;
 
-    public CharacterCreationController(GameController gameController) {
+    public CharacterCreation(GameController gameController) {
         this.gameController = gameController;
         initResources();
     }

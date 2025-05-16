@@ -1,7 +1,9 @@
-package ctu.game.isometric.util;
+package ctu.game.isometric.controller.quiz;
 
 import ctu.game.isometric.model.dictionary.Word;
 import ctu.game.isometric.model.dictionary.WordDefinition;
+import ctu.game.isometric.util.WordNetValidator;
+import ctu.game.isometric.util.WordScorer;
 
 import java.util.*;
 import java.util.regex.Pattern;

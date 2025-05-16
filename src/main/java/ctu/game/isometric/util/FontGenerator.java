@@ -19,7 +19,7 @@ public class FontGenerator {
         for (char c = '0'; c <= '9'; c++) {
             builder.append(c);
         }
-        builder.append(".-"); // Add dot and minus for float numbers
+        builder.append(".-[]:,_*"); // Add dot and minus for float numbers
         return builder.toString();
     }
 

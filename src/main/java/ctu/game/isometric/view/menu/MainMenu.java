@@ -1,20 +1,19 @@
-package ctu.game.isometric.controller;
+package ctu.game.isometric.view.menu;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
+import ctu.game.isometric.controller.GameController;
 import ctu.game.isometric.model.game.GameState;
 
 import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
 
-public class MainMenuController {
+public class MainMenu {
     private GameController gameController;
     private Texture backgroundImage;
     private BitmapFont font;
@@ -42,7 +41,7 @@ public class MainMenuController {
     private float inputCooldown = 0;
     private final float INPUT_DELAY = 0.2f;
 
-    public MainMenuController(GameController gameController) {
+    public MainMenu(GameController gameController) {
        this.font = generateVietNameseFont("GrenzeGotisch.ttf", 30);
 
         this.gameController = gameController;

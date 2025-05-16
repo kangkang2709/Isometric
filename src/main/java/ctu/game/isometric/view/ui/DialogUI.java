@@ -1,11 +1,10 @@
-package ctu.game.isometric.view.renderer;
+package ctu.game.isometric.view.ui;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import ctu.game.isometric.controller.DialogController;
 import ctu.game.isometric.model.dialog.Dialog;

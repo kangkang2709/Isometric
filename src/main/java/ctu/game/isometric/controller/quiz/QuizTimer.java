@@ -1,4 +1,4 @@
-package ctu.game.isometric.util;
+package ctu.game.isometric.controller.quiz;
 
 import com.badlogic.gdx.utils.Timer;
 

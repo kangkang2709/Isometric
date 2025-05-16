@@ -1,4 +1,7 @@
-package ctu.game.isometric.util;
+package ctu.game.isometric.controller.quiz;
+
+import ctu.game.isometric.util.WordNetValidator;
+import ctu.game.isometric.util.WordScorer;
 
 import java.util.*;
 
