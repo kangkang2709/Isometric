@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.Random;
 
 import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
+import static ctu.game.isometric.util.WordNetValidator.calculateScore;
+import static ctu.game.isometric.util.WordNetValidator.getTotalScore;
 
 
 public class GameplayController {
@@ -438,7 +440,6 @@ public class GameplayController {
             if (currentWord.length() > 0) {
                 drawCenteredText(batch, regularFont, "Spell: " + currentWord, viewport.getWorldWidth()/2, 600, Color.WHITE);
 
-                int potentialScore = WordScorer.getTotalScore(currentWord);
 
                 if (gameController.getCharacter().getLearnedWords().contains(currentWord.toUpperCase()) || wordValidator.isValidWord(currentWord)) {
                     drawCenteredText(batch, regularFont, wordValidator.getWordMeaning(currentWord),
@@ -834,7 +835,8 @@ public class GameplayController {
         }
 
         if (gameController.getCharacter().getLearnedWords().contains(word.toUpperCase()) || wordValidator.isValidWord(word)) {
-            int points = WordScorer.getTotalScore(word);
+            int points = getTotalScore(wordValidator.getWordDetails(word));
+            System.out.println("Word: " + word + ", Points: " + points);
 
             if(gameController.getCharacter().addLearnedWord(word))
                 gameController.getDictionaryView().addNewWord(word);

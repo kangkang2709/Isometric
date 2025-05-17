@@ -283,14 +283,12 @@ public class InputController extends InputAdapter {
         switch (keycode) {
             case Keys.ESCAPE -> gameController.setCurrentState(GameState.EXPLORING);
             case Keys.UP -> {
-                Vector3 mousePos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
-                gameController.getCamera().unproject(mousePos);
-                gameController.getDictionaryView().handleMouseScroll(0, -1, mousePos.x, mousePos.y);
+                gameController.getDictionaryView().selectPreviousWord();
+                return true;
             }
             case Keys.DOWN -> {
-                Vector3 mousePos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
-                gameController.getCamera().unproject(mousePos);
-                gameController.getDictionaryView().handleMouseScroll(0, 1, mousePos.x, mousePos.y);
+                gameController.getDictionaryView().selectNextWord();
+                return true;
             }
             default -> {
                 return false;
@@ -419,6 +417,9 @@ public class InputController extends InputAdapter {
                 quizController.processInput(character);
                 return true;
             }
+        }
+        else if (gameController.getCurrentState() == GameState.DICTIONARY) {
+            return gameController.getDictionaryView().handleKeyTyped(character);
         }
         return false;
     }

@@ -1,7 +1,6 @@
 package ctu.game.isometric.controller.quiz;
 
 import ctu.game.isometric.util.WordNetValidator;
-import ctu.game.isometric.util.WordScorer;
 
 import java.util.*;
 
@@ -78,8 +77,8 @@ public class TimedQuizSystem extends SymbolicQuizSystem implements QuizTimer.Tim
         boolean isCorrect = normalizedUserAnswer.equals(normalizedCorrectAnswer);
 
         int difficulty = (int) currentQuiz.getOrDefault("difficulty", 3);
-        int score = WordScorer.calculateScore(isCorrect, difficulty, (long)(timeTaken * 1000));
-
+//        int score = calculateScore(isCorrect, difficulty, (long)(timeTaken * 1000));
+ int score = 2;
         // Apply time penalty if time expired
         if (timeExpired) {
             score = Math.max(0, score / 2); // 50% penalty for expired time

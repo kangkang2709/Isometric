@@ -3,7 +3,6 @@ package ctu.game.isometric.controller.quiz;
 import ctu.game.isometric.model.dictionary.Word;
 import ctu.game.isometric.model.dictionary.WordDefinition;
 import ctu.game.isometric.util.WordNetValidator;
-import ctu.game.isometric.util.WordScorer;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -84,7 +83,7 @@ public class SymbolicQuizSystem {
         quizData.put("question", sentence);
         quizData.put("answer", wordUpperCase); // Use original uppercase for answer
         quizData.put("difficulty", 3);
-        quizData.put("points", WordScorer.calculateScore(true, 3, 0)); // Example scoring
+        quizData.put("points", 2); // Example scoring
 
         return quizData;
     }

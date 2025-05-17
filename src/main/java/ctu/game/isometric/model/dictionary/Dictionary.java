@@ -1,5 +1,6 @@
 package ctu.game.isometric.model.dictionary;
 
+import java.text.Normalizer;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -55,9 +56,17 @@ public class Dictionary {
 
     // Search for words containing a substring
     public Set<Word> searchWords(String query) {
-        String lowercaseQuery = query.toLowerCase();
+        if (query == null || query.isEmpty()) {
+            return new HashSet<>();
+        }
+
+        String normalizedQuery = Normalizer.normalize(query.toLowerCase(), Normalizer.Form.NFC);
+
         return getAllWords().stream()
-                .filter(word -> word.getTerm().toLowerCase().contains(lowercaseQuery))
+                .filter(word -> {
+                    String normalizedTerm = Normalizer.normalize(word.getTerm().toLowerCase(), Normalizer.Form.NFC);
+                    return normalizedTerm.contains(normalizedQuery);
+                })
                 .collect(Collectors.toSet());
     }
 

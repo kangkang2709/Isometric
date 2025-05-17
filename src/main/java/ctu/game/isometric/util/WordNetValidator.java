@@ -16,7 +16,7 @@ import java.net.URL;
 import java.util.*;
 
 public class WordNetValidator {
-    private IDictionary dictionary;
+    private static IDictionary dictionary;
     private final Map<String, Boolean> cache;
     private volatile boolean dictionaryLoaded = false;
     private static final int CACHE_SIZE = 100;
@@ -211,4 +211,379 @@ public synchronized void loadDictionary() {
             dictionary.close();
         }
     }
+
+
+    public enum PartOfSpeech {
+        NOUN, VERB, ADJECTIVE, ADVERB, PRONOUN, PREPOSITION, CONJUNCTION, INTERJECTION, UNKNOWN
+    }
+
+    private static final Map<Character, Integer> LETTER_BONUS = new HashMap<>();
+    private static final Map<PartOfSpeech, Integer> POS_BONUS = new HashMap<>();
+    private static final String[] COMMON_WORDS = {"the", "be", "to", "of", "and", "a", "in", "that", "have", "it"};
+
+    static {
+        // Initialize letter bonuses
+        LETTER_BONUS.put('Q', 3);
+        LETTER_BONUS.put('Z', 3);
+        LETTER_BONUS.put('X', 3);
+        LETTER_BONUS.put('J', 2);
+        LETTER_BONUS.put('K', 2);
+        LETTER_BONUS.put('V', 1);
+        LETTER_BONUS.put('W', 1);
+        LETTER_BONUS.put('Y', 1);
+
+        // Initialize part-of-speech bonuses
+        POS_BONUS.put(PartOfSpeech.NOUN, 3);
+        POS_BONUS.put(PartOfSpeech.VERB, 4);
+        POS_BONUS.put(PartOfSpeech.ADJECTIVE, 2);
+        POS_BONUS.put(PartOfSpeech.ADVERB, 3);
+        POS_BONUS.put(PartOfSpeech.PRONOUN, 1);
+        POS_BONUS.put(PartOfSpeech.PREPOSITION, 1);
+        POS_BONUS.put(PartOfSpeech.CONJUNCTION, 1);
+        POS_BONUS.put(PartOfSpeech.INTERJECTION, 2);
+        POS_BONUS.put(PartOfSpeech.UNKNOWN, 0);
+
+    }
+
+    public static int calculateScore(String word) {
+        if (word == null || word.length() < 3) return 0;
+
+        int length = word.length();
+        if (length <= 8) {
+            return switch (length) {
+                case 3 -> 1;
+                case 4 -> 2;
+                case 5 -> 4;
+                case 6 -> 6;
+                case 7 -> 10;
+                case 8 -> 15;
+                default -> 0;
+            };
+        }
+        return 20 + (length - 9) * 5;
+    }
+
+    public static int calculateBonusPoints(String word) {
+        if (word == null) return 0;
+
+        int bonus = 0;
+        for (char c : word.toCharArray()) {
+            bonus += LETTER_BONUS.getOrDefault(Character.toUpperCase(c), 0);
+        }
+        return bonus;
+    }
+
+    public static int calculatePartOfSpeechBonus(PartOfSpeech pos) {
+        return POS_BONUS.getOrDefault(pos, 0);
+    }
+
+    public static int getEnhancedScore(String word, PartOfSpeech pos, double frequency,
+                                       int synonymCount, double distanceFromCommonWords) {
+        int baseScore = calculateScore(word);
+        int letterBonus = calculateBonusPoints(word);
+        int posBonus = calculatePartOfSpeechBonus(pos);
+        int rarityBonus = getRarityBonus(frequency);
+        int synonymBonus = getSynonymCountBonus(synonymCount);
+        int uniquenessBonus = getSemanticUniquenessBonus(distanceFromCommonWords);
+
+        return baseScore + letterBonus + posBonus + rarityBonus + synonymBonus + uniquenessBonus;
+    }
+
+    public static int getRarityBonus(double frequency) {
+        if (frequency < 0.0001) return 10;
+        if (frequency < 0.001) return 7;
+        if (frequency < 0.01) return 5;
+        if (frequency < 0.1) return 3;
+        return 0;
+    }
+
+    public static int getSynonymCountBonus(int synonymCount) {
+        if (synonymCount == 0) return 5;
+        if (synonymCount < 3) return 3;
+        if (synonymCount < 7) return 1;
+        return 0;
+    }
+
+    public static int getTotalScore(Word word) {
+        if (word == null) return 0;
+
+        String text = word.getTerm().trim();
+
+        // Get part of speech from WordNet or word definitions
+        PartOfSpeech pos = determinePartOfSpeech(text, word);
+
+        // Estimate word frequency using WordNet
+        double frequency = estimateWordFrequency(text);
+
+        // Count synonyms from WordNet
+        int synonymCount = countSynonyms(text);
+
+        // Calculate semantic distance using WordNet
+        double semanticDistance = calculateSemanticDistanceWithJWI(text);
+
+        return getEnhancedScore(text, pos, frequency, synonymCount, semanticDistance);
+    }
+
+    public static int getTotalScore(String word) {
+        if (word == null) return 0;
+        return calculateScore(word) + calculateBonusPoints(word);
+    }
+
+    public static int getSemanticUniquenessBonus(double distanceFromCommonWords) {
+        if (distanceFromCommonWords > 0.8) return 8;
+        if (distanceFromCommonWords > 0.6) return 5;
+        if (distanceFromCommonWords > 0.4) return 3;
+        return 0;
+    }
+
+    /**
+     * Determines part of speech using WordNet and word definitions
+     */
+    private static PartOfSpeech determinePartOfSpeech(String text, Word word) {
+        if (dictionary == null) {
+            // Fallback if WordNet is not available
+            if (!word.getDefinitions().isEmpty() && word.getDefinitions().get(0).getPartOfSpeech() != null) {
+                try {
+                    return PartOfSpeech.valueOf(word.getDefinitions().get(0).getPartOfSpeech().toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    // Ignore and use fallback
+                }
+            }
+            return PartOfSpeech.UNKNOWN;
+        }
+
+        try {
+            // Try to find the most common POS in WordNet
+            Map<PartOfSpeech, Integer> posCount = new HashMap<>();
+            for (POS pos : POS.values()) {
+                IIndexWord idxWord = dictionary.getIndexWord(text, pos);
+                if (idxWord != null) {
+                    PartOfSpeech wordnetPos = mapWordNetPOS(pos);
+                    posCount.put(wordnetPos, posCount.getOrDefault(wordnetPos, 0) + idxWord.getWordIDs().size());
+                }
+            }
+
+            if (!posCount.isEmpty()) {
+                return posCount.entrySet().stream()
+                        .max(Map.Entry.comparingByValue())
+                        .get().getKey();
+            }
+
+            // Fallback to definitions
+            if (!word.getDefinitions().isEmpty() && word.getDefinitions().get(0).getPartOfSpeech() != null) {
+                try {
+                    return PartOfSpeech.valueOf(word.getDefinitions().get(0).getPartOfSpeech().toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    // Ignore and return UNKNOWN
+                }
+            }
+        } catch (Exception e) {
+            // Fallback on exceptions
+        }
+
+        return PartOfSpeech.UNKNOWN;
+    }
+
+    /**
+     * Maps WordNet POS to our PartOfSpeech enum
+     */
+    private static PartOfSpeech mapWordNetPOS(POS pos) {
+        if (pos == POS.NOUN) return PartOfSpeech.NOUN;
+        if (pos == POS.VERB) return PartOfSpeech.VERB;
+        if (pos == POS.ADJECTIVE) return PartOfSpeech.ADJECTIVE;
+        if (pos == POS.ADVERB) return PartOfSpeech.ADVERB;
+        return PartOfSpeech.UNKNOWN;
+    }
+
+    /**
+     * Estimates word frequency based on WordNet data
+     */
+    private static double estimateWordFrequency(String word) {
+        if (dictionary == null) {
+            // Simple frequency estimation based on word length if WordNet is unavailable
+            // Longer words are generally less frequent
+            return Math.max(0.0001, 0.5 / Math.pow(word.length(), 1.5));
+        }
+
+        try {
+            double totalUsageCount = 0;
+            int senseCount = 0;
+
+            for (POS pos : POS.values()) {
+                IIndexWord idxWord = dictionary.getIndexWord(word, pos);
+                if (idxWord != null) {
+                    for (IWordID wordID : idxWord.getWordIDs()) {
+                        IWord iWord = dictionary.getWord(wordID);
+                        ISynset synset = iWord.getSynset();
+                        // Use tag count as a frequency indicator
+                        totalUsageCount++;
+                        senseCount++;
+                    }
+                }
+            }
+
+            if (senseCount > 0) {
+                // Normalize to a value between 0 and 1
+                // Words with more tag counts are more common
+                double normalizedFrequency = Math.min(1.0, totalUsageCount / 50000.0);
+                return Math.max(0.0001, normalizedFrequency);
+            }
+        } catch (Exception e) {
+            // Fallback on exception
+        }
+
+        // Fallback frequency estimation
+        return 0.01;
+    }
+
+    /**
+     * Counts synonyms for a word using WordNet
+     */
+    private static int countSynonyms(String word) {
+        if (dictionary == null) {
+            return 0;
+        }
+
+        try {
+            Set<String> synonyms = new HashSet<>();
+
+            for (POS pos : POS.values()) {
+                IIndexWord idxWord = dictionary.getIndexWord(word, pos);
+                if (idxWord != null) {
+                    for (IWordID wordID : idxWord.getWordIDs()) {
+                        IWord iWord = dictionary.getWord(wordID);
+                        ISynset synset = iWord.getSynset();
+
+                        // Add all words in the synset as synonyms
+                        for (IWord syn : synset.getWords()) {
+                            String lemma = syn.getLemma().replace('_', ' ');
+                            if (!lemma.equalsIgnoreCase(word)) {
+                                synonyms.add(lemma);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return synonyms.size();
+        } catch (Exception e) {
+            // Fallback on exception
+            return 0;
+        }
+    }
+
+    /**
+     * Calculates semantic distance using JWI (Java WordNet Interface)
+     */
+    private static double calculateSemanticDistanceWithJWI(String word) {
+        if (dictionary == null || word == null || word.isEmpty()) {
+            return 0.4; // Default medium distance if WordNet is unavailable
+        }
+
+        try {
+            double totalDistance = 0;
+            int comparisonCount = 0;
+
+            // Compare with common words to determine "uniqueness"
+            for (String commonWord : COMMON_WORDS) {
+                double distance = calculateWordDistance(word, commonWord);
+                if (distance > 0) {
+                    totalDistance += distance;
+                    comparisonCount++;
+                }
+            }
+
+            if (comparisonCount > 0) {
+                return totalDistance / comparisonCount;
+            }
+
+            // If no comparisons were possible, estimate based on sense count
+            // Words with fewer senses tend to be more specialized
+            int senseCount = 0;
+            for (POS pos : POS.values()) {
+                IIndexWord idxWord = dictionary.getIndexWord(word, pos);
+                if (idxWord != null) {
+                    senseCount += idxWord.getWordIDs().size();
+                }
+            }
+
+            // Fewer senses generally means more semantic distance from common words
+            if (senseCount == 0) return 0.8; // Unknown words are considered unique
+            if (senseCount == 1) return 0.7;
+            if (senseCount < 3) return 0.6;
+            if (senseCount < 5) return 0.5;
+            return 0.4;
+
+        } catch (Exception e) {
+            // Fallback on exception
+            return 0.4;
+        }
+    }
+
+    /**
+     * Calculates semantic distance between two words using path distance in WordNet
+     */
+    private static double calculateWordDistance(String word1, String word2) {
+        if (dictionary == null) return 0;
+
+        try {
+            double bestSimilarity = 0;
+
+            for (POS pos : POS.values()) {
+                IIndexWord idxWord1 = dictionary.getIndexWord(word1, pos);
+                IIndexWord idxWord2 = dictionary.getIndexWord(word2, pos);
+
+                if (idxWord1 != null && idxWord2 != null) {
+                    for (IWordID wordID1 : idxWord1.getWordIDs()) {
+                        IWord iWord1 = dictionary.getWord(wordID1);
+                        ISynset synset1 = iWord1.getSynset();
+
+                        for (IWordID wordID2 : idxWord2.getWordIDs()) {
+                            IWord iWord2 = dictionary.getWord(wordID2);
+                            ISynset synset2 = iWord2.getSynset();
+
+                            // Simple path-based similarity:
+                            // For a proper implementation, we'd traverse the hypernym tree
+                            // Here we use a simple approximation
+                            if (synset1.equals(synset2)) {
+                                return 0; // Same synset = completely related
+                            }
+
+                            // Check if they share a direct hypernym
+                            Set<ISynsetID> hypernyms1 = getHypernyms(synset1);
+                            Set<ISynsetID> hypernyms2 = getHypernyms(synset2);
+
+                            Set<ISynsetID> sharedHypernyms = new HashSet<>(hypernyms1);
+                            sharedHypernyms.retainAll(hypernyms2);
+
+                            if (!sharedHypernyms.isEmpty()) {
+                                // They share a direct hypernym - somewhat related
+                                return 0.4;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // No direct relationship found - more semantically distant
+            return 0.8;
+
+        } catch (Exception e) {
+            return 0.5; // Default medium distance on error
+        }
+    }
+
+    /**
+     * Gets direct hypernyms of a synset
+     */
+    private static Set<ISynsetID> getHypernyms(ISynset synset) {
+        Set<ISynsetID> hypernyms = new HashSet<>();
+
+        for (ISynsetID hypernym : synset.getRelatedSynsets(Pointer.HYPERNYM)) {
+            hypernyms.add(hypernym);
+        }
+
+        return hypernyms;
+    }
+
 }

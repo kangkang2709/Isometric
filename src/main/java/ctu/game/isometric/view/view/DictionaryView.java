@@ -20,6 +20,7 @@ import ctu.game.isometric.util.WordNetValidator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
@@ -58,7 +59,7 @@ public class DictionaryView {
     private int wordListStartIndex = 0;
     private static final int WORDS_PER_PAGE = 14;
     private BitmapFont labelFont;
-
+    private boolean isSearchFocused = false;
     int newLearnedWords = 0;
 
     public DictionaryView(GameController gameController, Dictionary dictionary, WordNetValidator wordNetValidator) {
@@ -82,14 +83,42 @@ public class DictionaryView {
     }
 
     public void update(float delta) {
-        updateWordList();
         updateScrollBars();
     }
+    public boolean handleKeyTyped(char character) {
+        if (!isSearchFocused) {
+            return false;
+        }
 
+        // Handle backspace
+        if (character == '\b') {
+            if (searchText.length() > 0) {
+                searchText = searchText.substring(0, searchText.length() - 1);
+                return true;
+            }
+            return false;
+        }
+
+        // Handle enter key
+        if (character == '\r' || character == '\n') {
+            searchWords();
+            return true;
+        }
+
+        // Only accept printable characters
+        if (!Character.isISOControl(character)) {
+            searchText += character;
+            return true;
+        }
+
+        return false;
+    }
 
     // Methods to add to DictionaryView class
     public void handleMouseClick(float x, float y) {
         y = Gdx.graphics.getHeight() - y;
+
+        isSearchFocused = searchBox.contains(x, y);
 
         if (learnedTab.contains(x, y)) {
             showingLearnedWords = true;
@@ -203,101 +232,42 @@ public class DictionaryView {
         }
     }
 
-    private void handleInput() {
-        if (Gdx.input.justTouched()) {
-            Vector3 touchPos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
-            camera.unproject(touchPos);
+    public void selectPreviousWord() {
+        if (selectedWord != null) {
+            int currentIndex = displayedWords.indexOf(selectedWord);
 
-            if (learnedTab.contains(touchPos.x, touchPos.y)) {
-                showingLearnedWords = true;
-                updateWordList();
-            } else if (newTab.contains(touchPos.x, touchPos.y)) {
-                showingLearnedWords = false;
-                updateWordList();
-            } else if (searchButton.contains(touchPos.x, touchPos.y)) {
-                searchWords();
-            } else if (backButton.contains(touchPos.x, touchPos.y)) {
-                gameController.setCurrentState(GameState.EXPLORING);
-            } else if (wordListArea.contains(touchPos.x, touchPos.y)) {
-                selectWordFromList(touchPos.y);
-            } else if (wordListScrollBar.contains(touchPos.x, touchPos.y)) {
-                // Handle word list scroll bar click
-                if (displayedWords.size() > WORDS_PER_PAGE) {
-                    if (wordListScrollThumb.contains(touchPos.x, touchPos.y)) {
-                        isDraggingWordListThumb = true;
-                    } else {
-                        // Jump to position
-                        float clickRatio = (wordListScrollBar.y + wordListScrollBar.height - touchPos.y) / wordListScrollBar.height;
-                        wordListStartIndex = Math.min(displayedWords.size() - WORDS_PER_PAGE,
-                                Math.max(0, (int)(clickRatio * displayedWords.size())));
-                    }
-                }
-            } else if (detailsScrollBar.contains(touchPos.x, touchPos.y) && selectedWord != null) {
-                // Handle details scroll bar click
-                if (maxDetailsScrollPosition > 0) {
-                    if (detailsScrollThumb.contains(touchPos.x, touchPos.y)) {
-                        isDraggingDetailsThumb = true;
-                    } else {
-                        // Jump to position
-                        float clickRatio = (detailsScrollBar.y + detailsScrollBar.height - touchPos.y) / detailsScrollBar.height;
-                        detailsScrollPosition = Math.min(maxDetailsScrollPosition, Math.max(0, clickRatio * maxDetailsScrollPosition));
-                    }
-                }
-            } else if (!showingLearnedWords && selectedWord != null &&
-                    touchPos.x >= detailsArea.x + 20 && touchPos.x <= detailsArea.x + 200 &&
-                    touchPos.y >= detailsArea.y + 15 && touchPos.y <= detailsArea.y + 45) {
-                dictionary.markWordAsLearned(selectedWord.getTerm());
-                updateWordList();
-                selectedWord = null;
-            }
-        } else if (Gdx.input.isTouched()) {
-            // Handle drag
-            Vector3 touchPos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
-            camera.unproject(touchPos);
-
-            if (isDraggingWordListThumb) {
-                float dragRatio = (wordListScrollBar.y + wordListScrollBar.height - touchPos.y) / wordListScrollBar.height;
-                wordListStartIndex = Math.min(displayedWords.size() - WORDS_PER_PAGE,
-                        Math.max(0, (int)(dragRatio * displayedWords.size())));
-            } else if (isDraggingDetailsThumb) {
-                float dragRatio = (detailsScrollBar.y + detailsScrollBar.height - touchPos.y) / detailsScrollBar.height;
-                detailsScrollPosition = Math.min(maxDetailsScrollPosition, Math.max(0, dragRatio * maxDetailsScrollPosition));
-            }
-        } else {
-            // Mouse released
-            isDraggingWordListThumb = false;
-            isDraggingDetailsThumb = false;
-        }
-
-        // Handle mouse wheel
-        // Handle mouse wheel
-        // Handle mouse wheel
-        if (Gdx.input.getDeltaY() != 0) {
-            float scrollAmount = Gdx.input.getDeltaY();
-            // Cap the scroll amount to prevent large jumps
-            float cappedScrollAmount = Math.max(-10, Math.min(10, scrollAmount));
-            Vector3 mousePos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
-            camera.unproject(mousePos);
-
-            if (wordListArea.contains(mousePos.x, mousePos.y) || wordListScrollBar.contains(mousePos.x, mousePos.y)) {
-                wordListStartIndex = Math.min(displayedWords.size() - WORDS_PER_PAGE,
-                        Math.max(0, wordListStartIndex - (int)(cappedScrollAmount * 0.25)));
-            } else if ((detailsArea.contains(mousePos.x, mousePos.y) || detailsScrollBar.contains(mousePos.x, mousePos.y))
-                    && selectedWord != null) {
-                detailsScrollPosition = Math.min(maxDetailsScrollPosition,
-                        Math.max(0, detailsScrollPosition - cappedScrollAmount * 2));
-            }
-        }
-
-        // Handle keyboard scrolling
-        if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.UP)) {
-            if (wordListStartIndex > 0) {
+            // If at the top of visible list and can scroll up
+            if (currentIndex == wordListStartIndex && wordListStartIndex > 0) {
                 wordListStartIndex--;
             }
-        } else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.DOWN)) {
-            if (wordListStartIndex + WORDS_PER_PAGE < displayedWords.size()) {
+
+            // Select previous word if possible
+            if (currentIndex > 0) {
+                selectedWord = displayedWords.get(currentIndex - 1);
+            }
+        } else if (!displayedWords.isEmpty()) {
+
+            selectedWord = displayedWords.get(0);
+        }
+    }
+
+    public void selectNextWord() {
+        if (selectedWord != null) {
+            int currentIndex = displayedWords.indexOf(selectedWord);
+            int lastIndex = displayedWords.size() - 1;
+
+            // If at the bottom of visible list and can scroll down
+            if (currentIndex == wordListStartIndex + WORDS_PER_PAGE - 1 && currentIndex < lastIndex) {
                 wordListStartIndex++;
             }
+
+            // Select next word if possible
+            if (currentIndex < lastIndex) {
+                selectedWord = displayedWords.get(currentIndex + 1);
+            }
+        } else if (!displayedWords.isEmpty()) {
+            // If no word selected, select the first word
+            selectedWord = displayedWords.get(0);
         }
     }
 
@@ -337,9 +307,12 @@ public class DictionaryView {
             updateWordList();
             return;
         }
-
         displayedWords.clear();
-        displayedWords.addAll(dictionary.searchWords(searchText));
+        Set<Word> searchResults = dictionary.searchWords(searchText);
+        if (searchResults != null && !searchResults.isEmpty()) {
+            displayedWords.addAll(searchResults);
+            selectedWord = displayedWords.iterator().next();
+        }
         wordListStartIndex = 0;
     }
 
