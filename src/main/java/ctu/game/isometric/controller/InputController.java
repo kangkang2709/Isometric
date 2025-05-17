@@ -62,6 +62,8 @@ public class InputController extends InputAdapter {
 
         // Handle different game states
         switch (state) {
+            case DICTIONARY:
+                return handleDictionaryInput(keycode);
             case MENU:
                 return handleMenuInput(keycode);
             case SETTINGS:
@@ -135,14 +137,46 @@ public class InputController extends InputAdapter {
             return gameController.getLoadGameController().handleMouseClick(screenX, screenY);
         }
 
-
         if (state == GameState.GAMEPLAY) {
             return gameController.getGameplayController().handleCombatClick(screenX, screenY);
+        }
+
+        if (state == GameState.DICTIONARY) {
+            gameController.getDictionaryView().handleMouseClick(screenX, screenY);
+            return true;
         }
 
         return false;
     }
 
+
+    @Override
+    public boolean touchDragged(int screenX, int screenY, int pointer) {
+        GameState state = gameController.getCurrentState();
+
+        if (state == GameState.DICTIONARY) {
+            Vector3 touchPos = new Vector3(screenX, screenY, 0);
+            gameController.getCamera().unproject(touchPos);
+            gameController.getDictionaryView().handleMouseDrag(touchPos.x, touchPos.y);
+            return true;
+        }
+
+        // Your existing touchDragged code
+        return false;
+    }
+
+    @Override
+    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        GameState state = gameController.getCurrentState();
+
+        if (state == GameState.DICTIONARY) {
+            gameController.getDictionaryView().handleMouseRelease();
+            return true;
+        }
+
+        // Your existing touchUp code
+        return false;
+    }
 
     @Override
     public boolean mouseMoved(int screenX, int screenY) {
@@ -242,6 +276,27 @@ public class InputController extends InputAdapter {
             return true;
         }
         return false;
+    }
+
+
+    private boolean handleDictionaryInput(int keycode) {
+        switch (keycode) {
+            case Keys.ESCAPE -> gameController.setCurrentState(GameState.EXPLORING);
+            case Keys.UP -> {
+                Vector3 mousePos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
+                gameController.getCamera().unproject(mousePos);
+                gameController.getDictionaryView().handleMouseScroll(0, -1, mousePos.x, mousePos.y);
+            }
+            case Keys.DOWN -> {
+                Vector3 mousePos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
+                gameController.getCamera().unproject(mousePos);
+                gameController.getDictionaryView().handleMouseScroll(0, 1, mousePos.x, mousePos.y);
+            }
+            default -> {
+                return false;
+            }
+        }
+        return true;
     }
 
     private boolean handleCutSceneInput(int keycode) {
@@ -371,24 +426,29 @@ public class InputController extends InputAdapter {
     @Override
     public boolean scrolled(float amountX, float amountY) {
         GameState state = gameController.getCurrentState();
-        if (state != GameState.EXPLORING) {
+
+        if (state == GameState.DICTIONARY) {
+            gameController.getDictionaryView().handleMouseScroll(amountX, -amountY, Gdx.input.getX(), Gdx.graphics.getHeight() - Gdx.input.getY());
             return true;
         }
 
-        float defaultZoom = 1.0f;
-        float minZoom = 0.5f;
-        float zoomStep = 0.1f;
+        if (state == GameState.EXPLORING) {
+            float defaultZoom = 1.0f;
+            float minZoom = 0.5f;
+            float zoomStep = 0.1f;
 
-        if (amountY < 0) {
-            gameController.getCamera().zoom -= zoomStep;
-        } else if (amountY > 0 && gameController.getCamera().zoom < defaultZoom) {
-            gameController.getCamera().zoom += zoomStep;
+            if (amountY < 0) {
+                gameController.getCamera().zoom -= zoomStep;
+            } else if (amountY > 0 && gameController.getCamera().zoom < defaultZoom) {
+                gameController.getCamera().zoom += zoomStep;
+            }
+
+            gameController.getCamera().zoom = MathUtils.clamp(gameController.getCamera().zoom, minZoom, defaultZoom);
+            gameController.getCamera().update();
+
+            return true;
         }
-
-        gameController.getCamera().zoom = MathUtils.clamp(gameController.getCamera().zoom, minZoom, defaultZoom);
-        gameController.getCamera().update();
-
-        return true;
+        return false;
     }
 
     public void updateCooldown(float delta) {

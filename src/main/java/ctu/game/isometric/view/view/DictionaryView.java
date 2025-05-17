@@ -40,6 +40,17 @@ public class DictionaryView {
     private Rectangle detailsArea = new Rectangle(420, 150, 760, 420);
     private Rectangle backButton = new Rectangle(590, 80, 100, 40);
 
+    // Scroll bars
+    private Rectangle wordListScrollBar = new Rectangle(400 - 10, 150, 10, 420);
+    private Rectangle wordListScrollThumb = new Rectangle(400 - 10, 150, 10, 100);
+    private Rectangle detailsScrollBar = new Rectangle(1180 - 10, 150, 10, 420);
+    private Rectangle detailsScrollThumb = new Rectangle(1180 - 10, 150, 10, 100);
+
+    private boolean isDraggingWordListThumb = false;
+    private boolean isDraggingDetailsThumb = false;
+    private float detailsScrollPosition = 0;
+    private float maxDetailsScrollPosition = 0;
+
     private List<Word> displayedWords = new ArrayList<>();
     private boolean showingLearnedWords = true;
     private Word selectedWord = null;
@@ -70,14 +81,127 @@ public class DictionaryView {
         updateWordList();
     }
 
-
-
     public void update(float delta) {
-        handleInput();
         updateWordList();
+        updateScrollBars();
     }
 
 
+    // Methods to add to DictionaryView class
+    public void handleMouseClick(float x, float y) {
+        y = Gdx.graphics.getHeight() - y;
+
+        if (learnedTab.contains(x, y)) {
+            showingLearnedWords = true;
+            updateWordList();
+        } else if (newTab.contains(x, y)) {
+            showingLearnedWords = false;
+            updateWordList();
+        } else if (searchButton.contains(x, y)) {
+            searchWords();
+        } else if (backButton.contains(x, y)) {
+            gameController.setCurrentState(GameState.EXPLORING);
+        } else if (wordListArea.contains(x, y)) {
+            selectWordFromList(y);
+        } else if (wordListScrollBar.contains(x, y)) {
+            // Handle word list scroll bar click
+            if (displayedWords.size() > WORDS_PER_PAGE) {
+                if (wordListScrollThumb.contains(x, y)) {
+                    isDraggingWordListThumb = true;
+                } else {
+                    // Jump to position
+                    float clickRatio = (wordListScrollBar.y + wordListScrollBar.height - y) / wordListScrollBar.height;
+                    wordListStartIndex = Math.min(displayedWords.size() - WORDS_PER_PAGE,
+                            Math.max(0, (int)(clickRatio * displayedWords.size())));
+                }
+            }
+        } else if (detailsScrollBar.contains(x, y) && selectedWord != null) {
+            // Handle details scroll bar click
+            if (maxDetailsScrollPosition > 0) {
+                if (detailsScrollThumb.contains(x, y)) {
+                    isDraggingDetailsThumb = true;
+                } else {
+                    // Jump to position
+                    float clickRatio = (detailsScrollBar.y + detailsScrollBar.height - y) / detailsScrollBar.height;
+                    detailsScrollPosition = Math.min(maxDetailsScrollPosition, Math.max(0, clickRatio * maxDetailsScrollPosition));
+                }
+            }
+        } else if (!showingLearnedWords && selectedWord != null &&
+                x >= detailsArea.x + 20 && x <= detailsArea.x + 200 &&
+                y >= detailsArea.y + 15 && y <= detailsArea.y + 45) {
+            dictionary.markWordAsLearned(selectedWord.getTerm());
+            updateWordList();
+            selectedWord = null;
+        }
+    }
+
+    public void handleMouseScroll(float amountX, float amountY, float mouseX, float mouseY) {
+        // Cap the scroll amount to prevent large jumps
+        float cappedScrollAmount = Math.max(-10, Math.min(10, amountY));
+
+        if (wordListArea.contains(mouseX, mouseY) || wordListScrollBar.contains(mouseX, mouseY)) {
+            wordListStartIndex = Math.min(displayedWords.size() - WORDS_PER_PAGE,
+                    Math.max(0, wordListStartIndex - (int)(cappedScrollAmount * 4)));
+            System.out.printf("wordListStartIndex: %d\n", wordListStartIndex);
+        } else if ((detailsArea.contains(mouseX, mouseY) || detailsScrollBar.contains(mouseX, mouseY))
+                && selectedWord != null) {
+            detailsScrollPosition = Math.min(maxDetailsScrollPosition,
+                    Math.max(0, detailsScrollPosition - cappedScrollAmount * 8));
+        }
+    }
+
+    public void handleMouseDrag(float x, float y) {
+        if (isDraggingWordListThumb) {
+            float dragRatio = (wordListScrollBar.y + wordListScrollBar.height - y) / wordListScrollBar.height;
+            wordListStartIndex = Math.min(displayedWords.size() - WORDS_PER_PAGE,
+                    Math.max(0, (int)(dragRatio * displayedWords.size())));
+        } else if (isDraggingDetailsThumb) {
+            float dragRatio = (detailsScrollBar.y + detailsScrollBar.height - y) / detailsScrollBar.height;
+            detailsScrollPosition = Math.min(maxDetailsScrollPosition, Math.max(0, dragRatio * maxDetailsScrollPosition));
+        }
+    }
+
+    public void handleMouseRelease() {
+        isDraggingWordListThumb = false;
+        isDraggingDetailsThumb = false;
+    }
+
+
+    private void updateScrollBars() {
+        // Update word list scroll thumb position
+        if (displayedWords.size() > WORDS_PER_PAGE) {
+            float thumbHeight = Math.max(50, wordListArea.height * WORDS_PER_PAGE / displayedWords.size());
+            float maxThumbY = wordListArea.y + wordListArea.height - thumbHeight;
+            float scrollRange = wordListArea.height - thumbHeight;
+            float scrollRatio = (float) wordListStartIndex / (displayedWords.size() - WORDS_PER_PAGE);
+
+            wordListScrollThumb.height = thumbHeight;
+            wordListScrollThumb.y = maxThumbY - scrollRange * scrollRatio;
+        } else {
+            wordListScrollThumb.height = wordListArea.height;
+            wordListScrollThumb.y = wordListArea.y;
+        }
+
+        // Update details scroll thumb
+        if (selectedWord != null) {
+            float contentHeight = calculateWordDetailsHeight();
+            maxDetailsScrollPosition = Math.max(0, contentHeight - detailsArea.height);
+
+            if (contentHeight > detailsArea.height) {
+                float thumbHeight = Math.max(50, detailsArea.height * detailsArea.height / contentHeight);
+                float maxThumbY = detailsArea.y + detailsArea.height - thumbHeight;
+                float scrollRange = detailsArea.height - thumbHeight;
+                float scrollRatio = detailsScrollPosition / maxDetailsScrollPosition;
+
+                detailsScrollThumb.height = thumbHeight;
+                detailsScrollThumb.y = maxThumbY - scrollRange * scrollRatio;
+            } else {
+                detailsScrollThumb.height = detailsArea.height;
+                detailsScrollThumb.y = detailsArea.y;
+                detailsScrollPosition = 0;
+            }
+        }
+    }
 
     private void handleInput() {
         if (Gdx.input.justTouched()) {
@@ -96,6 +220,29 @@ public class DictionaryView {
                 gameController.setCurrentState(GameState.EXPLORING);
             } else if (wordListArea.contains(touchPos.x, touchPos.y)) {
                 selectWordFromList(touchPos.y);
+            } else if (wordListScrollBar.contains(touchPos.x, touchPos.y)) {
+                // Handle word list scroll bar click
+                if (displayedWords.size() > WORDS_PER_PAGE) {
+                    if (wordListScrollThumb.contains(touchPos.x, touchPos.y)) {
+                        isDraggingWordListThumb = true;
+                    } else {
+                        // Jump to position
+                        float clickRatio = (wordListScrollBar.y + wordListScrollBar.height - touchPos.y) / wordListScrollBar.height;
+                        wordListStartIndex = Math.min(displayedWords.size() - WORDS_PER_PAGE,
+                                Math.max(0, (int)(clickRatio * displayedWords.size())));
+                    }
+                }
+            } else if (detailsScrollBar.contains(touchPos.x, touchPos.y) && selectedWord != null) {
+                // Handle details scroll bar click
+                if (maxDetailsScrollPosition > 0) {
+                    if (detailsScrollThumb.contains(touchPos.x, touchPos.y)) {
+                        isDraggingDetailsThumb = true;
+                    } else {
+                        // Jump to position
+                        float clickRatio = (detailsScrollBar.y + detailsScrollBar.height - touchPos.y) / detailsScrollBar.height;
+                        detailsScrollPosition = Math.min(maxDetailsScrollPosition, Math.max(0, clickRatio * maxDetailsScrollPosition));
+                    }
+                }
             } else if (!showingLearnedWords && selectedWord != null &&
                     touchPos.x >= detailsArea.x + 20 && touchPos.x <= detailsArea.x + 200 &&
                     touchPos.y >= detailsArea.y + 15 && touchPos.y <= detailsArea.y + 45) {
@@ -103,9 +250,46 @@ public class DictionaryView {
                 updateWordList();
                 selectedWord = null;
             }
+        } else if (Gdx.input.isTouched()) {
+            // Handle drag
+            Vector3 touchPos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
+            camera.unproject(touchPos);
+
+            if (isDraggingWordListThumb) {
+                float dragRatio = (wordListScrollBar.y + wordListScrollBar.height - touchPos.y) / wordListScrollBar.height;
+                wordListStartIndex = Math.min(displayedWords.size() - WORDS_PER_PAGE,
+                        Math.max(0, (int)(dragRatio * displayedWords.size())));
+            } else if (isDraggingDetailsThumb) {
+                float dragRatio = (detailsScrollBar.y + detailsScrollBar.height - touchPos.y) / detailsScrollBar.height;
+                detailsScrollPosition = Math.min(maxDetailsScrollPosition, Math.max(0, dragRatio * maxDetailsScrollPosition));
+            }
+        } else {
+            // Mouse released
+            isDraggingWordListThumb = false;
+            isDraggingDetailsThumb = false;
         }
 
-        // Handle scrolling
+        // Handle mouse wheel
+        // Handle mouse wheel
+        // Handle mouse wheel
+        if (Gdx.input.getDeltaY() != 0) {
+            float scrollAmount = Gdx.input.getDeltaY();
+            // Cap the scroll amount to prevent large jumps
+            float cappedScrollAmount = Math.max(-10, Math.min(10, scrollAmount));
+            Vector3 mousePos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
+            camera.unproject(mousePos);
+
+            if (wordListArea.contains(mousePos.x, mousePos.y) || wordListScrollBar.contains(mousePos.x, mousePos.y)) {
+                wordListStartIndex = Math.min(displayedWords.size() - WORDS_PER_PAGE,
+                        Math.max(0, wordListStartIndex - (int)(cappedScrollAmount * 0.25)));
+            } else if ((detailsArea.contains(mousePos.x, mousePos.y) || detailsScrollBar.contains(mousePos.x, mousePos.y))
+                    && selectedWord != null) {
+                detailsScrollPosition = Math.min(maxDetailsScrollPosition,
+                        Math.max(0, detailsScrollPosition - cappedScrollAmount * 2));
+            }
+        }
+
+        // Handle keyboard scrolling
         if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.UP)) {
             if (wordListStartIndex > 0) {
                 wordListStartIndex--;
@@ -121,6 +305,7 @@ public class DictionaryView {
         int index = (int)((wordListArea.y + wordListArea.height - y) / 30) + wordListStartIndex;
         if (index >= 0 && index < displayedWords.size()) {
             selectedWord = displayedWords.get(index);
+            detailsScrollPosition = 0; // Reset details scroll when selecting a new word
         }
     }
 
@@ -128,7 +313,11 @@ public class DictionaryView {
         displayedWords.clear();
         Set<Word> words = showingLearnedWords ? dictionary.getLearnedWords() : dictionary.getNewWords();
         displayedWords.addAll(words);
-        wordListStartIndex = 0;
+
+        // Adjust start index if needed
+        if (wordListStartIndex + WORDS_PER_PAGE > displayedWords.size()) {
+            wordListStartIndex = Math.max(0, displayedWords.size() - WORDS_PER_PAGE);
+        }
     }
 
     public void addNewWord(String word){
@@ -153,8 +342,6 @@ public class DictionaryView {
         displayedWords.addAll(dictionary.searchWords(searchText));
         wordListStartIndex = 0;
     }
-
-
 
     public void render(SpriteBatch batch) {
         camera.update();
@@ -195,6 +382,18 @@ public class DictionaryView {
         shapeRenderer.setColor(0.7f, 0.3f, 0.3f, 1);
         shapeRenderer.rect(backButton.x, backButton.y, backButton.width, backButton.height);
 
+        // Draw scroll bars
+        shapeRenderer.setColor(0.3f, 0.3f, 0.3f, 1);
+        shapeRenderer.rect(wordListScrollBar.x, wordListScrollBar.y, wordListScrollBar.width, wordListScrollBar.height);
+        shapeRenderer.rect(detailsScrollBar.x, detailsScrollBar.y, detailsScrollBar.width, detailsScrollBar.height);
+
+        // Draw scroll thumbs
+        shapeRenderer.setColor(0.6f, 0.6f, 0.6f, 1);
+        shapeRenderer.rect(wordListScrollThumb.x, wordListScrollThumb.y, wordListScrollThumb.width, wordListScrollThumb.height);
+        if (selectedWord != null) {
+            shapeRenderer.rect(detailsScrollThumb.x, detailsScrollThumb.y, detailsScrollThumb.width, detailsScrollThumb.height);
+        }
+
         // If there's a word selected, highlight it
         if (selectedWord != null) {
             int index = displayedWords.indexOf(selectedWord);
@@ -210,7 +409,6 @@ public class DictionaryView {
 
         // Then draw text with the batch
         batch.setProjectionMatrix(new Matrix4().setToOrtho2D(0, 0, 1280, 720));
-
 
         if(batch.isDrawing()) batch.end();
         batch.begin();
@@ -233,6 +431,9 @@ public class DictionaryView {
         labelFont.draw(batch, "Back", backButton.x + 30, backButton.y + 25);
 
         // Word list
+        // Ensure wordListStartIndex is valid
+        wordListStartIndex = Math.max(0, Math.min(wordListStartIndex, displayedWords.isEmpty() ? 0 : displayedWords.size() - 1));
+
         if (displayedWords.isEmpty()) {
             labelFont.draw(batch, "No words found", wordListArea.x + 20, wordListArea.y + wordListArea.height - 20);
         } else {
@@ -253,7 +454,12 @@ public class DictionaryView {
             batch.begin();
         }
 
-        float y = detailsArea.y + detailsArea.height - 20;
+        // Enable scissors to clip content to details area
+        batch.flush();
+        Rectangle scissors = new Rectangle(detailsArea.x, detailsArea.y, detailsArea.width, detailsArea.height);
+        ScissorStack.pushScissors(scissors);
+
+        float y = detailsArea.y + detailsArea.height - 20 + detailsScrollPosition;
 
         // Word term
         labelFont.draw(batch, selectedWord.getTerm(), detailsArea.x + 20, y);
@@ -310,9 +516,45 @@ public class DictionaryView {
             labelFont.setColor(Color.WHITE);
         }
 
-        if (!batch.isDrawing()) {
-            batch.end();
+        // End scissor
+        batch.flush();
+        ScissorStack.popScissors();
+    }
+
+    // Calculate total height of word details to determine scrolling range
+    private float calculateWordDetailsHeight() {
+        if (selectedWord == null) return 0;
+
+        float height = 60; // Basic padding + word term height
+
+        if (selectedWord.getPronunciation() != null && !selectedWord.getPronunciation().isEmpty()) {
+            height += 30;
         }
+
+        if (!selectedWord.getDefinitions().isEmpty()) {
+            height += 30; // "Definitions:" header
+
+            for (WordDefinition def : selectedWord.getDefinitions()) {
+                String defText = "• " + def.getPartOfSpeech() + ": " + def.getDefinition();
+                height += calculateTextHeight(defText, 16, detailsArea.width - 40) + 10;
+
+                if (!def.getExamples().isEmpty()) {
+                    height += 20; // "Examples:" header
+
+                    for (String example : def.getExamples()) {
+                        String formattedExample = "- " + example;
+                        height += calculateTextHeight(formattedExample, 16, detailsArea.width - 60) + 5;
+                    }
+                }
+
+                if (!def.getSynonyms().isEmpty()) {
+                    String synonyms = "Synonyms: " + String.join(", ", def.getSynonyms());
+                    height += calculateTextHeight(synonyms, 16, detailsArea.width - 60) + 15;
+                }
+            }
+        }
+
+        return height;
     }
 
     public void dispose() {
@@ -330,5 +572,21 @@ public class DictionaryView {
 
     public Dictionary getDictionary() {
         return dictionary;
+    }
+
+    // ScissorStack helper class to clip rendering
+    private static class ScissorStack {
+        public static void pushScissors(Rectangle scissor) {
+            Gdx.gl.glEnable(GL20.GL_SCISSOR_TEST);
+            Gdx.gl.glScissor(
+                    (int)scissor.x,
+                    (int)(Gdx.graphics.getHeight() - scissor.y - scissor.height),
+                    (int)scissor.width,
+                    (int)scissor.height);
+        }
+
+        public static void popScissors() {
+            Gdx.gl.glDisable(GL20.GL_SCISSOR_TEST);
+        }
     }
 }
