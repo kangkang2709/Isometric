@@ -245,6 +245,7 @@ public synchronized void loadDictionary() {
 
     }
 
+    //tinh theo do dai tu
     public static int calculateScore(String word) {
         if (word == null || word.length() < 3) return 0;
 
@@ -262,7 +263,7 @@ public synchronized void loadDictionary() {
         }
         return 20 + (length - 9) * 5;
     }
-
+    //ki tu hiem
     public static int calculateBonusPoints(String word) {
         if (word == null) return 0;
 
@@ -272,7 +273,7 @@ public synchronized void loadDictionary() {
         }
         return bonus;
     }
-
+    // loai tu
     public static int calculatePartOfSpeechBonus(PartOfSpeech pos) {
         return POS_BONUS.getOrDefault(pos, 0);
     }
@@ -288,7 +289,7 @@ public synchronized void loadDictionary() {
 
         return baseScore + letterBonus + posBonus + rarityBonus + synonymBonus + uniquenessBonus;
     }
-
+    // tu hiem
     public static int getRarityBonus(double frequency) {
         if (frequency < 0.0001) return 10;
         if (frequency < 0.001) return 7;
@@ -296,7 +297,7 @@ public synchronized void loadDictionary() {
         if (frequency < 0.1) return 3;
         return 0;
     }
-
+    // so tu dong nghia
     public static int getSynonymCountBonus(int synonymCount) {
         if (synonymCount == 0) return 5;
         if (synonymCount < 3) return 3;
@@ -329,6 +330,10 @@ public synchronized void loadDictionary() {
         return calculateScore(word) + calculateBonusPoints(word);
     }
 
+
+    /**
+     * Calculates semantic uniqueness bonus based on distance from common words
+     */
     public static int getSemanticUniquenessBonus(double distanceFromCommonWords) {
         if (distanceFromCommonWords > 0.8) return 8;
         if (distanceFromCommonWords > 0.6) return 5;
@@ -339,6 +344,8 @@ public synchronized void loadDictionary() {
     /**
      * Determines part of speech using WordNet and word definitions
      */
+
+    // loai tu POS
     private static PartOfSpeech determinePartOfSpeech(String text, Word word) {
         if (dictionary == null) {
             // Fallback if WordNet is not available
@@ -398,6 +405,7 @@ public synchronized void loadDictionary() {
     /**
      * Estimates word frequency based on WordNet data
      */
+    //tan suat
     private static double estimateWordFrequency(String word) {
         if (dictionary == null) {
             // Simple frequency estimation based on word length if WordNet is unavailable
@@ -496,7 +504,7 @@ public synchronized void loadDictionary() {
             if (comparisonCount > 0) {
                 return totalDistance / comparisonCount;
             }
-
+//⏱ Fallback: không thể so sánh được từ nào
             // If no comparisons were possible, estimate based on sense count
             // Words with fewer senses tend to be more specialized
             int senseCount = 0;
@@ -506,7 +514,7 @@ public synchronized void loadDictionary() {
                     senseCount += idxWord.getWordIDs().size();
                 }
             }
-
+//        🧠 Ý tưởng: Từ có nhiều nghĩa → thường là từ phổ thông, không chuyên biệt → semantic distance thấp.
             // Fewer senses generally means more semantic distance from common words
             if (senseCount == 0) return 0.8; // Unknown words are considered unique
             if (senseCount == 1) return 0.7;
@@ -526,53 +534,18 @@ public synchronized void loadDictionary() {
     private static double calculateWordDistance(String word1, String word2) {
         if (dictionary == null) return 0;
 
-        try {
-            double bestSimilarity = 0;
-
-            for (POS pos : POS.values()) {
-                IIndexWord idxWord1 = dictionary.getIndexWord(word1, pos);
-                IIndexWord idxWord2 = dictionary.getIndexWord(word2, pos);
-
-                if (idxWord1 != null && idxWord2 != null) {
-                    for (IWordID wordID1 : idxWord1.getWordIDs()) {
-                        IWord iWord1 = dictionary.getWord(wordID1);
-                        ISynset synset1 = iWord1.getSynset();
-
-                        for (IWordID wordID2 : idxWord2.getWordIDs()) {
-                            IWord iWord2 = dictionary.getWord(wordID2);
-                            ISynset synset2 = iWord2.getSynset();
-
-                            // Simple path-based similarity:
-                            // For a proper implementation, we'd traverse the hypernym tree
-                            // Here we use a simple approximation
-                            if (synset1.equals(synset2)) {
-                                return 0; // Same synset = completely related
-                            }
-
-                            // Check if they share a direct hypernym
-                            Set<ISynsetID> hypernyms1 = getHypernyms(synset1);
-                            Set<ISynsetID> hypernyms2 = getHypernyms(synset2);
-
-                            Set<ISynsetID> sharedHypernyms = new HashSet<>(hypernyms1);
-                            sharedHypernyms.retainAll(hypernyms2);
-
-                            if (!sharedHypernyms.isEmpty()) {
-                                // They share a direct hypernym - somewhat related
-                                return 0.4;
-                            }
-                        }
-                    }
-                }
-            }
-
-            // No direct relationship found - more semantically distant
-            return 0.8;
-
-        } catch (Exception e) {
-            return 0.5; // Default medium distance on error
-        }
+//        try {
+//            // Use WS4J for semantic distance calculation
+//            edu.cmu.lti.ws4j.RelatednessCalculator calculator = new edu.cmu.lti.ws4j.impl.Lin();
+//            double distance = calculator.calcRelatednessOfWords(word1, word2);
+//
+//            // Normalize to a value between 0 and 1
+//            return Math.min(1.0, Math.max(0.0, distance));
+//        } catch (Exception e) {
+//            return 0.5; // Default medium distance on error
+//        }
+        return 2.0; // Default distance if WordNet is unavailable
     }
-
     /**
      * Gets direct hypernyms of a synset
      */

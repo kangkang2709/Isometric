@@ -22,7 +22,7 @@ public class MusicController {
         loadMusic("exploring_theme", "audio/musics/exploring_theme.mp3");
         loadMusic("main_theme", "audio/musics/main_theme.mp3");
         loadMusic("menu_theme", "audio/musics/menu_theme.mp3");
-        loadMusic("setting_theme", "audio/musics/menu_theme.mp3");
+        loadMusic("setting_theme", "audio/musics/setting_theme.mp3");
         loadMusic("combat_theme", "audio/musics/combat_theme.mp3");
         loadMusic("dialog_theme", "audio/musics/dialog_theme.mp3");
     }
@@ -34,7 +34,7 @@ public class MusicController {
             music.setVolume(volume);
             musicTracks.put(id, music);
         } catch (Exception e) {
-            System.err.println("Error loading music track: " + path);
+            System.err.println("Error loading music track: " + path + " - " + e.getMessage());
         }
     }
 
@@ -65,7 +65,7 @@ public class MusicController {
     }
 
     public void setVolume(float volume) {
-        this.volume = Math.max(0, Math.min(0, volume));
+        this.volume = Math.max(0, Math.min(1, volume));
 
         if (currentTrackId != null) {
             Music currentTrack = musicTracks.get(currentTrackId);
@@ -76,8 +76,11 @@ public class MusicController {
     }
 
     public void playMusicForState(GameState state) {
+        if (state == null) {
+            return;
+        }
         switch (state) {
-            case  GAMEPLAY:
+            case GAMEPLAY:
                 playMusic("combat_theme");
                 break;
             case EXPLORING:
@@ -111,14 +114,12 @@ public class MusicController {
     }
 
     public void setEnabled(boolean enabled) {
-        // neu trang thai dang tat va dang bat lai
         boolean wasDisabled = !this.enabled && enabled;
         this.enabled = enabled;
 
         if (!enabled) {
             stopCurrentTrack();
         } else if (wasDisabled && currentTrackId != null) {
-            // Resume playback when re-enabled
             Music track = musicTracks.get(currentTrackId);
             if (track != null) {
                 track.setVolume(volume);

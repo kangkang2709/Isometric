@@ -1,5 +1,6 @@
 package ctu.game.isometric.controller;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
@@ -338,7 +339,16 @@ public class InputController extends InputAdapter {
     private boolean handleSettingsInput(int keycode) {
         switch (keycode) {
             case Keys.ESCAPE -> {
-                gameController.setCurrentState(GameState.MAIN_MENU);
+                System.out.println(gameController.getCurrentState() + " " + gameController.getPreviousState());
+                if(gameController.getPreviousState() == GameState.MAIN_MENU) {
+                    gameController.setState(GameState.MAIN_MENU);
+                    gameController.setPreviousState(GameState.MAIN_MENU);
+                    return true;
+                } else {
+                    gameController.setCurrentState(GameState.MENU);
+                    return true;
+                }
+
             }
             case Keys.UP -> gameController.getSettingsMenuController().selectPreviousItem();
             case Keys.DOWN -> gameController.getSettingsMenuController().selectNextItem();

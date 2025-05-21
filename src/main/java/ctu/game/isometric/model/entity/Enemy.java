@@ -8,7 +8,7 @@ public class Enemy {
     private float health;
     private int attackPower;
     private int rewardID; // ID of the reward given upon defeat
-
+    private int x,y;
     public Enemy() {
     }
 
@@ -20,6 +20,22 @@ public class Enemy {
         this.health = health;
         this.attackPower = attackPower;
         this.rewardID = rewardID;
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public void setY(int y) {
+        this.y = y;
     }
 
     public int getEnemyID() {

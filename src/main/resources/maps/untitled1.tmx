@@ -541,9 +541,14 @@
    <properties>
     <property name="enemy" value="2"/>
     <property name="event" value="battle"/>
+    <property name="id" value="3"/>
    </properties>
   </object>
-  <object id="35" gid="3" x="256" y="15584" width="49" height="60"/>
+  <object id="35" gid="3" x="256" y="15584" width="49" height="60">
+   <properties>
+    <property name="id" value="2"/>
+   </properties>
+  </object>
   <object id="36" x="64" y="15744" width="32" height="32" visible="0">
    <properties>
     <property name="enemy" value="enemy_02"/>
@@ -557,12 +562,15 @@
    <properties>
     <property name="enemy" value="1"/>
     <property name="event" value="battle"/>
+    <property name="id" value="2"/>
+    <property name="one_time" type="bool" value="true"/>
    </properties>
   </object>
   <object id="45" x="320" y="15520" width="32" height="32">
    <properties>
     <property name="arc" value="chapter_02"/>
     <property name="event" value="dialog"/>
+    <property name="id" value="1"/>
     <property name="scene" value="scene_01"/>
    </properties>
   </object>
@@ -570,6 +578,8 @@
   <object id="47" x="416" y="15584" width="32" height="32">
    <properties>
     <property name="event" value="quiz"/>
+    <property name="id" value="4"/>
+    <property name="one_time" type="bool" value="false"/>
    </properties>
   </object>
   <object id="48" gid="3" x="448" y="15616" width="49" height="60"/>

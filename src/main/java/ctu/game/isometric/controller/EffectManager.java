@@ -1,6 +1,7 @@
 package ctu.game.isometric.controller;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.g2d.ParticleEffectPool;
@@ -53,12 +54,32 @@ public class EffectManager implements Disposable {
     }
 
     public void playSound(String effectName) {
+        if (!sfxEnabled) return;
         Sound sound = effectSound.get(effectName);
         if (sound != null) {
             sound.play();
         } else {
             Gdx.app.debug("EffectManager", "Sound not found for effect: " + effectName);
         }
+    }
+    private boolean sfxEnabled = true;
+
+    public void setEnabled(boolean enabled) {
+        boolean wasDisabled = !this.sfxEnabled && enabled;
+        this.sfxEnabled = enabled;
+    }
+
+
+    public void toggleSFX() {
+        sfxEnabled = !sfxEnabled;
+    }
+
+    public void setSFXEnabled(boolean enabled) {
+        sfxEnabled = enabled;
+    }
+
+    public boolean isSFXEnabled() {
+        return sfxEnabled;
     }
 
     // Spawn effect with specific duration
@@ -75,6 +96,8 @@ public class EffectManager implements Disposable {
         activeEffects.add(effect);
         effectDataMap.put(effect, new EffectData(duration));
     }
+
+
 
     // Schedule effect to appear after delay
     public void scheduleEffect(String effectName, float x, float y, float delay) {

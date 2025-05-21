@@ -10,6 +10,7 @@ import com.badlogic.gdx.math.Rectangle;
 import ctu.game.isometric.IsometricGame;
 import ctu.game.isometric.model.dictionary.Dictionary;
 import ctu.game.isometric.model.dictionary.Word;
+import ctu.game.isometric.model.world.MapEvent;
 import ctu.game.isometric.view.menu.CharacterCreation;
 import ctu.game.isometric.view.menu.MainMenu;
 import ctu.game.isometric.view.menu.PauseMenu;
@@ -62,15 +63,26 @@ public class GameController {
     private Dictionary dictionary;
     private BitmapFont font;
 
+
+    private EventManager eventManager = new EventManager();
+    private MapEvent currentEvent;
+
     public GameController(IsometricGame game) {
         this.game = game;
+
         this.map = new IsometricMap();
+        eventManager.loadEventsFromMap(map);
+
         this.character = new Character(10, 10);
         this.inputController = new InputController(this);
         this.dialogController = new DialogController(this);
         this.musicController = new MusicController();
         characterCreationController = new CharacterCreation(this);
         this.pauseMenu = new PauseMenu(this);
+
+
+        effectManager = new EffectManager("effects");
+        this.loadEffects();
         this.settingsMenu = new SettingsMenu(this);
         this.mainMenuController = new MainMenu(this);
         this.transitionRenderer = new TransitionRenderer();
@@ -80,8 +92,7 @@ public class GameController {
         this.wordNetValidator = new WordNetValidator();
         this.wordNetValidator.loadDictionary();
 
-        effectManager = new EffectManager("effects");
-        this.loadEffects();
+
 
         this.gameplayController = new GameplayController(this);
         this.quizController = new QuizController(this);
@@ -89,6 +100,7 @@ public class GameController {
         initializeDictionary();
         this.musicController.initialize();
         this.musicController.playMusicForState(GameState.MAIN_MENU);
+
 
     }
 
@@ -239,13 +251,10 @@ public class GameController {
             // This code executes after the fade out, during loading
             currentState = newState;
 
-//             Reset controllers when entering specific states
-//            if (currentState == GameState.CHARACTER_CREATION) {
-//                characterCreationController.reset();
-//            }
-
             // Update music for the new state
-            musicController.playMusicForState(newState);
+            if (musicController != null) {
+                musicController.playMusicForState(newState);
+            }
         });
 
     }
@@ -362,9 +371,10 @@ public class GameController {
 
         // Reset map with a new instance
         this.map = new IsometricMap();
+        this.eventManager = new EventManager();
+        eventManager.loadEventsFromMap(map);
 
         // Reset controllers to initial state - make sure to reset character creation controller
-
         if(characterCreationController == null) {
             characterCreationController = new CharacterCreation(this);
         }
@@ -411,38 +421,38 @@ public class GameController {
     private int currentEventY;
     private boolean hasActiveEvent = false;
     private MapProperties properties;
-    private void checkPositionEvents(float x, float y) {
-        int gridX = (int) x;
-        int gridY = (int) y;
 
-        hasActiveEvent = false; // Reset event flag
-        // Check for object-based events (NPCs, triggers, etc.)
-        MapLayer objectLayer = map.getTiledMap().getLayers().get("object");
-        if (objectLayer != null) {
-            for (MapObject object : objectLayer.getObjects()) {
-                if (object instanceof RectangleMapObject) {
-                    Rectangle rect = ((RectangleMapObject) object).getRectangle();
-                    int objGridX = (int) (rect.x / map.getTileWidth())+2;
-                    int objGridY = (int) (rect.y / map.getTileHeight())-2;
-                    System.out.println("Object position: " + objGridX + "," + objGridY);
-                    if (objGridX == gridX && objGridY == gridY) {
-                        properties = object.getProperties();
-                         if (properties.containsKey("event")){
-                            currentEventType = properties.get("event", String.class);
-                            currentEventX = gridX;
-                            currentEventY = gridY;
-                            hasActiveEvent = true;
-                        }
-                        else properties = null;
-//                        handleEventProperties(object.getProperties(), gridX, gridY);
-                    }
-                }
-            }
+    private void checkPositionEvents(float x, float y) {
+        currentEvent = eventManager.checkPositionEvents(x, y);
+
+        if (currentEvent != null) {
+            hasActiveEvent = true;
+            currentEventType = currentEvent.getEventType();
+            currentEventX = currentEvent.getGridX();
+            currentEventY = currentEvent.getGridY();
+            properties = currentEvent.getProperties();
+        } else {
+            hasActiveEvent = false;
+            properties = null;
         }
+    }
+
+    public void setEndEvent() {
+        hasActiveEvent = false;
+        currentEvent = null;
+        properties =null;
     }
 
     public MapProperties getProperties() {
         return properties;
+    }
+
+    public MapEvent getCurrentEvent() {
+        return currentEvent;
+    }
+
+    public void setCurrentEvent(MapEvent currentEvent) {
+        this.currentEvent = currentEvent;
     }
 
     public void handleEventProperties(MapProperties properties, String event) {
@@ -458,12 +468,21 @@ public class GameController {
                             enemyId = (Integer) enemyObj;
                         }
                     }
-                    Enemy enemy = EnemyLoader.getEnemyById(enemyId);
-                    setState(GameState.GAMEPLAY);
-                    gameplayController.activate();
-                    gameplayController.startCombat(enemy);
-                    break;
+                    if (eventManager.isEnemyDefeated(enemyId) &&
+                            eventManager.getBooleanProperty(properties, "one_time", true)) {
+                            eventManager.completeEvent(currentEvent.getId());
 
+                    }
+                    else{
+                        Enemy enemy = EnemyLoader.getEnemyById(enemyId);
+                        setState(GameState.GAMEPLAY);
+                        gameplayController.activate();
+                        gameplayController.startCombat(enemy);
+                        gameplayController.setCurrentEvent(currentEvent);
+                    }
+                    break;
+                case "treasure":
+                    break;
                 case "dialog":
                     if (properties != null) {
                         String arcId = properties.get("arc", String.class);
@@ -505,6 +524,14 @@ public class GameController {
 
     public BitmapFont getFont() {
         return font;
+    }
+
+    public EventManager getEventManager() {
+        return eventManager;
+    }
+
+    public void setEventManager(EventManager eventManager) {
+        this.eventManager = eventManager;
     }
 
     public void setFont(BitmapFont font) {

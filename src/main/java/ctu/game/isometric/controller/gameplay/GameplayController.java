@@ -17,6 +17,7 @@ import ctu.game.isometric.model.game.GameState;
 import ctu.game.isometric.model.game.Items;
 import ctu.game.isometric.model.game.Reward;
 import ctu.game.isometric.model.game.LetterGrid;
+import ctu.game.isometric.model.world.MapEvent;
 import ctu.game.isometric.util.*;
 
 import java.util.HashMap;
@@ -55,6 +56,8 @@ public class GameplayController {
     private Texture selectedCellTexture;
     private Texture itemCellTexture;
     float playerMaxHealth = 100;
+    private MapEvent currentEvent;
+
     // Button areas
     private Rectangle submitButtonRect, clearButtonRect, exitButtonRect;
 
@@ -93,9 +96,7 @@ public class GameplayController {
         // Initialize fonts
         titleFont = generateVietNameseFont("Tektur-Bold.ttf", 18);
         regularFont = generateVietNameseFont("Tektur-Bold.ttf", 13);
-        bigFont =  regularFont;
-
-
+        bigFont = regularFont;
 
 
         layout = new GlyphLayout();
@@ -123,6 +124,7 @@ public class GameplayController {
 
 
     }
+
     private void drawMessageBox(SpriteBatch batch, String message, float x, float y, float width, float height) {
         // Draw background
         batch.setColor(Color.WHITE);
@@ -182,10 +184,11 @@ public class GameplayController {
     }
 
     private void spawnAttackEffect(float x, float y) {
-        effectManager.spawnEffect("attack", x,y);
+        effectManager.spawnEffect("attack", x, y);
     }
+
     private void spawnRainEffect(float x, float y) {
-        effectManager.spawnEffect("rain", x,y);
+        effectManager.spawnEffect("rain", x, y);
     }
 
     private void updateCombat(float delta) {
@@ -251,8 +254,8 @@ public class GameplayController {
         float cellSize = gridSize / 5;
 
         if (x >= gridX && x < gridX + gridSize && y >= gridY && y < gridY + gridSize) {
-            int cellX = (int)((x - gridX) / cellSize);
-            int cellY = 4 - (int)((y - gridY) / cellSize);
+            int cellX = (int) ((x - gridX) / cellSize);
+            int cellY = 4 - (int) ((y - gridY) / cellSize);
             selectCell(cellX, cellY);
         }
     }
@@ -269,13 +272,12 @@ public class GameplayController {
         batch.setColor(Color.WHITE);
 
         if (isCombatMode) renderCombatUI(batch);
-        else if(isVictory) renderReward(batch);
+        else if (isVictory) renderReward(batch);
         else gameController.setState(GameState.EXPLORING);
 
         effectManager.render(batch);
 
     }
-
 
 
     private void renderReward(SpriteBatch batch) {
@@ -302,11 +304,11 @@ public class GameplayController {
         Items item = reward.getItemID();
 
         // Title
-        drawCenteredText(batch, titleFont, "CHIẾN THĂNG!", viewport.getWorldWidth()/2, panelY + panelHeight - 50, new Color(1, 0.9f, 0.3f, 1));
+        drawCenteredText(batch, titleFont, "CHIẾN THĂNG!", viewport.getWorldWidth() / 2, panelY + panelHeight - 50, new Color(1, 0.9f, 0.3f, 1));
 
         // Enemy defeated message
         drawCenteredText(batch, regularFont, "Bạn đã thua " + enemyName + "!",
-                viewport.getWorldWidth()/2, panelY + panelHeight - 100, Color.WHITE);
+                viewport.getWorldWidth() / 2, panelY + panelHeight - 100, Color.WHITE);
         Texture itemTexture = null;
         // Draw reward item
         if (item != null) {
@@ -314,7 +316,7 @@ public class GameplayController {
                 itemTexture = getCharacterTexture(item.getTexturePath());
                 float iconSize = 64;
                 float iconX = panelX + 100;
-                float iconY = panelY + panelHeight/2 - iconSize/2;
+                float iconY = panelY + panelHeight / 2 - iconSize / 2;
                 batch.setColor(Color.WHITE);
                 batch.draw(itemTexture, iconX, iconY, iconSize, iconSize);
             } catch (Exception e) {
@@ -323,7 +325,7 @@ public class GameplayController {
 
             // Item details
             float textX = panelX + 180;
-            float textY = panelY + panelHeight/2 + 30;
+            float textY = panelY + panelHeight / 2 + 30;
 
             regularFont.setColor(new Color(0.9f, 0.9f, 0.3f, 1));
             regularFont.draw(batch, item.getItemName() + " x" + reward.getAmount(), textX, textY);
@@ -360,7 +362,7 @@ public class GameplayController {
         // Continue button
         float buttonWidth = 200;
         float buttonHeight = 50;
-        float buttonX = viewport.getWorldWidth()/2 - buttonWidth/2;
+        float buttonX = viewport.getWorldWidth() / 2 - buttonWidth / 2;
         float buttonY = panelY + 50;
 
         Rectangle continueButton = new Rectangle(buttonX, buttonY, buttonWidth, buttonHeight);
@@ -394,8 +396,8 @@ public class GameplayController {
         batch.draw(whiteTexture, 0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
 
         // Draw player and enemy
-        drawCombatCharacter(batch, playerName, playerHealth,playerMaxHealth, 50, 600, true);
-        drawCombatCharacter(batch, enemyName, (float)enemyHealth, (float) enemyMaxHealth, viewport.getWorldWidth() - 300, 600, false);
+        drawCombatCharacter(batch, playerName, playerHealth, playerMaxHealth, 50, 600, true);
+        drawCombatCharacter(batch, enemyName, (float) enemyHealth, (float) enemyMaxHealth, viewport.getWorldWidth() - 300, 600, false);
 
         // Draw combat log
 
@@ -417,7 +419,7 @@ public class GameplayController {
 
         regularFont.setColor(Color.WHITE);
 //        regularFont.draw(batch, combatLog, 80, 170);
-        drawCenteredText(batch, regularFont,"Lượt của " + (isPlayerTurn ? "Bạn" : enemyName), viewport.getWorldWidth()/2, 700, Color.WHITE);
+        drawCenteredText(batch, regularFont, "Lượt của " + (isPlayerTurn ? "Bạn" : enemyName), viewport.getWorldWidth() / 2, 700, Color.WHITE);
 
         // Update and draw buttons
         float buttonX = ((viewport.getWorldWidth() - 70) / 2);
@@ -426,9 +428,8 @@ public class GameplayController {
         float buttonHeight = 50;
         float buttonSpacing = 60;
 
-        submitButtonRect = new Rectangle(buttonX-90, buttonY, buttonWidth, buttonHeight);
+        submitButtonRect = new Rectangle(buttonX - 90, buttonY, buttonWidth, buttonHeight);
         clearButtonRect = new Rectangle(buttonX + 32, buttonY, buttonWidth, buttonHeight);
-
 
 
         // Draw compact letter grid and word info during player turn
@@ -438,16 +439,17 @@ public class GameplayController {
             drawButton(batch, clearButtonRect, "CLEAR");
             String currentWord = letterGrid.getCurrentWord();
             if (currentWord.length() > 0) {
-                drawCenteredText(batch, regularFont, "Spell: " + currentWord, viewport.getWorldWidth()/2, 600, Color.WHITE);
+                drawCenteredText(batch, regularFont, "Spell: " + currentWord, viewport.getWorldWidth() / 2, 600, Color.WHITE);
 
 
                 if (gameController.getCharacter().getLearnedWords().contains(currentWord.toUpperCase()) || wordValidator.isValidWord(currentWord)) {
                     drawCenteredText(batch, regularFont, wordValidator.getWordMeaning(currentWord),
-                            viewport.getWorldWidth()/2, 570, Color.WHITE);
+                            viewport.getWorldWidth() / 2, 570, Color.WHITE);
                 }
             }
         }
     }
+
     // Add these fields to the GameplayController class
     private Map<Rectangle, Items> itemRectMap = new HashMap<>();
     private Items hoveredItem = null;
@@ -662,11 +664,10 @@ public class GameplayController {
     // Update your touchUp handling in a method like updateCombat to include:
 
 
-
     private void drawCenteredText(SpriteBatch batch, BitmapFont font, String text, float x, float y, Color color) {
         layout.setText(font, text);
         font.setColor(color);
-        font.draw(batch, text, x - layout.width/2, y);
+        font.draw(batch, text, x - layout.width / 2, y);
     }
 
     private void drawCombatCharacter(SpriteBatch batch, String name, float currentHealth,
@@ -690,7 +691,7 @@ public class GameplayController {
 
         // Draw grid background
         batch.setColor(Color.WHITE);
-        batch.draw(gridBackgroundTexture, gridX- 16, gridY -48, 380, 450);
+        batch.draw(gridBackgroundTexture, gridX - 16, gridY - 48, 380, 450);
 
         char[][] grid = letterGrid.getGrid();
         boolean[][] selected = letterGrid.getSelectedCells();
@@ -698,7 +699,7 @@ public class GameplayController {
         for (int y = 0; y < 5; y++) {
             for (int x = 0; x < 5; x++) {
                 float screenX = gridX + x * cellSize;
-                float screenY = gridY + (4-y) * cellSize;
+                float screenY = gridY + (4 - y) * cellSize;
 
                 // Draw cell background
                 batch.setColor(Color.WHITE);
@@ -746,7 +747,7 @@ public class GameplayController {
         batch.draw(whiteTexture, x + 40, y + 10, 180, 10);
 
         // Health bar fill
-        float healthPercentage = (float)current / max;
+        float healthPercentage = (float) current / max;
         batch.setColor(getHealthColor(healthPercentage));
         batch.draw(whiteTexture, x + 40, y + 10, 180 * healthPercentage, 10);
     }
@@ -782,6 +783,7 @@ public class GameplayController {
                 buttonRect.x + (buttonRect.width - layout.width) / 2,
                 buttonRect.y + (buttonRect.height + layout.height) / 2);
     }
+
     private void performEnemyAction() {
         float damage = (random.nextInt(8) + 3) * enemy.getAttackPower();
         playerHealth -= damage;
@@ -816,6 +818,11 @@ public class GameplayController {
             combatLog = "Bạn đã hạ gục " + enemyName + "!";
             enemyHealth = 0;
             endCombat(true);
+            if (currentEvent.isOneTime()) {
+                gameController.getEventManager().recordDefeatedEnemy(this.enemy.getEnemyID());
+                gameController.getEventManager().completeEvent(currentEvent.getId());
+                gameController.setEndEvent();
+            }
         }
     }
 
@@ -838,7 +845,7 @@ public class GameplayController {
             int points = getTotalScore(wordValidator.getWordDetails(word));
             System.out.println("Word: " + word + ", Points: " + points);
 
-            if(gameController.getCharacter().addLearnedWord(word))
+            if (gameController.getCharacter().addLearnedWord(word))
                 gameController.getDictionaryView().addNewWord(word);
 
 
@@ -883,6 +890,14 @@ public class GameplayController {
         this.isPlayerTurn = true;
         this.combatLog = "Bắt đầu cạnh tranh với " + enemyName + "!";
         letterGrid.regenerateGrid();
+    }
+
+    public MapEvent getCurrentEvent() {
+        return currentEvent;
+    }
+
+    public void setCurrentEvent(MapEvent currentEvent) {
+        this.currentEvent = currentEvent;
     }
 
     // Core game functions
@@ -950,11 +965,31 @@ public class GameplayController {
     }
 
     // Getters
-    public boolean isInCombatMode() { return isCombatMode; }
-    public float getPlayerHealth() { return playerHealth; }
-    public float getEnemyHealth() { return enemyHealth; }
-    public LetterGrid getLetterGrid() { return letterGrid; }
-    public int getCurrentScore() { return currentScore; }
-    public String getCurrentWord() { return letterGrid.getCurrentWord(); }
-    public boolean isActive() { return active; }
+    public boolean isInCombatMode() {
+        return isCombatMode;
+    }
+
+    public float getPlayerHealth() {
+        return playerHealth;
+    }
+
+    public float getEnemyHealth() {
+        return enemyHealth;
+    }
+
+    public LetterGrid getLetterGrid() {
+        return letterGrid;
+    }
+
+    public int getCurrentScore() {
+        return currentScore;
+    }
+
+    public String getCurrentWord() {
+        return letterGrid.getCurrentWord();
+    }
+
+    public boolean isActive() {
+        return active;
+    }
 }

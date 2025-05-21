@@ -6,18 +6,19 @@ import com.badlogic.gdx.graphics.GL20;
 import ctu.game.isometric.controller.GameController;
 import ctu.game.isometric.util.AssetManager;
 import ctu.game.isometric.view.screen.GameScreen;
+import ctu.game.isometric.view.screen.SplashScreen;
 
 public class IsometricGame extends Game {
     private AssetManager assetManager;
     private GameController gameController;
-
+    private GameScreen gameScreen;
     @Override
     public void create() {
         assetManager = new AssetManager();
         assetManager.loadAssets();
         Gdx.graphics.setVSync(true); // hoặc false để tắt
         gameController = new GameController(this);
-        setScreen(new GameScreen(this, gameController));
+        setScreen(new SplashScreen(this, gameController));
     }
 
     @Override
@@ -35,5 +36,13 @@ public class IsometricGame extends Game {
     public void dispose() {
         assetManager.dispose();
         super.dispose();
+    }
+
+    public GameScreen getGameScreen() {
+        return gameScreen;
+    }
+
+    public void setGameScreen(GameScreen gameScreen) {
+        this.gameScreen = gameScreen;
     }
 }

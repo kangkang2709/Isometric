@@ -68,6 +68,11 @@ public class SettingsMenu {
                 () -> gameController.getMusicController().setEnabled(
                         !gameController.getMusicController().isEnabled()));
 
+
+        addMenuOption("SFX: ", MenuOption.OptionType.TOGGLE,
+                () -> gameController.getEffectManager().setSFXEnabled(
+                        !gameController.getEffectManager().isSFXEnabled()));
+
         addMenuOption("Âm Lượng", MenuOption.OptionType.SLIDER,
                 () -> {
                     // Volume adjustment logic is handled elsewhere
@@ -76,7 +81,12 @@ public class SettingsMenu {
         // Add back option
         addMenuOption("Quay Lại", MenuOption.OptionType.BUTTON,
                 () -> {
-                    gameController.setState(GameState.MAIN_MENU);
+                    if(gameController.getPreviousState() == GameState.MAIN_MENU) {
+                        gameController.setState(GameState.MAIN_MENU);
+                        gameController.setPreviousState(GameState.MAIN_MENU);
+                    } else {
+                        gameController.setCurrentState(GameState.MENU);
+                    }
                 });
 
         // Set menu dimensions
@@ -96,7 +106,7 @@ public class SettingsMenu {
 
         // Initialize toggle states based on current settings
         menuOptions.get(0).setToggled(gameController.getMusicController().isEnabled());
-        menuOptions.get(1).setValue(gameController.getMusicController().getVolume());
+        menuOptions.get(2).setValue(gameController.getMusicController().getVolume());
 
         // Initialize rectangles for hit detection
         for (int i = 0; i < menuOptions.size(); i++) {
@@ -144,7 +154,7 @@ public class SettingsMenu {
                 float newValue = option.getValue() + (increase ? 0.02f : -0.02f);
                 newValue = Math.max(0f, Math.min(1f, newValue)); // Clamp between 0 and 1
                 option.setValue(newValue);
-                if (option.getName().equals("Volume")) {
+                if (option.getName().equals("Âm Lượng")) {
                     gameController.getMusicController().setVolume(option.getValue());
                 }
             }
@@ -281,9 +291,13 @@ public class SettingsMenu {
         if (shapeRenderer != null) {
             shapeRenderer.dispose();
         }
-        // Dispose textures
         if (sliderKnobTexture != null) sliderKnobTexture.dispose();
         if (sliderBarTexture != null) sliderBarTexture.dispose();
+        for (MenuOption option : menuOptions) {
+            if (option.getType() == MenuOption.OptionType.SLIDER) {
+                // Dispose slider-specific resources if any
+            }
+        }
     }
 
     public class MenuOption {

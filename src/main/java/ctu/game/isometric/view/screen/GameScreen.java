@@ -62,6 +62,7 @@ public class GameScreen implements Screen {
             mapRenderer = new MapRenderer(
                     gameController.getMap(),
                     game.getAssetManager(),
+                    gameController.getEventManager(),
                     gameController.getCharacter(),
                     camera
             );
@@ -124,6 +125,7 @@ public class GameScreen implements Screen {
                         mapRenderer.renderActionButton(
                                 batch,
                                 gameController.getCurrentEventType(),
+                                gameController.getCurrentEvent(),
                                 gameController.getCurrentEventX(),
                                 gameController.getCurrentEventY()
                         );

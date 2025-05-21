@@ -62,7 +62,7 @@ public class PauseMenu {
         this.menuItems = new ArrayList<>();
 
         this.titleFont = generateVietNameseFont("GrenzeGotisch.ttf", 50);
-        this.itemFont =  generateVietNameseFont("GrenzeGotisch.ttf", 30);
+        this.itemFont = generateVietNameseFont("GrenzeGotisch.ttf", 30);
 
         // Initialize rendering tools
         this.shapeRenderer = new ShapeRenderer();
@@ -73,12 +73,14 @@ public class PauseMenu {
 
         // Add default menu items
         addMenuItem("Tiếp Tục", () -> gameController.returnToPreviousState());
-        addMenuItem("Options", this::showOptionsMenu);
-        addMenuItem("Quay về Menu", () -> {
+        addMenuItem("Xem Hướng Dẫn", this::showOptionsMenu);
+        addMenuItem("Tùy chỉnh Âm Thanh", () -> gameController.setState(GameState.SETTINGS));
+        addMenuItem("Lưu Tiến Trình", this::showSaveGameDialog);
+        addMenuItem("Quay Về Menu", () -> {
             gameController.setCurrentState(GameState.MAIN_MENU);
+            gameController.setPreviousState(GameState.MAIN_MENU);
             gameController.resetGame();
         });
-        addMenuItem("Lưu Tiến Trình", this::showSaveGameDialog);
         addMenuItem("Thoát", () -> Gdx.app.exit());
 
         // Set menu position (center of screen)
@@ -95,7 +97,7 @@ public class PauseMenu {
 
         // Create a timestamped filename
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
-        String filename = gameController.getCharacter().getName()+"_" + sdf.format(new Date());
+        String filename = gameController.getCharacter().getName() + "_" + sdf.format(new Date());
 
         boolean saved = saveService.saveGame(character, filename);
         if (saved) {
@@ -174,7 +176,7 @@ public class PauseMenu {
 
         // Draw menu panel background
         shapeRenderer.setColor(0.2f, 0.2f, 0.3f, 0.9f);
-        shapeRenderer.rect(menuX, menuY +15, menuWidth, menuHeight - padding * 4);
+        shapeRenderer.rect(menuX, menuY + 15, menuWidth, menuHeight - padding * 4);
 
         shapeRenderer.end();
         Gdx.gl.glDisable(GL20.GL_BLEND);
@@ -184,7 +186,6 @@ public class PauseMenu {
         // Draw title
         titleFont.draw(batch, menuTitle, menuX, menuY + menuHeight + 15,
                 menuWidth, Align.center, false);
-
 
 
         // Draw menu items with button backgrounds
@@ -278,7 +279,8 @@ public class PauseMenu {
         if (itemFont != null) itemFont.dispose();
         if (shapeRenderer != null) shapeRenderer.dispose();
         if (buttonTexture != null && buttonTexture.getTexture() != null) buttonTexture.getTexture().dispose();
-        if (buttonSelectedTexture != null && buttonSelectedTexture.getTexture() != null) buttonSelectedTexture.getTexture().dispose();
+        if (buttonSelectedTexture != null && buttonSelectedTexture.getTexture() != null)
+            buttonSelectedTexture.getTexture().dispose();
     }
 
     private static class MenuItem {

@@ -51,33 +51,42 @@
             <version>1.9.14</version>
             <classifier>natives-desktop</classifier>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>2.13.3</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/net.didion/jwnl -->
         <dependency>
             <groupId>edu.mit</groupId>
             <artifactId>jwi</artifactId>
             <version>2.2.3</version>
         </dependency>
-
-
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
             <version>8.11.4</version>
         </dependency>
-
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-analyzers-common</artifactId>
             <version>8.11.4</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.dmeoli</groupId>
+            <artifactId>WS4J</artifactId>
+            <version>master</version>
+        </dependency>
+
+
 
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
 
     <build>
         <plugins>

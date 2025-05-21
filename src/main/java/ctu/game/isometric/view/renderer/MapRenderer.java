@@ -19,8 +19,11 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.maps.tiled.renderers.IsometricTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import ctu.game.isometric.controller.EventManager;
 import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.world.IsometricMap;
+import ctu.game.isometric.model.world.MapEvent;
 import ctu.game.isometric.util.AnimationManager;
 import ctu.game.isometric.util.AssetManager;
 
@@ -42,10 +45,13 @@ public class MapRenderer {
     private static final float ZOOM_STEP = 0.1f;
     Texture buttonTexture;
 
+    private EventManager eventManager;
+
     // In MapRenderer.java - modify constructor to take an existing camera
-    public MapRenderer(IsometricMap map, AssetManager assetManager, Character character, OrthographicCamera camera) {
+    public MapRenderer(IsometricMap map, AssetManager assetManager,EventManager eventManager, Character character, OrthographicCamera camera) {
         this.map = map;
         this.assetManager = assetManager;
+        this.eventManager = eventManager;
         this.character = character;
         this.animationManager = assetManager.getAnimationManager();
         this.offsetX = 640;
@@ -75,6 +81,14 @@ public class MapRenderer {
         this.tiledMapRenderer = new IsometricTiledMapRenderer(map.getTiledMap());
     }
 
+    public EventManager getEventManager() {
+        return eventManager;
+    }
+
+    public void setEventManager(EventManager eventManager) {
+        this.eventManager = eventManager;
+    }
+
     public float[] toIsometric(float x, float y, float zoom) {
         float isoX = (x + y) * (map.getTileWidth() / 2.0f) * zoom;
         float isoY = (y - x) * (map.getTileHeight() / 2.0f) * zoom;
@@ -86,16 +100,6 @@ public class MapRenderer {
         return toIsometric(x, y, 1.0f);
     }
 
-    public float[] toIsometric2(float x, float y, float width, float height, float zoom) {
-        float isoX = (x + y) * (width / 2.0f) * zoom;
-        float isoY = (y - x) * (height / 2.0f) * zoom;
-        return new float[]{isoX, isoY};
-    }
-
-    // Add overloaded method to maintain compatibility with existing code
-    public float[] toIsometric2(float x, float y) {
-        return toIsometric(x, y, 1.0f);
-    }
 
     public void render(SpriteBatch batch) {
         // Draw background for the entire screen
@@ -133,19 +137,27 @@ public class MapRenderer {
             for (MapObject object : objectLayer.getObjects()) {
                 Float x = object.getProperties().get("x", Float.class);
                 Float y = object.getProperties().get("y", Float.class);
+
+                // Skip completed events
+                if (object.getProperties().containsKey("id")) {
+                    String eventId = eventManager.getStringProperty(object.getProperties(),"id", "");
+                    MapEvent event = eventManager.getEvent(eventId);
+                    if (event != null && event.isOneTime() && event.isCompleted()) {
+                        continue; // Skip rendering this object
+                    }
+                }
+
                 if (x != null && y != null && object.getProperties().containsKey("gid")) {
                     int gid = object.getProperties().get("gid", Integer.class);
                     Float width = object.getProperties().get("width", Float.class);
                     Float height = object.getProperties().get("height", Float.class);
 
+                    // Provide default values for width and height if null
+                    if (width == null) width = (float) map.getTileWidth(); // Cast to float
+                    if (height == null) height = (float) map.getTileHeight(); // Cast to float
+
                     // Find the tile in all map tilesets
-                    TiledMapTile tile = null;
-                    for (TiledMapTileSet tileset : map.getTiledMap().getTileSets()) {
-                        tile = tileset.getTile(gid);
-                        if (tile != null) {
-                            break;
-                        }
-                    }
+                    TiledMapTile tile = map.getTiledMap().getTileSets().getTile(gid);
 
                     if (tile != null) {
                         int[] gridPos = toGrid(x, y);
@@ -158,7 +170,7 @@ public class MapRenderer {
                         TextureRegion region = tile.getTextureRegion();
                         batch.draw(region,
                                 isoPos[0] - width / 2,      // Center horizontally
-                                isoPos[1] - height / 4,    // Adjust vertical position for better alignment
+                                isoPos[1] - height / 4,     // Improved alignment for isometric view
                                 width, height);
                     }
                 }
@@ -189,30 +201,35 @@ public class MapRenderer {
     }
     //
 
-    public void renderActionButton(SpriteBatch batch, String eventType, float x, float y) {
-        if (eventType == null) return;
+    public void renderActionButton(SpriteBatch batch, String eventType, MapEvent event, float x, float y) {
+        if (eventType == null || event == null) return;
+
+
+        if(event.isOneTime() && event.isCompleted()) {
+            return;
+        }
 
         String buttonText = "Action";
 
         // Set text based on event type
         switch (eventType) {
             case "battle":
-                buttonText = "Battle";
+                buttonText = "Chiến đấu";
                 break;
             case "dialog":
-                buttonText = "Talk";
+                buttonText = "Nói chuyện";
                 break;
             case "cutscene":
-                buttonText = "Watch";
+                buttonText = "Xem Cắt Cảnh";
                 break;
             case "quiz":
-                buttonText = "Talk";
+                buttonText = "Nói chuyện";
                 break;
             case "teleport":
-                buttonText = "Enter";
+                buttonText = "Dịch Chuyển";
                 break;
-            case "item":
-                buttonText = "Take";
+            case "treasure":
+                buttonText = "Mở rương";
                 break;
         }
 
