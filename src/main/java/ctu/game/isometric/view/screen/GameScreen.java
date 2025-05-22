@@ -14,6 +14,7 @@ import ctu.game.isometric.view.renderer.CharacterRenderer;
 import ctu.game.isometric.view.ui.DialogUI;
 import ctu.game.isometric.view.renderer.MapRenderer;
 import ctu.game.isometric.view.ui.ExploringUI;
+import ctu.game.isometric.view.ui.InventoryUI;
 import ctu.game.isometric.view.view.DictionaryView;
 
 public class GameScreen implements Screen {
@@ -74,6 +75,8 @@ public class GameScreen implements Screen {
                     mapRenderer
             );
 
+            InventoryUI inventoryUI = new InventoryUI(gameController);
+            gameController.setInventoryUI(inventoryUI);
 
             exploringUI = new ExploringUI(gameController);
 
@@ -137,6 +140,11 @@ public class GameScreen implements Screen {
 
                     // Render the UI on top
                     if (exploringUI != null) exploringUI.render();
+
+                    if (gameController.getInventoryUI() != null) {
+                        gameController.getInventoryUI().render(batch);
+                    }
+
                     if (dialogUI != null && gameController.getDialogController().isDialogActive()) {
                         dialogUI.render();
                     }
@@ -215,6 +223,10 @@ public class GameScreen implements Screen {
     public void dispose() {
         batch.dispose();
         gameController.dispose();
-        dialogUI.dispose(); // Dispose DialogUI
+        if (dialogUI != null) {
+            dialogUI.dispose(); // Dispose DialogUI
+        }
+        if (exploringUI!=null)
+            exploringUI.dispose();
     }
 }

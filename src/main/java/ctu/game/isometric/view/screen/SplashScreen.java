@@ -14,7 +14,7 @@ public class SplashScreen implements Screen {
     private SpriteBatch batch;
     private Texture splashTexture;
     private float timer = 0;
-    private final float SPLASH_DURATION = 3.0f; // 1 second duration
+    private final float SPLASH_DURATION = 2.0f; // 1 second duration
     private GameController gameController;
 
     public SplashScreen(IsometricGame game, GameController gameController) {

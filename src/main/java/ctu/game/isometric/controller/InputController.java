@@ -98,6 +98,11 @@ public class InputController extends InputAdapter {
         if (state == GameState.EXPLORING) {
             if (moveCooldown > 0) return false;
 
+            if(gameController.getInventoryUI().isVisible()){
+                gameController.getInventoryUI().handleClick(screenX,screenY);
+                return true;
+            }
+
             // Convert screen coordinates to world coordinates
             Vector3 worldCoords = new Vector3(screenX, screenY, 0);
             gameController.getCamera().unproject(worldCoords);
@@ -203,18 +208,31 @@ public class InputController extends InputAdapter {
 
         if (gameController.hasActiveEvent()) {
             switch (keycode) {
-                case Keys.ENTER, Keys.SPACE -> {
+                case Keys.E, Keys.SPACE -> {
                     gameController.handleEventProperties(gameController.getProperties(), gameController.getCurrentEventType());
                 }
                 default -> {
                 }
             }
         }
-
         switch (keycode) {
-            case Keys.P -> gameController.setState(GameState.DICTIONARY);
+            case Keys.V -> {
+                if (gameController.getInventoryUI().isVisible()) {
+                    gameController.getInventoryUI().hide();
+                }
+                gameController.setState(GameState.DICTIONARY);
+            }
             case Keys.ESCAPE -> gameController.setState(GameState.MENU);
             case Keys.TAB -> gameController.getExploringUI().toggleUI();
+            case Keys.I -> { // Toggle inventory
+                if (gameController.getInventoryUI() != null) {
+                    if (gameController.getInventoryUI().isVisible()) {
+                        gameController.getInventoryUI().hide();
+                    } else {
+                        gameController.getInventoryUI().show();
+                    }
+                }
+            }
             case Keys.W, Keys.UP -> {
                 moveCharacter(1, 0);
                 moved = true;
@@ -231,22 +249,22 @@ public class InputController extends InputAdapter {
                 moveCharacter(0, 1);
                 moved = true;
             }
-            case Keys.Q -> { // Diagonal Up-Left
-                moveCharacter(1, -1);
-                moved = true;
-            }
-            case Keys.E -> { // Diagonal Up-Right
-                moveCharacter(1, 1);
-                moved = true;
-            }
-            case Keys.Z -> { // Diagonal Down-Left
-                moveCharacter(-1, -1);
-                moved = true;
-            }
-            case Keys.C -> { // Diagonal Down-Right
-                moveCharacter(-1, 1);
-                moved = true;
-            }
+//            case Keys.Q -> { // Diagonal Up-Left
+//                moveCharacter(1, -1);
+//                moved = true;
+//            }
+//            case Keys.E -> { // Diagonal Up-Right
+//                moveCharacter(1, 1);
+//                moved = true;
+//            }
+//            case Keys.Z -> { // Diagonal Down-Left
+//                moveCharacter(-1, -1);
+//                moved = true;
+//            }
+//            case Keys.C -> { // Diagonal Down-Right
+//                moveCharacter(-1, 1);
+//                moved = true;
+//            }
             default -> {
             }
         }

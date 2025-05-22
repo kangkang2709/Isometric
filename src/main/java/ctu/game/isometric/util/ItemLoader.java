@@ -5,7 +5,9 @@ import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import ctu.game.isometric.model.game.Items;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ItemLoader {
@@ -34,6 +36,10 @@ public class ItemLoader {
         } catch (Exception e) {
             Gdx.app.error("ItemsLoader", "Error loading items", e);
         }
+    }
+
+    public static List<Items> getAllItems() {
+        return new ArrayList<>(items.values());
     }
 
     public static Items getItemById(int id) {

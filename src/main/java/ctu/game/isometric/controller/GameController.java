@@ -26,6 +26,7 @@ import ctu.game.isometric.util.EnemyLoader;
 import ctu.game.isometric.util.WordNetValidator;
 import ctu.game.isometric.view.renderer.TransitionRenderer;
 import ctu.game.isometric.view.ui.ExploringUI;
+import ctu.game.isometric.view.ui.InventoryUI;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -55,6 +56,7 @@ public class GameController {
     private CutsceneRenderer cutsceneController;
     boolean isCreated = false;
     private ExploringUI exploringUI;
+    private InventoryUI inventoryUI;
 
     private EffectManager effectManager;
     private WordNetValidator wordNetValidator;
@@ -679,6 +681,14 @@ public class GameController {
 
     public void setInputController(InputController inputController) {
         this.inputController = inputController;
+    }
+
+    public InventoryUI getInventoryUI() {
+        return inventoryUI;
+    }
+
+    public void setInventoryUI(InventoryUI inventoryUI) {
+        this.inventoryUI = inventoryUI;
     }
 
     public EffectManager getEffectManager() {

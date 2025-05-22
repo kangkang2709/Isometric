@@ -375,6 +375,8 @@ public class GameplayController {
             if (continueButton.contains(touchPos.x, touchPos.y)) {
 
                 gameController.getCharacter().addItem(item, reward.getAmount());
+                gameController.getInventoryUI().notifyItemsChanged();
+
                 gameController.getCharacter().setHealth(playerHealth);
 
                 Timer.schedule(new Timer.Task() {
