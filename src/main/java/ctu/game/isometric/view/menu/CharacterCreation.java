@@ -201,11 +201,11 @@ public class CharacterCreation {
 
         // Draw text elements
         float titleY = Gdx.graphics.getHeight() - 100;
-        layout.setText(font, "Character Creation");
+        layout.setText(font, "Tạo nhân vật mới:");
         font.setColor(Color.WHITE);
-        font.draw(batch, "Character Creation", Gdx.graphics.getWidth() / 2 - layout.width / 2, titleY);
+        font.draw(batch, "Khởi tạo", Gdx.graphics.getWidth() / 2 - layout.width / 2, titleY);
 
-        font.draw(batch, "Name:", nameInputBox.x, nameInputBox.y + nameInputBox.height + 20);
+        font.draw(batch, "Tên:", nameInputBox.x, nameInputBox.y + nameInputBox.height + 20);
 
         // Draw input text with cursor
         font.setColor(Color.BLACK);
@@ -218,14 +218,14 @@ public class CharacterCreation {
         // Draw gender options
         font.setColor(Color.BLACK);
         layout.setText(font, "Male");
-        font.draw(batch, "Male", maleButton.x + maleButton.width / 2 - layout.width / 2, maleButton.y + 28);
+        font.draw(batch, "Nam", maleButton.x + maleButton.width / 2 - layout.width / 2, maleButton.y + 28);
 
         layout.setText(font, "Female");
-        font.draw(batch, "Female", femaleButton.x + femaleButton.width / 2 - layout.width / 2, femaleButton.y + 28);
+        font.draw(batch, "Nữ", femaleButton.x + femaleButton.width / 2 - layout.width / 2, femaleButton.y + 28);
 
         // Draw confirm button
         layout.setText(font, "Confirm");
-        font.draw(batch, "Confirm", confirmButton.x + confirmButton.width / 2 - layout.width / 2, confirmButton.y + 28);
+        font.draw(batch, "Xác nhận", confirmButton.x + confirmButton.width / 2 - layout.width / 2, confirmButton.y + 28);
 
         // Draw character avatar
         if (currentAvatar != null) {

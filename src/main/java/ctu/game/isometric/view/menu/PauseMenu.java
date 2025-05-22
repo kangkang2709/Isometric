@@ -99,7 +99,8 @@ public class PauseMenu {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
         String filename = gameController.getCharacter().getName() + "_" + sdf.format(new Date());
 
-        boolean saved = saveService.saveGame(character, filename);
+
+        boolean saved = saveService.saveGame(character, filename,gameController.getEventManager());
         if (saved) {
             showSaveSuccessNotification(filename);
             System.out.println("Game saved successfully as: " + filename + ".json");

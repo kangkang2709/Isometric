@@ -1,13 +1,24 @@
 package ctu.game.isometric.model.game;
 
 import ctu.game.isometric.model.entity.Character;
+
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class GameSave {
     private Character character;
     private Date saveDate;
     private String saveName;
     private String wordFilePath;
+    private List<String> listIdCompletedEvents;
+    private List<Integer> listIdDefeatedEnemies;
+
+
+    public GameSave() {
+        listIdCompletedEvents = new ArrayList<>();
+        listIdDefeatedEnemies = new ArrayList<>();
+    }
 
     // Getters and setters
     public Character getCharacter() {
@@ -40,5 +51,21 @@ public class GameSave {
 
     public void setWordFilePath(String wordFilePath) {
         this.wordFilePath = wordFilePath;
+    }
+
+    public List<String> getListIdCompletedEvents() {
+        return listIdCompletedEvents;
+    }
+
+    public void setListIdCompletedEvents(List<String> listIdCompletedEvents) {
+        this.listIdCompletedEvents = listIdCompletedEvents;
+    }
+
+    public List<Integer> getListIdDefeatedEnemies() {
+        return listIdDefeatedEnemies;
+    }
+
+    public void setListIdDefeatedEnemies(List<Integer> listIdDefeatedEnemies) {
+        this.listIdDefeatedEnemies = listIdDefeatedEnemies;
     }
 }

@@ -327,16 +327,11 @@ public class LoadGameController {
                 if (save != null) {
                     Set<String> words = saveService.loadLearnedWords(save.getCharacter(), save.getWordFilePath());
 
-//
-//                    for (String learnedWord : words) {
-//                        Word word = gameController.getWordNetValidator().getWordDetails(learnedWord);
-//                        if (word != null) {
-//                            System.out.println("Learned word: " + word.getTerm());
-//                            gameController.getDictionaryView().getDictionary().getLearnedWords().add(word);
-//                        }
-//                    }
+
+
                     // Set character data in game controller
                     gameController.loadCharacter(save.getCharacter());
+                    gameController.getEventManager().updateAfterLoadGame(save);
                     gameController.getCharacter().setLearnedWords(words);
 
 

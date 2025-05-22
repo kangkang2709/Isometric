@@ -536,7 +536,11 @@
 </data>
  </layer>
  <objectgroup id="5" name="object">
-  <object id="27" gid="3" x="288" y="15456" width="49" height="60"/>
+  <object id="27" gid="3" x="288" y="15456" width="49" height="60">
+   <properties>
+    <property name="walkable" type="bool" value="true"/>
+   </properties>
+  </object>
   <object id="34" x="256" y="15424" width="32" height="32">
    <properties>
     <property name="enemy" value="2"/>
@@ -574,7 +578,11 @@
     <property name="scene" value="scene_01"/>
    </properties>
   </object>
-  <object id="46" gid="3" x="352" y="15552" width="49" height="60"/>
+  <object id="46" gid="3" x="352" y="15552" width="49" height="60">
+   <properties>
+    <property name="walkable" type="bool" value="true"/>
+   </properties>
+  </object>
   <object id="47" x="416" y="15584" width="32" height="32">
    <properties>
     <property name="event" value="quiz"/>

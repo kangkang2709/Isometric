@@ -64,14 +64,14 @@ public class GameController {
     private BitmapFont font;
 
 
-    private EventManager eventManager = new EventManager();
+    private EventManager eventManager;
     private MapEvent currentEvent;
 
     public GameController(IsometricGame game) {
         this.game = game;
 
         this.map = new IsometricMap();
-        eventManager.loadEventsFromMap(map);
+        this.eventManager = new EventManager(map);
 
         this.character = new Character(10, 10);
         this.inputController = new InputController(this);
@@ -371,8 +371,9 @@ public class GameController {
 
         // Reset map with a new instance
         this.map = new IsometricMap();
-        this.eventManager = new EventManager();
-        eventManager.loadEventsFromMap(map);
+
+        this.eventManager = null;
+        this.eventManager = new EventManager(map);
 
         // Reset controllers to initial state - make sure to reset character creation controller
         if(characterCreationController == null) {

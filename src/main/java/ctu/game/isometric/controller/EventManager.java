@@ -5,8 +5,10 @@ import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.math.Rectangle;
+import ctu.game.isometric.model.game.GameSave;
 import ctu.game.isometric.model.world.IsometricMap;
 import ctu.game.isometric.model.world.MapEvent;
+import org.lwjgl.openal.SOFTDeferredUpdates;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,6 +20,12 @@ public class EventManager {
     private Map<String, MapEvent> events = new HashMap<>();
     private Map<Integer, Boolean> defeatedEnemies = new HashMap<>();
 
+
+
+    public EventManager(IsometricMap map) {
+        loadEventsFromMap(map);
+
+    }
     // Load events from the map
     public void loadEventsFromMap(IsometricMap map) {
         MapLayer objectLayer = map.getTiledMap().getLayers().get("object");
@@ -42,8 +50,34 @@ public class EventManager {
                 }
             }
         }
+
     }
 
+
+    public List<String> getListIdCompletedEvents() {
+        return events.values().stream()
+                .filter(MapEvent::isCompleted)
+                .map(MapEvent::getId)
+                .collect(Collectors.toList());
+    }
+
+    public List<Integer> getListIdDefeatedEnemies() {
+        return new ArrayList<>(defeatedEnemies.keySet());
+    }
+
+    public void updateAfterLoadGame(GameSave save) {
+        // Update completed events
+        for (String eventId : save.getListIdCompletedEvents()) {
+            if (events.containsKey(eventId)) {
+                events.get(eventId).setCompleted(true);
+            }
+        }
+
+        // Update defeated enemies
+        for (Integer enemyId : save.getListIdDefeatedEnemies()) {
+            defeatedEnemies.put(enemyId, true);
+        }
+    }
 
     // Check for events at a position
     public MapEvent checkPositionEvents(float x, float y) {
@@ -57,6 +91,7 @@ public class EventManager {
                         event.isCompleted()) {
                     continue;
                 }
+                System.out.println(event.toString());
                 return event;
             }
         }

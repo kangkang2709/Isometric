@@ -37,7 +37,7 @@ public class GameSaveController {
 
 
 
-    public boolean saveGame(Character character, String saveName) {
+    public boolean saveGame(Character character, String saveName,EventManager eventManager) {
         try {
             maintainSaveLimit();
 
@@ -48,6 +48,8 @@ public class GameSaveController {
             GameSave gameSave = new GameSave();
             gameSave.setCharacter(saveCharacter);
             gameSave.setSaveDate(new Date());
+            gameSave.setListIdCompletedEvents(eventManager.getListIdCompletedEvents());
+            gameSave.setListIdDefeatedEnemies(eventManager.getListIdDefeatedEnemies());
             gameSave.setWordFilePath("saves/dictionary/" + character.getWordFilePath() + ".json");
 
             // Generate file name
@@ -185,6 +187,7 @@ public class GameSaveController {
 
         return copy;
     }
+
     public Set<String> loadLearnedWords(Character character,String fileName) {
         try {
             if (character.getWordFilePath() == null) {
@@ -211,6 +214,7 @@ public class GameSaveController {
             return new HashSet<>();
         }
     }
+
     public GameSave loadGame(String filename) {
         if (filename == null || filename.isEmpty()) {
             throw new IllegalArgumentException("Filename cannot be null or empty");
@@ -239,10 +243,16 @@ public class GameSaveController {
     public boolean deleteSave(String fileName) {
         try {
             FileHandle file = Gdx.files.local("saves/" + fileName);
+            String name = fileName.split("_")[0] + "_dictionary.json";
+            FileHandle dic = Gdx.files.local("saves/dictionary/" + name);
             if (file.exists()) {
                 file.delete();
+                if (dic.exists()) {
+                    dic.delete();
+                }
                 return true;
             }
+
             return false;
         } catch (Exception e) {
             System.err.println("Error deleting save file: " + e.getMessage());
