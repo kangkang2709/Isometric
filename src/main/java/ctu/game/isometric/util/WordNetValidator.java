@@ -278,16 +278,14 @@ public synchronized void loadDictionary() {
         return POS_BONUS.getOrDefault(pos, 0);
     }
 
-    public static int getEnhancedScore(String word, PartOfSpeech pos, double frequency,
-                                       int synonymCount, double distanceFromCommonWords) {
+    public static int getEnhancedScore(String word, PartOfSpeech pos,
+                                       int synonymCount) {
         int baseScore = calculateScore(word);
         int letterBonus = calculateBonusPoints(word);
         int posBonus = calculatePartOfSpeechBonus(pos);
-        int rarityBonus = getRarityBonus(frequency);
         int synonymBonus = getSynonymCountBonus(synonymCount);
-        int uniquenessBonus = getSemanticUniquenessBonus(distanceFromCommonWords);
 
-        return baseScore + letterBonus + posBonus + rarityBonus + synonymBonus + uniquenessBonus;
+        return baseScore + letterBonus + posBonus  + synonymBonus;
     }
     // tu hiem
     public static int getRarityBonus(double frequency) {
@@ -312,17 +310,13 @@ public synchronized void loadDictionary() {
 
         // Get part of speech from WordNet or word definitions
         PartOfSpeech pos = determinePartOfSpeech(text, word);
-
         // Estimate word frequency using WordNet
-        double frequency = estimateWordFrequency(text);
-
         // Count synonyms from WordNet
         int synonymCount = countSynonyms(text);
 
         // Calculate semantic distance using WordNet
-        double semanticDistance = calculateSemanticDistanceWithJWI(text);
 
-        return getEnhancedScore(text, pos, frequency, synonymCount, semanticDistance);
+        return getEnhancedScore(text, pos, synonymCount);
     }
 
     public static int getTotalScore(String word) {
@@ -340,10 +334,6 @@ public synchronized void loadDictionary() {
         if (distanceFromCommonWords > 0.4) return 3;
         return 0;
     }
-
-    /**
-     * Determines part of speech using WordNet and word definitions
-     */
 
     // loai tu POS
     private static PartOfSpeech determinePartOfSpeech(String text, Word word) {
@@ -406,43 +396,43 @@ public synchronized void loadDictionary() {
      * Estimates word frequency based on WordNet data
      */
     //tan suat
-    private static double estimateWordFrequency(String word) {
-        if (dictionary == null) {
-            // Simple frequency estimation based on word length if WordNet is unavailable
-            // Longer words are generally less frequent
-            return Math.max(0.0001, 0.5 / Math.pow(word.length(), 1.5));
-        }
-
-        try {
-            double totalUsageCount = 0;
-            int senseCount = 0;
-
-            for (POS pos : POS.values()) {
-                IIndexWord idxWord = dictionary.getIndexWord(word, pos);
-                if (idxWord != null) {
-                    for (IWordID wordID : idxWord.getWordIDs()) {
-                        IWord iWord = dictionary.getWord(wordID);
-                        ISynset synset = iWord.getSynset();
-                        // Use tag count as a frequency indicator
-                        totalUsageCount++;
-                        senseCount++;
-                    }
-                }
-            }
-
-            if (senseCount > 0) {
-                // Normalize to a value between 0 and 1
-                // Words with more tag counts are more common
-                double normalizedFrequency = Math.min(1.0, totalUsageCount / 50000.0);
-                return Math.max(0.0001, normalizedFrequency);
-            }
-        } catch (Exception e) {
-            // Fallback on exception
-        }
-
-        // Fallback frequency estimation
-        return 0.01;
-    }
+//    private static double estimateWordFrequency(String word) {
+//        if (dictionary == null) {
+//            // Simple frequency estimation based on word length if WordNet is unavailable
+//            // Longer words are generally less frequent
+//            return Math.max(0.0001, 0.5 / Math.pow(word.length(), 1.5));
+//        }
+//
+//        try {
+//            double totalUsageCount = 0;
+//            int senseCount = 0;
+//
+//            for (POS pos : POS.values()) {
+//                IIndexWord idxWord = dictionary.getIndexWord(word, pos);
+//                if (idxWord != null) {
+//                    for (IWordID wordID : idxWord.getWordIDs()) {
+//                        IWord iWord = dictionary.getWord(wordID);
+//                        ISynset synset = iWord.getSynset();
+//                        // Use tag count as a frequency indicator
+//                        totalUsageCount++;
+//                        senseCount++;
+//                    }
+//                }
+//            }
+//
+//            if (senseCount > 0) {
+//                // Normalize to a value between 0 and 1
+//                // Words with more tag counts are more common
+//                double normalizedFrequency = Math.min(1.0, totalUsageCount / 50000.0);
+//                return Math.max(0.0001, normalizedFrequency);
+//            }
+//        } catch (Exception e) {
+//            // Fallback on exception
+//        }
+//
+//        // Fallback frequency estimation
+//        return 0.01;
+//    }
 
     /**
      * Counts synonyms for a word using WordNet
@@ -480,83 +470,6 @@ public synchronized void loadDictionary() {
         }
     }
 
-    /**
-     * Calculates semantic distance using JWI (Java WordNet Interface)
-     */
-    private static double calculateSemanticDistanceWithJWI(String word) {
-        if (dictionary == null || word == null || word.isEmpty()) {
-            return 0.4; // Default medium distance if WordNet is unavailable
-        }
 
-        try {
-            double totalDistance = 0;
-            int comparisonCount = 0;
-
-            // Compare with common words to determine "uniqueness"
-            for (String commonWord : COMMON_WORDS) {
-                double distance = calculateWordDistance(word, commonWord);
-                if (distance > 0) {
-                    totalDistance += distance;
-                    comparisonCount++;
-                }
-            }
-
-            if (comparisonCount > 0) {
-                return totalDistance / comparisonCount;
-            }
-//⏱ Fallback: không thể so sánh được từ nào
-            // If no comparisons were possible, estimate based on sense count
-            // Words with fewer senses tend to be more specialized
-            int senseCount = 0;
-            for (POS pos : POS.values()) {
-                IIndexWord idxWord = dictionary.getIndexWord(word, pos);
-                if (idxWord != null) {
-                    senseCount += idxWord.getWordIDs().size();
-                }
-            }
-//        🧠 Ý tưởng: Từ có nhiều nghĩa → thường là từ phổ thông, không chuyên biệt → semantic distance thấp.
-            // Fewer senses generally means more semantic distance from common words
-            if (senseCount == 0) return 0.8; // Unknown words are considered unique
-            if (senseCount == 1) return 0.7;
-            if (senseCount < 3) return 0.6;
-            if (senseCount < 5) return 0.5;
-            return 0.4;
-
-        } catch (Exception e) {
-            // Fallback on exception
-            return 0.4;
-        }
-    }
-
-    /**
-     * Calculates semantic distance between two words using path distance in WordNet
-     */
-    private static double calculateWordDistance(String word1, String word2) {
-        if (dictionary == null) return 0;
-
-//        try {
-//            // Use WS4J for semantic distance calculation
-//            edu.cmu.lti.ws4j.RelatednessCalculator calculator = new edu.cmu.lti.ws4j.impl.Lin();
-//            double distance = calculator.calcRelatednessOfWords(word1, word2);
-//
-//            // Normalize to a value between 0 and 1
-//            return Math.min(1.0, Math.max(0.0, distance));
-//        } catch (Exception e) {
-//            return 0.5; // Default medium distance on error
-//        }
-        return 2.0; // Default distance if WordNet is unavailable
-    }
-    /**
-     * Gets direct hypernyms of a synset
-     */
-    private static Set<ISynsetID> getHypernyms(ISynset synset) {
-        Set<ISynsetID> hypernyms = new HashSet<>();
-
-        for (ISynsetID hypernym : synset.getRelatedSynsets(Pointer.HYPERNYM)) {
-            hypernyms.add(hypernym);
-        }
-
-        return hypernyms;
-    }
 
 }

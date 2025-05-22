@@ -14,6 +14,14 @@
       "texturePath": "game/items/mana_crystal.png",
       "itemEffect":"debuff",
       "value": 0.3
+    },
+    {
+      "itemID": 3,
+      "itemName": "Magic Book",
+      "itemDescription": "A book that teaches you a new spell.",
+      "texturePath": "game/items/magic_book.png",
+      "itemEffect":"N/A",
+      "value": 0.0
     }
   ]
   

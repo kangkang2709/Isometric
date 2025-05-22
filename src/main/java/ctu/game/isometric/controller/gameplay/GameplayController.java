@@ -474,7 +474,7 @@ public class GameplayController {
         textY -= 25;
 
         // Get character items
-        Map<String, Integer> characterItems = gameController.getCharacter().getItemsWithoutDebuff();
+        Map<String, Integer> characterItems = gameController.getCharacter().getBuffItems();
 
         if (characterItems == null || characterItems.isEmpty()) {
             regularFont.draw(batch, "Không có vật phẩm!", textX, textY);

@@ -223,11 +223,13 @@ public class InventoryUI {
                 font.draw(batch, item.getItemDescription(), detailsX, detailsY - 90,
                         detailsWidth, -1, true);
             }
+            if(!item.getItemEffect().equals("N/A")){
+                font.draw(batch, "USE", useButton.x + 45, useButton.y + 25);
+                font.draw(batch, "DISCARD", discardButton.x + 30, discardButton.y + 25);}
         }
 
         // Draw button text
-        font.draw(batch, "USE", useButton.x + 45, useButton.y + 25);
-        font.draw(batch, "DISCARD", discardButton.x + 30, discardButton.y + 25);
+
         font.draw(batch, "X", closeButton.x + 10, closeButton.y + 20);
 
         batch.end();

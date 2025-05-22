@@ -185,11 +185,11 @@ public class Character {
         items.remove(item.getItemName());
     }
 
-    public Map<String, Integer> getItemsWithoutDebuff() {
+    public Map<String, Integer> getBuffItems() {
         return items.entrySet().stream()
                 .filter(entry -> {
                     Items item = ItemLoader.getItemByName(entry.getKey());
-                    return item != null && !item.getItemEffect().equals("debuff");
+                    return item != null && item.getItemEffect().equals("buff") || item.getItemEffect().equals("heal");
                 })
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }

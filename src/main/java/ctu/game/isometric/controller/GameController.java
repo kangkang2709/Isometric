@@ -133,6 +133,7 @@ public class GameController {
     public void loadEffects() {
         effectManager.loadEffect("attack", "effects/blood.p");
         effectManager.loadEffect("rain", "effects/rain.p");
+
     }
 
     public void loadCharacter(Character character) {
