@@ -133,6 +133,7 @@ public class GameScreen implements Screen {
                                 gameController.getCurrentEventY()
                         );
                     }
+
                     if (characterRenderer != null) characterRenderer.render(batch);
 
                     // End the batch before rendering UI
@@ -144,9 +145,12 @@ public class GameScreen implements Screen {
                     if (gameController.getInventoryUI() != null) {
                         gameController.getInventoryUI().render(batch);
                     }
-
                     if (dialogUI != null && gameController.getDialogController().isDialogActive()) {
+
                         dialogUI.render();
+                        batch.begin();
+                        gameController.getEffectManager().render(batch);
+                        batch.end();
                     }
                     // Begin the batch again for any subsequent rendering
                     batch.begin();

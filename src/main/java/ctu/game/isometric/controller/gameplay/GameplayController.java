@@ -201,28 +201,6 @@ public class GameplayController {
             }
             return;
         }
-
-        // Handle player input
-//        if (Gdx.input.justTouched()) {
-//            Vector3 touchPos = getTouchPosition();
-//
-//            if (submitButtonRect.contains(touchPos.x, touchPos.y)) {
-//                submitWord();
-//            } else if (clearButtonRect.contains(touchPos.x, touchPos.y)) {
-//                clearSelection();
-//            } else {
-//                checkGridClick(touchPos.x, touchPos.y);
-//            }
-//
-//            if (submitButtonRect.contains(touchPos.x, touchPos.y)) {
-//                submitWord();
-//            } else if (clearButtonRect.contains(touchPos.x, touchPos.y)) {
-//                clearSelection();
-//            } else {
-//                checkGridClick(touchPos.x, touchPos.y);
-//                handleItemBoxClick(touchPos.x, touchPos.y); // Add this line
-//            }
-//        }
     }
 
     public boolean handleCombatClick(float x, float ScreenY) {
@@ -803,8 +781,14 @@ public class GameplayController {
             enemyHealth = Math.min(enemyMaxHealth, enemyHealth + heal);
             combatLog = enemyName + " recovers " + heal + " health!";
         }
+        effectManager.spawnEffect("attack", viewport.getWorldWidth() - 300, 600);
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                checkCombatEnd();
 
-        checkCombatEnd();
+            }
+        }, 0.5f);
         if (isCombatMode) {
             isPlayerTurn = true;
             letterGrid.regenerateGrid();
@@ -853,12 +837,25 @@ public class GameplayController {
 
             if (isCombatMode && isPlayerTurn) {
                 float damage = points * wordDamageMultiplier;
+                if (enemyHealth <= 0) {
+                    damage = 0;
+                }
+                if (damage > enemyHealth) {
+                    damage = enemyHealth;
+                }
                 enemyHealth -= damage;
                 combatLog = "Your word '" + word + "' deals " + damage + " damage!";
                 showMessage("+" + points + " points! " + damage + " damage!");
                 // Spawn attack particle effect
                 effectManager.spawnEffect("attack", viewport.getWorldWidth() - 300, 600);
-                checkCombatEnd();
+
+                Timer.schedule(new Timer.Task() {
+                    @Override
+                    public void run() {
+                        checkCombatEnd();
+
+                    }
+                }, 0.5f);
 
                 if (isCombatMode && enemyHealth > 0) {
                     isPlayerTurn = false;

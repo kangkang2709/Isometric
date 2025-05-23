@@ -13,7 +13,7 @@
     "enemyName": "Skeleton Archer",
     "enemyDescription": "An undead archer that shoots arrows from afar.",
     "texturePath": "enemy/skeleton_archer.png",
-    "health": 3,
+    "health": 3.0,
     "attackPower": 1,
     "rewardId": 2
   }

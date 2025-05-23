@@ -52,6 +52,10 @@ public class EffectManager implements Disposable {
         spawnEffect(effectName, x, y, 2.0f);
         playSound(effectName);
     }
+    public void spawnEffectEvent(String effectName, float x, float y) {
+        spawnEffect(effectName, x, y, 0.2f);
+        playSound(effectName);
+    }
 
     public void playSound(String effectName) {
         if (!sfxEnabled) return;
@@ -65,7 +69,6 @@ public class EffectManager implements Disposable {
     private boolean sfxEnabled = true;
 
     public void setEnabled(boolean enabled) {
-        boolean wasDisabled = !this.sfxEnabled && enabled;
         this.sfxEnabled = enabled;
     }
 
@@ -171,8 +174,10 @@ public class EffectManager implements Disposable {
     }
 
     public void render(SpriteBatch batch) {
-        for (ParticleEffectPool.PooledEffect effect : activeEffects) {
-            effect.draw(batch);
+        if (batch.isDrawing()) {
+            for (ParticleEffectPool.PooledEffect effect : activeEffects) {
+                effect.draw(batch);
+            }
         }
     }
 

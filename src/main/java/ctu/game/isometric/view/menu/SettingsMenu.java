@@ -314,7 +314,7 @@ public class SettingsMenu {
             this.type = type;
             this.onChange = onChange;
             this.value = 0f;
-            this.toggled = false;
+            this.toggled = true;
         }
 
         public String getName() {

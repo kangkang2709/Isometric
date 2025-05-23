@@ -10,7 +10,9 @@ import com.badlogic.gdx.math.Rectangle;
 import ctu.game.isometric.IsometricGame;
 import ctu.game.isometric.model.dictionary.Dictionary;
 import ctu.game.isometric.model.dictionary.Word;
+import ctu.game.isometric.model.game.Items;
 import ctu.game.isometric.model.world.MapEvent;
+import ctu.game.isometric.util.ItemLoader;
 import ctu.game.isometric.view.menu.CharacterCreation;
 import ctu.game.isometric.view.menu.MainMenu;
 import ctu.game.isometric.view.menu.PauseMenu;
@@ -133,7 +135,7 @@ public class GameController {
     public void loadEffects() {
         effectManager.loadEffect("attack", "effects/blood.p");
         effectManager.loadEffect("rain", "effects/rain.p");
-
+        effectManager.loadEffect("treasure", "effects/demolition.p");
     }
 
     public void loadCharacter(Character character) {
@@ -157,11 +159,13 @@ public class GameController {
         switch (currentState) {
             case EXPLORING:
                 if(dialogController.isDialogActive()){
-                    return;
+                    if (currentEvent != null && currentEvent.getEventType().equals("treasure")) {
+                        effectManager.update(delta);
+                    }
                 }
                 else {
-                inputController.updateCooldown(delta);
-                character.update(delta);
+                    inputController.updateCooldown(delta);
+                    character.update(delta);
                 }
                 break;
             case CHARACTER_CREATION:
@@ -350,8 +354,8 @@ public class GameController {
     }
 
     public float[] toIsometric(float x, float y) {
-        float isoX = (x - y) * (map.getTileWidth() / 2.0f);
-        float isoY = (y + x) * (map.getTileHeight() / 2.0f);
+        float isoX = (x + y) * (map.getTileWidth() / 2.0f) ;
+        float isoY = (y - x) * (map.getTileHeight() / 2.0f);
         return new float[]{isoX, isoY};
     }
 
@@ -486,6 +490,21 @@ public class GameController {
                     }
                     break;
                 case "treasure":
+                    if (currentEvent.isOneTime() && currentEvent.isCompleted()){
+                        return;
+                    }
+                    int itemId = -1;
+                    Object itemObj = properties.get("item");
+                    if (itemObj instanceof String) {
+                        itemId = Integer.parseInt((String) itemObj);
+                    } else if (itemObj instanceof Integer) {
+                        itemId = (Integer) itemObj;
+                    }
+                    int amount = properties.containsKey("amount") ? (Integer) properties.get("amount") : 1;
+                    if (itemId != -1) {
+                        Items item = ItemLoader.getItemById(itemId);
+                        openTreasureWithAnimation(item, amount,currentEventX,currentEventY);
+                    }
                     break;
                 case "dialog":
                     if (properties != null) {
@@ -495,7 +514,6 @@ public class GameController {
                     }
                     break;
                 case "quiz":
-                    System.out.println("Starting quiz...");
                         dialogController.setOnDialogFinishedAction(() -> startQuiz());
                         dialogController.startDialog("chapter_quiz_intro", "scene_meet_npc");
                     break;
@@ -509,6 +527,24 @@ public class GameController {
 
     }
 
+
+    private void openTreasureWithAnimation(Items item, int amount,int x, int y) {
+        // Get character position for effect placement
+        float[] isoPos = toIsometric(x, y);
+        // Spawn treasure effect
+        effectManager.spawnEffectEvent("treasure", isoPos[0], isoPos[1]);
+
+        // Create dialog message about the found item
+        String message = "You found " + amount + " " + item.getItemName() + "!";
+        dialogController.showSimpleMessage(message);
+
+        // Add the item to inventory after a short delay
+        dialogController.setOnDialogFinishedAction(() -> {
+            character.addItem(item, amount);
+            eventManager.completeEvent(currentEvent.getId());
+
+        });
+    }
 
     public boolean hasActiveEvent() {
         return hasActiveEvent && currentState == GameState.EXPLORING;

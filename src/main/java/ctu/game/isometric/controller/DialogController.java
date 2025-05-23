@@ -105,7 +105,57 @@ public class DialogController {
     }
 
 
+    public void showSimpleMessage(String message) {
+        // Create a temporary dialog with the message
+        Dialog tempDialog = new Dialog();
+        tempDialog.setText(message);
 
+        // Ensure storyData arcs are initialized
+        if (storyData.getArcs() == null) {
+            storyData.setArcs(new ArrayList<>());
+        }
+
+        // Create and add a temporary scene to story data if needed
+        if (findArc("system_messages") == null) {
+            // Create temporary arc and scene
+            Arc tempArc = new Arc();
+            tempArc.setId("system_messages");
+
+            Scene tempScene = new Scene();
+            tempScene.setId("notification");
+            List<Dialog> dialogues = new ArrayList<>();
+            dialogues.add(tempDialog);
+            tempScene.setDialogues(dialogues);
+
+            List<Scene> scenes = new ArrayList<>();
+            scenes.add(tempScene);
+            tempArc.setScenes(scenes);
+
+            storyData.getArcs().add(tempArc);
+        } else {
+            // Update existing notification scene
+            Arc arc = findArc("system_messages");
+            Scene scene = findScene(arc, "notification");
+
+            if (scene == null) {
+                scene = new Scene();
+                scene.setId("notification");
+                if (arc.getScenes() == null) {
+                    arc.setScenes(new ArrayList<>());
+                }
+                arc.getScenes().add(scene);
+            }
+
+            // Update dialog
+            List<Dialog> dialogues = new ArrayList<>();
+            dialogues.add(tempDialog);
+            scene.setDialogues(dialogues);
+        }
+
+        // Show the notification
+        startDialog("system_messages", "notification");
+        performAction = true;
+    }
 
 
     // After
