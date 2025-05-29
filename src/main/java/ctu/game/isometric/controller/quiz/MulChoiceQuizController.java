@@ -13,6 +13,8 @@ import ctu.game.isometric.model.game.GameState;
 import java.util.List;
 import java.util.Map;
 
+import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
+
 public class MulChoiceQuizController {
     private GameController gameController;
     private TimedQuizSystem quizSystem;
@@ -42,8 +44,9 @@ public class MulChoiceQuizController {
                 gameController.getWordNetValidator()
         );
 
-        this.font = new BitmapFont();
-        this.font.getData().setScale(1.5f);
+
+
+        this.font = generateVietNameseFont("GrenzeGotisch.ttf", 24);
         this.shapeRenderer = new ShapeRenderer();
 
         int width = Gdx.graphics.getWidth();
