@@ -180,6 +180,9 @@ public class GameScreen implements Screen {
                 case QUIZZES:
                     gameController.getQuizController().render(batch);
                     break;
+                case MULTIPLE_CHOICE_QUIZZES:
+                    gameController.getMultipleChoiceQuizController().render(batch);
+                    break;
                 case MENU:
                     gameController.getMenuController().render(batch);
                     break;

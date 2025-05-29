@@ -19,6 +19,13 @@ public class WordDefinition {
     }
 
 
+    public Set<String> getAntonyms() {
+        return antonyms;
+    }
+
+    public void setAntonyms(Set<String> antonyms) {
+        this.antonyms = antonyms;
+    }
 
     // Getters and setters
     public String getPartOfSpeech() {

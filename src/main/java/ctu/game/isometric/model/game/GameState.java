@@ -12,5 +12,6 @@ public enum GameState {
     GAMEPLAY,// Combat state
     LOAD_GAME,
     QUIZZES, // Quiz state
-    DICTIONARY, // Dictionary state
+    DICTIONARY,
+    MULTIPLE_CHOICE_QUIZZES// Dictionary state
 }

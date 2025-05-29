@@ -24,6 +24,62 @@ public class TimedQuizSystem extends SymbolicQuizSystem implements QuizTimer.Tim
         this.timeExpired = false;
     }
 
+
+    @Override
+    public Map<String, Object> generateMultipleChoiceQuiz() {
+        if (currentQuestionCount >= maxQuestionsPerSession) {
+            Map<String, Object> endData = new HashMap<>();
+            endData.put("sessionComplete", true);
+            endData.put("message", "Quiz session complete!");
+            return endData;
+        }
+
+        // Try to generate a non-repeating question (max 5 attempts)
+        Map<String, Object> quizData = null;
+        int attempts = 0;
+
+        while (attempts < 1) {
+            quizData = super.generateMultipleChoiceQuiz();
+            if (quizData == null || quizData.containsKey("error")) {
+                break; // If there's an error or quizData is null, stop trying
+            }
+
+            String question = (String) quizData.get("question");
+            if (!usedQuestions.contains(question)) {
+                // Found a new question
+                usedQuestions.add(question);
+                break;
+            }
+            attempts++;
+        }
+
+        // End session if we couldn't find a unique question or encountered errors
+        if (quizData == null || quizData.containsKey("error") || attempts >= 1) {
+            Map<String, Object> endData = new HashMap<>();
+            endData.put("sessionComplete", true);
+            endData.put("message", "No more unique questions available!");
+            return endData;
+        }
+
+        // Add time limit to the quiz data based on difficulty
+        int difficulty = (int) quizData.getOrDefault("difficulty", 3);
+        float timeLimit = getTimeLimitForDifficulty(difficulty);
+        quizData.put("timeLimit", timeLimit);
+        quizData.put("difficultyLevel", getDifficultyLabel(difficulty));
+
+        timer.reset();
+        timeExpired = false;
+        pendingAutoSubmit = false;
+
+        // Store the current quiz
+        currentQuiz = quizData;
+        currentQuestionCount++;
+
+        return quizData;
+    }
+
+
+
     @Override
     public Map<String, Object> generateContextualSentenceQuiz() {
         // Check if we've reached the question limit
@@ -38,7 +94,7 @@ public class TimedQuizSystem extends SymbolicQuizSystem implements QuizTimer.Tim
         Map<String, Object> quizData = null;
         int attempts = 0;
 
-        while (attempts < 5) {
+        while (attempts < 2) {
             quizData = super.generateContextualSentenceQuiz();
             if (quizData.containsKey("error")) {
                 break; // If there's an error, stop trying
@@ -54,7 +110,7 @@ public class TimedQuizSystem extends SymbolicQuizSystem implements QuizTimer.Tim
         }
 
         // End session if we couldn't find a unique question or encountered errors
-        if (quizData == null || quizData.containsKey("error") || attempts >= 5) {
+        if (quizData == null || quizData.containsKey("error") || attempts >= 2) {
             Map<String, Object> endData = new HashMap<>();
             endData.put("sessionComplete", true);
             endData.put("message", "No more unique questions available!");
@@ -178,7 +234,6 @@ public class TimedQuizSystem extends SymbolicQuizSystem implements QuizTimer.Tim
     private float getTimeLimitForDifficulty(int difficulty) {
         // Harder questions get more time (opposite of previous implementation)
         // Base time is defaultTimeLimit, add 5 seconds for each difficulty level
-        System.out.println(defaultTimeLimit + ((difficulty - 1) * 5));
         return defaultTimeLimit + ((difficulty - 1) * 5);
     }
 
