@@ -141,7 +141,7 @@ public class QuizController {
         font.draw(batch, totalScoreText, 100, height * 0.85f);
 
         // Display difficulty level
-        String difficultyText = "Difficulty: " + currentQuiz.get("difficultyLevel");
+        String difficultyText = "Difficulty: " + currentQuiz.get("difficulty");
         font.setColor(Color.CYAN);
         layout.setText(font, difficultyText);
         font.draw(batch, difficultyText, 100, height * 0.78f);

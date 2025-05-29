@@ -37,6 +37,7 @@ public class QuizTimer {
     }
 
     public void reset() {
+        timeLimit = 30f; // Default time limit
         timeRemaining = timeLimit;
         isRunning = false;
     }
@@ -54,6 +55,11 @@ public class QuizTimer {
         } else if (callback != null) {
             callback.onTimerTick(timeRemaining);
         }
+    }
+
+    public void setTimeLimit(float timeLimit) {
+        this.timeLimit = timeLimit;
+        this.timeRemaining = timeLimit;
     }
 
     public float getTimeRemaining() {

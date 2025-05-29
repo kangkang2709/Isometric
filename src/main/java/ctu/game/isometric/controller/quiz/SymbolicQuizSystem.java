@@ -23,6 +23,7 @@ public class SymbolicQuizSystem {
 
 
 
+
     public Map<String, Object> generateContextualSentenceQuiz() {
         if (learnedWords.isEmpty()) {
             return createErrorResponse("No words available");
@@ -87,7 +88,7 @@ public class SymbolicQuizSystem {
         quizData.put("question", sentence);
         quizData.put("answer", correctAnswer); // Đáp án có thể là từ gốc hoặc từ đồng nghĩa
         quizData.put("difficulty", difficulty);
-        quizData.put("points", difficulty * 1); // Điểm dựa trên độ khó
+        quizData.put("points", difficulty * 1.2); // Điểm dựa trên độ khó
 
         return quizData;
     }
