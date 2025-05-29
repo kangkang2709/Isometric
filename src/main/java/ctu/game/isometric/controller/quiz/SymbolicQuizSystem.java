@@ -28,10 +28,7 @@ public class SymbolicQuizSystem {
             return createErrorResponse("No words available");
         }
 
-
-
-
-
+        // Bước 1: Chọn từ ngẫu nhiên và lấy thông tin từ WordNet
         String wordUpperCase = getRandomWord(); // IS ALL UPPER CASE
         String word = wordUpperCase.toLowerCase(); // Normalize for dictionary lookup
         Word details = wordNetValidator.getWordDetails(word);
@@ -40,10 +37,21 @@ public class SymbolicQuizSystem {
             return createErrorResponse("No details available for word: " + word);
         }
 
+        // Bước 2: Lấy danh sách từ đồng nghĩa (synonyms)
+        int definitionCount = details.getDefinitions().size(); // Số lượng định nghĩa
 
+        List<String> synonyms = details.getDefinitions().get(0).getSynonyms();// Giả sử WordNetValidator hỗ trợ lấy synonyms
+        if (synonyms == null || synonyms.isEmpty()) {
+            synonyms = new ArrayList<>();
+            synonyms.add(word); // Nếu không có từ đồng nghĩa, chỉ dùng từ gốc
+        }
 
+        // Bước 3: Chọn đáp án đúng (từ gốc hoặc từ đồng nghĩa)
+        String correctAnswer = random.nextBoolean() ? wordUpperCase : synonyms.get(random.nextInt(synonyms.size())).toUpperCase();
 
+        // Bước 4: Lấy ví dụ và định nghĩa
         List<String> examples = new ArrayList<>();
+        String definition = details.getDefinitions().get(0).getDefinition().split(";")[0]; // Lấy định nghĩa đầu tiên
 
         for (WordDefinition def : details.getDefinitions()) {
             if (def.getExamples() != null) {
@@ -51,24 +59,47 @@ public class SymbolicQuizSystem {
             }
         }
 
+        // Bước 5: Sinh câu hỏi
         String sentence;
-        if (examples.isEmpty()) {
-            sentence = "The word ____ means: " + (details.getDefinitions().isEmpty()
-                    ? "No definition available"
-                    : details.getDefinitions().get(0).getDefinition().split(";")[0]);
+        if (!examples.isEmpty() && random.nextBoolean()) { // 50% dùng ví dụ, 50% dùng định nghĩa
+            // Dùng ví dụ: Thay thế từ gốc hoặc từ đồng nghĩa bằng "____"
+            sentence = examples.get(random.nextInt(examples.size()));
+            for (String syn : synonyms) {
+                sentence = sentence.replaceAll("(?i)\\b" + syn + "\\b", "____");
+            }
+            sentence = sentence.replaceAll("(?i)\\b" + word + "\\b", "____");
         } else {
-            sentence = examples.get(random.nextInt(examples.size()))
-                    .replaceAll("(?i)\\b" + word + "\\b", "____");
+            // Dùng định nghĩa: Tạo câu hỏi từ định nghĩa
+            List<String> templates = Arrays.asList(
+                    "A word meaning - \"" + definition + "\" is: ____.",
+                    "The term for - \"" + definition + "\" is: ____.",
+                    "What is a word that means \"" + definition + "\"? Fill in: ____."
+            );
+            sentence = templates.get(random.nextInt(templates.size()));
         }
 
+        // Bước 6: Tính độ khó dựa trên từ và ngữ cảnh
+        int difficulty = calculateDifficulty(word, synonyms.size(),definitionCount,examples.size()); // Ví dụ: từ càng hiếm, từ đồng nghĩa càng nhiều -> khó hơn
+
+        // Bước 7: Tạo dữ liệu câu hỏi
         Map<String, Object> quizData = new HashMap<>();
         quizData.put("type", "contextual_sentence");
         quizData.put("question", sentence);
-        quizData.put("answer", wordUpperCase); // Use original uppercase for answer
-        quizData.put("difficulty", 3);
-        quizData.put("points", 2); // Example scoring
+        quizData.put("answer", correctAnswer); // Đáp án có thể là từ gốc hoặc từ đồng nghĩa
+        quizData.put("difficulty", difficulty);
+        quizData.put("points", difficulty * 1); // Điểm dựa trên độ khó
 
         return quizData;
+    }
+
+
+    private int calculateDifficulty(String word, int synonymCount,int definationCount, int exampleCount) {
+        int baseDifficulty = 1; // Mặc định
+        if (synonymCount >= 3) baseDifficulty++; // Nhiều từ đồng nghĩa -> khó hơn
+        if (word.length() >= 5) baseDifficulty++;
+        if (definationCount >=2 ) baseDifficulty++;// Từ dài -> khó hơn
+        if (exampleCount >= 2) baseDifficulty++; // Nhiều ví dụ -> khó hơn
+        return Math.min(baseDifficulty, 5); // Giới hạn độ khó tối đa là 5
     }
 
     private String getRandomWord() {

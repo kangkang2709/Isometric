@@ -9,6 +9,15 @@ public class TimedQuizSystem extends SymbolicQuizSystem implements QuizTimer.Tim
     private boolean timeExpired;
     private float defaultTimeLimit = 30f; // 30 seconds default
 
+    // Track session questions
+    private int maxQuestionsPerSession = 5;
+    private int currentQuestionCount = 0;
+    private Set<String> usedQuestions = new HashSet<>();
+    private Map<String, Object> currentQuiz;
+
+    // Auto-submit flag
+    private boolean pendingAutoSubmit = false;
+
     public TimedQuizSystem(Set<String> learnedWords, WordNetValidator wordNetValidator) {
         super(learnedWords, wordNetValidator);
         this.timer = new QuizTimer(defaultTimeLimit, this);
@@ -17,24 +26,63 @@ public class TimedQuizSystem extends SymbolicQuizSystem implements QuizTimer.Tim
 
     @Override
     public Map<String, Object> generateContextualSentenceQuiz() {
-        Map<String, Object> quizData = super.generateContextualSentenceQuiz();
+        // Check if we've reached the question limit
+        if (currentQuestionCount >= maxQuestionsPerSession) {
+            Map<String, Object> endData = new HashMap<>();
+            endData.put("sessionComplete", true);
+            endData.put("message", "Quiz session complete!");
+            return endData;
+        }
 
-        if (quizData.containsKey("error")) {
-            // Handle error case with a default quiz
+        // Try to generate a non-repeating question (max 5 attempts)
+        Map<String, Object> quizData = null;
+        int attempts = 0;
+
+        while (attempts < 5) {
+            quizData = super.generateContextualSentenceQuiz();
+            if (quizData.containsKey("error")) {
+                break; // If there's an error, stop trying
+            }
+
+            String question = (String) quizData.get("question");
+            if (!usedQuestions.contains(question)) {
+                // Found a new question
+                usedQuestions.add(question);
+                break;
+            }
+            attempts++;
+        }
+
+        if (quizData == null || quizData.containsKey("error")) {
             quizData = createDefaultQuiz();
         }
 
-        // Add time limit to the quiz data
+        // Add time limit to the quiz data based on difficulty
         int difficulty = (int) quizData.getOrDefault("difficulty", 3);
         float timeLimit = getTimeLimitForDifficulty(difficulty);
         quizData.put("timeLimit", timeLimit);
+        quizData.put("difficultyLevel", getDifficultyLabel(difficulty));
+
         timer.reset();
         timeExpired = false;
+        pendingAutoSubmit = false;
 
         // Store the current quiz
         currentQuiz = quizData;
+        currentQuestionCount++;
 
         return quizData;
+    }
+
+    private String getDifficultyLabel(int difficulty) {
+        switch(difficulty) {
+            case 1: return "Easy";
+            case 2: return "Medium";
+            case 3: return "Standard";
+            case 4: return "Hard";
+            case 5: return "Expert";
+            default: return "Standard";
+        }
     }
 
     private Map<String, Object> createDefaultQuiz() {
@@ -51,6 +99,7 @@ public class TimedQuizSystem extends SymbolicQuizSystem implements QuizTimer.Tim
         timer.reset();
         timer.start();
         timeExpired = false;
+        pendingAutoSubmit = false;
     }
 
     public Map<String, Object> submitAnswer(String answer) {
@@ -76,12 +125,16 @@ public class TimedQuizSystem extends SymbolicQuizSystem implements QuizTimer.Tim
         // Exact match after normalization
         boolean isCorrect = normalizedUserAnswer.equals(normalizedCorrectAnswer);
 
-        int difficulty = (int) currentQuiz.getOrDefault("difficulty", 3);
-//        int score = calculateScore(isCorrect, difficulty, (long)(timeTaken * 1000));
- int score = 2;
-        // Apply time penalty if time expired
-        if (timeExpired) {
-            score = Math.max(0, score / 2); // 50% penalty for expired time
+        // No points for wrong answers
+        int score = 0;
+        if (isCorrect) {
+            int difficulty = (int) currentQuiz.getOrDefault("difficulty", 3);
+            score = calculateScore(difficulty, timeTaken);
+
+            // Apply time penalty if time expired
+            if (timeExpired) {
+                score = 0; // No points if time expired
+            }
         }
 
         Map<String, Object> result = new HashMap<>();
@@ -91,17 +144,28 @@ public class TimedQuizSystem extends SymbolicQuizSystem implements QuizTimer.Tim
         result.put("timeExpired", timeExpired);
         result.put("correctAnswer", correctAnswer);
         result.put("userAnswer", answer);
+        result.put("questionsRemaining", maxQuestionsPerSession - currentQuestionCount);
 
         return result;
     }
 
-    private float getTimeLimitForDifficulty(int difficulty) {
-        // Harder questions get less time
-        return Math.max(10, defaultTimeLimit - ((difficulty - 1) * 5));
+    private int calculateScore(int difficulty, float timeTaken) {
+        // Base score based on difficulty
+        int baseScore = difficulty * 10;
+
+        // Time bonus - faster answers get more points
+        float timeLimit = getTimeLimitForDifficulty(difficulty);
+        float timeRatio = Math.min(1.0f, timeTaken / timeLimit);
+        float timeBonus = 1.0f - (timeRatio * 0.5f); // Up to 50% bonus for fast answers
+
+        return Math.round(baseScore * timeBonus);
     }
 
-    // Cache current quiz
-    private Map<String, Object> currentQuiz;
+    private float getTimeLimitForDifficulty(int difficulty) {
+        // Harder questions get more time (opposite of previous implementation)
+        // Base time is defaultTimeLimit, add 5 seconds for each difficulty level
+        return defaultTimeLimit + ((difficulty - 1) * 5);
+    }
 
     @Override
     public void onTimerTick(float timeRemaining) {
@@ -111,14 +175,40 @@ public class TimedQuizSystem extends SymbolicQuizSystem implements QuizTimer.Tim
     @Override
     public void onTimerComplete() {
         timeExpired = true;
-        // Auto-submit with empty answer if time expires
+        pendingAutoSubmit = true;
+        // Auto-submit with empty answer will be handled in the controller
+    }
+
+    public boolean isPendingAutoSubmit() {
+        return pendingAutoSubmit;
+    }
+
+    public void resetPendingAutoSubmit() {
+        pendingAutoSubmit = false;
     }
 
     public void setDefaultTimeLimit(float seconds) {
         this.defaultTimeLimit = seconds;
     }
 
+    public void setMaxQuestionsPerSession(int count) {
+        this.maxQuestionsPerSession = count;
+    }
+
+    public void resetSession() {
+        currentQuestionCount = 0;
+        usedQuestions.clear();
+    }
+
     public QuizTimer getTimer() {
         return timer;
+    }
+
+    public int getRemainingQuestions() {
+        return maxQuestionsPerSession - currentQuestionCount;
+    }
+
+    public int getTotalQuestions() {
+        return maxQuestionsPerSession;
     }
 }
