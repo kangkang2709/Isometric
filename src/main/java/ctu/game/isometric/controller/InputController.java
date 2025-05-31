@@ -166,6 +166,12 @@ public class InputController extends InputAdapter {
             gameController.getDictionaryView().handleMouseClick(screenX, screenY);
             return true;
         }
+        if (state == GameState.QUIZZES) {
+            return true;
+        }
+        if( state == GameState.MULTIPLE_CHOICE_QUIZZES) {
+            return gameController.getMultipleChoiceQuizController().handleClick(screenX,screenY);
+        }
 
         return false;
     }

@@ -9,6 +9,7 @@ import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 import ctu.game.isometric.IsometricGame;
+import ctu.game.isometric.controller.quiz.MulChoiceQuizController;
 import ctu.game.isometric.model.dictionary.Dictionary;
 import ctu.game.isometric.model.dictionary.Word;
 import ctu.game.isometric.model.game.Items;
@@ -65,6 +66,7 @@ public class GameController {
     private EffectManager effectManager;
     private WordNetValidator wordNetValidator;
     private QuizController quizController;
+    private MulChoiceQuizController mulChoiceQuizController;
     private ctu.game.isometric.view.view.DictionaryView  dictionaryView;
     private Dictionary dictionary;
     private BitmapFont font;
@@ -106,6 +108,7 @@ public class GameController {
 
         this.gameplayController = new GameplayController(this);
         this.quizController = new QuizController(this);
+        this.mulChoiceQuizController = new MulChoiceQuizController(this);
 
         initializeDictionary();
         this.musicController.initialize();
@@ -227,6 +230,9 @@ public class GameController {
             case QUIZZES:
                 quizController.update(delta);
                 break;
+                case  MULTIPLE_CHOICE_QUIZZES:
+                mulChoiceQuizController.update(delta);
+                break;
             case SETTINGS:
                 settingsMenu.update(delta);
                 break;
@@ -244,12 +250,26 @@ public class GameController {
 
     }
 
+    public void startMulChoiceQuiz() {
+        setPreviousState(currentState);
+        setState(GameState.MULTIPLE_CHOICE_QUIZZES);
+        mulChoiceQuizController.startQuiz();
+    }
+
+
     public void startQuiz() {
         setPreviousState(currentState);
         setState(GameState.QUIZZES);
         quizController.startQuiz();
     }
 
+    public MulChoiceQuizController getMultipleChoiceQuizController() {
+        return mulChoiceQuizController;
+    }
+
+    public void setMulChoiceQuizController(MulChoiceQuizController mulChoiceQuizController) {
+        this.mulChoiceQuizController = mulChoiceQuizController;
+    }
 
     public TransitionRenderer getTransitionController() {
         return transitionRenderer;
@@ -559,6 +579,10 @@ public class GameController {
                 case "quiz":
                         dialogController.setOnDialogFinishedAction(() -> startQuiz());
                         dialogController.startDialog("chapter_quiz_intro", "scene_meet_npc");
+                    break;
+                case "mulquiz":
+                    dialogController.setOnDialogFinishedAction(() -> startMulChoiceQuiz());
+                    dialogController.startDialog("chapter_quiz_intro", "scene_meet_npc");
                     break;
                 case "cutscene":
                     String cutsceneName = properties.get("cutscene", String.class);

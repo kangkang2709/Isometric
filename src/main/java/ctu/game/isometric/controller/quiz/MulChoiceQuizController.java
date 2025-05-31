@@ -10,13 +10,16 @@ import com.badlogic.gdx.math.Rectangle;
 import ctu.game.isometric.controller.GameController;
 import ctu.game.isometric.model.game.GameState;
 
+import java.util.List;
 import java.util.Map;
 
-public class QuizController {
+import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
+
+public class MulChoiceQuizController {
     private GameController gameController;
     private TimedQuizSystem quizSystem;
     private Map<String, Object> currentQuiz;
-    private String currentAnswer = "";
+    private String selectedAnswer = "";
     private boolean quizActive = false;
     private boolean showingResults = false;
     private Map<String, Object> lastResult;
@@ -32,39 +35,56 @@ public class QuizController {
     private Rectangle submitButton;
     private Rectangle nextButton;
     private Rectangle exitButton;
+    private Rectangle[] optionButtons;
 
-    public QuizController(GameController gameController) {
+    public MulChoiceQuizController(GameController gameController) {
         this.gameController = gameController;
-        // Initialize with current learned words
         this.quizSystem = new TimedQuizSystem(
                 gameController.getCharacter().getLearnedWords(),
                 gameController.getWordNetValidator()
         );
 
-        this.font = new BitmapFont();
-        this.font.getData().setScale(1.5f);
+
+
+        this.font = generateVietNameseFont("GrenzeGotisch.ttf", 24);
         this.shapeRenderer = new ShapeRenderer();
 
         int width = Gdx.graphics.getWidth();
         int height = Gdx.graphics.getHeight();
-        this.submitButton = new Rectangle(width * 0.35f, height * 0.25f, width * 0.3f, height * 0.08f);
-        this.nextButton = new Rectangle(width * 0.25f, height * 0.25f, width * 0.2f, height * 0.08f);
-        this.exitButton = new Rectangle(width * 0.55f, height * 0.25f, width * 0.2f, height * 0.08f);
+
+        this.submitButton = new Rectangle(width * 0.35f, height * 0.15f, width * 0.3f, height * 0.08f);
+        this.nextButton = new Rectangle(width * 0.25f, height * 0.15f, width * 0.2f, height * 0.08f);
+        this.exitButton = new Rectangle(width * 0.55f, height * 0.15f, width * 0.2f, height * 0.08f);
+
+        // Initialize option buttons (typically 4 options for multiple choice)
+        this.optionButtons = new Rectangle[4];
+        for (int i = 0; i < 4; i++) {
+            // Calculate row and column for 2x2 grid
+            int row = i / 2;     // 0 for top row (i=0,1), 1 for bottom row (i=2,3)
+            int col = i % 2;     // 0 for left column (i=0,2), 1 for right column (i=1,3)
+
+            this.optionButtons[i] = new Rectangle(
+                    width * (0.2f + col * 0.35f),        // X: Left or right column
+                    height * (0.6f - row * 0.15f) -110 ,       // Y: Top or bottom row
+                    width * 0.26f,                        // Narrower width for 2 columns
+                    height * 0.12f                        // Taller height for better readability
+            );
+        }
     }
 
     public void startQuiz() {
-        // Refresh quiz system with current learned word
+        // Refresh quiz system with current learned words
         this.quizSystem = new TimedQuizSystem(
                 gameController.getCharacter().getLearnedWords(),
                 gameController.getWordNetValidator()
         );
 
-        // Generate a new quiz
-        currentQuiz = quizSystem.generateContextualSentenceQuiz();
+        // Generate a multiple choice quiz instead of contextual sentence quiz
+        currentQuiz = quizSystem.generateMultipleChoiceQuiz();
         quizSystem.startQuiz();
         quizActive = true;
         showingResults = false;
-        currentAnswer = "";
+        selectedAnswer = "";
         completedQuestions = 0;
     }
 
@@ -74,7 +94,7 @@ public class QuizController {
         // Auto-submit on time expiry
         if (quizSystem.isPendingAutoSubmit()) {
             quizSystem.resetPendingAutoSubmit();
-            submitAnswer(); // Submit with current answer (might be empty)
+            submitAnswer(); // Submit with current selected answer (might be empty)
         }
     }
 
@@ -124,6 +144,7 @@ public class QuizController {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void renderQuiz(SpriteBatch batch, int width, int height) {
         if (currentQuiz == null) return;
 
@@ -132,8 +153,8 @@ public class QuizController {
 
         // Title
         font.setColor(Color.GOLD);
-        layout.setText(font, "FILL THE BLANK");
-        font.draw(batch, "FILL THE BLANK", centerX - layout.width / 2, height * 0.85f);
+        layout.setText(font, "MULTIPLE CHOICE QUIZ");
+        font.draw(batch, "MULTIPLE CHOICE QUIZ", centerX - layout.width / 2, height * 0.85f);
 
         // Show total score
         String totalScoreText = "Total Score: " + totalScore;
@@ -141,14 +162,14 @@ public class QuizController {
         font.draw(batch, totalScoreText, 100, height * 0.85f);
 
         // Display difficulty level
-        String difficultyText = "Difficulty: " + currentQuiz.get("difficulty");
+        String difficultyText = "Difficulty: " + currentQuiz.get("difficultyLevel");
         font.setColor(Color.CYAN);
         layout.setText(font, difficultyText);
         font.draw(batch, difficultyText, 100, height * 0.78f);
 
         // Display question count correctly
         int total = quizSystem.getTotalQuestions();
-        int current = completedQuestions + 1; // Current question is completedQuestions + 1
+        int current = completedQuestions + 1;
         String questionCountText = "Question: " + current + " / " + total;
         layout.setText(font, questionCountText);
         font.draw(batch, questionCountText, width - 100 - layout.width, height * 0.78f);
@@ -165,50 +186,50 @@ public class QuizController {
         layout.setText(font, timeText);
         font.draw(batch, timeText, width * 0.8f - layout.width, height * 0.85f);
 
-        // Input field and submit button
+        // Draw multiple choice options
         batch.end();
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
-        // Input field
-        float inputFieldX = width * 0.2f;
-        float inputFieldY = height * 0.45f;
-        float inputFieldWidth = width * 0.6f;
-        float inputFieldHeight = height * 0.1f;
-        shapeRenderer.setColor(0.2f, 0.2f, 0.2f, 1);
-        shapeRenderer.rect(inputFieldX, inputFieldY, inputFieldWidth, inputFieldHeight);
+        // Get options from quiz data
+        List<String> options = (List<String>) currentQuiz.get("options");
 
-        // Submit button
-        submitButton.x = width * 0.35f;
-        submitButton.y = height * 0.25f;
-        submitButton.width = width * 0.3f;
-        submitButton.height = height * 0.08f;
-        shapeRenderer.setColor(0.3f, 0.7f, 0.3f, 1);
+        // Draw option buttons
+        for (int i = 0; i < options.size(); i++) {
+            Rectangle button = optionButtons[i];
+
+            // Highlight selected option
+            if (options.get(i).equals(selectedAnswer)) {
+                shapeRenderer.setColor(0.4f, 0.6f, 0.9f, 1); // Blue highlight for selected
+            } else {
+                shapeRenderer.setColor(0.2f, 0.2f, 0.2f, 1); // Normal color
+            }
+
+            shapeRenderer.rect(button.x, button.y, button.width, button.height);
+        }
+
+        // Submit button (only enabled if an option is selected)
+        submitButton.y = height * 0.15f;
+        shapeRenderer.setColor(selectedAnswer.isEmpty() ? 0.5f : 0.3f,
+                selectedAnswer.isEmpty() ? 0.5f : 0.7f,
+                selectedAnswer.isEmpty() ? 0.5f : 0.3f, 1);
         shapeRenderer.rect(submitButton.x, submitButton.y, submitButton.width, submitButton.height);
         shapeRenderer.end();
 
         batch.begin();
 
-        // Draw answer (centered in input box)
+        // Draw option labels
         font.setColor(Color.WHITE);
-        String displayText = currentAnswer;
+        for (int i = 0; i < options.size(); i++) {
+            Rectangle button = optionButtons[i];
+            String option = options.get(i);
 
-        // If the answer field is empty, show underscores representing each character
-        if (displayText.isEmpty() && currentQuiz != null) {
-            String correctAnswer = (String) currentQuiz.get("answer");
-            StringBuilder underscores = new StringBuilder();
-            for (int i = 0; i < correctAnswer.length(); i++) {
-                underscores.append("_ ");
-            }
-            displayText = underscores.toString().trim();
-            font.setColor(Color.GRAY); // Make underscores appear in gray
+            layout.setText(font, option);
+            font.draw(batch, option,
+                    button.x + (button.width - layout.width) / 2,
+                    button.y + (button.height + layout.height) / 2);
         }
 
-        layout.setText(font, displayText);
-        // Important: For vertical centering in LibGDX, we need to adjust for baseline
-        float textY = inputFieldY + (inputFieldHeight + layout.height) / 2;
-        font.draw(batch, displayText, centerX - layout.width / 2, textY);
-
-        // Draw submit text (centered in button)
+        // Draw submit text
         font.setColor(Color.WHITE);
         layout.setText(font, "Submit");
         float buttonTextY = submitButton.y + (submitButton.height + layout.height) / 2;
@@ -239,7 +260,7 @@ public class QuizController {
         layout.setText(font, resultText);
         font.draw(batch, resultText, centerX - layout.width / 2, height * 0.7f);
 
-        // Show correct answer (especially important if the user was incorrect)
+        // Show correct answer
         String correctAnswer = (String) currentQuiz.get("answer");
         font.setColor(Color.YELLOW);
         String answerText = "Answer: " + correctAnswer;
@@ -265,27 +286,19 @@ public class QuizController {
         layout.setText(font, timeText);
         font.draw(batch, timeText, centerX - layout.width / 2, height * 0.5f);
 
-        // Remaining question information - correctly display completed questions
+        // Remaining question information
         int total = quizSystem.getTotalQuestions();
         String questionCountText = "Questions: " + completedQuestions + " completed / " + total + " total";
         font.setColor(Color.CYAN);
         layout.setText(font, questionCountText);
         font.draw(batch, questionCountText, centerX - layout.width / 2, height * 0.45f);
 
-        // Draw buttons - redefine with exact coordinates
+        // Draw buttons
         batch.end();
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
-        // Button positions adjusted to accommodate new text elements
-        nextButton.x = width * 0.25f;
         nextButton.y = height * 0.2f;
-        nextButton.width = width * 0.2f;
-        nextButton.height = height * 0.08f;
-
-        exitButton.x = width * 0.55f;
         exitButton.y = height * 0.2f;
-        exitButton.width = width * 0.2f;
-        exitButton.height = height * 0.08f;
 
         shapeRenderer.setColor(0.3f, 0.7f, 0.3f, 1);
         shapeRenderer.rect(nextButton.x, nextButton.y, nextButton.width, nextButton.height);
@@ -311,28 +324,26 @@ public class QuizController {
     }
 
     public void submitAnswer() {
-        if (!quizActive || showingResults) return;
+        if (!quizActive || showingResults || selectedAnswer.isEmpty()) return;
 
-        lastResult = quizSystem.submitAnswer(currentAnswer);
+        lastResult = quizSystem.submitAnswer(selectedAnswer);
 
         // Make sure userAnswer is included in the result map
         if (!lastResult.containsKey("userAnswer")) {
-            lastResult.put("userAnswer", currentAnswer);
+            lastResult.put("userAnswer", selectedAnswer);
         }
 
         if (lastResult.containsKey("score")) {
             totalScore += (Integer) lastResult.get("score");
         }
 
-        // Increment completed questions when an answer is submitted
         completedQuestions++;
-
         showingResults = true;
     }
 
     public void handleNextQuiz() {
         if (showingResults) {
-            currentQuiz = quizSystem.generateContextualSentenceQuiz();
+            currentQuiz = quizSystem.generateMultipleChoiceQuiz();
 
             // Check if session is complete
             if (currentQuiz.containsKey("sessionComplete")) {
@@ -342,7 +353,7 @@ public class QuizController {
 
             quizSystem.startQuiz();
             showingResults = false;
-            currentAnswer = "";
+            selectedAnswer = "";
         }
     }
 
@@ -354,14 +365,44 @@ public class QuizController {
         this.completedQuestions = 0;
     }
 
-    public void processInput(char character) {
-        if (showingResults) return;
-        currentAnswer += character;
+    @SuppressWarnings("unchecked")
+    public void handleOptionClick(int x, int y) {
+        if (showingResults || !quizActive) return;
+        // Check if any option was clicked
+        List<String> options = (List<String>) currentQuiz.get("options");
+        for (int i = 0; i < options.size(); i++) {
+            if (optionButtons[i].contains(x, y)) {
+                selectedAnswer = options.get(i);
+                return;
+            }
+        }
     }
 
-    public void backspace() {
-        if (showingResults || currentAnswer.isEmpty()) return;
-        currentAnswer = currentAnswer.substring(0, currentAnswer.length() - 1);
+    public boolean handleClick(int x, int y) {
+        if (!quizActive) return false;
+        y = Gdx.graphics.getHeight() - y; // Invert Y coordinate for UI
+
+        System.out.printf("Clicked at: (%d, %d)\n", x, y);
+        if (!showingResults) {
+            // First check options
+            handleOptionClick(x, y);
+
+            // Then check submit button
+            if (submitButton.contains(x, y) && !selectedAnswer.isEmpty()) {
+                submitAnswer();
+                return true;
+            }
+        } else { // Handle result screen buttons
+            if (nextButton.contains(x, y)) {
+                handleNextQuiz();
+                return true;
+            } else if (exitButton.contains(x, y)) {
+                exitQuiz();
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public boolean isQuizActive() {

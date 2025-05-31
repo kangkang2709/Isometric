@@ -8,7 +8,6 @@ import ctu.game.isometric.model.dictionary.WordDefinition;
 import edu.mit.jwi.Dictionary;
 import edu.mit.jwi.IDictionary;
 import edu.mit.jwi.item.*;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -160,17 +159,24 @@ public synchronized void loadDictionary() {
             loadDictionary();
         }
 
+        if (dictionary == null) {
+            return null;
+        }
+
         Word word = new Word(wordText);
 
         // Search in each part of speech
         for (POS pos : POS.values()) {
             IIndexWord indexWord = dictionary.getIndexWord(wordText.toLowerCase(), pos);
-            if (indexWord == null) continue;
+            if (indexWord == null || indexWord.getWordIDs() == null) continue;
 
             // Get all meanings for this part of speech
             for (IWordID wordID : indexWord.getWordIDs()) {
                 IWord iword = dictionary.getWord(wordID);
+                if (iword == null) continue;
+
                 ISynset synset = iword.getSynset();
+                if (synset == null) continue;
 
                 WordDefinition definition = new WordDefinition();
 
@@ -178,10 +184,10 @@ public synchronized void loadDictionary() {
                 definition.setPartOfSpeech(pos.toString());
 
                 // Set definition
-                definition.setDefinition(iword.getSynset().getGloss());
+                definition.setDefinition(synset.getGloss());
 
                 // Get examples if available (examples are in the gloss after ';')
-                String gloss = iword.getSynset().getGloss();
+                String gloss = synset.getGloss();
                 String[] parts = gloss.split(";");
                 if (parts.length > 1) {
                     List<String> examples = new ArrayList<>();
@@ -200,6 +206,17 @@ public synchronized void loadDictionary() {
                     }
                 }
                 definition.setSynonyms(new ArrayList<>(synonyms));
+
+                // Get antonyms
+                Set<String> antonyms = new LinkedHashSet<>();
+                // Look for antonyms through word pointers
+                for (IWordID antonymID : iword.getRelatedWords(Pointer.ANTONYM)) {
+                    IWord antonym = dictionary.getWord(antonymID);
+                    if (antonym != null) {
+                        antonyms.add(antonym.getLemma());
+                    }
+                }
+                definition.setAntonyms(antonyms);
 
                 word.addDefinition(definition);
             }
