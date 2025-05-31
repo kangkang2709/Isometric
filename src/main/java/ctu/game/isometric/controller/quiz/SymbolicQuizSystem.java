@@ -2,6 +2,7 @@ package ctu.game.isometric.controller.quiz;
 
 import ctu.game.isometric.model.dictionary.Word;
 import ctu.game.isometric.model.dictionary.WordDefinition;
+import ctu.game.isometric.model.quiz.Quiz;
 import ctu.game.isometric.util.WordNetValidator;
 import org.lwjgl.system.CallbackI;
 

@@ -33,10 +33,7 @@ import ctu.game.isometric.view.ui.AchievementUI;
 import ctu.game.isometric.view.ui.ExploringUI;
 import ctu.game.isometric.view.ui.InventoryUI;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
 
@@ -67,7 +64,7 @@ public class GameController {
     private WordNetValidator wordNetValidator;
     private QuizController quizController;
     private MulChoiceQuizController mulChoiceQuizController;
-    private ctu.game.isometric.view.view.DictionaryView  dictionaryView;
+    private ctu.game.isometric.view.view.DictionaryView dictionaryView;
     private Dictionary dictionary;
     private BitmapFont font;
 
@@ -78,6 +75,7 @@ public class GameController {
     private AchievementUI achievementUI;
 
     private Pathfinder pathfinder;
+    private Date currentPlayTime;
 
     public GameController(IsometricGame game) {
         this.game = game;
@@ -117,6 +115,7 @@ public class GameController {
 
         achievementManager = new AchievementManager(this);
         achievementUI = new AchievementUI(this);
+        this.currentPlayTime = new Date();
 
     }
 
@@ -126,9 +125,10 @@ public class GameController {
         }
 
         if (dictionaryView == null) {
-            dictionaryView = new ctu.game.isometric.view.view.DictionaryView(this,dictionary,this.wordNetValidator);
+            dictionaryView = new ctu.game.isometric.view.view.DictionaryView(this, dictionary, this.wordNetValidator);
         }
     }
+
     public void showAchievementUI() {
         achievementUI.show();
     }
@@ -167,7 +167,7 @@ public class GameController {
             effectManager.playClickSound();
 
 
-            checkPositionEvents(targetX,targetY);
+            checkPositionEvents(targetX, targetY);
             // Play a movement sound
         }
     }
@@ -179,8 +179,49 @@ public class GameController {
         effectManager.loadEffect("treasure", "effects/demolition.p");
     }
 
-    public void loadCharacter(Character character) {
+    public void loadCharacter(Character character, Date lastSaveTime) {
+        if (character == null) {
+            throw new IllegalArgumentException("Character cannot be null");
+        }
+        System.out.println("Attempt flags before initialization: " + character.getAttempFlags());
+//        if(character.getAttempFlags() == null) {
+//            character.setAttempFlags(new HashMap<>());
+//            character.getAttempFlags().put("quizAttempts", 0);
+//            character.getAttempFlags().put("mulQuizAttempts", 0);
+//            character.getAttempFlags().put("fallen", 0);
+//            character.getAttempFlags().put("wrongWord", 0);
+//            System.out.println("Character attempt flags initialized.");
+//        }
         this.character = character;
+        this.character.setLastSaveTime(lastSaveTime);
+
+        if (currentPlayTime.compareTo(lastSaveTime) > 0) {
+            // Create Calendar instances
+            Calendar currentCal = Calendar.getInstance();
+            Calendar lastSaveCal = Calendar.getInstance();
+            currentCal.setTime(currentPlayTime);
+            lastSaveCal.setTime(lastSaveTime);
+
+            // Get date components (year, month, day)
+            int currentDay = currentCal.get(Calendar.DAY_OF_MONTH);
+            int currentMonth = currentCal.get(Calendar.MONTH);
+            int currentYear = currentCal.get(Calendar.YEAR);
+
+            int lastDay = lastSaveCal.get(Calendar.DAY_OF_MONTH);
+            int lastMonth = lastSaveCal.get(Calendar.MONTH);
+            int lastYear = lastSaveCal.get(Calendar.YEAR);
+
+            // Check if calendar day has changed
+            if (currentYear > lastYear || currentMonth > lastMonth || currentDay > lastDay) {
+                // Calendar day has changed, reset both counters
+
+                this.character.getAttempFlags().put("quizAttempts", 0);
+                this.character.getAttempFlags().put("mulQuizAttempts", 0);
+            } else {
+                System.out.println(this.character.getAttempFlags().get("quizAttempts"));
+                System.out.println(this.character.getAttempFlags().get("mulQuizAttempts"));
+            }
+        }
 
         // Load the saved character
         this.isCreated = true;
@@ -199,12 +240,11 @@ public class GameController {
 
         switch (currentState) {
             case EXPLORING:
-                if(dialogController.isDialogActive()){
+                if (dialogController.isDialogActive()) {
                     if (currentEvent != null && currentEvent.getEventType().equals("treasure")) {
                         effectManager.update(delta);
                     }
-                }
-                else {
+                } else {
                     inputController.updateCooldown(delta);
                     character.update(delta);
                 }
@@ -230,7 +270,7 @@ public class GameController {
             case QUIZZES:
                 quizController.update(delta);
                 break;
-                case  MULTIPLE_CHOICE_QUIZZES:
+            case MULTIPLE_CHOICE_QUIZZES:
                 mulChoiceQuizController.update(delta);
                 break;
             case SETTINGS:
@@ -308,7 +348,7 @@ public class GameController {
 
         final GameState oldState = currentState;
 
-        if(newState != GameState.SETTINGS){
+        if (newState != GameState.SETTINGS) {
             previousState = oldState;
         }
 
@@ -343,6 +383,7 @@ public class GameController {
     public void returnToPreviousState() {
         setState(previousState);
     }
+
     public GameState getPreviousState() {
         return previousState;
     }
@@ -350,7 +391,7 @@ public class GameController {
     public boolean canMove(int dx, int dy) {
         int newX = (int) (character.getGridX() + dx);
         int newY = (int) (character.getGridY() + dy);
-        return map.isWalkable(newX,newY);
+        return map.isWalkable(newX, newY);
     }
 
     // Add a method to change maps safely
@@ -413,7 +454,7 @@ public class GameController {
     }
 
     public float[] toIsometric(float x, float y) {
-        float isoX = (x + y) * (map.getTileWidth() / 2.0f) ;
+        float isoX = (x + y) * (map.getTileWidth() / 2.0f);
         float isoY = (y - x) * (map.getTileHeight() / 2.0f);
         return new float[]{isoX, isoY};
     }
@@ -428,6 +469,7 @@ public class GameController {
             setState(GameState.CUTSCENE);
         }
     }
+
     // Add to GameController.java
     // In GameController.java, enhance resetGame method
     // In GameController.java - update the resetGame method
@@ -442,12 +484,12 @@ public class GameController {
         this.eventManager = new EventManager(map);
 
         // Reset controllers to initial state - make sure to reset character creation controller
-        if(characterCreationController == null) {
+        if (characterCreationController == null) {
             characterCreationController = new CharacterCreation(this);
         }
 
 
-        if(loadGameController == null) {
+        if (loadGameController == null) {
             loadGameController = new LoadGameController(this);
         }
 
@@ -507,7 +549,7 @@ public class GameController {
     public void setEndEvent() {
         hasActiveEvent = false;
         currentEvent = null;
-        properties =null;
+        properties = null;
     }
 
     public MapProperties getProperties() {
@@ -527,75 +569,85 @@ public class GameController {
         if (currentEventX != getCharacter().getGridX() || currentEventY != getCharacter().getGridY() || getCharacter().isMoving() == true) {
             return;
         }
-            switch (event) {
-                case "battle":
+        switch (event) {
+            case "battle":
 
-                    int enemyId = 1; // Default to first enemy
-                    if (properties.containsKey("enemy")) {
-                        Object enemyObj = properties.get("enemy");
-                        if (enemyObj instanceof String) {
-                            enemyId = Integer.parseInt((String) enemyObj);
-                        } else if (enemyObj instanceof Integer) {
-                            enemyId = (Integer) enemyObj;
-                        }
+                int enemyId = 1; // Default to first enemy
+                if (properties.containsKey("enemy")) {
+                    Object enemyObj = properties.get("enemy");
+                    if (enemyObj instanceof String) {
+                        enemyId = Integer.parseInt((String) enemyObj);
+                    } else if (enemyObj instanceof Integer) {
+                        enemyId = (Integer) enemyObj;
                     }
-                    if (eventManager.isEnemyDefeated(enemyId) &&
-                            eventManager.getBooleanProperty(properties, "one_time", true)) {
-                            eventManager.completeEvent(currentEvent.getId());
+                }
+                if (eventManager.isEnemyDefeated(enemyId) &&
+                        eventManager.getBooleanProperty(properties, "one_time", true)) {
+                    eventManager.completeEvent(currentEvent.getId());
 
-                    }
-                    else{
-                        Enemy enemy = EnemyLoader.getEnemyById(enemyId);
-                        setState(GameState.GAMEPLAY);
-                        gameplayController.activate();
-                        gameplayController.startCombat(enemy);
-                        gameplayController.setCurrentEvent(currentEvent);
-                    }
-                    break;
-                case "treasure":
-                    if (currentEvent.isOneTime() && currentEvent.isCompleted()){
-                        return;
-                    }
-                    int itemId = -1;
-                    Object itemObj = properties.get("item");
-                    if (itemObj instanceof String) {
-                        itemId = Integer.parseInt((String) itemObj);
-                    } else if (itemObj instanceof Integer) {
-                        itemId = (Integer) itemObj;
-                    }
-                    int amount = properties.containsKey("amount") ? (Integer) properties.get("amount") : 1;
-                    if (itemId != -1) {
-                        Items item = ItemLoader.getItemById(itemId);
-                        openTreasureWithAnimation(item, amount,currentEventX,currentEventY);
-                    }
-                    break;
-                case "dialog":
-                    if (properties != null) {
-                        String arcId = properties.get("arc", String.class);
-                        String sceneId = properties.get("scene", String.class);
-                        this.dialogController.startDialog(arcId, sceneId);
-                    }
-                    break;
-                case "quiz":
-                        dialogController.setOnDialogFinishedAction(() -> startQuiz());
-                        dialogController.startDialog("chapter_quiz_intro", "scene_meet_npc");
-                    break;
-                case "mulquiz":
+                } else {
+                    Enemy enemy = EnemyLoader.getEnemyById(enemyId);
+                    setState(GameState.GAMEPLAY);
+                    gameplayController.activate();
+                    gameplayController.startCombat(enemy);
+                    gameplayController.setCurrentEvent(currentEvent);
+                }
+                break;
+            case "treasure":
+                if (currentEvent.isOneTime() && currentEvent.isCompleted()) {
+                    return;
+                }
+                int itemId = -1;
+                Object itemObj = properties.get("item");
+                if (itemObj instanceof String) {
+                    itemId = Integer.parseInt((String) itemObj);
+                } else if (itemObj instanceof Integer) {
+                    itemId = (Integer) itemObj;
+                }
+                int amount = properties.containsKey("amount") ? (Integer) properties.get("amount") : 1;
+                if (itemId != -1) {
+                    Items item = ItemLoader.getItemById(itemId);
+                    openTreasureWithAnimation(item, amount, currentEventX, currentEventY);
+                }
+                break;
+            case "dialog":
+                if (properties != null) {
+                    String arcId = properties.get("arc", String.class);
+                    String sceneId = properties.get("scene", String.class);
+                    this.dialogController.startDialog(arcId, sceneId);
+                }
+                break;
+            case "quiz":
+                if (getCharacter().getAttempFlags().get("quizAttempts") >= 1) {
+                    dialogController.showSimpleMessage("You have already attempted this quiz today. Come back tomorrow!");
+                } else {
+                    dialogController.setOnDialogFinishedAction(() -> startQuiz());
+                    dialogController.startDialog("chapter_quiz_intro", "scene_meet_npc");
+                    getCharacter().getAttempFlags().put("quizAttempts", 1);
+                }
+                break;
+            case "mulquiz":
+                if (getCharacter().getAttempFlags().get("mulQuizAttempts") >= 1) {
+                    dialogController.showSimpleMessage("You have already attempted this quiz today. Come back tomorrow!");
+                }
+                else {
                     dialogController.setOnDialogFinishedAction(() -> startMulChoiceQuiz());
                     dialogController.startDialog("chapter_quiz_intro", "scene_meet_npc");
-                    break;
-                case "cutscene":
-                    String cutsceneName = properties.get("cutscene", String.class);
-                    if (cutsceneName != null) {
-                        startCutscene(cutsceneName);
-                    }
-                    break;
-            }
+                    getCharacter().getAttempFlags().put("mulQuizAttempts", 1);
+                }
+                break;
+            case "cutscene":
+                String cutsceneName = properties.get("cutscene", String.class);
+                if (cutsceneName != null) {
+                    startCutscene(cutsceneName);
+                }
+                break;
+        }
 
     }
 
 
-    private void openTreasureWithAnimation(Items item, int amount,int x, int y) {
+    private void openTreasureWithAnimation(Items item, int amount, int x, int y) {
         // Get character position for effect placement
         float[] isoPos = toIsometric(x, y);
         // Spawn treasure effect
@@ -661,9 +713,17 @@ public class GameController {
         this.pathfinder = pathfinder;
     }
 
-    public Character getCharacter() { return character; }
-    public IsometricMap getMap() { return map; }
-    public InputController getInputController() { return inputController; }
+    public Character getCharacter() {
+        return character;
+    }
+
+    public IsometricMap getMap() {
+        return map;
+    }
+
+    public InputController getInputController() {
+        return inputController;
+    }
 
     public DialogController getDialogController() {
         return dialogController;
@@ -672,6 +732,7 @@ public class GameController {
     public void setDialogController(DialogController dialogController) {
         this.dialogController = dialogController;
     }
+
     public MusicController getMusicController() {
         return musicController;
     }
@@ -687,9 +748,11 @@ public class GameController {
     public void setMenuController(PauseMenu pauseMenu) {
         this.pauseMenu = pauseMenu;
     }
+
     public SettingsMenu getSettingsMenuController() {
         return settingsMenu;
     }
+
     public MainMenu getMainMenuController() {
         return mainMenuController;
     }
@@ -700,6 +763,7 @@ public class GameController {
         transitionRenderer.setTransitionType(types[nextIndex]);
         System.out.println("Changed transition to: " + types[nextIndex]);
     }
+
     public void dispose() {
         transitionRenderer.dispose();
         musicController.dispose();
@@ -722,6 +786,7 @@ public class GameController {
     public QuizController getQuizController() {
         return quizController;
     }
+
     public OrthographicCamera getCamera() {
         return camera;
     }

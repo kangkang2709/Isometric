@@ -94,8 +94,9 @@ public class TimedQuizSystem extends SymbolicQuizSystem implements QuizTimer.Tim
         Map<String, Object> quizData = null;
         int attempts = 0;
 
-        while (attempts < 2) {
+        while (attempts < 1) {
             quizData = super.generateContextualSentenceQuiz();
+
             if (quizData.containsKey("error")) {
                 break; // If there's an error, stop trying
             }

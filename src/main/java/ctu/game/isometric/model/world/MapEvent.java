@@ -21,6 +21,9 @@ public class MapEvent {
 
     }
 
+    public void updateEvent(String eventId) {
+        this.completed = true; // Mark the event as completed
+    }
     // Getters and setters
     public String getId() { return id; }
     public String getEventType() { return eventType; }

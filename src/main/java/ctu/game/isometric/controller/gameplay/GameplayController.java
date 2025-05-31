@@ -844,7 +844,7 @@ public class GameplayController {
             int points = getTotalScore(wordValidator.getWordDetails(word));
             System.out.println("Word: " + word + ", Points: " + points);
 
-            if (gameController.getCharacter().addLearnedWord(word))
+            if (gameController.getCharacter().updateDict(word))
                 gameController.getDictionaryView().addNewWord(word);
 
 

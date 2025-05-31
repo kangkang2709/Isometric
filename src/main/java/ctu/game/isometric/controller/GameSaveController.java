@@ -49,11 +49,11 @@ public class GameSaveController {
 
             // Create a serializable copy of the character
             Character saveCharacter = createSerializableCopy(character);
-
             // Create GameSave object
             GameSave gameSave = new GameSave();
             gameSave.setCharacter(saveCharacter);
             gameSave.setSaveDate(new Date());
+
             gameSave.setListIdCompletedEvents(eventManager.getListIdCompletedEvents());
             gameSave.setListIdDefeatedEnemies(eventManager.getListIdDefeatedEnemies());
             gameSave.setWordFilePath("saves/dictionary/" + character.getWordFilePath() + ".json");
@@ -228,6 +228,7 @@ public class GameSaveController {
         copy.setDirection(original.getDirection());
         copy.setScore(original.getScore());
 
+
         // Copy any other essential character data
         // (Items, stats, quests, etc. - add as needed)
 
@@ -257,6 +258,10 @@ public class GameSaveController {
         // Copy achievements if present
         if (original.getAchievements() != null) {
             copy.setAchievements(new HashSet<>(original.getAchievements()));
+        }
+
+       if(original.getAttempFlags() != null) {
+            copy.setAttempFlags(new HashMap<>(original.getAttempFlags()));
         }
 
         copy.setWordFilePath(original.getWordFilePath());

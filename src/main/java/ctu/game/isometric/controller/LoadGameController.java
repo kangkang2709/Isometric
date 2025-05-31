@@ -12,6 +12,7 @@ import ctu.game.isometric.model.dictionary.Word;
 import ctu.game.isometric.model.game.GameSave;
 import ctu.game.isometric.model.game.GameState;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -327,10 +328,8 @@ public class LoadGameController {
                 if (save != null) {
                     Set<String> words = saveService.loadLearnedWords(save.getCharacter(), save.getWordFilePath());
 
-
-
                     // Set character data in game controller
-                    gameController.loadCharacter(save.getCharacter());
+                    gameController.loadCharacter(save.getCharacter(),save.getSaveDate());
                     gameController.getEventManager().updateAfterLoadGame(save);
                     gameController.getCharacter().setLearnedWords(words);
 

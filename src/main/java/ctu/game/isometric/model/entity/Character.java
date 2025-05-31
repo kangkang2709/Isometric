@@ -27,7 +27,9 @@ public class Character {
     private Map<String, Integer> items; // Inventory of items
     private List<String> flags; // Flags for events
     private List<String> quests; // List of quests
-    private Map<String, List<String>> status;  // Status effects (e.g., buffs, debuffs)
+    private Map<String, List<String>> status;
+    private Map<String, Integer> ettempFlags;
+    // Status effects (e.g., buffs, debuffs)
     private float damage = 1; // Damage dealt by the character
 
     private IsometricMap gameMap;
@@ -38,6 +40,9 @@ public class Character {
     // Score for the character
     private int failedWordCount = 0;
     private int fallenCount = 0 ;
+
+
+    private Date lastSaveTime;
 
     private Set<Achievement> achievements;
 
@@ -62,6 +67,12 @@ public class Character {
         this.learnedWords = new HashSet<>();
         this.learnedWords.add("HELLO");
         this.score=0;
+        this.ettempFlags = new HashMap<>();
+        this.ettempFlags.put("quizAttempts", 0);
+        this.ettempFlags.put("mulQuizAttempts", 0);
+        this.ettempFlags.put("fallen", 0);
+        this.ettempFlags.put("wrongWord", 0);
+
     }
 
 
@@ -80,6 +91,11 @@ public class Character {
         this.learnedWords = new HashSet<>();
         this.newlearneWords = new HashSet<>();
         this.learnedWords.add("HELLO");
+        this.ettempFlags = new HashMap<>();
+            this.ettempFlags.put("quizAttempts", 0);
+            this.ettempFlags.put("mulQuizAttempts", 0);
+            this.ettempFlags.put("fallen", 0);
+            this.ettempFlags.put("wrongWord", 0);
         this.score=0;
 
     }
@@ -212,7 +228,7 @@ public class Character {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    public boolean addLearnedWord(String word) {
+    public boolean updateDict(String word) {
         if (newlearneWords == null) {
             newlearneWords = new HashSet<>();
         }
@@ -384,6 +400,10 @@ public class Character {
     }
 
 
+    public void interactNPC(String npcId) {
+
+    }
+
     public void updateAchievements(Achievement.AchievementType type, int value) {
         if (type == null) {
             throw new IllegalArgumentException("Achievement type cannot be null");
@@ -479,6 +499,23 @@ public class Character {
         this.gridY = y;
         this.targetX = x;
         this.targetY = y;
+    }
+
+
+    public Map<String, Integer> getAttempFlags() {
+        return ettempFlags;
+    }
+
+    public void setAttempFlags(Map<String, Integer> ettempFlags) {
+        this.ettempFlags = ettempFlags;
+    }
+
+    public Date getLastSaveTime() {
+        return lastSaveTime;
+    }
+
+    public void setLastSaveTime(Date lastSaveTime) {
+        this.lastSaveTime = lastSaveTime;
     }
 
     public int getFallenCount() {
