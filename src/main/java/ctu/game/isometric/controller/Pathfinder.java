@@ -38,7 +38,18 @@ public class Pathfinder {
     }
 
     private final IsometricMap map;
-    private final int[][] directions = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}}; // Right, Up, Left, Down
+    // Directions for movement: right, down, left, up to support 8 directions
+    private final int[][] directions = {
+            {0, 1},   // phải
+            {1, 0},   // xuống
+            {0, -1},  // trái
+            {-1, 0},  // lên
+            {1, 1},   // xuống phải (chéo)
+            {1, -1},  // xuống trái (chéo)
+            {-1, -1}, // lên trái (chéo)
+            {-1, 1}   // lên phải (chéo)
+    };
+    // Right, Up, Left, Down
 
     public Pathfinder(IsometricMap map) {
         this.map = map;
@@ -86,7 +97,9 @@ public class Pathfinder {
                 String neighborKey = nx + "," + ny;
                 if (closedSet.contains(neighborKey)) continue;
 
-                float tentativeG = current.g + 1; // Cost is just distance of 1 per move
+                // In the neighbor processing loop
+                float moveCost = (dir[0] != 0 && dir[1] != 0) ? 1.414f : 1.0f; // Diagonal vs orthogonal
+                float tentativeG = current.g + moveCost; // Cost is just distance of 1 per move
 
                 Node neighbor = new Node(nx, ny);
                 neighbor.parent = current;
@@ -141,11 +154,12 @@ public class Pathfinder {
         // Default to original coordinates if no walkable found
         return new int[]{x, y};
     }
-//    khoảng cách Manhattan giữa hai điểm trên lưới (grid)
+
+    //    khoảng cách Manhattan giữa hai điểm trên lưới (grid)
     private float heuristic(int x1, int y1, int x2, int y2) {
-        // Manhattan distance for grid movement
-        return Math.abs(x1 - x2) + Math.abs(y1 - y2);
+        return (float) Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
     }
+
 
     private Array<int[]> reconstructPath(Node endNode, int maxLength) {
         Array<int[]> path = new Array<>();
