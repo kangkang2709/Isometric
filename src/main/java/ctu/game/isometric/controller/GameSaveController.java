@@ -227,7 +227,10 @@ public class GameSaveController {
         copy.setTargetY(original.getTargetY());
         copy.setDirection(original.getDirection());
         copy.setScore(original.getScore());
-
+        copy.setDefend(original.getDefend());
+        copy.setLevel(original.getLevel());
+        copy.setExp(original.getExp());
+        copy.setMana(original.getMana());
 
         // Copy any other essential character data
         // (Items, stats, quests, etc. - add as needed)

@@ -64,9 +64,10 @@ public class GameplayController {
     private boolean isPlayerTurn = true;
 
     private float playerHealth = 100;
-
     private float enemyHealth = 100;
 
+    private float playerMana =100;
+    private float playerMaxMana = 100;
     private float enemyMaxHealth = 100;
 
     private String enemyName = "Enemy";
@@ -127,7 +128,20 @@ public class GameplayController {
 
 
     }
+    private void drawManaBar(SpriteBatch batch, float current, float max, float x, float y) {
+        // Mana label
+        regularFont.setColor(Color.WHITE);
+        regularFont.draw(batch, "MP:", x + 8, y - 10);
 
+        // Mana bar background
+        batch.setColor(0.3f, 0.3f, 0.3f, 1);
+        batch.draw(whiteTexture, x + 40, y - 20, 180, 10);
+
+        // Mana bar fill
+        float manaPercentage = current / max;
+        batch.setColor(0.2f, 0.4f, 0.9f, 1); // Blue for mana
+        batch.draw(whiteTexture, x + 40, y - 20, 180 * manaPercentage, 10);
+    }
     private void drawMessageBox(SpriteBatch batch, String message, float x, float y, float width, float height) {
         // Draw background
         batch.setColor(Color.WHITE);
@@ -359,6 +373,7 @@ public class GameplayController {
                 gameController.getInventoryUI().notifyItemsChanged();
 
                 gameController.getCharacter().setHealth(playerHealth);
+                gameController.getCharacter().setMana(playerMana);
 
                 Timer.schedule(new Timer.Task() {
                     @Override
@@ -379,7 +394,7 @@ public class GameplayController {
         batch.draw(whiteTexture, 0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
 
         // Draw player and enemy
-        drawCombatCharacter(batch, playerName, playerHealth, playerMaxHealth, 50, 600, true);
+        drawCombatCharacter(batch, playerName, playerHealth, playerMaxHealth, 40, 620, true);
         drawCombatCharacter(batch, enemyName, (float) enemyHealth, (float) enemyMaxHealth, viewport.getWorldWidth() - 300, 600, false);
 
         // Draw combat log
@@ -611,10 +626,18 @@ public class GameplayController {
         // Only allow item usage during player's turn in combat
         if (!isPlayerTurn || !isCombatMode) return;
 
+        // Check if player has enough mana
+        float playerMana = gameController.getCharacter().getMana();
+        if (playerMana < item.getManaCost()) {
+            showMessage("Không đủ Mana!");
+            return;
+        }
+
         // Remove one of this item from inventory
         Map<String, Integer> items = gameController.getCharacter().getItems();
         if (items.containsKey(item.getItemName()) && items.get(item.getItemName()) > 0) {
             // Apply effect based on item type
+
             switch (item.getItemEffect()) {
                 case "heal":
                     playerHealth = Math.min(playerMaxHealth, playerHealth + item.getValue());
@@ -628,6 +651,8 @@ public class GameplayController {
                     showMessage("Đã dùng " + item.getItemName() + "!");
                     break;
             }
+            // Reduce player mana
+            this.playerMana -= item.getManaCost();
 
             // Reduce item count
             int newCount = items.get(item.getItemName()) - 1;
@@ -662,8 +687,8 @@ public class GameplayController {
             float imgSize = 150;
             batch.draw(characterTexture, x + 60, y - imgSize - 100, imgSize, imgSize);
         }
-
-        drawPokemonHealthBar(batch, name, currentHealth, maxHealth, x, y);
+        drawPokemonHealthBar(batch, name, currentHealth, maxHealth, x, y,isPlayer);
+        if (isPlayer)  drawManaBar(batch, this.playerMana, playerMaxMana, x, y);
     }
 
     private void drawCompactLetterGrid(SpriteBatch batch) {
@@ -711,14 +736,20 @@ public class GameplayController {
         return textureCache.get(name);
     }
 
-    private void drawPokemonHealthBar(SpriteBatch batch, String name, float current, float max, float x, float y) {
+    private void drawPokemonHealthBar(SpriteBatch batch, String name, float current, float max, float x, float y, boolean isPlayer) {
         // Name tag background
         batch.setColor(0.2f, 0.2f, 0.2f, 0.8f);
-        batch.draw(whiteTexture, x, y, 250, 50);
+        if (isPlayer) {
+            batch.draw(whiteTexture, x, y-40, 250, 90);
+        } else {
+            batch.draw(whiteTexture, x, y, 250, 50);
+        }
 
         // Border
         batch.setColor(0.8f, 0.8f, 0.8f, 1);
-        drawRect(batch, x, y, 250, 50, 2);
+        if (isPlayer)
+        drawRect(batch, x, y-40, 250, 90, 2);
+        else   drawRect(batch, x, y, 250, 50, 2);
 
         // Name and HP label
         regularFont.setColor(Color.WHITE);
@@ -769,7 +800,7 @@ public class GameplayController {
 
     private void performEnemyAction() {
         float damage = (random.nextInt(8) + 3) * enemy.getAttackPower();
-        playerHealth -= damage;
+        playerHealth -= Math.min(playerHealth, damage);
 
         int action = random.nextInt(10);
         if (action < 7) { // 70% normal attack
@@ -791,7 +822,7 @@ public class GameplayController {
                 checkCombatEnd();
 
             }
-        }, 0.5f);
+        }, 0.8f);
         if (isCombatMode) {
             isPlayerTurn = true;
             letterGrid.regenerateGrid();
@@ -905,6 +936,8 @@ public class GameplayController {
         this.isVictory = false;
         this.experienceGain = 0;
         this.playerHealth = gameController.getCharacter().getHealth();
+        this.playerMana = gameController.getCharacter().getMana();
+        this.playerMaxMana = gameController.getCharacter().getMaxMana();
         this.playerMaxHealth = gameController.getCharacter().getMaxHealth();
         this.achievementManager = gameController.getAchievementManager();
         this.isCombatMode = true;

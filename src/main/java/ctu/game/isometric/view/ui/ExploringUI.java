@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
@@ -39,7 +40,6 @@ public class ExploringUI {
     // Experience bar elements
     private Image expBarImage;
     private Image expIndicator;
-    private Label expLabel;
     private int maxExp = 100;
 
     // Images
@@ -56,11 +56,11 @@ public class ExploringUI {
     private Texture timeFrameTexture;
     private Texture healthBarTexture;
     private Texture manaBarTexture;
-    private Texture expBarTexture;
     private Texture questBoxTexture;
 
     // UI visibility control
     private boolean uiVisible = true;
+
 
     public ExploringUI(GameController gameController) {
         this.gameController = gameController;
@@ -76,13 +76,13 @@ public class ExploringUI {
         timeFrameTexture = new Texture(Gdx.files.internal("ui/time_frame.png"));
         healthBarTexture = new Texture(Gdx.files.internal("ui/health_bar.png"));
         manaBarTexture = new Texture(Gdx.files.internal("ui/health_bar.png")); // Reuse health bar texture or use dedicated texture
-        expBarTexture = new Texture(Gdx.files.internal("ui/health_bar.png")); // Reuse texture or use dedicated texture
         questBoxTexture = new Texture(Gdx.files.internal("ui/quest_box.png"));
     }
 
+
+
     private void createSkin() {
         skin = new Skin();
-
         // Load custom font
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/Tektur-Bold.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter params = new FreeTypeFontGenerator.FreeTypeFontParameter();
@@ -179,10 +179,8 @@ public class ExploringUI {
 
     private void setupTopLeft() {
         topLeftTable = new Table();
-
         // Time frame with time label
         timeFrameImage = new Image(new TextureRegionDrawable(timeFrameTexture));
-//        timeLabel = new Label("12:00", skin, "level");
         timeLabel = new Label("Lv " + character.getLevel(), skin, "default");
         healthLabel = new Label("HP " + (int)character.getHealth() + "/" + (int)maxHealth, skin, "default");
 
@@ -193,7 +191,7 @@ public class ExploringUI {
         Stack timeStack = new Stack();
         timeStack.add(timeFrameImage);
         Table timeLabelTable = new Table();
-        timeLabelTable.add(timeLabel).center().padBottom(5);
+        timeLabelTable.add(timeLabel).center();
         timeStack.add(timeLabelTable);
 
         // Player name and health
@@ -244,8 +242,7 @@ public class ExploringUI {
         manaStack.add(manaBarImage);
 
         // Create experience bar components
-        expBarImage = new Image(new TextureRegionDrawable(expBarTexture));
-        expLabel = new Label("EXP: 0/100", skin, "default");
+//        expLabel = new Label("EXP: 0/100", skin, "default");
 
         // Create initial Pixmap for exp display
         Pixmap expPixmap = new Pixmap(1, 10, Pixmap.Format.RGBA8888);
@@ -255,17 +252,16 @@ public class ExploringUI {
         Texture expTexture = new Texture(expPixmap);
         expIndicator = new Image(new TextureRegionDrawable(expTexture));
         expPixmap.dispose();
-
-        // Create exp stack with components
-        Stack expStack = new Stack();
-
-        // Add the colored exp indicator (bottom layer)
-        Table expIndicatorTable = new Table();
-        expIndicatorTable.add(expIndicator).width((healthBarWidth - 12) * (character.getExp() / (float)maxExp)).height(11).padLeft(0).padTop(0).left();
-        expStack.add(expIndicatorTable);
+//
+//        // Create exp stack with components
+//        Stack expStack = new Stack();
+//
+//        // Add the colored exp indicator (bottom layer)
+//        Table expIndicatorTable = new Table();
+//        expIndicatorTable.add(expIndicator).width((healthBarWidth - 12) * (character.getExp() / (float)maxExp)).height(11).padLeft(0).padTop(0).left();
+//        expStack.add(expIndicatorTable);
 
         // Add the bar image on top
-        expStack.add(expBarImage);
 
         // Add to top left table
         topLeftTable.add(timeStack).padRight(10);
@@ -273,8 +269,8 @@ public class ExploringUI {
         playerInfoTable.add(playerNameLabel).left().row();
         playerInfoTable.add(healthStack).left().padTop(5).row();
         playerInfoTable.add(manaStack).left().padTop(3).row();
-        playerInfoTable.add(expStack).left().padTop(3).row();
-        playerInfoTable.add(expLabel).left().padTop(2);
+//        playerInfoTable.add(expStack).left().padTop(3).row();
+//        playerInfoTable.add(expLabel).left().padTop(2);
         topLeftTable.add(playerInfoTable).left().top();
     }
 
@@ -315,7 +311,7 @@ public class ExploringUI {
             // Update exp
             float exp = character.getExp();
             maxExp = charLevel * 50; // Assuming level * 50 for max exp needed
-            expLabel.setText("EXP: " + (int)exp + "/" + maxExp);
+//            expLabel.setText("EXP: " + (int)exp + "/" + maxExp);
 
             // Update health bar color based on health percentage
             float healthPercent = health / (float)maxHealth;
@@ -412,20 +408,6 @@ public class ExploringUI {
         return null;
     }
 
-    private Stack findExpStack() {
-        // Navigate through the UI hierarchy to find the exp stack
-        if (topLeftTable != null) {
-            Cell<?> cell = topLeftTable.getCells().get(1); // Assuming the second cell in the table
-            if (cell != null && cell.getActor() instanceof Table) {
-                Table playerInfoTable = (Table) cell.getActor();
-                Cell<?> expCell = playerInfoTable.getCells().get(3); // Assuming the fourth cell in the player info table
-                if (expCell != null && expCell.getActor() instanceof Stack) {
-                    return (Stack) expCell.getActor();
-                }
-            }
-        }
-        return null;
-    }
 
     private void reinitializeHealthBar(float health, Color healthColor) {
         Stack healthStack = findHealthStack();
@@ -473,27 +455,84 @@ public class ExploringUI {
         }
     }
 
-    private void reinitializeExpBar(float exp, Color expColor) {
-        Stack expStack = findExpStack();
-        if (expStack != null) {
-            expStack.clear();
+    private Pixmap cachedBackgroundPixmap;
+    private Texture cachedBackgroundTexture;
 
-            Table expIndicatorTable = new Table();
-            expIndicatorTable.left().top(); // Align the table itself
-            expIndicatorTable.add(expIndicator)
-                    .width((expBarTexture.getWidth() - 12) * (exp / maxExp))
-                    .height(11)
-                    .padLeft(6) // Add correct padding to match initial setup
-                    .padTop(3)  // Add correct padding to match initial setup
-                    .left();
+    private void initializeExpBarBackground() {
+        int size = timeFrameTexture.getWidth();
+        cachedBackgroundPixmap = new Pixmap(size, size, Pixmap.Format.RGBA8888);
 
-            expStack.add(expIndicatorTable);
-            expStack.add(expBarImage);
-
-            // Force layout update
-            expStack.invalidate();
-            expStack.validate();
+        // Draw the timeFrameTexture as background
+        Pixmap timeFramePixmap = new Pixmap(Gdx.files.internal("ui/time_frame.png"));
+        for (int x = 0; x < size; x++) {
+            for (int y = 0; y < size; y++) {
+                if (x < timeFramePixmap.getWidth() && y < timeFramePixmap.getHeight()) {
+                    cachedBackgroundPixmap.drawPixel(x, y, timeFramePixmap.getPixel(x, y));
+                }
+            }
         }
+        timeFramePixmap.dispose();
+
+        // Add semi-transparent overlay for better contrast
+        cachedBackgroundPixmap.setColor(0, 0, 0, 0.3f);
+        cachedBackgroundPixmap.fillCircle(size / 2, size / 2, size / 2 - size / 20);
+
+        cachedBackgroundTexture = new Texture(cachedBackgroundPixmap);
+    }
+    private void reinitializeExpBar(float exp, Color expColor) {
+        if (cachedBackgroundPixmap == null || cachedBackgroundTexture == null) {
+            initializeExpBarBackground();
+        }
+
+        int size = cachedBackgroundPixmap.getWidth();
+        Pixmap progressPixmap = new Pixmap(size, size, Pixmap.Format.RGBA8888);
+        progressPixmap.drawPixmap(cachedBackgroundPixmap, 0, 0);
+
+        // Draw progress arc with gradient
+        float expPercent = exp / (float) maxExp;
+        int centerX = size / 2;
+        int centerY = size / 2;
+        int radius = (int)((size / 2 - size / 10) * 1.1f); // 80% of the radius
+        int thickness = size / 2;
+
+        for (int x = 0; x < size; x++) {
+            for (int y = 0; y < size; y++) {
+                int dx = x - centerX;
+                int dy = y - centerY;
+                double distanceSquared = dx * dx + dy * dy;
+
+                if (distanceSquared <= radius * radius && distanceSquared >= (radius - thickness) * (radius - thickness)) {
+                    double angle = Math.atan2(dy, dx) + Math.PI;
+                    double normalizedAngle = angle / (2 * Math.PI);
+
+                    if (normalizedAngle <= expPercent) {
+                        float gradientFactor = (float) (distanceSquared - (radius - thickness) * (radius - thickness)) / (thickness * thickness);
+                        Color gradientColor = new Color(
+                                expColor.r * gradientFactor,
+                                expColor.g * gradientFactor,
+                                expColor.b * gradientFactor,
+                                expColor.a
+                        );
+                        progressPixmap.setColor(gradientColor);
+                        progressPixmap.drawPixel(x+1, y);
+                    }
+                }
+            }
+        }
+
+        // Draw border
+        progressPixmap.setColor(Color.BLACK);
+        progressPixmap.drawCircle(centerX, centerY, radius);
+        progressPixmap.drawCircle(centerX, centerY, radius - thickness);
+
+        // Dispose old texture and set new one
+        if (timeFrameImage.getDrawable() != null) {
+            ((TextureRegionDrawable) timeFrameImage.getDrawable()).getRegion().getTexture().dispose();
+        }
+        timeFrameImage.setDrawable(new TextureRegionDrawable(new Texture(progressPixmap)));
+
+
+        progressPixmap.dispose();
     }
 
     public void render() {
@@ -545,7 +584,6 @@ public class ExploringUI {
         timeFrameTexture.dispose();
         healthBarTexture.dispose();
         manaBarTexture.dispose();
-        expBarTexture.dispose();
         questBoxTexture.dispose();
     }
 }
