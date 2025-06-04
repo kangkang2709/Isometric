@@ -13,5 +13,6 @@ public enum GameState {
     LOAD_GAME,
     QUIZZES, // Quiz state
     DICTIONARY,
-    MULTIPLE_CHOICE_QUIZZES// Dictionary state
+    MULTIPLE_CHOICE_QUIZZES,
+    INFORMATION, // Information state
 }

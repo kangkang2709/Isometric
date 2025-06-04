@@ -32,6 +32,7 @@ import ctu.game.isometric.view.renderer.TransitionRenderer;
 import ctu.game.isometric.view.ui.AchievementUI;
 import ctu.game.isometric.view.ui.ExploringUI;
 import ctu.game.isometric.view.ui.InventoryUI;
+import ctu.game.isometric.view.view.CharacterInfoDisplay;
 
 import java.util.*;
 
@@ -67,7 +68,7 @@ public class GameController {
     private ctu.game.isometric.view.view.DictionaryView dictionaryView;
     private Dictionary dictionary;
     private BitmapFont font;
-
+    private CharacterInfoDisplay characterDisplay;
 
     private EventManager eventManager;
     private MapEvent currentEvent;
@@ -118,6 +119,7 @@ public class GameController {
         this.currentPlayTime = new Date();
 
     }
+
 
     public void initializeDictionary() {
         if (dictionary == null) {
@@ -778,6 +780,7 @@ public class GameController {
         effectManager.dispose();
         exploringUI.dispose();
         effectManager.dispose();
+        musicController.dispose();
         if (quizController != null) {
             quizController.dispose();
         }
@@ -810,6 +813,14 @@ public class GameController {
 
     public void setCharacterCreationController(CharacterCreation characterCreation) {
         this.characterCreationController = characterCreation;
+    }
+
+    public CharacterInfoDisplay getCharacterDisplay() {
+        return characterDisplay;
+    }
+
+    public void setCharacterDisplay() {
+        this.characterDisplay = new CharacterInfoDisplay(getCharacter());
     }
 
     public void setCharacter(Character character) {

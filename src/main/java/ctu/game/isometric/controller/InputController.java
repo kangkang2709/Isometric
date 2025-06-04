@@ -113,6 +113,12 @@ public class InputController extends InputAdapter {
                 return gameController.getLoadGameController().handleInput(keycode);
             case GAMEPLAY:
                 return handleGamePlayInput(keycode);
+            case INFORMATION: // Handle information screen inputs
+                if (keycode == Keys.ESCAPE || keycode == Keys.F1) {
+                    gameController.returnToPreviousState();
+                    return true;
+                }
+                return false; // No other keys handled in INFORMATION state
             case QUIZZES:
                 return handleQuizInput(keycode);
             case CHARACTER_CREATION:
@@ -317,6 +323,7 @@ public class InputController extends InputAdapter {
                 }
                 gameController.setState(GameState.DICTIONARY);
             }
+            case Keys.F1 -> gameController.setState(GameState.INFORMATION);
             case Keys.F -> {
                 if (gameController.getAchievementUI().isActive())
                     gameController.getAchievementUI().hide();

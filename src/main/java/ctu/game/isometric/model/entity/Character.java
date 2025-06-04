@@ -45,11 +45,9 @@ public class Character {
     // Score for the character
 
     public void levelUp(int level){
-
             this.level += level; // Increase level
 
             float scale = level * 0.5f;
-
             this.maxHealth += this.maxHealth + 10;
             this.maxMana += this.maxMana+10;
             this.health = maxHealth; // Restore health to max

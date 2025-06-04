@@ -83,4 +83,12 @@ public class AnimationManager {
     public void setCharacterAnimations(Map<String, Animation<TextureRegion>> characterAnimations) {
         this.characterAnimations = characterAnimations;
     }
+    public void dispose() {
+        for (Animation<TextureRegion> animation : characterAnimations.values()) {
+            for (TextureRegion frame : animation.getKeyFrames()) {
+                frame.getTexture().dispose();
+            }
+        }
+        characterAnimations.clear();
+    }
 }

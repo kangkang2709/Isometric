@@ -229,4 +229,5 @@ public class EffectManager implements Disposable {
             this.duration = duration;
         }
     }
+
 }

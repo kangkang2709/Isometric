@@ -100,8 +100,7 @@ public class GameScreen implements Screen {
 
             gameController.resetLearnedWords();
             gameController.setDictionaryView(new DictionaryView(gameController,gameController.getDictionary(), gameController.getWordNetValidator()));
-
-
+            gameController.setCharacterDisplay();
             // Reset flag
             gameController.getAchievementUI().hide();
             gameController.setCreated(false);
@@ -121,6 +120,9 @@ public class GameScreen implements Screen {
                     break;
                 case CHARACTER_CREATION:
                     gameController.getCharacterCreationController().render(batch);
+                    break;
+                case INFORMATION:
+                    gameController.getCharacterDisplay().render(batch);
                     break;
                 case EXPLORING:
                     gameController.getMap().cleanupChunks();
@@ -250,7 +252,18 @@ public class GameScreen implements Screen {
         if (dialogUI != null) {
             dialogUI.dispose(); // Dispose DialogUI
         }
-        if (exploringUI!=null)
+        gameController.getAchievementUI().dispose();
+        gameController.getCharacterDisplay().dispose();
+        // Remove incomplete line
+        if (exploringUI != null)
             exploringUI.dispose();
+
+        // Dispose any other renderers that might have been created
+        if (mapRenderer != null) {
+            mapRenderer.dispose();
+        }
+        if (characterRenderer != null) {
+            characterRenderer.dispose();
+        }
     }
 }

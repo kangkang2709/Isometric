@@ -231,7 +231,7 @@ public class CharacterCreation {
         if (currentAvatar != null) {
             float x = Gdx.graphics.getWidth() / 2f + 200;
             float y = Gdx.graphics.getHeight() / 2f;
-            batch.draw(currentAvatar, x, y, 96, 96);
+            batch.draw(currentAvatar, x, y-50, 150, 200);
         }
 
         // If batch wasn't drawing originally, end it

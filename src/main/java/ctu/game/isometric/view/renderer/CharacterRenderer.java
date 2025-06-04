@@ -75,4 +75,8 @@ public class CharacterRenderer {
         }
     }
 
+    public void dispose() {
+        // Dispose of any resources if needed
+        animationManager.dispose();
+    }
 }
