@@ -29,6 +29,8 @@ public class ItemLoader {
                 item.setTexturePath(itemJson.getString("texturePath"));
                 item.setItemEffect(itemJson.getString("itemEffect"));
                 item.setValue(itemJson.getFloat("value", 0.0f));
+                item.setItemPrice(itemJson.getInt("itemPrice", 0));
+                item.setManaCost(itemJson.getFloat("manaCost", 0.0f));
 
                 items.put(item.getItemID(), item);
             }

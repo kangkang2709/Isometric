@@ -7,6 +7,7 @@ public class MulQuiz  extends Quiz{
 
     public MulQuiz() {
         super();
+        this.options = new String[4];
     }
 
     public MulQuiz(String type, String question, String answer, int difficulty, float points, String[] options) {

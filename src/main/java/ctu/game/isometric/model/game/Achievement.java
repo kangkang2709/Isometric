@@ -48,6 +48,9 @@ public class Achievement {
     public void setCurrentValue(int currentValue) { this.currentValue = currentValue; }
 
     public void updateProgress(int amount) {
+        if (amount < 0) {
+            throw new IllegalArgumentException("Progress amount cannot be negative.");
+        }
         currentValue += amount;
         if (currentValue >= targetValue && !unlocked) {
             unlocked = true;

@@ -155,9 +155,12 @@ public class Pathfinder {
         return new int[]{x, y};
     }
 
-    //    khoảng cách Manhattan giữa hai điểm trên lưới (grid)
+    //    Octile Distance - better for 8-directional movement on a grid
     private float heuristic(int x1, int y1, int x2, int y2) {
-        return (float) Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+        float dx = Math.abs(x1 - x2);
+        float dy = Math.abs(y1 - y2);
+        // sqrt(2) - 1 ≈ 0.414
+        return (dx + dy) + (0.414f * Math.min(dx, dy));
     }
 
 
@@ -173,3 +176,4 @@ public class Pathfinder {
         return path;
     }
 }
+

@@ -11,6 +11,7 @@ public class IsometricApplication {
 		config.setTitle("CHRONO VEIL");
 		config.setWindowedMode(1280, 720);
 		config.setResizable(false);
+		config.setForegroundFPS(120);
 
 		// Launch the game
 		new Lwjgl3Application(new IsometricGame(), config);

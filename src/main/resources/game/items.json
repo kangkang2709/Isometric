@@ -5,7 +5,9 @@
       "itemDescription": "A red potion that restores a small amount of health.",
       "texturePath": "game/items/potion_healing.png",
       "itemEffect": "heal",
-      "value": 20.0
+      "value": 20.0,
+      "itemPrice" : "100",
+      "manaCost": 5.0
     },
     {
       "itemID": 2,
@@ -13,7 +15,9 @@
       "itemDescription": "A glowing crystal that restores mana when consumed.",
       "texturePath": "game/items/mana_crystal.png",
       "itemEffect":"debuff",
-      "value": 0.3
+      "value": 0.3,
+      "itemPrice" : "100",
+      "manaCost": 5.0
     },
     {
       "itemID": 3,
@@ -21,7 +25,9 @@
       "itemDescription": "A book that teaches you a new spell.",
       "texturePath": "game/items/magic_book.png",
       "itemEffect":"N/A",
-      "value": 0.0
+      "itemPrice" : "100",
+      "value": 0.0,
+      "manaCost": 5.0
     }
   ]
   

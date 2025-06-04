@@ -71,7 +71,7 @@ public class GameplayController {
 
     private String enemyName = "Enemy";
     private float enemyActionTimer = 0;
-    private static final float ENEMY_TURN_DELAY = 2.5f;
+    private static final float ENEMY_TURN_DELAY = 1.7f;
     private String combatLog = "";
     private float wordDamageMultiplier = 1f;
     private boolean autoStartCombat = false;
@@ -190,9 +190,6 @@ public class GameplayController {
         effectManager.spawnEffect("attack", x, y);
     }
 
-    private void spawnRainEffect(float x, float y) {
-        effectManager.spawnEffect("rain", x, y);
-    }
 
     private void updateCombat(float delta) {
         // Process enemy turn
@@ -424,15 +421,15 @@ public class GameplayController {
             drawButton(batch, submitButtonRect, "CAST WORD");
             drawButton(batch, clearButtonRect, "CLEAR");
             String currentWord = letterGrid.getCurrentWord();
-            if (currentWord.length() > 0) {
+            if (!currentWord.isEmpty()) {
                 drawCenteredText(batch, regularFont, "Spell: " + currentWord, viewport.getWorldWidth() / 2, 600, Color.WHITE);
-
-
-                if (gameController.getCharacter().getLearnedWords().contains(currentWord.toUpperCase()) || wordValidator.isValidWord(currentWord)) {
-                    drawCenteredText(batch, regularFont, wordValidator.getWordMeaning(currentWord),
-                            viewport.getWorldWidth() / 2, 570, Color.WHITE);
-                }
             }
+        }
+
+// Display word meaning regardless of whose turn it is
+        if (isDrawingWordMeaning && !lastSubmittedWord.isEmpty()) {
+            drawCenteredText(batch, regularFont, "Meaning: " + wordValidator.getWordMeaning(lastSubmittedWord),
+                    viewport.getWorldWidth() / 2, 570, Color.WHITE);
         }
     }
 
@@ -543,11 +540,11 @@ public class GameplayController {
         if (item == null) return;
 
         String effect = item.getItemEffect();
-        float value = item.getValue();
+        float value = item.getManaCost();
 
         String tooltip = item.getItemName() + "\n" +
                 "Hiệu quả: " + effect + "\n" +
-                "Chỉ số: " + value;
+                "Mana: " + value;
 
         float tooltipWidth = 200;
         float tooltipHeight = 80;
@@ -817,11 +814,9 @@ public class GameplayController {
                 gameController.setEndEvent();
             }
 
-            achievementManager.updateProgress(Achievement.AchievementType.COMBAT_WIN, 1);// Render victory screen
-            achievementManager.checkEnemyDefeat(enemy.getEnemyName());
-
-            achievementManager.updateProgress(Achievement.AchievementType.WORD_COUNT, + gameController.getCharacter().getNewlearneWords().size());
-            System.out.println(2);
+            achievementManager.updateProgress(Achievement.AchievementType.COMBAT_WIN, 1);
+            gameController.getCharacter().expToLevelUp(this.experienceGain);
+//            achievementManager.checkEnemyDefeat(enemy.getEnemyName());
         }
     }
 
@@ -831,44 +826,44 @@ public class GameplayController {
         wordDamageMultiplier = gameController.getCharacter().getDamage();
     }
 
+    boolean isDrawingWordMeaning = false;
+    private String lastSubmittedWord = "";
+    private float experienceGain = 0;
     public boolean submitWord() {
         if (!active) return false;
 
         String word = letterGrid.getCurrentWord();
-        if (word.length() < 1) {
-            showMessage("Words must be at least 3 letters long!");
+        if (word.isEmpty()) {
+            combatLog = "Words must be at least 1 letter long!";
             return false;
         }
 
         if (gameController.getCharacter().getLearnedWords().contains(word.toUpperCase()) || wordValidator.isValidWord(word)) {
             int points = getTotalScore(wordValidator.getWordDetails(word));
-            System.out.println("Word: " + word + ", Points: " + points);
+            this.experienceGain += points;
+
+            isDrawingWordMeaning = true;
+            lastSubmittedWord = word;
 
             if (gameController.getCharacter().updateDict(word))
                 gameController.getDictionaryView().addNewWord(word);
 
-
             if (isCombatMode && isPlayerTurn) {
                 float damage = points * wordDamageMultiplier;
-                if (enemyHealth <= 0) {
-                    damage = 0;
-                }
-                if (damage > enemyHealth) {
-                    damage = enemyHealth;
-                }
+                damage = Math.min(enemyHealth, damage);
                 enemyHealth -= damage;
+
                 combatLog = "Your word '" + word + "' deals " + damage + " damage!";
                 showMessage("+" + points + " points! " + damage + " damage!");
-                // Spawn attack particle effect
                 effectManager.spawnEffect("attack", viewport.getWorldWidth() - 300, 600);
 
+                achievementManager.updateProgress(Achievement.AchievementType.WORD_COUNT, 1);
                 Timer.schedule(new Timer.Task() {
                     @Override
                     public void run() {
                         checkCombatEnd();
-
                     }
-                }, 0.5f);
+                }, 1.3f);
 
                 if (isCombatMode && enemyHealth > 0) {
                     isPlayerTurn = false;
@@ -878,9 +873,22 @@ public class GameplayController {
             }
 
             letterGrid.regenerateGrid();
+
+            // Schedule meaning display to clear after a few seconds
+            Timer.schedule(new Timer.Task() {
+                @Override
+                public void run() {
+                    isDrawingWordMeaning = false;
+                }
+            }, 1.3f);
+
             return true;
         } else {
-            showMessage("Not a valid word!");
+            combatLog = "Word '" + word + "' is not valid!";
+            gameController.getCharacter().updateWrongWordCount();
+            if (isCombatMode && enemyHealth > 0) {
+                isPlayerTurn = false;
+            }
             return false;
         }
     }
@@ -894,7 +902,8 @@ public class GameplayController {
         this.enemyMaxHealth = enemy.getHealth();
         this.enemyHealth = enemy.getHealth();
         this.wordDamageMultiplier = gameController.getCharacter().getDamage();
-
+        this.isVictory = false;
+        this.experienceGain = 0;
         this.playerHealth = gameController.getCharacter().getHealth();
         this.playerMaxHealth = gameController.getCharacter().getMaxHealth();
         this.achievementManager = gameController.getAchievementManager();

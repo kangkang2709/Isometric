@@ -7,6 +7,8 @@ public class Items {
     private String texturePath; // Path to the item's texture
     private String itemEffect; // Effect of the item when used (e.g., heal, buff)
     private float value;
+    private int itemPrice; // Price of the item in the game
+    private float manaCost; // Cost of the item in mana, if applicable
     public int getItemID() {
         return itemID;
     }
@@ -21,6 +23,32 @@ public class Items {
         this.texturePath = texturePath;
         this.itemEffect = itemEffect;
         this.value = value;
+    }
+
+    public Items(int itemID, String itemName, String itemDescription, String texturePath, String itemEffect, float value, int itemPrice) {
+        this.itemID = itemID;
+        this.itemName = itemName;
+        this.itemDescription = itemDescription;
+        this.texturePath = texturePath;
+        this.itemEffect = itemEffect;
+        this.value = value;
+        this.itemPrice = itemPrice;
+    }
+
+    public int getItemPrice() {
+        return itemPrice;
+    }
+
+    public void setItemPrice(int itemPrice) {
+        this.itemPrice = itemPrice;
+    }
+
+    public float getManaCost() {
+        return manaCost;
+    }
+
+    public void setManaCost(float manaCost) {
+        this.manaCost = manaCost;
     }
 
     public float getValue() {

@@ -16,7 +16,7 @@ public class IsometricGame extends Game {
     public void create() {
         assetManager = new AssetManager();
         assetManager.loadAssets();
-        Gdx.graphics.setVSync(true); // hoặc false để tắt
+        Gdx.graphics.setVSync(true);
         gameController = new GameController(this);
         setScreen(new SplashScreen(this, gameController));
     }

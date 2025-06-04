@@ -14,7 +14,7 @@
     "targetValue": 1
   },
   {
-    "id": "first_wrong_word",
+    "id": "first_wrong",
     "title": "Từ Sai Đầu Tiên",
     "description": "Thất bại là mẹ thành công",
     "type": "FAILED_WORD",

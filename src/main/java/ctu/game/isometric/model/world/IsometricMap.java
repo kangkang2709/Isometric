@@ -12,6 +12,7 @@ import ctu.game.isometric.model.entity.Enemy;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 public class IsometricMap {
@@ -150,6 +151,30 @@ public class IsometricMap {
                 }
             }
         }
+
+    private static final long CHUNK_TIMEOUT_MS = 30000;
+    public int cleanupChunks(long maxAgeMs) {
+        if (!chunkingEnabled) return 0;
+
+        long currentTime = System.currentTimeMillis();
+        int initialSize = chunks.size();
+
+        Iterator<Map.Entry<Long, MapChunk>> iterator = chunks.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<Long, MapChunk> entry = iterator.next();
+            MapChunk chunk = entry.getValue();
+
+            if (currentTime - chunk.getLastAccessTime() > maxAgeMs) {
+                iterator.remove();
+            }
+        }
+
+        return initialSize - chunks.size();
+    }
+
+    public int cleanupChunks() {
+        return cleanupChunks(CHUNK_TIMEOUT_MS);
+    }
     public int[][] getMapData() {
         return mapData;
     }

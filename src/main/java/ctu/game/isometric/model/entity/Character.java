@@ -20,26 +20,55 @@ public class Character {
     private String direction = "down";
     private String name = "player"; // Character name
     private Gender gender = Gender.MALE;
-    private float health = 100; // Health points
+    private float health = 20; // Health points
     private float gridX, gridY;
-    private float maxHealth = 100; // Maximum health points
-
+    private float maxHealth = 20; // Maximum health points
+    private float maxMana = 20;
     private Map<String, Integer> items; // Inventory of items
     private List<String> flags; // Flags for events
     private List<String> quests; // List of quests
     private Map<String, List<String>> status;
     private Map<String, Integer> ettempFlags;
     // Status effects (e.g., buffs, debuffs)
+
     private float damage = 1; // Damage dealt by the character
 
+    private float defend = 10;
+    private float mana= 20;
+    private int level = 1;// Defense points of the character
+    private float exp = 0; // Experience points
     private IsometricMap gameMap;
     private float targetX, targetY;
     private float moveSpeed = 2.5f; // Grid cells per second
 
     private float score;
     // Score for the character
-    private int failedWordCount = 0;
-    private int fallenCount = 0 ;
+
+    public void levelUp(int level){
+
+            this.level += level; // Increase level
+
+            float scale = level * 0.5f;
+
+            this.maxHealth += this.maxHealth + 10;
+            this.maxMana += this.maxMana+10;
+            this.health = maxHealth; // Restore health to max
+            this.damage += scale; // Increase damage by level
+            this.defend += scale ; // Increase defense by level
+
+    }
+    public void expToLevelUp(float exp) {
+        if (exp < 0) {
+            throw new IllegalArgumentException("Experience points cannot be negative");
+        }
+        this.exp += exp; // Add experience points
+        int requiredExp = level * 50; // Scale experience requirement dynamically
+        if (this.exp >= requiredExp) {
+            this.exp -= requiredExp; // Reset exp after leveling up
+            levelUp(1); // Level up the character
+        }
+    }
+
 
 
     private Date lastSaveTime;
@@ -100,6 +129,16 @@ public class Character {
 
     }
 
+
+    public void levelUp() {
+        if (level < 10) { // Assuming max level is 10
+            level++;
+            maxHealth += 20; // Increase max health by 20 on level up
+            health = maxHealth; // Restore health to max
+            damage += 2; // Increase damage by 2 on level up
+            moveSpeed += 0.5f; // Increase move speed by 0.5 on level up
+        }
+    }
     // Existing getters/setters...
     private Array<int[]> currentPath = new Array<>();
     private int currentPathIndex = 0;
@@ -409,8 +448,7 @@ public class Character {
             throw new IllegalArgumentException("Achievement type cannot be null");
         }
 
-        if (achievements == null || achievements.isEmpty()) {
-            achievements = new HashSet<>();
+        if (achievements.isEmpty()) {
             return; // Skip processing if no achievements exist
         }
 
@@ -420,8 +458,8 @@ public class Character {
                 if (existingAchievement.isUnlocked()) {
                     continue;
                 }
+                existingAchievement.updateProgress(value);
 
-                existingAchievement.update(value);
                 if (!existingAchievement.isUnlocked() &&
                         existingAchievement.getCurrentValue() >= existingAchievement.getTargetValue()) {
                 // If the achievement is now unlocked, set it to unlocked and update the score
@@ -430,6 +468,12 @@ public class Character {
                 }
             }
         }
+    }
+
+    public void updateWrongWordCount() {
+        int wrongWordCount = ettempFlags.getOrDefault("wrongWord", 0);
+        ettempFlags.put("wrongWord", wrongWordCount + 1);
+        updateAchievements(Achievement.AchievementType.FAILED_WORD,1);
     }
 
     public void setAchievements(HashSet<Achievement> achievements) {
@@ -464,6 +508,14 @@ public class Character {
 
     public void setGridX(float gridX) {
         this.gridX = gridX;
+    }
+
+    public float getMaxMana() {
+        return maxMana;
+    }
+
+    public void setMaxMana(float maxMana) {
+        this.maxMana = maxMana;
     }
 
     public float getGridY() {
@@ -518,21 +570,7 @@ public class Character {
         this.lastSaveTime = lastSaveTime;
     }
 
-    public int getFallenCount() {
-        return fallenCount;
-    }
 
-    public void setFallenCount(int fallenCount) {
-        this.fallenCount = fallenCount;
-    }
-
-    public int getFailedWordCount() {
-        return failedWordCount;
-    }
-
-    public void setFailedWordCount(int failedWordCount) {
-        this.failedWordCount = failedWordCount;
-    }
 
     public String getName() {
         return name;
@@ -586,6 +624,66 @@ public class Character {
 
     public IsometricMap getGameMap() {
         return gameMap;
+    }
+
+    public int getCurrentPathIndex() {
+        return currentPathIndex;
+    }
+
+    public void setCurrentPathIndex(int currentPathIndex) {
+        this.currentPathIndex = currentPathIndex;
+    }
+
+    public Array<int[]> getCurrentPath() {
+        return currentPath;
+    }
+
+    public void setCurrentPath(Array<int[]> currentPath) {
+        this.currentPath = currentPath;
+    }
+
+    public void setAchievements(Set<Achievement> achievements) {
+        this.achievements = achievements;
+    }
+
+    public float getExp() {
+        return exp;
+    }
+
+    public void setExp(float exp) {
+        this.exp = exp;
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public void setLevel(int level) {
+        this.level = level;
+    }
+
+    public float getMana() {
+        return mana;
+    }
+
+    public void setMana(float mana) {
+        this.mana = mana;
+    }
+
+    public float getDefend() {
+        return defend;
+    }
+
+    public void setDefend(float defend) {
+        this.defend = defend;
+    }
+
+    public Map<String, Integer> getEttempFlags() {
+        return ettempFlags;
+    }
+
+    public void setEttempFlags(Map<String, Integer> ettempFlags) {
+        this.ettempFlags = ettempFlags;
     }
 
     public float getTargetX() {

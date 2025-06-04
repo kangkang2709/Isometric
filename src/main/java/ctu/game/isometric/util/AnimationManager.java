@@ -33,7 +33,7 @@ public class AnimationManager {
                 idleFrames[j] = idleTmp[i][j];
             }
             // Create idle animation with SLOWER frame rate for smoother idle animation
-            characterAnimations.put(directions[i] + "_idle", new Animation<>(0.25f, idleFrames));
+            characterAnimations.put(directions[i] + "_idle", new Animation<>(0.35f, idleFrames));
 
             // WALK: Create with all 8 frames
             TextureRegion[] walkFrames = new TextureRegion[8];

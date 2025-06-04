@@ -123,10 +123,10 @@ public class GameScreen implements Screen {
                     gameController.getCharacterCreationController().render(batch);
                     break;
                 case EXPLORING:
+                    gameController.getMap().cleanupChunks();
                     gameController.setCharacterCreationController(null);
                     gameController.setLoadGameController(null);
                     mapRenderer.render(batch);
-
                     if (gameController.hasActiveEvent()) {
                         mapRenderer.renderActionButton(
                                 batch,
@@ -138,8 +138,8 @@ public class GameScreen implements Screen {
                     }
 
                     if (characterRenderer != null) characterRenderer.render(batch);
+                    gameController.getInputController().renderTargetIndicator(batch);
 
-                    // End the batch before rendering UI
                     batch.end();
 
                     // Render the UI on top
@@ -157,12 +157,13 @@ public class GameScreen implements Screen {
                     if (dialogUI != null && gameController.getDialogController().isDialogActive()) {
 
                         dialogUI.render();
+                        batch.setProjectionMatrix(camera.combined);
                         batch.begin();
                         gameController.getEffectManager().render(batch);
                         batch.end();
                     }
 
-
+                    batch.setProjectionMatrix(camera.combined);
                     // Begin the batch again for any subsequent rendering
                     batch.begin();
                     break;

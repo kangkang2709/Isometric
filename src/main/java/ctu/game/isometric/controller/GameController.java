@@ -166,9 +166,10 @@ public class GameController {
             character.setPath(path);
             effectManager.playClickSound();
 
+            // Set the target indicator position
+            inputController.showTargetIndicator(targetX, targetY);
 
             checkPositionEvents(targetX, targetY);
-            // Play a movement sound
         }
     }
 

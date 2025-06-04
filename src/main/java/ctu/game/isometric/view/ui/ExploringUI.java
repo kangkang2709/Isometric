@@ -29,7 +29,19 @@ public class ExploringUI {
     private ProgressBar healthBar;
     private Label healthLabel;
     private Image healthIndicator;
-    private int maxHealth = 100;
+    private float maxHealth = 20;
+
+    // Mana bar elements
+    private Image manaBarImage;
+    private Image manaIndicator;
+    private float maxMana = 20;
+
+    // Experience bar elements
+    private Image expBarImage;
+    private Image expIndicator;
+    private Label expLabel;
+    private int maxExp = 100;
+
     // Images
     private Image timeFrameImage;
     private Image healthBarImage;
@@ -43,6 +55,8 @@ public class ExploringUI {
     // Textures
     private Texture timeFrameTexture;
     private Texture healthBarTexture;
+    private Texture manaBarTexture;
+    private Texture expBarTexture;
     private Texture questBoxTexture;
 
     // UI visibility control
@@ -61,6 +75,8 @@ public class ExploringUI {
     private void loadTextures() {
         timeFrameTexture = new Texture(Gdx.files.internal("ui/time_frame.png"));
         healthBarTexture = new Texture(Gdx.files.internal("ui/health_bar.png"));
+        manaBarTexture = new Texture(Gdx.files.internal("ui/health_bar.png")); // Reuse health bar texture or use dedicated texture
+        expBarTexture = new Texture(Gdx.files.internal("ui/health_bar.png")); // Reuse texture or use dedicated texture
         questBoxTexture = new Texture(Gdx.files.internal("ui/quest_box.png"));
     }
 
@@ -166,7 +182,9 @@ public class ExploringUI {
 
         // Time frame with time label
         timeFrameImage = new Image(new TextureRegionDrawable(timeFrameTexture));
-        timeLabel = new Label("12:00", skin, "time");
+//        timeLabel = new Label("12:00", skin, "level");
+        timeLabel = new Label("Lv " + character.getLevel(), skin, "default");
+        healthLabel = new Label("HP " + (int)character.getHealth() + "/" + (int)maxHealth, skin, "default");
 
         float healthBarWidth = healthBarTexture.getWidth();
         float healthBarHeight = healthBarTexture.getHeight();
@@ -196,17 +214,67 @@ public class ExploringUI {
 
         // Add the colored health indicator (bottom layer)
         Table healthIndicatorTable = new Table();
-        healthIndicatorTable.add(healthIndicator).width((healthBarWidth - 12) * (character.getHealth() / 100f)).height(11).padLeft(0).padTop(0).left();
+        healthIndicatorTable.add(healthIndicator).width((healthBarWidth - 12) * (character.getHealth() / maxHealth)).height(11).padLeft(0).padTop(0).left();
         healthStack.add(healthIndicatorTable);
 
         // Add the bar image on top (with transparent areas)
         healthStack.add(healthBarImage);
 
+        // Create mana bar components
+        manaBarImage = new Image(new TextureRegionDrawable(manaBarTexture));
+
+        // Create initial Pixmap for mana display
+        Pixmap manaPixmap = new Pixmap(1, 10, Pixmap.Format.RGBA8888);
+        Color manaColor = Color.BLUE;
+        manaPixmap.setColor(manaColor);
+        manaPixmap.fill();
+        Texture manaTexture = new Texture(manaPixmap);
+        manaIndicator = new Image(new TextureRegionDrawable(manaTexture));
+        manaPixmap.dispose();
+
+        // Create mana stack with components
+        Stack manaStack = new Stack();
+
+        // Add the colored mana indicator (bottom layer)
+        Table manaIndicatorTable = new Table();
+        manaIndicatorTable.add(manaIndicator).width((healthBarWidth - 12) * (character.getMana() / maxMana)).height(11).padLeft(0).padTop(0).left();
+        manaStack.add(manaIndicatorTable);
+
+        // Add the bar image on top
+        manaStack.add(manaBarImage);
+
+        // Create experience bar components
+        expBarImage = new Image(new TextureRegionDrawable(expBarTexture));
+        expLabel = new Label("EXP: 0/100", skin, "default");
+
+        // Create initial Pixmap for exp display
+        Pixmap expPixmap = new Pixmap(1, 10, Pixmap.Format.RGBA8888);
+        Color expColor = Color.YELLOW;
+        expPixmap.setColor(expColor);
+        expPixmap.fill();
+        Texture expTexture = new Texture(expPixmap);
+        expIndicator = new Image(new TextureRegionDrawable(expTexture));
+        expPixmap.dispose();
+
+        // Create exp stack with components
+        Stack expStack = new Stack();
+
+        // Add the colored exp indicator (bottom layer)
+        Table expIndicatorTable = new Table();
+        expIndicatorTable.add(expIndicator).width((healthBarWidth - 12) * (character.getExp() / (float)maxExp)).height(11).padLeft(0).padTop(0).left();
+        expStack.add(expIndicatorTable);
+
+        // Add the bar image on top
+        expStack.add(expBarImage);
+
         // Add to top left table
         topLeftTable.add(timeStack).padRight(10);
         Table playerInfoTable = new Table();
         playerInfoTable.add(playerNameLabel).left().row();
-        playerInfoTable.add(healthStack).left().padTop(5);
+        playerInfoTable.add(healthStack).left().padTop(5).row();
+        playerInfoTable.add(manaStack).left().padTop(3).row();
+        playerInfoTable.add(expStack).left().padTop(3).row();
+        playerInfoTable.add(expLabel).left().padTop(2);
         topLeftTable.add(playerInfoTable).left().top();
     }
 
@@ -230,14 +298,24 @@ public class ExploringUI {
     public void update() {
         if (character != null && uiVisible) {
             // Update time
-            LocalTime now = LocalTime.now();
-            timeLabel.setText(now.format(DateTimeFormatter.ofPattern("HH:mm")));
+            int charLevel = character.getLevel();
+            timeLabel.setText(charLevel);
 
             // Update player info
             playerNameLabel.setText(character.getName());
 
-            // Update health
+            // Update health and max health
             float health = character.getHealth();
+            maxHealth = character.getMaxHealth(); // Get dynamic max health
+            healthLabel.setText("HP: " + (int)health + "/" + (int)maxHealth);
+            // Update mana and max mana
+            float mana = character.getMana();
+            maxMana = character.getMaxMana(); // Get dynamic max mana
+
+            // Update exp
+            float exp = character.getExp();
+            maxExp = charLevel * 50; // Assuming level * 50 for max exp needed
+            expLabel.setText("EXP: " + (int)exp + "/" + maxExp);
 
             // Update health bar color based on health percentage
             float healthPercent = health / (float)maxHealth;
@@ -258,15 +336,52 @@ public class ExploringUI {
                 ((TextureRegionDrawable)healthIndicator.getDrawable()).getRegion().getTexture().dispose();
             }
 
-            // This is just changing the texture but not the layout
+            // Set new health texture
             healthIndicator.setDrawable(new TextureRegionDrawable(new Texture(healthPixmap)));
+
+            // Update mana indicator
+            float manaPercent = mana / (float)maxMana;
+            Color manaColor = new Color(0.2f, 0.2f, 1f, 1f); // Blue color for mana
+
+            Pixmap manaPixmap = new Pixmap(1, 10, Pixmap.Format.RGBA8888);
+            manaPixmap.setColor(manaColor);
+            manaPixmap.fill();
+
+            // Dispose old texture before setting new one
+            if (manaIndicator.getDrawable() != null) {
+                ((TextureRegionDrawable)manaIndicator.getDrawable()).getRegion().getTexture().dispose();
+            }
+
+            // Set new mana texture
+            manaIndicator.setDrawable(new TextureRegionDrawable(new Texture(manaPixmap)));
+
+            // Update exp indicator
+            float expPercent = exp / (float)maxExp;
+            Color expColor = new Color(1f, 0.8f, 0.2f, 1f); // Gold color for exp
+
+            Pixmap expPixmap = new Pixmap(1, 10, Pixmap.Format.RGBA8888);
+            expPixmap.setColor(expColor);
+            expPixmap.fill();
+
+            // Dispose old texture before setting new one
+            if (expIndicator.getDrawable() != null) {
+                ((TextureRegionDrawable)expIndicator.getDrawable()).getRegion().getTexture().dispose();
+            }
+
+            // Set new exp texture
+            expIndicator.setDrawable(new TextureRegionDrawable(new Texture(expPixmap)));
 
             // We should rebuild the entire health section instead of just setting width
             reinitializeHealthBar(health, healthColor);
+            reinitializeManaBar(mana, manaColor);
+            reinitializeExpBar(exp, expColor);
 
             healthPixmap.dispose();
+            manaPixmap.dispose();
+            expPixmap.dispose();
         }
     }
+
     private Stack findHealthStack() {
         // Navigate through the UI hierarchy to find the health stack
         if (topLeftTable != null) {
@@ -282,6 +397,36 @@ public class ExploringUI {
         return null;
     }
 
+    private Stack findManaStack() {
+        // Navigate through the UI hierarchy to find the mana stack
+        if (topLeftTable != null) {
+            Cell<?> cell = topLeftTable.getCells().get(1); // Assuming the second cell in the table
+            if (cell != null && cell.getActor() instanceof Table) {
+                Table playerInfoTable = (Table) cell.getActor();
+                Cell<?> manaCell = playerInfoTable.getCells().get(2); // Assuming the third cell in the player info table
+                if (manaCell != null && manaCell.getActor() instanceof Stack) {
+                    return (Stack) manaCell.getActor();
+                }
+            }
+        }
+        return null;
+    }
+
+    private Stack findExpStack() {
+        // Navigate through the UI hierarchy to find the exp stack
+        if (topLeftTable != null) {
+            Cell<?> cell = topLeftTable.getCells().get(1); // Assuming the second cell in the table
+            if (cell != null && cell.getActor() instanceof Table) {
+                Table playerInfoTable = (Table) cell.getActor();
+                Cell<?> expCell = playerInfoTable.getCells().get(3); // Assuming the fourth cell in the player info table
+                if (expCell != null && expCell.getActor() instanceof Stack) {
+                    return (Stack) expCell.getActor();
+                }
+            }
+        }
+        return null;
+    }
+
     private void reinitializeHealthBar(float health, Color healthColor) {
         Stack healthStack = findHealthStack();
         if (healthStack != null) {
@@ -290,7 +435,7 @@ public class ExploringUI {
             Table healthIndicatorTable = new Table();
             healthIndicatorTable.left().top(); // Align the table itself
             healthIndicatorTable.add(healthIndicator)
-                    .width((healthBarTexture.getWidth() - 12) * (health / 100f))
+                    .width((healthBarTexture.getWidth() - 12) * (health / maxHealth))
                     .height(11)
                     .padLeft(6) // Add correct padding to match initial setup
                     .padTop(3)  // Add correct padding to match initial setup
@@ -302,6 +447,52 @@ public class ExploringUI {
             // Force layout update
             healthStack.invalidate();
             healthStack.validate();
+        }
+    }
+
+    private void reinitializeManaBar(float mana, Color manaColor) {
+        Stack manaStack = findManaStack();
+        if (manaStack != null) {
+            manaStack.clear();
+
+            Table manaIndicatorTable = new Table();
+            manaIndicatorTable.left().top(); // Align the table itself
+            manaIndicatorTable.add(manaIndicator)
+                    .width((manaBarTexture.getWidth() - 12) * (mana / maxMana))
+                    .height(11)
+                    .padLeft(6) // Add correct padding to match initial setup
+                    .padTop(3)  // Add correct padding to match initial setup
+                    .left();
+
+            manaStack.add(manaIndicatorTable);
+            manaStack.add(manaBarImage);
+
+            // Force layout update
+            manaStack.invalidate();
+            manaStack.validate();
+        }
+    }
+
+    private void reinitializeExpBar(float exp, Color expColor) {
+        Stack expStack = findExpStack();
+        if (expStack != null) {
+            expStack.clear();
+
+            Table expIndicatorTable = new Table();
+            expIndicatorTable.left().top(); // Align the table itself
+            expIndicatorTable.add(expIndicator)
+                    .width((expBarTexture.getWidth() - 12) * (exp / maxExp))
+                    .height(11)
+                    .padLeft(6) // Add correct padding to match initial setup
+                    .padTop(3)  // Add correct padding to match initial setup
+                    .left();
+
+            expStack.add(expIndicatorTable);
+            expStack.add(expBarImage);
+
+            // Force layout update
+            expStack.invalidate();
+            expStack.validate();
         }
     }
 
@@ -353,6 +544,8 @@ public class ExploringUI {
         skin.dispose();
         timeFrameTexture.dispose();
         healthBarTexture.dispose();
+        manaBarTexture.dispose();
+        expBarTexture.dispose();
         questBoxTexture.dispose();
     }
 }

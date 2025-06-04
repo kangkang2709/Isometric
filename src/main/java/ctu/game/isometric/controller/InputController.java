@@ -5,6 +5,11 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import ctu.game.isometric.controller.quiz.QuizController;
@@ -21,8 +26,32 @@ public class InputController extends InputAdapter {
     private boolean debugLog = true;
     private EffectManager effectManager;
 
+
+
+    private int targetX = -1;
+    private int targetY = -1;
+    private boolean showTargetIndicator = false;
+    private float indicatorTimer = 0;
+    private final float INDICATOR_DURATION = 1.0f; // Duration in seconds
+
     public void setEffectManager(EffectManager effectManager) {
         this.effectManager = effectManager;
+    }
+
+    public void showTargetIndicator(int x, int y) {
+        this.targetX = x;
+        this.targetY = y+1;
+        this.showTargetIndicator = true;
+        this.indicatorTimer = INDICATOR_DURATION;
+    }
+
+    public void updateTargetIndicator(float delta) {
+        if (showTargetIndicator) {
+            indicatorTimer -= delta;
+            if (indicatorTimer <= 0) {
+                showTargetIndicator = false;
+            }
+        }
     }
 
     private int[] toIsometricGrid(float worldX, float worldY) {
@@ -93,6 +122,50 @@ public class InputController extends InputAdapter {
         }
     }
 
+
+    private static Texture circleTexture;
+    private static TextureRegion circleRegion;
+
+    private void ensureCircleTextureExists() {
+        if (circleTexture == null) {
+            // Create a pixmap for drawing the circle
+            int size = 64;
+            Pixmap pixmap = new Pixmap(size, size, Pixmap.Format.RGBA8888);
+            pixmap.setColor(Color.WHITE);
+            pixmap.fillCircle(size/2, size/2, size/2 - 1);
+            circleTexture = new Texture(pixmap);
+            circleRegion = new TextureRegion(circleTexture);
+            pixmap.dispose();
+        }
+    }
+    public void renderTargetIndicator(SpriteBatch batch) {
+        if (!showTargetIndicator) return;
+
+        ensureCircleTextureExists();
+
+        // Save all batch state we'll modify
+        Color oldColor = batch.getColor().cpy(); // Make a copy to be safe
+        float oldPackedColor = batch.getPackedColor();
+
+        // Convert to isometric coordinates
+        float[] screenPos = mapRenderer.toIsometric(targetX, targetY);
+        float alpha = Math.min(1.0f, indicatorTimer / (INDICATOR_DURATION / 2));
+
+        // Calculate size with pulsation
+        float baseSize = 30;
+        float pulseSize = baseSize * (0.8f + 0.2f * (float)Math.sin(indicatorTimer * 5));
+
+        // Draw a pulsing circle with color
+        batch.setColor(0.9f, 0.3f, 0.1f, alpha); // Reddish-orange color
+        batch.draw(circleRegion,
+                screenPos[0] - pulseSize/2,
+                screenPos[1] - pulseSize/4,
+                pulseSize, pulseSize/2);
+
+        // Completely restore original batch state
+        batch.setColor(oldColor);
+        batch.setPackedColor(oldPackedColor);
+    }
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
@@ -524,6 +597,7 @@ public class InputController extends InputAdapter {
         if (moveCooldown > 0) {
             moveCooldown -= delta;
         }
+        updateTargetIndicator(delta);
     }
 
     public MapRenderer getMapRenderer() {
