@@ -15,6 +15,7 @@ import ctu.game.isometric.view.ui.DialogUI;
 import ctu.game.isometric.view.renderer.MapRenderer;
 import ctu.game.isometric.view.ui.ExploringUI;
 import ctu.game.isometric.view.ui.InventoryUI;
+import ctu.game.isometric.view.ui.MerchantUI;
 import ctu.game.isometric.view.view.DictionaryView;
 
 public class GameScreen implements Screen {
@@ -103,6 +104,7 @@ public class GameScreen implements Screen {
             gameController.setCharacterDisplay();
             // Reset flag
             gameController.getAchievementUI().hide();
+            gameController.setMerchantUI(new MerchantUI(gameController));
             gameController.setCreated(false);
         }
 
@@ -155,6 +157,9 @@ public class GameScreen implements Screen {
                     if(gameController.getAchievementUI().isActive()){
                         gameController.getAchievementUI().render(batch);
                     }
+                    if (gameController.getMerchantUI().isVisible()) {
+                        gameController.getMerchantUI().render(batch);
+                    }
 
                     if (dialogUI != null && gameController.getDialogController().isDialogActive()) {
 
@@ -164,6 +169,7 @@ public class GameScreen implements Screen {
                         gameController.getEffectManager().render(batch);
                         batch.end();
                     }
+
 
                     batch.setProjectionMatrix(camera.combined);
                     // Begin the batch again for any subsequent rendering

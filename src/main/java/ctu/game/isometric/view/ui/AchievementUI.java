@@ -184,7 +184,7 @@ public class AchievementUI {
                     // Progress fill
                     float progressPercentage = (float) achievement.getCurrentValue() / achievement.getTargetValue();
                     batch.setColor(0.3f, 0.9f, 0.3f, 1);
-                    batch.draw(whiteTexture, progressX, progressY -7, progressWidth * progressPercentage, progressHeight);
+                    batch.draw(whiteTexture, progressX, progressY - 7, progressWidth * progressPercentage, progressHeight);
 
                     // More descriptive progress text based on type
                     String progressDesc = "Tiến độ: ";
@@ -216,7 +216,7 @@ public class AchievementUI {
                     drawButton(batch, nextRect, ">>");
                 }
             }
-        }finally {
+        } finally {
             // Always restore original batch state before returning
             batch.setColor(prevColor);  // Restore original color
 
@@ -233,37 +233,36 @@ public class AchievementUI {
         float Y = Gdx.graphics.getHeight() - screenY;
 
 
+        // Check if close button is clicked
+        if (closeButtonRect.contains(X, Y)) {
+            active = false;
+            return true;
+        }
 
-            // Check if close button is clicked
-            if (closeButtonRect.contains(X,Y)) {
-                active = false;
+        // Handle pagination
+        Array<Achievement> achievements = achievementManager.getCharacterAchievements();
+        int totalPages = (achievements.size + ACHIEVEMENTS_PER_PAGE - 1) / ACHIEVEMENTS_PER_PAGE;
+
+        float panelX = (viewport.getWorldWidth() - 800) / 2;
+        float paginationY = (viewport.getWorldHeight() - 600) / 2 + 30;
+
+        // Previous page button
+        if (currentPage > 0) {
+            Rectangle prevRect = new Rectangle(panelX + 400 - 100, paginationY, 80, 30);
+            if (prevRect.contains(X, Y)) {
+                currentPage--;
                 return true;
             }
+        }
 
-            // Handle pagination
-            Array<Achievement> achievements = achievementManager.getCharacterAchievements();
-            int totalPages = (achievements.size + ACHIEVEMENTS_PER_PAGE - 1) / ACHIEVEMENTS_PER_PAGE;
-
-            float panelX = (viewport.getWorldWidth() - 800) / 2;
-            float paginationY = (viewport.getWorldHeight() - 600) / 2 + 30;
-
-            // Previous page button
-            if (currentPage > 0) {
-                Rectangle prevRect = new Rectangle(panelX + 400 - 100, paginationY, 80, 30);
-                if (prevRect.contains(X, Y)) {
-                    currentPage--;
-                    return true;
-                }
+        // Next page button
+        if (currentPage < totalPages - 1) {
+            Rectangle nextRect = new Rectangle(panelX + 400 + 20, paginationY, 80, 30);
+            if (nextRect.contains(X, Y)) {
+                currentPage++;
+                return true;
             }
-
-            // Next page button
-            if (currentPage < totalPages - 1) {
-                Rectangle nextRect = new Rectangle(panelX + 400 + 20, paginationY, 80, 30);
-                if (nextRect.contains(X,Y)) {
-                    currentPage++;
-                    return true;
-                }
-            }
+        }
 
 
         return false;
@@ -360,7 +359,8 @@ public class AchievementUI {
         whiteTexture.dispose();
         panelTexture.dispose();
         closeButtonTexture.dispose();
-
+        regularFont.dispose();
+        titleFont.dispose();
         for (Texture texture : iconCache.values()) {
             texture.dispose();
         }

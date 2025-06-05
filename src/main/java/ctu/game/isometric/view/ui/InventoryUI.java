@@ -222,6 +222,7 @@ public class InventoryUI {
                 font.draw(batch, "Value: " + item.getValue(), detailsX, detailsY - 60);
                 font.draw(batch, item.getItemDescription(), detailsX, detailsY - 90,
                         detailsWidth, -1, true);
+                font.draw(batch,"Mana Cost: " + item.getManaCost(), detailsX, detailsY - 150);
             }
             if(!item.getItemEffect().equals("N/A")){
                 font.draw(batch, "USE", useButton.x + 45, useButton.y + 25);

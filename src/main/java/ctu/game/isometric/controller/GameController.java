@@ -32,6 +32,7 @@ import ctu.game.isometric.view.renderer.TransitionRenderer;
 import ctu.game.isometric.view.ui.AchievementUI;
 import ctu.game.isometric.view.ui.ExploringUI;
 import ctu.game.isometric.view.ui.InventoryUI;
+import ctu.game.isometric.view.ui.MerchantUI;
 import ctu.game.isometric.view.view.CharacterInfoDisplay;
 
 import java.util.*;
@@ -77,6 +78,7 @@ public class GameController {
 
     private Pathfinder pathfinder;
     private Date currentPlayTime;
+    private MerchantUI merchantUI;
 
     public GameController(IsometricGame game) {
         this.game = game;
@@ -247,7 +249,7 @@ public class GameController {
                     if (currentEvent != null && currentEvent.getEventType().equals("treasure")) {
                         effectManager.update(delta);
                     }
-                } else {
+                } else if (!merchantUI.isVisible()) {
                     inputController.updateCooldown(delta);
                     character.update(delta);
                 }
@@ -632,8 +634,7 @@ public class GameController {
             case "mulquiz":
                 if (getCharacter().getAttempFlags().get("mulQuizAttempts") >= 1) {
                     dialogController.showSimpleMessage("You have already attempted this quiz today. Come back tomorrow!");
-                }
-                else {
+                } else {
                     dialogController.setOnDialogFinishedAction(() -> startMulChoiceQuiz());
                     dialogController.startDialog("chapter_quiz_intro", "scene_meet_npc");
                     getCharacter().getAttempFlags().put("mulQuizAttempts", 1);
@@ -781,6 +782,7 @@ public class GameController {
         exploringUI.dispose();
         effectManager.dispose();
         musicController.dispose();
+        merchantUI.dispose();
         if (quizController != null) {
             quizController.dispose();
         }
@@ -813,6 +815,14 @@ public class GameController {
 
     public void setCharacterCreationController(CharacterCreation characterCreation) {
         this.characterCreationController = characterCreation;
+    }
+
+    public MerchantUI getMerchantUI() {
+        return merchantUI;
+    }
+
+    public void setMerchantUI(MerchantUI merchantUI) {
+        this.merchantUI = merchantUI;
     }
 
     public CharacterInfoDisplay getCharacterDisplay() {

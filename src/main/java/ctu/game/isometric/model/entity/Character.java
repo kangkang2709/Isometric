@@ -151,7 +151,26 @@ public class Character {
         }
     }
 
+    public void removeItem(String itemName, int amount) {
+        if (itemName == null || itemName.isEmpty()) {
+            throw new IllegalArgumentException("Item name cannot be null or empty");
+        }
+        if (items == null || !items.containsKey(itemName)) {
+            throw new IllegalArgumentException("Item not found in inventory");
+        }
 
+        int currentCount = items.get(itemName);
+        if (currentCount < amount) {
+            throw new IllegalArgumentException("Not enough items to remove");
+        }
+
+        if (currentCount > amount) {
+            items.put(itemName, currentCount - amount);
+        } else {
+            items.remove(itemName);
+        }
+
+    }
 
     public boolean hasItem(String itemName) {
         if (items == null || items.isEmpty()) {
@@ -160,13 +179,17 @@ public class Character {
         return items.containsKey(itemName);
     }
 
+    public void addScore(float score) {
+        this.score = Math.max(0, this.score + score);
+    }
+
     public void addItem(Items item, int amount) {
         if (item == null || item.getItemName() == null) {
             throw new IllegalArgumentException("Item or item name cannot be null");
         }
 
-        if (items == null) {
-            items = new HashMap<>();
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Amount must be greater than zero");
         }
 
         if (items.containsKey(item.getItemName())) {
@@ -231,6 +254,10 @@ public class Character {
             items.remove(item.getItemName());
         }
 
+
+        if (mana < 0)
+            return;
+
         switch (item.getItemEffect()) {
             case "heal":
                 healing(item.getValue());
@@ -244,6 +271,8 @@ public class Character {
             default:
                 throw new IllegalArgumentException("Invalid item effect");
         }
+        // Reduce mana cost
+        this.mana = Math.max(0, this.mana - item.getManaCost());
     }
 
      public void deleteItem(Items item) {

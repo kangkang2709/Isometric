@@ -41,6 +41,7 @@ public class ItemLoader {
     }
 
     public static List<Items> getAllItems() {
+        if (!initialized) initialize();
         return new ArrayList<>(items.values());
     }
 

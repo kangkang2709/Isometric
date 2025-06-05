@@ -16,6 +16,7 @@ import ctu.game.isometric.controller.quiz.QuizController;
 import ctu.game.isometric.model.game.GameState;
 import ctu.game.isometric.view.ui.DialogUI;
 import ctu.game.isometric.view.renderer.MapRenderer;
+import ctu.game.isometric.view.ui.MerchantUI;
 
 public class InputController extends InputAdapter {
     private final GameController gameController;
@@ -25,7 +26,6 @@ public class InputController extends InputAdapter {
     private MapRenderer mapRenderer;
     private boolean debugLog = true;
     private EffectManager effectManager;
-
 
 
     private int targetX = -1;
@@ -40,7 +40,7 @@ public class InputController extends InputAdapter {
 
     public void showTargetIndicator(int x, int y) {
         this.targetX = x;
-        this.targetY = y+1;
+        this.targetY = y + 1;
         this.showTargetIndicator = true;
         this.indicatorTimer = INDICATOR_DURATION;
     }
@@ -138,12 +138,13 @@ public class InputController extends InputAdapter {
             int size = 64;
             Pixmap pixmap = new Pixmap(size, size, Pixmap.Format.RGBA8888);
             pixmap.setColor(Color.WHITE);
-            pixmap.fillCircle(size/2, size/2, size/2 - 1);
+            pixmap.fillCircle(size / 2, size / 2, size / 2 - 1);
             circleTexture = new Texture(pixmap);
             circleRegion = new TextureRegion(circleTexture);
             pixmap.dispose();
         }
     }
+
     public void renderTargetIndicator(SpriteBatch batch) {
         if (!showTargetIndicator) return;
 
@@ -159,14 +160,14 @@ public class InputController extends InputAdapter {
 
         // Calculate size with pulsation
         float baseSize = 30;
-        float pulseSize = baseSize * (0.8f + 0.2f * (float)Math.sin(indicatorTimer * 5));
+        float pulseSize = baseSize * (0.8f + 0.2f * (float) Math.sin(indicatorTimer * 5));
 
         // Draw a pulsing circle with color
         batch.setColor(0.9f, 0.3f, 0.1f, alpha); // Reddish-orange color
         batch.draw(circleRegion,
-                screenPos[0] - pulseSize/2,
-                screenPos[1] - pulseSize/4,
-                pulseSize, pulseSize/2);
+                screenPos[0] - pulseSize / 2,
+                screenPos[1] - pulseSize / 4,
+                pulseSize, pulseSize / 2);
 
         // Completely restore original batch state
         batch.setColor(oldColor);
@@ -183,6 +184,10 @@ public class InputController extends InputAdapter {
 
             if (gameController.getInventoryUI().isVisible()) {
                 gameController.getInventoryUI().handleClick(screenX, screenY);
+                return true;
+            }
+            if(gameController.getMerchantUI().isVisible()){
+                gameController.getMerchantUI().handleClick(screenX, screenY);
                 return true;
             }
 
@@ -218,7 +223,7 @@ public class InputController extends InputAdapter {
             /* Only allow movement to adjacent tiles ( not including diagonals)
            if ((Math.abs(dx) == 1 && dy == 0) || (Math.abs(dy) == 1 && dx == 0)) */
 
-                // Only allow movement to adjacent tiles (including diagonals)
+            // Only allow movement to adjacent tiles (including diagonals)
             if (Math.abs(dx) <= 1 && Math.abs(dy) <= 1 && (dx != 0 || dy != 0)) {
                 moveCharacter(dx, dy);
                 moveCooldown = MOVE_DELAY;
@@ -248,8 +253,8 @@ public class InputController extends InputAdapter {
         if (state == GameState.QUIZZES) {
             return true;
         }
-        if( state == GameState.MULTIPLE_CHOICE_QUIZZES) {
-            return gameController.getMultipleChoiceQuizController().handleClick(screenX,screenY);
+        if (state == GameState.MULTIPLE_CHOICE_QUIZZES) {
+            return gameController.getMultipleChoiceQuizController().handleClick(screenX, screenY);
         }
 
         return false;
@@ -324,6 +329,13 @@ public class InputController extends InputAdapter {
                 gameController.setState(GameState.DICTIONARY);
             }
             case Keys.F1 -> gameController.setState(GameState.INFORMATION);
+            case Keys.F2 -> {
+                if (gameController.getMerchantUI().isVisible())
+                    gameController.getMerchantUI().hide();
+                else
+                    gameController.getMerchantUI().show();
+
+            }
             case Keys.F -> {
                 if (gameController.getAchievementUI().isActive())
                     gameController.getAchievementUI().hide();
@@ -334,7 +346,7 @@ public class InputController extends InputAdapter {
                 if (gameController.getAchievementUI().isActive())
                     gameController.getAchievementUI().hide();
                 else
-                gameController.setState(GameState.MENU);
+                    gameController.setState(GameState.MENU);
             }
             case Keys.TAB -> gameController.getExploringUI().toggleUI();
             case Keys.I -> { // Toggle inventory

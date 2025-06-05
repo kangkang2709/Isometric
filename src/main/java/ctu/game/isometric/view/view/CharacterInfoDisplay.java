@@ -158,12 +158,12 @@ public class CharacterInfoDisplay {
             font.setColor(Color.LIGHT_GRAY);
 
             if (attemptFlags.containsKey("quizAttempts")) {
-                font.draw(batch, "Quiz Attempts Today: " + attemptFlags.get("quizAttempts"), rightX, rightY);
+                font.draw(batch, "Quiz Attempts Today: " + attemptFlags.get("quizAttempts")+ "/3", rightX, rightY);
                 rightY -= lineHeight;
             }
 
             if (attemptFlags.containsKey("mulQuizAttempts")) {
-                font.draw(batch, "Multiple Choice Attempts Today: " + attemptFlags.get("mulQuizAttempts"), rightX, rightY);
+                font.draw(batch, "Multiple Choice Attempts Today: " + attemptFlags.get("mulQuizAttempts") + "/3", rightX, rightY);
                 rightY -= lineHeight;
             }
 
