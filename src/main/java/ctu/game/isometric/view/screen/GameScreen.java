@@ -167,9 +167,13 @@ public class GameScreen implements Screen {
                         batch.setProjectionMatrix(camera.combined);
                         batch.begin();
                         gameController.getEffectManager().render(batch);
+
+                    }
+                    if( gameController.getLevelUpNotification().isActive()) {
+                        batch.begin();
+                        gameController.getLevelUpNotification().render(batch);
                         batch.end();
                     }
-
 
                     batch.setProjectionMatrix(camera.combined);
                     // Begin the batch again for any subsequent rendering

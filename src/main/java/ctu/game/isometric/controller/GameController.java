@@ -29,10 +29,7 @@ import ctu.game.isometric.model.world.IsometricMap;
 import ctu.game.isometric.util.EnemyLoader;
 import ctu.game.isometric.util.WordNetValidator;
 import ctu.game.isometric.view.renderer.TransitionRenderer;
-import ctu.game.isometric.view.ui.AchievementUI;
-import ctu.game.isometric.view.ui.ExploringUI;
-import ctu.game.isometric.view.ui.InventoryUI;
-import ctu.game.isometric.view.ui.MerchantUI;
+import ctu.game.isometric.view.ui.*;
 import ctu.game.isometric.view.view.CharacterInfoDisplay;
 
 import java.util.*;
@@ -80,6 +77,10 @@ public class GameController {
     private Date currentPlayTime;
     private MerchantUI merchantUI;
 
+    // Add LevelUpNotification field
+    private LevelUpNotification levelUpNotification;
+
+
     public GameController(IsometricGame game) {
         this.game = game;
 
@@ -120,6 +121,8 @@ public class GameController {
         achievementUI = new AchievementUI(this);
         this.currentPlayTime = new Date();
 
+        // Initialize the level up notification
+        this.levelUpNotification = new LevelUpNotification(this);
     }
 
 
@@ -132,6 +135,8 @@ public class GameController {
             dictionaryView = new ctu.game.isometric.view.view.DictionaryView(this, dictionary, this.wordNetValidator);
         }
     }
+
+
 
     public void showAchievementUI() {
         achievementUI.show();
@@ -241,7 +246,10 @@ public class GameController {
     }
 
     public void update(float delta) {
-
+        // Update level up notification if it exists
+        if (levelUpNotification != null) {
+            levelUpNotification.update(delta);
+        }
 
         switch (currentState) {
             case EXPLORING:
@@ -252,6 +260,9 @@ public class GameController {
                 } else if (!merchantUI.isVisible()) {
                     inputController.updateCooldown(delta);
                     character.update(delta);
+                }
+                else if (levelUpNotification.isActive()){
+                    levelUpNotification.update(delta);
                 }
                 break;
             case CHARACTER_CREATION:
@@ -872,4 +883,22 @@ public class GameController {
     public void setWordNetValidator(WordNetValidator wordNetValidator) {
         this.wordNetValidator = wordNetValidator;
     }
+
+    public LevelUpNotification getLevelUpNotification() {
+        return levelUpNotification;
+    }
+
+    /**
+     * Show a level up notification when character levels up
+     */
+    public void showLevelUpNotification() {
+        if (levelUpNotification != null && character != null) {
+            levelUpNotification.showLevelUp(character.getLevel());
+            // Play a sound effect if desired
+            if (effectManager != null) {
+                effectManager.playClickSound();
+            }
+        }
+    }
+
 }

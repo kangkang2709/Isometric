@@ -34,7 +34,7 @@ public class Character {
     private float damage = 1; // Damage dealt by the character
 
     private float defend = 10;
-    private float mana= 20;
+    private float mana = 20;
     private int level = 1;// Defense points of the character
     private float exp = 0; // Experience points
     private IsometricMap gameMap;
@@ -44,18 +44,21 @@ public class Character {
     private float score;
     // Score for the character
 
-    public void levelUp(int level){
-            this.level += level; // Increase level
+    public boolean levelUp(int level) {
+        this.level += level; // Increase level
 
-            float scale = level * 0.5f;
-            this.maxHealth += this.maxHealth + 10;
-            this.maxMana += this.maxMana+10;
-            this.health = maxHealth; // Restore health to max
-            this.damage += scale; // Increase damage by level
-            this.defend += scale ; // Increase defense by level
+        float scale = level * 0.5f;
+        this.maxHealth += this.maxHealth + 10;
+        this.maxMana += this.maxMana + 10;
+        this.health = maxHealth; // Restore health to max
+        this.damage += scale; // Increase damage by level
+        this.defend += scale; // Increase defense by level
 
+        return true; // Indicates level up occurred
     }
-    public void expToLevelUp(float exp) {
+
+
+    public int expToLevelUp(float exp) {
         if (exp < 0) {
             throw new IllegalArgumentException("Experience points cannot be negative");
         }
@@ -65,8 +68,8 @@ public class Character {
             this.exp -= requiredExp; // Reset exp after leveling up
             levelUp(1); // Level up the character
         }
+        return level;
     }
-
 
 
     private Date lastSaveTime;
@@ -93,7 +96,7 @@ public class Character {
         this.newlearneWords = new HashSet<>();
         this.learnedWords = new HashSet<>();
         this.learnedWords.add("HELLO");
-        this.score=0;
+        this.score = 0;
         this.ettempFlags = new HashMap<>();
         this.ettempFlags.put("quizAttempts", 0);
         this.ettempFlags.put("mulQuizAttempts", 0);
@@ -119,24 +122,44 @@ public class Character {
         this.newlearneWords = new HashSet<>();
         this.learnedWords.add("HELLO");
         this.ettempFlags = new HashMap<>();
-            this.ettempFlags.put("quizAttempts", 0);
-            this.ettempFlags.put("mulQuizAttempts", 0);
-            this.ettempFlags.put("fallen", 0);
-            this.ettempFlags.put("wrongWord", 0);
-        this.score=0;
+        this.ettempFlags.put("quizAttempts", 0);
+        this.ettempFlags.put("mulQuizAttempts", 0);
+        this.ettempFlags.put("fallen", 0);
+        this.ettempFlags.put("wrongWord", 0);
+        this.score = 0;
 
     }
 
 
-    public void levelUp() {
+    public boolean gameOver() {
+        int amount = (items != null) ? items.getOrDefault("Potion of Healing", 0) : 0;
+        if (amount <= 0) {
+            return true; // Game over if no healing or mana potions left
+        } else {
+            Items healingPotion = ItemLoader.getItemByName("Potion of Healing");
+            if (healingPotion != null) {
+                this.mana = healingPotion.getManaCost();
+                useItem(healingPotion);
+                this.exp = Math.max(0, this.exp - this.exp*0.1f); // Reset exp to 0 after using potion
+                this.ettempFlags.put("fallen", this.ettempFlags.getOrDefault("fallen", 0) + 1);
+            }
+        }
+        return false;
+    }
+
+    // Modify the other levelUp method to return a boolean
+    public boolean levelUp() {
         if (level < 10) { // Assuming max level is 10
             level++;
             maxHealth += 20; // Increase max health by 20 on level up
             health = maxHealth; // Restore health to max
             damage += 2; // Increase damage by 2 on level up
             moveSpeed += 0.5f; // Increase move speed by 0.5 on level up
+            return true; // Indicates level up occurred
         }
+        return false; // No level up occurred (at max level)
     }
+
     // Existing getters/setters...
     private Array<int[]> currentPath = new Array<>();
     private int currentPathIndex = 0;
@@ -200,7 +223,7 @@ public class Character {
     }
 
 
-    public void recovery(){
+    public void recovery() {
         this.health = this.maxHealth;
         this.mana = this.maxMana;
     }
@@ -246,23 +269,20 @@ public class Character {
         if (item == null || item.getItemName() == null) {
             throw new IllegalArgumentException("Item or item name cannot be null");
         }
-        if (items == null || !items.containsKey(item.getItemName())) {
+        if (items == null) {
+            throw new IllegalStateException("Inventory is not initialized");
+        }
+        if (!items.containsKey(item.getItemName())) {
             throw new IllegalArgumentException("Item not found in inventory");
         }
         if (items.get(item.getItemName()) <= 0) {
             throw new IllegalArgumentException("No items left to use");
         }
 
-        int currentCount = items.get(item.getItemName());
-        if (currentCount > 1) {
-            items.put(item.getItemName(), currentCount - 1);
-        } else {
-            items.remove(item.getItemName());
+
+        if (mana < item.getManaCost()) {
+            throw new IllegalStateException("Not enough mana to use the item");
         }
-
-
-        if (mana < 0)
-            return;
 
         switch (item.getItemEffect()) {
             case "heal":
@@ -277,11 +297,18 @@ public class Character {
             default:
                 throw new IllegalArgumentException("Invalid item effect");
         }
+
+        int currentCount = items.get(item.getItemName());
+        if (currentCount > 1) {
+            items.put(item.getItemName(), currentCount - 1);
+        } else {
+            items.remove(item.getItemName());
+        }
         // Reduce mana cost
         this.mana = Math.max(0, this.mana - item.getManaCost());
     }
 
-     public void deleteItem(Items item) {
+    public void deleteItem(Items item) {
         if (item == null || item.getItemName() == null) {
             throw new IllegalArgumentException("Item or item name cannot be null");
         }
@@ -495,7 +522,7 @@ public class Character {
 
                 if (!existingAchievement.isUnlocked() &&
                         existingAchievement.getCurrentValue() >= existingAchievement.getTargetValue()) {
-                // If the achievement is now unlocked, set it to unlocked and update the score
+                    // If the achievement is now unlocked, set it to unlocked and update the score
                     score += existingAchievement.getTargetValue();
                     existingAchievement.setUnlocked(true);
                 }
@@ -506,7 +533,7 @@ public class Character {
     public void updateWrongWordCount() {
         int wrongWordCount = ettempFlags.getOrDefault("wrongWord", 0);
         ettempFlags.put("wrongWord", wrongWordCount + 1);
-        updateAchievements(Achievement.AchievementType.FAILED_WORD,1);
+        updateAchievements(Achievement.AchievementType.FAILED_WORD, 1);
     }
 
     public void setAchievements(HashSet<Achievement> achievements) {
@@ -533,7 +560,7 @@ public class Character {
         }
         return false;
     }
-    
+
 
     public float getGridX() {
         return gridX;
@@ -602,7 +629,6 @@ public class Character {
     public void setLastSaveTime(Date lastSaveTime) {
         this.lastSaveTime = lastSaveTime;
     }
-
 
 
     public String getName() {
@@ -795,3 +821,4 @@ public class Character {
         this.newlearneWords = newlearneWords;
     }
 }
+

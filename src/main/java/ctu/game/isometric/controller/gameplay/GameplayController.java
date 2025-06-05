@@ -66,7 +66,7 @@ public class GameplayController {
     private float playerHealth = 100;
     private float enemyHealth = 100;
 
-    private float playerMana =100;
+    private float playerMana = 100;
     private float playerMaxMana = 100;
     private float enemyMaxHealth = 100;
 
@@ -128,6 +128,7 @@ public class GameplayController {
 
 
     }
+
     private void drawManaBar(SpriteBatch batch, float current, float max, float x, float y) {
         // Mana label
         regularFont.setColor(Color.WHITE);
@@ -142,6 +143,7 @@ public class GameplayController {
         batch.setColor(0.2f, 0.4f, 0.9f, 1); // Blue for mana
         batch.draw(whiteTexture, x + 40, y - 20, 180 * manaPercentage, 10);
     }
+
     private void drawMessageBox(SpriteBatch batch, String message, float x, float y, float width, float height) {
         // Draw background
         batch.setColor(Color.WHITE);
@@ -265,15 +267,21 @@ public class GameplayController {
 
         if (isCombatMode) renderCombatUI(batch);
 
-        else if (isVictory){
+        else if (isVictory) {
             renderReward(batch);
-        }
-        else gameController.setState(GameState.EXPLORING);
+        } else renderGameOver(batch);
 
         effectManager.render(batch);
 
     }
 
+    public void renderGameOver(SpriteBatch batch)  {
+        if (!isGameOver) {
+            gameController.setState(GameState.EXPLORING);
+        } else {
+            drawCenteredText(batch, regularFont, "Game Over!", viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2, Color.RED);
+        }
+    }
 
     private void renderReward(SpriteBatch batch) {
         // Draw background
@@ -379,9 +387,10 @@ public class GameplayController {
                     @Override
                     public void run() {
                         gameController.setState(GameState.EXPLORING);
+                        gameController.showLevelUpNotification();
                         dispose();
                     }
-                }, 1.0f);
+                }, 0.5f);
             }
         }
 
@@ -627,9 +636,9 @@ public class GameplayController {
         if (!isPlayerTurn || !isCombatMode) return;
 
         // Check if player has enough mana
-        float playerMana = gameController.getCharacter().getMana();
+
         if (playerMana < item.getManaCost()) {
-            showMessage("Không đủ Mana!");
+            combatLog = "Không đủ Mana!";
             return;
         }
 
@@ -652,7 +661,7 @@ public class GameplayController {
                     break;
             }
             // Reduce player mana
-            this.playerMana -= item.getManaCost();
+            this.playerMana = Math.max(0, this.playerMana - item.getManaCost());
 
             // Reduce item count
             int newCount = items.get(item.getItemName()) - 1;
@@ -687,8 +696,8 @@ public class GameplayController {
             float imgSize = 150;
             batch.draw(characterTexture, x + 60, y - imgSize - 100, imgSize, imgSize);
         }
-        drawPokemonHealthBar(batch, name, currentHealth, maxHealth, x, y,isPlayer);
-        if (isPlayer)  drawManaBar(batch, this.playerMana, playerMaxMana, x, y);
+        drawPokemonHealthBar(batch, name, currentHealth, maxHealth, x, y, isPlayer);
+        if (isPlayer) drawManaBar(batch, this.playerMana, playerMaxMana, x, y);
     }
 
     private void drawCompactLetterGrid(SpriteBatch batch) {
@@ -740,7 +749,7 @@ public class GameplayController {
         // Name tag background
         batch.setColor(0.2f, 0.2f, 0.2f, 0.8f);
         if (isPlayer) {
-            batch.draw(whiteTexture, x, y-40, 250, 90);
+            batch.draw(whiteTexture, x, y - 40, 250, 90);
         } else {
             batch.draw(whiteTexture, x, y, 250, 50);
         }
@@ -748,14 +757,15 @@ public class GameplayController {
         // Border
         batch.setColor(0.8f, 0.8f, 0.8f, 1);
         if (isPlayer)
-        drawRect(batch, x, y-40, 250, 90, 2);
-        else   drawRect(batch, x, y, 250, 50, 2);
+            drawRect(batch, x, y - 40, 250, 90, 2);
+        else drawRect(batch, x, y, 250, 50, 2);
 
         // Name and HP label
         regularFont.setColor(Color.WHITE);
         regularFont.draw(batch, name, x + 10, y + 40);
         regularFont.draw(batch, "HP:", x + 8, y + 20);
 
+        // Health bar background
         // Health bar background
         batch.setColor(0.3f, 0.3f, 0.3f, 1);
         batch.draw(whiteTexture, x + 40, y + 10, 180, 10);
@@ -800,14 +810,14 @@ public class GameplayController {
 
     private void performEnemyAction() {
         float damage = (random.nextInt(8) + 3) * enemy.getAttackPower();
-        playerHealth -= Math.min(playerHealth, damage);
+        playerHealth  = Math.max(0, playerHealth - damage);
 
         int action = random.nextInt(10);
-        if (action < 7) { // 70% normal attack
+        if (action < 8) { // 80% normal attack
             combatLog = enemyName + " attack for " + damage + " damage!\n" + "Your current health is " + this.playerHealth + ".";
-        } else if (action < 9) { // 20% power attack
+        } else if (action < 1) { // 10% power attack
             int extraDamage = random.nextInt(5) + 1;
-            playerHealth -= extraDamage;
+            playerHealth  = Math.max(0, playerHealth - extraDamage);
             combatLog = enemyName + " performs a power attack for " + (damage + extraDamage) + " damage!\n" + "Your current health is " + this.playerHealth + ".";
 
         } else { // 10% heal
@@ -829,11 +839,15 @@ public class GameplayController {
         }
     }
 
+    boolean isGameOver = false;
+    int currentLevel = 1;
+    int newLevel = 1;
     private void checkCombatEnd() {
         if (playerHealth <= 0) {
             combatLog = "Bạn bị đánh bại bởi " + enemyName + "!";
             playerHealth = 0;
             endCombat(false);
+            isGameOver = gameController.getCharacter().gameOver();
         } else if (enemyHealth <= 0) {
             combatLog = "Bạn đã hạ gục " + enemyName + "!";
             enemyHealth = 0;
@@ -846,7 +860,7 @@ public class GameplayController {
             }
 
             achievementManager.updateProgress(Achievement.AchievementType.COMBAT_WIN, 1);
-            gameController.getCharacter().expToLevelUp(this.experienceGain);
+            newLevel = gameController.getCharacter().expToLevelUp(this.experienceGain);
 //            achievementManager.checkEnemyDefeat(enemy.getEnemyName());
         }
     }
@@ -854,12 +868,12 @@ public class GameplayController {
     private void endCombat(boolean victory) {
         isCombatMode = false;
         isVictory = victory;
-        wordDamageMultiplier = gameController.getCharacter().getDamage();
     }
 
     boolean isDrawingWordMeaning = false;
     private String lastSubmittedWord = "";
     private float experienceGain = 0;
+
     public boolean submitWord() {
         if (!active) return false;
 
@@ -942,6 +956,7 @@ public class GameplayController {
         this.achievementManager = gameController.getAchievementManager();
         this.isCombatMode = true;
         this.isPlayerTurn = true;
+        this.currentLevel = gameController.getCharacter().getLevel();
         this.combatLog = "Bắt đầu cạnh tranh với " + enemyName + "!";
         letterGrid.regenerateGrid();
     }
@@ -1030,7 +1045,6 @@ public class GameplayController {
     public boolean isActive() {
         return active;
     }
-
 
 
 }

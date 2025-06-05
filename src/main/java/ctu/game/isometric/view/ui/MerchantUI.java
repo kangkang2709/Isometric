@@ -33,7 +33,6 @@ public class MerchantUI {
     private boolean visible = false;
 
     private ShapeRenderer shapeRenderer;
-    private Texture borderTexture;
     private Texture backgroundTexture;
     private Texture buttonTexture;
     private Texture slotTexture;
@@ -98,7 +97,6 @@ public class MerchantUI {
             buttonTexture = new Texture(Gdx.files.internal("ui/button.png"));
             slotTexture = new Texture(Gdx.files.internal("ui/slot.png"));
             highlightTexture = new Texture(Gdx.files.internal("ui/slot_highlight.png"));
-            borderTexture = new Texture(Gdx.files.internal("ui/border.png"));
         } catch (Exception e) {
             Gdx.app.error("MerchantUI", "Failed to load UI textures, using fallback rendering", e);
         }
@@ -835,7 +833,6 @@ public class MerchantUI {
         if (buttonTexture != null) buttonTexture.dispose();
         if (slotTexture != null) slotTexture.dispose();
         if (highlightTexture != null) highlightTexture.dispose();
-        if (borderTexture != null) borderTexture.dispose();
 
         if (titleFont != null) titleFont.dispose();
         if (font != null) font.dispose();
