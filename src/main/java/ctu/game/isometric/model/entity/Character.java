@@ -199,6 +199,12 @@ public class Character {
         }
     }
 
+
+    public void recovery(){
+        this.health = this.maxHealth;
+        this.mana = this.maxMana;
+    }
+
     public void healing(float amount) {
         if (amount < 0) {
             throw new IllegalArgumentException("Healing amount cannot be negative");

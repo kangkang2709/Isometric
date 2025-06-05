@@ -28,6 +28,46 @@
       "itemPrice" : "100",
       "value": 0.0,
       "manaCost": 5.0
-    }
-  ]
+    },
+  {
+    "itemID": 4,
+    "itemName": "Toxic Potion",
+    "itemDescription": "A glowing crystal that restores mana when consumed.",
+    "texturePath": "game/items/mana_crystal.png",
+    "itemEffect":"debuff",
+    "value": 0.3,
+    "itemPrice" : "100",
+    "manaCost": 5.0
+  },
+  {
+    "itemID": 5,
+    "itemName": "Mana Potion",
+    "itemDescription": "A glowing crystal that restores mana when consumed.",
+    "texturePath": "game/items/mana_crystal.png",
+    "itemEffect":"debuff",
+    "value": 0.3,
+    "itemPrice" : "100",
+    "manaCost": 5.0
+  },
+  {
+    "itemID": 6,
+    "itemName": "Silent Potion",
+    "itemDescription": "A glowing crystal that restores mana when consumed.",
+    "texturePath": "game/items/mana_crystal.png",
+    "itemEffect":"debuff",
+    "value": 0.3,
+    "itemPrice" : "100",
+    "manaCost": 5.0
+  },
+  {
+    "itemID": 7,
+    "itemName": "Attack Potion",
+    "itemDescription": "A glowing crystal that restores mana when consumed.",
+    "texturePath": "game/items/mana_crystal.png",
+    "itemEffect":"debuff",
+    "value": 0.3,
+    "itemPrice" : "100",
+    "manaCost": 5.0
+  }
+]
   

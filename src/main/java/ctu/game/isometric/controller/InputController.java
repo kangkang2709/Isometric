@@ -299,6 +299,11 @@ public class InputController extends InputAdapter {
         if (state == GameState.LOAD_GAME) {
             return gameController.getLoadGameController().handleMouseMove(screenX, screenY);
         }
+        if (state == GameState.EXPLORING ) {
+           if (gameController.getMerchantUI().isVisible()){
+               gameController.getMerchantUI().handleMouseMove(screenX,screenY);
+           }
+        }
         // Handle other states...
         return false;
     }

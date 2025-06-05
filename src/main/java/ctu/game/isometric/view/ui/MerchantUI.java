@@ -3,11 +3,15 @@ package ctu.game.isometric.view.ui;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.Align;
 import ctu.game.isometric.controller.GameController;
 import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.game.Items;
@@ -18,13 +22,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
+
 public class MerchantUI {
     private GameController gameController;
+    private BitmapFont titleFont;
     private BitmapFont font;
     private BitmapFont smallFont;
+    private GlyphLayout layout;
     private boolean visible = false;
 
     private ShapeRenderer shapeRenderer;
+    private Texture borderTexture;
+    private Texture backgroundTexture;
+    private Texture buttonTexture;
+    private Texture slotTexture;
+    private Texture highlightTexture;
 
     private int selectedItemIndex = -1;
     private List<Items> merchantItems = new ArrayList<>();
@@ -41,42 +54,63 @@ public class MerchantUI {
     private Rectangle tabPlayerButton;
 
     private boolean showingMerchantItems = true;
+    private float animTime = 0;
+    private float hoverAlpha = 0;
 
     private static final int SLOTS_PER_ROW = 5;
     private static final int MAX_SLOTS = 15;
     private static final int SLOT_SIZE = 64;
-    private static final int PADDING = 10;
+    private static final int PADDING = 12;
+    private static final float CORNER_RADIUS = 10f;
 
     private Map<String, Texture> itemTextures = new HashMap<>();
     private Matrix4 uiMatrix;
 
-    // UI colors
-    private final Color bgColor = new Color(0.2f, 0.2f, 0.3f, 0.9f);
-    private final Color slotColor = new Color(0.3f, 0.3f, 0.3f, 1f);
-    private final Color selectedColor = new Color(0.5f, 0.5f, 0.8f, 1f);
-    private final Color buttonColor = new Color(0.4f, 0.4f, 0.4f, 1f);
-    private final Color activeTabColor = new Color(0.5f, 0.5f, 0.8f, 1f);
-    private final Color inactiveTabColor = new Color(0.3f, 0.3f, 0.4f, 1f);
+    // Enhanced UI colors
+    private final Color bgColor = new Color(0.12f, 0.12f, 0.18f, 0.95f);
+    private final Color panelColor = new Color(0.16f, 0.16f, 0.22f, 1f);
+    private final Color slotColor = new Color(0.22f, 0.22f, 0.28f, 1f);
+    private final Color selectedColor = new Color(0.3f, 0.4f, 0.8f, 1f);
+    private final Color buttonColor = new Color(0.25f, 0.25f, 0.35f, 1f);
+    private final Color buttonHoverColor = new Color(0.3f, 0.3f, 0.4f, 1f);
+    private final Color activeTabColor = new Color(0.3f, 0.4f, 0.8f, 1f);
+    private final Color inactiveTabColor = new Color(0.22f, 0.22f, 0.28f, 1f);
     private final Color closeButtonColor = new Color(0.7f, 0.3f, 0.3f, 1f);
-    private final Color priceColor = new Color(0.9f, 0.9f, 0.2f, 1f);
-    private final Color affordableColor = new Color(0.2f, 0.8f, 0.2f, 1f);
-    private final Color unaffordableColor = new Color(0.8f, 0.2f, 0.2f, 1f);
+    private final Color closeButtonHoverColor = new Color(0.8f, 0.4f, 0.4f, 1f);
+    private final Color priceColor = new Color(1f, 0.85f, 0.4f, 1f);
+    private final Color affordableColor = new Color(0.4f, 0.9f, 0.4f, 1f);
+    private final Color unaffordableColor = new Color(0.9f, 0.4f, 0.4f, 1f);
+    private final Color titleColor = new Color(0.9f, 0.9f, 1f, 1f);
+    private final Color textColor = new Color(0.85f, 0.85f, 0.9f, 1f);
+    private final Color dividerColor = new Color(0.3f, 0.3f, 0.4f, 0.8f);
 
     public MerchantUI(GameController gameController) {
         this.gameController = gameController;
-        this.font = new BitmapFont();
-        this.smallFont = new BitmapFont();
-        smallFont.getData().setScale(0.8f);
+        this.layout = new GlyphLayout();
         this.shapeRenderer = new ShapeRenderer();
+
+        // Generate better fonts using FreeType
+        initFonts();
+
+        // Load textures
+        try {
+            backgroundTexture = new Texture(Gdx.files.internal("ui/panel_background.png"));
+            buttonTexture = new Texture(Gdx.files.internal("ui/button.png"));
+            slotTexture = new Texture(Gdx.files.internal("ui/slot.png"));
+            highlightTexture = new Texture(Gdx.files.internal("ui/slot_highlight.png"));
+            borderTexture = new Texture(Gdx.files.internal("ui/border.png"));
+        } catch (Exception e) {
+            Gdx.app.error("MerchantUI", "Failed to load UI textures, using fallback rendering", e);
+        }
 
         // Create projection matrix
         uiMatrix = new Matrix4().setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
-        // Calculate merchant UI bounds
+        // Calculate merchant UI bounds with enhanced proportions
         float screenWidth = Gdx.graphics.getWidth();
         float screenHeight = Gdx.graphics.getHeight();
-        float merchantWidth = (SLOTS_PER_ROW * SLOT_SIZE) + ((SLOTS_PER_ROW + 1) * PADDING) + 200;
-        float merchantHeight = ((MAX_SLOTS / SLOTS_PER_ROW) * SLOT_SIZE) + (((MAX_SLOTS / SLOTS_PER_ROW) + 1) * PADDING) + 100;
+        float merchantWidth = 800;
+        float merchantHeight = 600;
 
         merchantBounds = new Rectangle(
                 (screenWidth - merchantWidth) / 2,
@@ -85,71 +119,509 @@ public class MerchantUI {
                 merchantHeight
         );
 
-        // Create item slots
-        itemSlots = new Rectangle[MAX_SLOTS];
-        for (int i = 0; i < MAX_SLOTS; i++) {
-            int row = i / SLOTS_PER_ROW;
-            int col = i % SLOTS_PER_ROW;
+        // Create item slots with even spacing
+        createSlots();
 
-            itemSlots[i] = new Rectangle(
-                    merchantBounds.x + PADDING + (col * (SLOT_SIZE + PADDING)),
-                    merchantBounds.y + merchantBounds.height - PADDING - 60 - SLOT_SIZE - (row * (SLOT_SIZE + PADDING)),
-                    SLOT_SIZE,
-                    SLOT_SIZE
-            );
-        }
-
-        // Create player item slots (same positions, just swapped when viewing inventory)
-        playerItemSlots = new Rectangle[MAX_SLOTS];
-        for (int i = 0; i < MAX_SLOTS; i++) {
-            playerItemSlots[i] = new Rectangle(itemSlots[i].x, itemSlots[i].y, SLOT_SIZE, SLOT_SIZE);
-        }
-
-        // Create buttons
-        float buttonWidth = 120;
-        float buttonHeight = 40;
-        float buttonX = merchantBounds.x + merchantBounds.width - buttonWidth - PADDING;
-        float buttonY = merchantBounds.y + PADDING * 3;
-
-        // Create tabs
-        float tabWidth = 120;
-        float tabHeight = 30;
+        // Create tabs with better positioning
+        float tabWidth = 130;
+        float tabHeight = 36;
         tabMerchantButton = new Rectangle(
                 merchantBounds.x + PADDING,
-                merchantBounds.y + merchantBounds.height - 30,
+                merchantBounds.y + merchantBounds.height - 36,
                 tabWidth,
                 tabHeight
         );
         tabPlayerButton = new Rectangle(
                 merchantBounds.x + tabWidth + PADDING * 2,
-                merchantBounds.y + merchantBounds.height - 30,
+                merchantBounds.y + merchantBounds.height - 36,
                 tabWidth,
                 tabHeight
         );
 
+        // Create buttons with better positioning
+        float buttonWidth = 140;
+        float buttonHeight = 48;
+        float buttonX = merchantBounds.x + merchantBounds.width - buttonWidth - PADDING * 2;
+        float buttonY = merchantBounds.y + PADDING * 3 + 120;
+
         buyButton = new Rectangle(buttonX, buttonY + buttonHeight + PADDING, buttonWidth, buttonHeight);
         sellButton = new Rectangle(buttonX, buttonY, buttonWidth, buttonHeight);
         closeButton = new Rectangle(
-                merchantBounds.x + merchantBounds.width - 30 - PADDING,
-                merchantBounds.y + merchantBounds.height - 30 - PADDING,
-                30,
-                30
+                merchantBounds.x + merchantBounds.width - 36 - PADDING,
+                merchantBounds.y + merchantBounds.height - 36 - PADDING,
+                36,
+                36
         );
 
         // Load merchant items
         loadMerchantItems();
     }
 
+    private void initFonts() {
+        try {
+            this.font = generateVietNameseFont("IMFellEnglishSC-Regular.ttf", 14);
+            this.titleFont = generateVietNameseFont("IMFellEnglishSC-Regular.ttf", 18);
+            this.smallFont = generateVietNameseFont("IMFellEnglishSC-Regular.ttf", 12);
+        } catch (Exception e) {
+            Gdx.app.error("MerchantUI", "Failed to load custom fonts, using default", e);
+            titleFont = new BitmapFont();
+            titleFont.getData().setScale(1.5f);
+            font = new BitmapFont();
+            smallFont = new BitmapFont();
+            smallFont.getData().setScale(0.8f);
+        }
+    }
+
+    private void createSlots() {
+        itemSlots = new Rectangle[MAX_SLOTS];
+        for (int i = 0; i < MAX_SLOTS; i++) {
+            int row = i / SLOTS_PER_ROW;
+            int col = i % SLOTS_PER_ROW;
+
+            itemSlots[i] = new Rectangle(
+                    merchantBounds.x + PADDING * 2 + (col * (SLOT_SIZE + PADDING)) + 50,
+                    merchantBounds.y + merchantBounds.height - PADDING * 2  - 30 - SLOT_SIZE - (row * (SLOT_SIZE + PADDING)),
+                    SLOT_SIZE,
+                    SLOT_SIZE
+            );
+        }
+
+        playerItemSlots = new Rectangle[MAX_SLOTS];
+        for (int i = 0; i < MAX_SLOTS; i++) {
+            playerItemSlots[i] = new Rectangle(itemSlots[i].x, itemSlots[i].y, SLOT_SIZE, SLOT_SIZE);
+        }
+    }
+
+    public void render(SpriteBatch batch) {
+        if (!visible) return;
+
+        // Animation time update
+        animTime += Gdx.graphics.getDeltaTime();
+        float pulse = (float) Math.sin(animTime * 3) * 0.1f + 0.9f;
+
+        // Update player items each render to ensure it's current
+        updatePlayerItems();
+
+        Matrix4 prevMatrix = batch.getProjectionMatrix().cpy();
+        boolean batchWasDrawing = batch.isDrawing();
+
+        if (batchWasDrawing) {
+            batch.end();
+        }
+
+        // Draw background using ShapeRenderer with rounded corners
+        shapeRenderer.setProjectionMatrix(uiMatrix);
+
+        // Draw main panel
+        drawPanel(batch,merchantBounds, bgColor);
+
+        // Draw tabs
+        drawTab(tabMerchantButton, showingMerchantItems);
+        drawTab(tabPlayerButton, !showingMerchantItems);
+
+        // Draw item slots with subtle highlighting
+        drawItemSlots(batch);
+
+        // Draw buttons
+        drawButtons(batch);
+
+        // Draw dividing lines
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(dividerColor);
+
+        // Horizontal divider below items
+        float dividerY = merchantBounds.y + merchantBounds.height - 70 - (MAX_SLOTS/SLOTS_PER_ROW) * (SLOT_SIZE + PADDING) - PADDING * 2;
+        shapeRenderer.rectLine(
+                merchantBounds.x + PADDING,
+                dividerY,
+                merchantBounds.x + merchantBounds.width - PADDING,
+                dividerY,
+                2
+        );
+        shapeRenderer.end();
+
+        // Configure batch for UI rendering
+        batch.setProjectionMatrix(uiMatrix);
+        batch.begin();
+
+        // Draw title and UI text with better positioning
+        drawUIText(batch);
+
+        // Draw item icons and details
+        drawItems(batch, pulse);
+
+        // Draw item details section with animations
+        drawItemDetails(batch);
+
+        batch.end();
+
+        // Restore original batch state
+        if (batchWasDrawing) {
+            batch.setProjectionMatrix(prevMatrix);
+            batch.begin();
+        }
+    }
+
+    private void drawPanel(Batch batch, Rectangle bounds, Color color) {
+        if (backgroundTexture != null) {
+            batch.begin();
+            batch.setProjectionMatrix(uiMatrix);
+            batch.draw(backgroundTexture, bounds.x, bounds.y, bounds.width, bounds.height);
+            batch.setColor(Color.WHITE); // Reset color
+            batch.end();
+        } else {
+            if (shapeRenderer != null) {
+                Gdx.gl.glEnable(Gdx.gl.GL_BLEND);
+                shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+                shapeRenderer.setColor(color);
+                drawRoundedRect(bounds.x, bounds.y, bounds.width, bounds.height, CORNER_RADIUS);
+                shapeRenderer.end();
+                Gdx.gl.glDisable(Gdx.gl.GL_BLEND);
+            }
+        }
+    }
+
+    private void drawRoundedRect(float x, float y, float width, float height, float radius) {
+        // Center points
+        shapeRenderer.rect(x + radius, y, width - 2 * radius, height);
+        shapeRenderer.rect(x, y + radius, width, height - 2 * radius);
+
+        // Four corners
+        shapeRenderer.arc(x + radius, y + radius, radius, 180f, 90f);
+        shapeRenderer.arc(x + width - radius, y + radius, radius, 270f, 90f);
+        shapeRenderer.arc(x + width - radius, y + height - radius, radius, 0f, 90f);
+        shapeRenderer.arc(x + radius, y + height - radius, radius, 90f, 90f);
+    }
+
+    private void drawTab(Rectangle tabBounds, boolean active) {
+        boolean isHovered = (tabBounds == tabMerchantButton && hoverMerchantTab) ||
+                (tabBounds == tabPlayerButton && hoverPlayerTab);
+
+        Color tabColor;
+        if (active) {
+            tabColor = activeTabColor;
+        } else {
+            tabColor = isHovered ? buttonHoverColor : inactiveTabColor;
+        }
+
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(tabColor);
+
+        // Draw tab with rounded top corners
+        shapeRenderer.rect(tabBounds.x, tabBounds.y, tabBounds.width, tabBounds.height - CORNER_RADIUS);
+        shapeRenderer.arc(tabBounds.x + CORNER_RADIUS, tabBounds.y + tabBounds.height - CORNER_RADIUS,
+                CORNER_RADIUS, 90, 90);
+        shapeRenderer.arc(tabBounds.x + tabBounds.width - CORNER_RADIUS, tabBounds.y + tabBounds.height - CORNER_RADIUS,
+                CORNER_RADIUS, 0, 90);
+        shapeRenderer.rect(tabBounds.x + CORNER_RADIUS, tabBounds.y + tabBounds.height - CORNER_RADIUS,
+                tabBounds.width - 2*CORNER_RADIUS, CORNER_RADIUS);
+
+        shapeRenderer.end();
+    }
+
+    public boolean handleMouseMove(int screenX, int screenY) {
+        if (!visible) return false;
+
+        // Convert to UI coordinates (origin at bottom-left)
+        float uiY = Gdx.graphics.getHeight() - screenY;
+
+        // Reset all hover states
+        hoverBuyButton = false;
+        hoverSellButton = false;
+        hoverCloseButton = false;
+        hoverMerchantTab = false;
+        hoverPlayerTab = false;
+
+        // Check if mouse is inside merchant bounds
+        if (!merchantBounds.contains(screenX, uiY)) {
+            return false;
+        }
+
+        // Check tabs
+        hoverMerchantTab = tabMerchantButton.contains(screenX, uiY);
+        hoverPlayerTab = tabPlayerButton.contains(screenX, uiY);
+
+        // Check close button
+        hoverCloseButton = closeButton.contains(screenX, uiY);
+
+        // Check action buttons when item is selected
+        List<Items> currentItems = showingMerchantItems ? merchantItems : displayItems;
+        if (selectedItemIndex >= 0 && selectedItemIndex < currentItems.size()) {
+            hoverBuyButton = showingMerchantItems && buyButton.contains(screenX, uiY);
+            hoverSellButton = !showingMerchantItems && sellButton.contains(screenX, uiY);
+        }
+
+        return true;
+    }
+
+    private void drawItemSlots(SpriteBatch batch) {
+        List<Items> currentItems = showingMerchantItems ? merchantItems : displayItems;
+        Rectangle[] currentSlots = showingMerchantItems ? itemSlots : playerItemSlots;
+
+        batch.begin();
+        batch.setProjectionMatrix(uiMatrix);
+        for (int i = 0; i < MAX_SLOTS; i++) {
+            if (i < currentItems.size()) {
+                Items item = currentItems.get(i);
+                Rectangle slot = currentSlots[i];
+
+                // Draw slot texture
+                if (slotTexture != null) {
+                    batch.draw(slotTexture, slot.x, slot.y, slot.width, slot.height);
+                }
+
+                // Highlight selected slot
+                if (i == selectedItemIndex && highlightTexture != null) {
+                    batch.draw(highlightTexture, slot.x, slot.y, slot.width, slot.height);
+                }
+
+                // Draw item texture if available
+                if (item != null && item.getTexturePath() != null) {
+                    Texture itemTexture = getItemTexture(item.getTexturePath());
+                    float itemSize = SLOT_SIZE - 16;
+                    float centerX = slot.x + SLOT_SIZE / 2f - itemSize / 2f;
+                    float centerY = slot.y + SLOT_SIZE / 2f - itemSize / 2f;
+                    batch.draw(itemTexture, centerX, centerY, itemSize, itemSize);
+                }
+            }
+        }
+
+        batch.end();
+    }
+
+
+    private Rectangle hoveredButton = null;
+    private boolean hoverBuyButton = false;
+    private boolean hoverSellButton = false;
+    private boolean hoverCloseButton = false;
+    private boolean hoverMerchantTab = false;
+    private boolean hoverPlayerTab = false;
+
+
+    private void drawButtons(Batch batch) {
+        List<Items> currentItems = showingMerchantItems ? merchantItems : displayItems;
+
+        boolean batchWasDrawing = batch.isDrawing();
+        if (!batchWasDrawing) {
+            batch.begin();
+        }
+
+        // Draw action button if item is selected
+        if (selectedItemIndex >= 0 && selectedItemIndex < currentItems.size()) {
+            Rectangle actionButton = showingMerchantItems ? buyButton : sellButton;
+            boolean isHovered = showingMerchantItems ? hoverBuyButton : hoverSellButton;
+
+            if (buttonTexture != null) {
+                // Apply hover effect
+                Color buttonColorToUse = isHovered ? buttonHoverColor : buttonColor;
+                batch.setColor(buttonColorToUse);
+                batch.draw(buttonTexture,
+                        actionButton.x, actionButton.y,
+                        actionButton.width, actionButton.height);
+                batch.setColor(Color.WHITE); // Reset color
+
+                // Draw button text
+                String buttonText = showingMerchantItems ? "BUY" : "SELL";
+                layout.setText(font, buttonText);
+                font.draw(batch, buttonText,
+                        actionButton.x + (actionButton.width - layout.width)/2,
+                        actionButton.y + (actionButton.height + layout.height)/2);
+            } else {
+                if (shapeRenderer != null) {
+                    if (batchWasDrawing) batch.end();
+
+                    Gdx.gl.glEnable(Gdx.gl.GL_BLEND);
+                    shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+                    shapeRenderer.setColor(isHovered ? buttonHoverColor : buttonColor);
+                    drawRoundedRect(actionButton.x, actionButton.y,
+                            actionButton.width, actionButton.height,
+                            CORNER_RADIUS);
+                    shapeRenderer.end();
+                    Gdx.gl.glDisable(Gdx.gl.GL_BLEND);
+
+                    if (batchWasDrawing) batch.begin();
+                }
+            }
+        }
+
+        // Draw close button with hover effect
+        if (buttonTexture != null) {
+            batch.setColor(hoverCloseButton ? closeButtonHoverColor : closeButtonColor);
+            batch.draw(buttonTexture,
+                    closeButton.x, closeButton.y,
+                    closeButton.width, closeButton.height);
+            batch.setColor(Color.WHITE);
+
+            // Draw X on top of texture
+            font.draw(batch, "X",
+                    closeButton.x + closeButton.width/2 - 6,
+                    closeButton.y + closeButton.height/2 + 8);
+        } else {
+            if (shapeRenderer != null) {
+                if (batchWasDrawing) batch.end();
+
+                Gdx.gl.glEnable(Gdx.gl.GL_BLEND);
+                shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+                shapeRenderer.setColor(hoverCloseButton ? closeButtonHoverColor : closeButtonColor);
+                drawRoundedRect(closeButton.x, closeButton.y,
+                        closeButton.width, closeButton.height,
+                        CORNER_RADIUS);
+                shapeRenderer.end();
+                Gdx.gl.glDisable(Gdx.gl.GL_BLEND);
+
+                if (batchWasDrawing) batch.begin();
+            }
+        }
+
+        // Only end batch if we started it
+        if (!batchWasDrawing) {
+            batch.end();
+        }
+    }
+
+    private void drawUIText(SpriteBatch batch) {
+        // Draw tabs text with better positioning
+        titleFont.setColor(Color.WHITE);
+        layout.setText(titleFont, "Merchant");
+        titleFont.draw(batch, "Merchant",
+                tabMerchantButton.x + (tabMerchantButton.width - layout.width)/2,
+                tabMerchantButton.y + tabMerchantButton.height - (tabMerchantButton.height - layout.height)/2);
+
+        layout.setText(titleFont, "Your Items");
+        titleFont.draw(batch, "Your Items",
+                tabPlayerButton.x + (tabPlayerButton.width - layout.width)/2,
+                tabPlayerButton.y + tabPlayerButton.height - (tabPlayerButton.height - layout.height)/2);
+
+        // Draw character score
+        Character character = gameController.getCharacter();
+        titleFont.setColor(priceColor);
+        String scoreText = "Your Score: " + (int)character.getScore();
+        layout.setText(titleFont, scoreText);
+        titleFont.draw(batch, scoreText,
+                merchantBounds.x + merchantBounds.width - layout.width - PADDING * 2,
+                merchantBounds.y + merchantBounds.height - PADDING * 1.5f);
+
+        // Draw close button text
+        font.setColor(Color.WHITE);
+        font.draw(batch, "X", closeButton.x + (closeButton.width - 12)/2, closeButton.y + (closeButton.height + 12)/2);
+    }
+
+    private void drawItems(SpriteBatch batch, float pulse) {
+        List<Items> currentItems = showingMerchantItems ? merchantItems : displayItems;
+        Rectangle[] currentSlots = showingMerchantItems ? itemSlots : playerItemSlots;
+        Character character = gameController.getCharacter();
+
+        // Draw items
+        for (int i = 0; i < Math.min(currentItems.size(), MAX_SLOTS); i++) {
+            Items item = currentItems.get(i);
+            if (item != null && item.getTexturePath() != null) {
+                // Draw the item icon
+                Texture itemTexture = getItemTexture(item.getTexturePath());
+
+                // Apply subtle pulse animation to selected item
+                float scale = (i == selectedItemIndex) ? pulse : 1.0f;
+                float itemSize = SLOT_SIZE - 16;
+                float centerX = currentSlots[i].x + SLOT_SIZE/2f - itemSize*scale/2f;
+                float centerY = currentSlots[i].y + SLOT_SIZE/2f - itemSize*scale/2f;
+
+                batch.draw(itemTexture, centerX, centerY, itemSize * scale, itemSize * scale);
+
+                // Draw price/quantity
+                smallFont.setColor(Color.WHITE);
+                if (showingMerchantItems) {
+                    try {
+                        int price = item.getItemPrice();
+                        smallFont.setColor(character.getScore() >= price ? affordableColor : unaffordableColor);
+                        smallFont.draw(batch, price + "", currentSlots[i].x + 5, currentSlots[i].y + 15);
+                    } catch (NumberFormatException e) {
+                        // If price isn't valid, don't show it
+                    }
+                } else {
+                    // Draw quantity
+                    int quantity = playerItems.get(item);
+                    smallFont.draw(batch, "x" + quantity,
+                            currentSlots[i].x + SLOT_SIZE - 20,
+                            currentSlots[i].y + SLOT_SIZE - 10);
+                }
+
+                // Draw item name below slot
+                smallFont.setColor(textColor);
+                String itemName = item.getItemName();
+                if (itemName.length() > 10) {
+                    itemName = itemName.substring(0, 7) + "...";
+                }
+                layout.setText(smallFont, itemName);
+                smallFont.draw(batch, itemName,
+                        currentSlots[i].x + (SLOT_SIZE - layout.width)/2,
+                        currentSlots[i].y - 5);
+            }
+        }
+    }
+
+    private void drawItemDetails(SpriteBatch batch) {
+        List<Items> currentItems = showingMerchantItems ? merchantItems : displayItems;
+        Character character = gameController.getCharacter();
+
+        // Draw selected item details
+        if (selectedItemIndex >= 0 && selectedItemIndex < currentItems.size()) {
+            Items item = currentItems.get(selectedItemIndex);
+
+            float detailsX = merchantBounds.x + PADDING * 2 +40;
+            float detailsY = merchantBounds.y + 250;
+
+            // Draw item name
+            titleFont.setColor(titleColor);
+            titleFont.draw(batch, item.getItemName(), detailsX, detailsY);
+
+            // Draw item effect
+            font.setColor(textColor);
+            font.draw(batch, "Effect: " + item.getItemEffect(), detailsX, detailsY - 25);
+
+            // Draw price
+            int price = 0;
+            try {
+                price = item.getItemPrice();
+            } catch (NumberFormatException e) {
+                // Use default 0
+            }
+
+            if (showingMerchantItems) {
+                font.setColor(character.getScore() >= price ? affordableColor : unaffordableColor);
+                font.draw(batch, "Buy Price: " + price, detailsX, detailsY - 50);
+
+                // Draw buy button
+                font.setColor(Color.WHITE);
+                layout.setText(font, "BUY");
+                font.draw(batch, "BUY",
+                        buyButton.x + (buyButton.width - layout.width)/2,
+                        buyButton.y + (buyButton.height + layout.height)/2);
+            } else {
+                font.setColor(priceColor);
+                font.draw(batch, "Sell Price: " + (price/2), detailsX, detailsY - 50);
+
+                // Draw sell button
+                font.setColor(Color.WHITE);
+                layout.setText(font, "SELL");
+                font.draw(batch, "SELL",
+                        sellButton.x + (sellButton.width - layout.width)/2,
+                        sellButton.y + (sellButton.height + layout.height)/2);
+            }
+
+            // Draw item description with word wrapping
+            font.setColor(textColor);
+            font.draw(batch, item.getItemDescription(),
+                    detailsX, detailsY - 75,
+                    merchantBounds.width - PADDING * 4, Align.left, true);
+        }
+    }
+
+    // Keep existing methods for functionality
     private void loadMerchantItems() {
         merchantItems = ItemLoader.getAllItems();
-
-        // Debug: Log how many items were loaded
         Gdx.app.log("MerchantUI", "Loaded " + merchantItems.size() + " merchant items");
 
-        // Ensure we have items, otherwise load some default items for testing
         if (merchantItems.isEmpty()) {
             Gdx.app.error("MerchantUI", "No items loaded from ItemLoader! Check ItemLoader implementation.");
-            // You could add fallback items here if needed
         }
 
         preloadItemTextures();
@@ -160,7 +632,6 @@ public class MerchantUI {
         playerItems.clear();
         displayItems.clear();
 
-        // Convert character's item map to our display format
         Map<String, Integer> characterItems = character.getItems();
         for (Map.Entry<String, Integer> entry : characterItems.entrySet()) {
             Items item = ItemLoader.getItemByName(entry.getKey());
@@ -170,6 +641,9 @@ public class MerchantUI {
             }
         }
     }
+
+    // The rest of the required functionality methods remain unchanged
+    // (preloadItemTextures, getItemTexture, handleClick, buySelectedItem, sellSelectedItem, etc.)
 
     private void preloadItemTextures() {
         for (Items item : merchantItems) {
@@ -186,207 +660,8 @@ public class MerchantUI {
         return itemTextures.get(texturePath);
     }
 
-    public void render(SpriteBatch batch) {
-        if (!visible) return;
-
-        // Update player items each render to ensure it's current
-        updatePlayerItems();
-
-        // Store current batch state
-        Matrix4 prevMatrix = batch.getProjectionMatrix().cpy();
-        boolean batchWasDrawing = batch.isDrawing();
-
-        if (batchWasDrawing) {
-            batch.end();
-        }
-
-        // Draw background and UI elements
-        shapeRenderer.setProjectionMatrix(uiMatrix);
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-
-        // Draw main background
-        shapeRenderer.setColor(bgColor);
-        shapeRenderer.rect(merchantBounds.x, merchantBounds.y, merchantBounds.width, merchantBounds.height);
-
-        // Draw tabs
-        shapeRenderer.setColor(showingMerchantItems ? activeTabColor : inactiveTabColor);
-        shapeRenderer.rect(tabMerchantButton.x, tabMerchantButton.y, tabMerchantButton.width, tabMerchantButton.height);
-
-        shapeRenderer.setColor(showingMerchantItems ? inactiveTabColor : activeTabColor);
-        shapeRenderer.rect(tabPlayerButton.x, tabPlayerButton.y, tabPlayerButton.width, tabPlayerButton.height);
-
-        // Draw item slots
-        List<Items> currentItems = showingMerchantItems ? merchantItems : displayItems;
-        Rectangle[] currentSlots = showingMerchantItems ? itemSlots : playerItemSlots;
-
-        for (int i = 0; i < MAX_SLOTS; i++) {
-            if (i == selectedItemIndex) {
-                shapeRenderer.setColor(selectedColor);
-            } else {
-                shapeRenderer.setColor(slotColor);
-            }
-
-            if (i < currentItems.size()) {
-                shapeRenderer.rect(currentSlots[i].x, currentSlots[i].y, currentSlots[i].width, currentSlots[i].height);
-            }
-        }
-
-        // Draw buttons
-        if (selectedItemIndex >= 0 && selectedItemIndex < currentItems.size()) {
-            shapeRenderer.setColor(buttonColor);
-            if (showingMerchantItems) {
-                shapeRenderer.rect(buyButton.x, buyButton.y, buyButton.width, buyButton.height);
-            } else {
-                shapeRenderer.rect(sellButton.x, sellButton.y, sellButton.width, sellButton.height);
-            }
-        }
-
-        shapeRenderer.setColor(closeButtonColor);
-        shapeRenderer.rect(closeButton.x, closeButton.y, closeButton.width, closeButton.height);
-
-        shapeRenderer.end();
-
-        // Configure batch for UI rendering
-        batch.setProjectionMatrix(uiMatrix);
-        batch.begin();
-
-        // Draw tabs text
-        font.setColor(Color.WHITE);
-        font.draw(batch, "Merchant", tabMerchantButton.x + 30, tabMerchantButton.y + 20);
-        font.draw(batch, "Your Items", tabPlayerButton.x + 25, tabPlayerButton.y + 20);
-
-        // Draw character score
-        Character character = gameController.getCharacter();
-        font.setColor(priceColor);
-        font.draw(batch, "Your Score: " + character.getScore(),
-                merchantBounds.x + merchantBounds.width - 200, merchantBounds.y + merchantBounds.height - 20);
-
-        // Draw item icons and prices
-        if (showingMerchantItems) {
-            // Draw merchant items
-            for (int i = 0; i < Math.min(merchantItems.size(), MAX_SLOTS); i++) {
-                Items item = merchantItems.get(i);
-                if (item != null && item.getTexturePath() != null) {
-                    // Draw the item icon
-                    Texture itemTexture = getItemTexture(item.getTexturePath());
-                    batch.draw(itemTexture,
-                            itemSlots[i].x + 8,
-                            itemSlots[i].y + 8,
-                            SLOT_SIZE - 16,
-                            SLOT_SIZE - 16);
-
-                    // Draw price with color based on affordability
-                    try {
-                        int price = item.getItemPrice();
-                        smallFont.setColor(character.getScore() >= price ? affordableColor : unaffordableColor);
-                        smallFont.draw(batch, price + "", itemSlots[i].x + 5, itemSlots[i].y + 15);
-                    } catch (NumberFormatException e) {
-                        // If price isn't valid, don't show it
-                    }
-
-                    // Draw item name
-                    smallFont.setColor(Color.WHITE);
-                    String itemName = item.getItemName();
-                    if (itemName.length() > 10) {
-                        itemName = itemName.substring(0, 7) + "...";
-                    }
-                    smallFont.draw(batch, itemName, itemSlots[i].x, itemSlots[i].y - 5);
-                }
-            }
-        } else {
-            // Draw player items with quantities
-            for (int i = 0; i < Math.min(displayItems.size(), MAX_SLOTS); i++) {
-                Items item = displayItems.get(i);
-                int quantity = playerItems.get(item);
-
-                if (item != null && item.getTexturePath() != null) {
-                    // Draw the item icon
-                    Texture itemTexture = getItemTexture(item.getTexturePath());
-                    batch.draw(itemTexture,
-                            playerItemSlots[i].x + 8,
-                            playerItemSlots[i].y + 8,
-                            SLOT_SIZE - 16,
-                            SLOT_SIZE - 16);
-
-                    // Draw quantity
-                    smallFont.setColor(Color.WHITE);
-                    smallFont.draw(batch, "x" + quantity, playerItemSlots[i].x + SLOT_SIZE - 20,
-                            playerItemSlots[i].y + SLOT_SIZE - 10);
-
-                    // Draw sell price
-                    try {
-                        int price = item.getItemPrice() / 2;
-                        smallFont.setColor(priceColor);
-                        smallFont.draw(batch, price + "", playerItemSlots[i].x + 5, playerItemSlots[i].y + 15);
-                    } catch (NumberFormatException e) {
-                        // If price isn't valid, don't show it
-                    }
-
-                    // Draw item name
-                    smallFont.setColor(Color.WHITE);
-                    String itemName = item.getItemName();
-                    if (itemName.length() > 10) {
-                        itemName = itemName.substring(0, 7) + "...";
-                    }
-                    smallFont.draw(batch, itemName, playerItemSlots[i].x, playerItemSlots[i].y - 5);
-                }
-            }
-        }
-
-        // Draw item details if an item is selected
-        if (selectedItemIndex >= 0 && selectedItemIndex < currentItems.size()) {
-            Items item = currentItems.get(selectedItemIndex);
-
-            float detailsX = merchantBounds.x + PADDING;
-            float detailsY = merchantBounds.y + 60;
-            float detailsWidth = merchantBounds.width - PADDING * 2;
-
-            font.setColor(Color.WHITE);
-            font.draw(batch, item.getItemName(), detailsX, detailsY);
-            font.draw(batch, "Effect: " + item.getItemEffect(), detailsX, detailsY - 25);
-
-            int price = 0;
-            try {
-                price = item.getItemPrice();
-            } catch (NumberFormatException e) {
-                // Use default 0
-            }
-
-            if (showingMerchantItems) {
-                font.setColor(character.getScore() >= price ? affordableColor : unaffordableColor);
-                font.draw(batch, "Buy Price: " + price, detailsX, detailsY - 50);
-
-                // Draw buy button text
-                font.setColor(Color.WHITE);
-                font.draw(batch, "BUY", buyButton.x + 45, buyButton.y + 25);
-            } else {
-                font.setColor(priceColor);
-                font.draw(batch, "Sell Price: " + (price/2), detailsX, detailsY - 50);
-
-                // Draw sell button text
-                font.setColor(Color.WHITE);
-                font.draw(batch, "SELL", sellButton.x + 45, sellButton.y + 25);
-            }
-
-            font.setColor(Color.LIGHT_GRAY);
-            smallFont.draw(batch, item.getItemDescription(), detailsX, detailsY - 75,
-                    detailsWidth * 0.8f, -1, true);
-        }
-
-        // Draw close button text
-        font.setColor(Color.WHITE);
-        font.draw(batch, "X", closeButton.x + 10, closeButton.y + 20);
-
-        batch.end();
-
-        // Restore original batch state
-        if (batchWasDrawing) {
-            batch.setProjectionMatrix(prevMatrix);
-            batch.begin();
-        }
-    }
-
     public boolean handleClick(int screenX, int screenY) {
+        // Existing implementation...
         if (!visible) return false;
 
         // Convert to UI coordinates (origin at bottom-left)
@@ -438,7 +713,7 @@ public class MerchantUI {
             }
         }
 
-        return true; // Click was inside merchant UI
+        return true;
     }
 
     private void buySelectedItem() {
@@ -450,10 +725,9 @@ public class MerchantUI {
         try {
             int price = item.getItemPrice();
 
-            // Check if character has enough score
             if (character.getScore() >= price) {
                 character.addScore(-price);
-                character.addItem(item, 1); // Add 1 quantity of the item
+                character.addItem(item, 1);
                 Gdx.app.log("MerchantUI", "Item purchased: " + item.getItemName());
             } else {
                 Gdx.app.log("MerchantUI", "Not enough score to buy this item");
@@ -471,14 +745,11 @@ public class MerchantUI {
 
         try {
             int price = item.getItemPrice();
-            // Give half price when selling
             int sellPrice = price / 2;
 
-            // Add score and remove item
             character.addScore(sellPrice);
             character.removeItem(item.getItemName(), 1);
 
-            // Update player items list and reset selection to avoid out-of-bounds
             updatePlayerItems();
             if (selectedItemIndex >= displayItems.size()) {
                 selectedItemIndex = displayItems.size() - 1;
@@ -496,6 +767,7 @@ public class MerchantUI {
         selectedItemIndex = -1;
         showingMerchantItems = true;
         updatePlayerItems();
+        animTime = 0;
     }
 
     public void hide() {
@@ -507,14 +779,11 @@ public class MerchantUI {
     }
 
     public void onWindowResize() {
-        // Update projection matrix
         uiMatrix = new Matrix4().setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-
-        // Recalculate UI positions
         float screenWidth = Gdx.graphics.getWidth();
         float screenHeight = Gdx.graphics.getHeight();
-        float merchantWidth = (SLOTS_PER_ROW * SLOT_SIZE) + ((SLOTS_PER_ROW + 1) * PADDING) + 200;
-        float merchantHeight = ((MAX_SLOTS / SLOTS_PER_ROW) * SLOT_SIZE) + (((MAX_SLOTS / SLOTS_PER_ROW) + 1) * PADDING) + 100;
+        float merchantWidth = (SLOTS_PER_ROW * SLOT_SIZE) + ((SLOTS_PER_ROW + 1) * PADDING) + 220;
+        float merchantHeight = ((MAX_SLOTS / SLOTS_PER_ROW) * SLOT_SIZE) + (((MAX_SLOTS / SLOTS_PER_ROW) + 1) * PADDING) + 140;
 
         merchantBounds.set(
                 (screenWidth - merchantWidth) / 2,
@@ -523,16 +792,52 @@ public class MerchantUI {
                 merchantHeight
         );
 
-        // Update all UI components based on new positions
+        createSlots();
+
+        // Update tab and button positions
+        tabMerchantButton.set(
+                merchantBounds.x + PADDING,
+                merchantBounds.y + merchantBounds.height - 36,
+                tabMerchantButton.width,
+                tabMerchantButton.height
+        );
+
+        tabPlayerButton.set(
+                merchantBounds.x + tabMerchantButton.width + PADDING * 2,
+                merchantBounds.y + merchantBounds.height - 36,
+                tabPlayerButton.width,
+                tabPlayerButton.height
+        );
+
+        closeButton.set(
+                merchantBounds.x + merchantBounds.width - 36 - PADDING,
+                merchantBounds.y + merchantBounds.height - 36 - PADDING,
+                36,
+                36
+        );
+
+        float buttonWidth = 140;
+        float buttonHeight = 48;
+        float buttonX = merchantBounds.x + merchantBounds.width - buttonWidth - PADDING * 2;
+        float buttonY = merchantBounds.y + PADDING * 3;
+
+        buyButton.set(buttonX, buttonY + buttonHeight + PADDING, buttonWidth, buttonHeight);
+        sellButton.set(buttonX, buttonY, buttonWidth, buttonHeight);
     }
 
     public void dispose() {
-        // Dispose all cached item textures
         for (Texture texture : itemTextures.values()) {
             if (texture != null) texture.dispose();
         }
         itemTextures.clear();
 
+        if (backgroundTexture != null) backgroundTexture.dispose();
+        if (buttonTexture != null) buttonTexture.dispose();
+        if (slotTexture != null) slotTexture.dispose();
+        if (highlightTexture != null) highlightTexture.dispose();
+        if (borderTexture != null) borderTexture.dispose();
+
+        if (titleFont != null) titleFont.dispose();
         if (font != null) font.dispose();
         if (smallFont != null) smallFont.dispose();
         if (shapeRenderer != null) shapeRenderer.dispose();
