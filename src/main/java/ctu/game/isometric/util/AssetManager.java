@@ -45,5 +45,8 @@ public class AssetManager implements Disposable {
             texture.dispose();
         }
         textures.clear();
+        if(animationManager != null) {
+            animationManager.dispose();
+        }
     }
 }

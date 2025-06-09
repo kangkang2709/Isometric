@@ -201,6 +201,14 @@ public class MapRenderer {
     }
     //
 
+    public AnimationManager getAnimationManager() {
+        return animationManager;
+    }
+
+    public void setAnimationManager(AnimationManager animationManager) {
+        this.animationManager = animationManager;
+    }
+
     public void renderActionButton(SpriteBatch batch, String eventType, MapEvent event, float x, float y) {
         if (eventType == null || event == null) return;
 

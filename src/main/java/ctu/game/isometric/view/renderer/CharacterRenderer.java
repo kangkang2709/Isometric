@@ -1,7 +1,10 @@
 package ctu.game.isometric.view.renderer;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Matrix4;
+import ctu.game.isometric.controller.GameController;
 import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.entity.Gender;
 import ctu.game.isometric.util.AssetManager;
@@ -13,14 +16,13 @@ public class CharacterRenderer {
     private AnimationManager animationManager;
     private MapRenderer mapRenderer;
     Gender gender;
-
+    GameController gameController;
     public CharacterRenderer(Character character, AssetManager assetManager, MapRenderer mapRenderer) {
         this.character = character;
         character.setGameMap(mapRenderer.getMap());
         this.assetManager = assetManager;
         this.mapRenderer = mapRenderer;
         this.animationManager = assetManager.getAnimationManager();
-
         // Use the character's gender instead of the uninitialized field
         Gender characterGender = character.getGender();
         if (characterGender == null || characterGender.equals(Gender.MALE))
@@ -32,6 +34,7 @@ public class CharacterRenderer {
     public void render(SpriteBatch batch) {
         float gridX = character.getGridX();
         float gridY = character.getGridY();
+
 
         float[] screenPos = mapRenderer.toIsometric(gridX, gridY);
 
@@ -50,6 +53,15 @@ public class CharacterRenderer {
         float offsetPlayerY = -5; // Position the feet at tile base (character sprite height - tile height)
 
         batch.draw(currentFrame, isoX + offsetPlayerX, isoY + offsetPlayerY);
+    }
+
+
+    public GameController getGameController() {
+        return gameController;
+    }
+
+    public void setGameController(GameController gameController) {
+        this.gameController = gameController;
     }
 
     // Convert simplified direction to sprite sheet direction

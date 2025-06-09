@@ -53,11 +53,11 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta) {
-        // Cập nhật game
+        // Update game
         gameController.update(delta);
         gameController.getTransitionController().update(delta);
-        // Chỉ khởi tạo 1 lần khi gameController vừa tạo xong
 
+        // Initialize gameController if created
         if (gameController.isCreated()) {
             cleanupForMainMenu();
             mapRenderer = new MapRenderer(
@@ -75,42 +75,29 @@ public class GameScreen implements Screen {
                     mapRenderer
             );
 
-
-
             InventoryUI inventoryUI = new InventoryUI(gameController);
             gameController.setInventoryUI(inventoryUI);
 
             exploringUI = new ExploringUI(gameController);
 
-//            exploringUI.setCharacter(gameController.getCharacter());
-            // Reset dialog UI
-
-//            if (dialogUI != null && gameController.getDialogController().isDialogActive()) {
-//                dialogUI.render();
-//            }
-
-
             dialogUI = new DialogUI(gameController.getDialogController());
             gameController.getInputController().setDialogUI(dialogUI);
 
-
-
-            if(gameController.getDictionaryView() != null) {
+            if (gameController.getDictionaryView() != null) {
                 gameController.getDictionaryView().dispose();
             }
 
             gameController.resetLearnedWords();
-            gameController.setDictionaryView(new DictionaryView(gameController,gameController.getDictionary(), gameController.getWordNetValidator()));
+            gameController.setDictionaryView(new DictionaryView(gameController, gameController.getDictionary(), gameController.getWordNetValidator()));
             gameController.setCharacterDisplay();
-            // Reset flag
             gameController.getAchievementUI().hide();
             gameController.setMerchantUI(new MerchantUI(gameController));
+            gameController.initializeNPCs(mapRenderer);
             gameController.setCreated(false);
         }
 
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
-
 
         currentState = gameController.getCurrentState();
         if (gameController.getTransitionController().isTransitioning()) {
@@ -131,6 +118,7 @@ public class GameScreen implements Screen {
                     gameController.setCharacterCreationController(null);
                     gameController.setLoadGameController(null);
                     mapRenderer.render(batch);
+
                     if (gameController.hasActiveEvent()) {
                         mapRenderer.renderActionButton(
                                 batch,
@@ -141,49 +129,43 @@ public class GameScreen implements Screen {
                         );
                     }
 
-                    if (characterRenderer != null) characterRenderer.render(batch);
-                    gameController.getInputController().renderTargetIndicator(batch);
+                    if (gameController.getNpcRenderer() != null) {
+                        gameController.getNpcRenderer().render(batch);
+                    }
 
-                    batch.end();
+                    if (characterRenderer != null) characterRenderer.render(batch);
+
+                    gameController.getInputController().renderTargetIndicator(batch);
+                    batch.setProjectionMatrix(camera.combined);
 
                     // Render the UI on top
-
-
                     if (exploringUI != null) exploringUI.render();
 
                     if (gameController.getInventoryUI() != null) {
                         gameController.getInventoryUI().render(batch);
                     }
-                    if(gameController.getAchievementUI().isActive()){
+                    if (gameController.getAchievementUI().isActive()) {
                         gameController.getAchievementUI().render(batch);
                     }
                     if (gameController.getMerchantUI().isVisible()) {
+
                         gameController.getMerchantUI().render(batch);
                     }
 
                     if (dialogUI != null && gameController.getDialogController().isDialogActive()) {
-
                         dialogUI.render();
-                        batch.setProjectionMatrix(camera.combined);
-                        batch.begin();
+
                         gameController.getEffectManager().render(batch);
-
                     }
-                    if( gameController.getLevelUpNotification().isActive()) {
-                        batch.begin();
+
+                    if (gameController.getLevelUpNotification().isActive()) {
                         gameController.getLevelUpNotification().render(batch);
-                        batch.end();
                     }
-
-                    batch.setProjectionMatrix(camera.combined);
-                    // Begin the batch again for any subsequent rendering
-                    batch.begin();
                     break;
+
                 case CUTSCENE:
                     gameController.getCutsceneController().render(batch);
                     break;
-                // In GameScreen.java, inside the switch statement in render()
-
                 case DICTIONARY:
                     gameController.getDictionaryView().render(batch);
                     break;

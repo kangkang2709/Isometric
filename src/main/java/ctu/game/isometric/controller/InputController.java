@@ -333,6 +333,9 @@ public class InputController extends InputAdapter {
             }
         }
         switch (keycode) {
+            case Keys.F ->{
+                gameController.interactWithNPC();
+            }
             case Keys.V -> {
                 if (gameController.getInventoryUI().isVisible()) {
                     gameController.getInventoryUI().hide();
@@ -347,7 +350,7 @@ public class InputController extends InputAdapter {
                     gameController.getMerchantUI().show();
 
             }
-            case Keys.F -> {
+            case Keys.F3 -> {
                 if (gameController.getAchievementUI().isActive())
                     gameController.getAchievementUI().hide();
                 else

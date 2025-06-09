@@ -38,6 +38,27 @@ public class Pathfinder {
     }
 
     private final IsometricMap map;
+
+
+
+    private int[][] npcPositions;
+
+    public int[][] getNpcPositions() {
+        return npcPositions;
+    }
+
+    public void setNpcPositions(int[][] npcPositions) {
+        this.npcPositions = npcPositions;
+    }
+
+    private boolean isNPCHere(int x, int y) {
+        if (npcPositions == null) {
+            return false;
+        }
+        return Arrays.stream(npcPositions)
+                .anyMatch(pos -> pos[0] == x && pos[1] == y);
+    }
+
     // Directions for movement: right, down, left, up to support 8 directions
     private final int[][] directions = {
             {0, 1},   // phải
@@ -57,7 +78,7 @@ public class Pathfinder {
 
     public Array<int[]> findPath(int startX, int startY, int goalX, int goalY, int maxLength) {
         // If the target is not walkable, find the closest walkable tile
-        if (!map.isWalkable(goalX, goalY)) {
+        if (!map.isWalkable(goalX, goalY) || isNPCHere(goalX, goalY)) {
             int[] closestWalkable = findClosestWalkable(goalX, goalY);
             goalX = closestWalkable[0];
             goalY = closestWalkable[1];

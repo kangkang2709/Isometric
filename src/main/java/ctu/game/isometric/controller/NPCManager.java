@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 public class NPCManager {
     private GameController gameController;
     private Map<Integer, NPC> npcs = new HashMap<>();
+    int[][] npcPositions;
 
     protected NPCManager(GameController gameController) {
         this.gameController = gameController;
@@ -38,14 +39,45 @@ public class NPCManager {
             List<NPC> npcList = mapper.readValue(inputStream, new TypeReference<List<NPC>>() {});
 
             npcs.clear();
+            npcPositions = new int[npcList.size()+1][2];
             for (NPC npc : npcList) {
                 npcs.put(npc.getNpcID(), npc);
+                // Store NPC positions in a 2D array
+                npcPositions[npc.getNpcID()][0] = npc.getXPosition();
+                npcPositions[npc.getNpcID()][1] = npc.getYPosition();
             }
+
+
 
             System.out.println("Loaded " + npcs.size() + " NPCs successfully");
         } catch (IOException e) {
             System.err.println("Failed to load NPCs: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    public int[][] getNpcPositions() {
+        return npcPositions;
+    }
+
+    public void setNpcPositions(int[][] npcPositions) {
+        this.npcPositions = npcPositions;
+    }
+
+    public Map<Integer, NPC> getNpcs() {
+        return npcs;
+    }
+
+    public NPC getNPCById(int npcId) {
+        return npcs.get(npcId);
+    }
+
+    public void setNpcs(Map<Integer, NPC> npcs) {
+        this.npcs = npcs;
+    }
+
+    public void dispose() {
+        // Dispose of any resources if needed
+        npcs.clear();
     }
 }

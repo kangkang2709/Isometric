@@ -1,6 +1,6 @@
 [
   {
-    "npcID": 1,
+    "npcID": 2,
     "npcName": "Elara the Healer",
     "npcDescription": "A skilled healer who can restore your health and mana",
     "arcId": "village",
@@ -9,11 +9,11 @@
     "npcBackStory": "Elara studied ancient healing arts in the mystical forest before settling in this village.",
     "behaviorState": "idle",
     "quests": [],
-    "xPosition": 8,
-    "yPosition": 9
+    "xPosition": 10,
+    "yPosition": 12
   },
   {
-    "npcID": 2,
+    "npcID": 1,
     "npcName": "Captain Thorne",
     "npcDescription": "The village guard captain who offers tasks to adventurers",
     "arcId": "village",

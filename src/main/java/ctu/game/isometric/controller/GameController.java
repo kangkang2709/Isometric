@@ -15,6 +15,7 @@ import ctu.game.isometric.model.dictionary.Word;
 import ctu.game.isometric.model.entity.NPC;
 import ctu.game.isometric.model.game.Items;
 import ctu.game.isometric.model.world.MapEvent;
+import ctu.game.isometric.util.AnimationManager;
 import ctu.game.isometric.util.ItemLoader;
 import ctu.game.isometric.view.menu.CharacterCreation;
 import ctu.game.isometric.view.menu.MainMenu;
@@ -29,6 +30,8 @@ import ctu.game.isometric.model.game.GameState;
 import ctu.game.isometric.model.world.IsometricMap;
 import ctu.game.isometric.util.EnemyLoader;
 import ctu.game.isometric.util.WordNetValidator;
+import ctu.game.isometric.view.renderer.MapRenderer;
+import ctu.game.isometric.view.renderer.NPCRenderer;
 import ctu.game.isometric.view.renderer.TransitionRenderer;
 import ctu.game.isometric.view.ui.*;
 import ctu.game.isometric.view.view.CharacterInfoDisplay;
@@ -81,6 +84,7 @@ public class GameController {
     // Add LevelUpNotification field
     private LevelUpNotification levelUpNotification;
     private NPCManager npcManager;
+    private NPCRenderer npcRenderer;
 
     public GameController(IsometricGame game) {
         this.game = game;
@@ -107,7 +111,7 @@ public class GameController {
         this.wordNetValidator = new WordNetValidator();
         this.wordNetValidator.loadDictionary();
 
-        this.pathfinder = new Pathfinder(map);
+
 
         this.gameplayController = new GameplayController(this);
         this.quizController = new QuizController(this);
@@ -124,7 +128,50 @@ public class GameController {
 
         // Initialize the level up notification
         this.levelUpNotification = new LevelUpNotification(this);
+
+        this.pathfinder = new Pathfinder(map);
         npcManager = new NPCManager(this);
+    }
+
+    boolean isLoadNPCs = false;
+
+    public void initializeNPCs(MapRenderer mapRenderer) {
+        this.npcRenderer = new NPCRenderer(npcManager.getNpcs(),mapRenderer,character);
+
+        if(isLoadNPCs ==false) {
+            npcRenderer.loadNPCAnimations();
+            isLoadNPCs = true;
+        }
+        this.pathfinder.setNpcPositions(npcManager.getNpcPositions());
+    }
+
+
+
+    public void interactWithNPC() {
+        NPC npc = findNPCNear(character.getGridX(), character.getGridY());
+        if (npc != null) {
+            if (getCharacter().getAttempFlags().get("quizAttempts") >= 1) {
+                dialogController.showSimpleMessage("You have already attempted this quiz today. Come back tomorrow!");
+            } else {
+                dialogController.setOnDialogFinishedAction(() -> startQuiz());
+                dialogController.startDialog("chapter_quiz_intro", "scene_meet_npc");
+                getCharacter().getAttempFlags().put("quizAttempts", 1);
+            }
+        } else {
+            dialogController.showSimpleMessage("No NPC nearby to interact with.");
+        }
+    }
+
+    public NPC findNPCNear(float x, float y) {
+        for (NPC npc : npcManager.getNpcs().values()) {
+            float npcX = npc.getXPosition();
+            float npcY = npc.getYPosition();
+            // Check if the NPC is within a 1 tile distance
+            if (Math.abs(npcX - x) <= 1 && Math.abs(npcY - y) <= 1) {
+                return npc; // Return the first NPC found in range
+            }
+        }
+        return null; // No NPC found in range
     }
 
     public void initializeDictionary() {
@@ -161,15 +208,15 @@ public class GameController {
     }
 
     public void moveCharacterAlongPath(int targetX, int targetY) {
-        int startX = (int) character.getGridX();
-        int startY = (int) character.getGridY();
+        float startX = character.getGridX();
+        float startY = character.getGridY();
 
         // Find path with a reasonable maximum length
-        Array<int[]> path = pathfinder.findPath(startX, startY, targetX, targetY, 30);
+        Array<int[]> path = pathfinder.findPath((int) startX, (int) startY, targetX, targetY, 30);
 
         if (path.size > 0) {
             // Remove the first point if it's the current position
-            if (path.size > 1 && path.get(0)[0] == startX && path.get(0)[1] == startY) {
+            if (path.size > 1 && path.get(0)[0] == (int) startX && path.get(0)[1] == (int) startY) {
                 path.removeIndex(0);
             }
 
@@ -179,7 +226,7 @@ public class GameController {
             // Set the target indicator position
             inputController.showTargetIndicator(targetX, targetY);
 
-            checkPositionEvents(targetX, targetY);
+            checkPositionEvents((int) targetX, (int) targetY);
         }
     }
 
@@ -261,6 +308,7 @@ public class GameController {
                 } else if (!merchantUI.isVisible()) {
                     inputController.updateCooldown(delta);
                     character.update(delta);
+                    npcRenderer.update(delta);
                 }
                 else if (levelUpNotification.isActive()){
                     levelUpNotification.update(delta);
@@ -406,9 +454,14 @@ public class GameController {
     }
 
     public boolean canMove(int dx, int dy) {
-        int newX = (int) (character.getGridX() + dx);
-        int newY = (int) (character.getGridY() + dy);
-        return map.isWalkable(newX, newY);
+        float newX = character.getGridX() + dx;
+        float newY = character.getGridY() + dy;
+        return map.isWalkable((int) newX, (int) newY) && isNotBlockedByNPC(newX, newY);
+    }
+
+    public boolean isNotBlockedByNPC(float x, float y) {
+        return Arrays.stream(npcManager.getNpcPositions())
+                .noneMatch(npcPos -> Math.abs(npcPos[0] - x) < 0.5f && Math.abs(npcPos[1] - y) < 0.5f);
     }
 
     // Add a method to change maps safely
@@ -523,6 +576,7 @@ public class GameController {
 //            getCutsceneController().dispose();
             gameplayController = new GameplayController(this);
         }
+
 
         // Reset to main menu state
 
@@ -795,8 +849,21 @@ public class GameController {
         effectManager.dispose();
         musicController.dispose();
         merchantUI.dispose();
+        if (dictionaryView != null) {
+            dictionaryView.dispose();
+        }
+        if (achievementUI != null) {
+            achievementUI.dispose();
+        }
+       if( npcManager != null) {
+            npcManager.dispose();
+        }
+
         if (quizController != null) {
             quizController.dispose();
+        }
+        if (npcRenderer != null) {
+            npcRenderer.dispose();
         }
     }
 
@@ -849,6 +916,14 @@ public class GameController {
         this.character = character;
     }
 
+    public boolean isLoadNPCs() {
+        return isLoadNPCs;
+    }
+
+    public void setLoadNPCs(boolean loadNPCs) {
+        isLoadNPCs = loadNPCs;
+    }
+
     public ExploringUI getExploringUI() {
         return exploringUI;
     }
@@ -871,6 +946,14 @@ public class GameController {
 
     public EffectManager getEffectManager() {
         return effectManager;
+    }
+
+    public NPCRenderer getNpcRenderer() {
+        return npcRenderer;
+    }
+
+    public void setNpcRenderer(NPCRenderer npcRenderer) {
+        this.npcRenderer = npcRenderer;
     }
 
     public void setEffectManager(EffectManager effectManager) {
