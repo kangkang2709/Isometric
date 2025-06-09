@@ -96,6 +96,7 @@ public class DialogController {
                 return true;
             } else {
                 System.out.println("End of dialog, no choices available.");
+
                 endDialog(); // Use endDialog to reset the state properly
                 return false;
             }
@@ -110,47 +111,37 @@ public class DialogController {
         Dialog tempDialog = new Dialog();
         tempDialog.setText(message);
 
-        // Ensure storyData arcs are initialized
-        if (storyData.getArcs() == null) {
-            storyData.setArcs(new ArrayList<>());
-        }
-
-        // Create and add a temporary scene to story data if needed
-        if (findArc("system_messages") == null) {
-            // Create temporary arc and scene
-            Arc tempArc = new Arc();
-            tempArc.setId("system_messages");
-
-            Scene tempScene = new Scene();
-            tempScene.setId("notification");
-            List<Dialog> dialogues = new ArrayList<>();
-            dialogues.add(tempDialog);
-            tempScene.setDialogues(dialogues);
-
-            List<Scene> scenes = new ArrayList<>();
-            scenes.add(tempScene);
-            tempArc.setScenes(scenes);
-
-            storyData.getArcs().add(tempArc);
-        } else {
-            // Update existing notification scene
-            Arc arc = findArc("system_messages");
-            Scene scene = findScene(arc, "notification");
-
-            if (scene == null) {
-                scene = new Scene();
-                scene.setId("notification");
-                if (arc.getScenes() == null) {
-                    arc.setScenes(new ArrayList<>());
-                }
-                arc.getScenes().add(scene);
+        // Find or create the "system_messages" arc
+        Arc arc = findArc("system_messages");
+        if (arc == null) {
+            arc = new Arc();
+            arc.setId("system_messages");
+            if (storyData.getArcs() == null) {
+                storyData.setArcs(new ArrayList<>());
             }
-
-            // Update dialog
-            List<Dialog> dialogues = new ArrayList<>();
-            dialogues.add(tempDialog);
-            scene.setDialogues(dialogues);
+            storyData.getArcs().add(arc);
         }
+
+        // Find or create the "notification" scene
+        Scene scene = findScene(arc, "notification");
+        if (scene == null) {
+            scene = new Scene();
+            scene.setId("notification");
+            if (arc.getScenes() == null) {
+                arc.setScenes(new ArrayList<>());
+            }
+            arc.getScenes().add(scene);
+        }
+
+        // Update dialog
+        List<Dialog> dialogues = new ArrayList<>();
+        dialogues.add(tempDialog);
+        scene.setDialogues(dialogues);
+
+        // Set action to handle when the simple message is dismissed
+        setOnDialogFinishedAction(() -> {
+            Gdx.app.log("Dialog", "Simple message dismissed");
+        });
 
         // Show the notification
         startDialog("system_messages", "notification");
@@ -160,7 +151,9 @@ public class DialogController {
 
     // After
     public void selectChoice(int index) {
-        if (!dialogActive || !showingChoices || currentChoices.isEmpty()) return;
+        if (!dialogActive || !showingChoices || currentChoices.isEmpty()) {
+            return;
+        }
 
         if (index >= 0 && index < currentChoices.size()) {
             Choice choice = currentChoices.get(index);
@@ -176,8 +169,7 @@ public class DialogController {
                     // Move to the next scene if specified
                     if (choice.getNext_scene() != null) {
                         startDialog(currentArcId, choice.getNext_scene());
-                    }
-                    else endDialog();
+                    } else endDialog();
                 } else {
                     // If player doesn't have the required item, redirect to scene_not_enough_item
                     startDialog(currentArcId, "scene_not_enough_item");
@@ -187,8 +179,7 @@ public class DialogController {
                 if (choice.getNext_scene() != null && choice.getNext_scene().equals("scene_end")) {
                     performAction = false;
                     startDialog(currentArcId, choice.getNext_scene());
-                }
-                else {
+                } else {
                     endDialog();
                 }
             }
@@ -261,7 +252,6 @@ public class DialogController {
     }
 
 
-
     public void endDialog() {
         dialogActive = false;
         showingChoices = false;
@@ -270,6 +260,7 @@ public class DialogController {
         currentArcId = null;
         currentSceneId = null;
 
+        gameController.changeBehaviorStateNPC();
         gameController.setState(GameState.EXPLORING);
 
         // Execute the callback if it exists and performAction is true

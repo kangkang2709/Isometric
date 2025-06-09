@@ -151,19 +151,17 @@ public class Pathfinder {
     }
 
     private int[] findClosestWalkable(int x, int y) {
-//        Bắt đầu tìm kiếm từ khoảng cách (bán kính) là 1.
         int searchRadius = 1;
-//        Giới hạn việc tìm kiếm trong bán kính tối đa là 10 ô để tránh kiểm tra vô hạn.
         int maxSearchRadius = 10;
-        // Search in expanding squares around the original coordinates
+
         while (searchRadius <= maxSearchRadius) {
-            for (int offsetY = -searchRadius; offsetY <= searchRadius; offsetY++) {
+            boolean found = false;
+            for (int offsetY = -searchRadius; offsetY <= searchRadius && !found; offsetY++) {
                 for (int offsetX = -searchRadius; offsetX <= searchRadius; offsetX++) {
-                    // Only check tiles on the perimeter of the square
                     if (Math.abs(offsetX) == searchRadius || Math.abs(offsetY) == searchRadius) {
                         int checkX = x + offsetX;
                         int checkY = y + offsetY;
-                        if (map.isWalkable(checkX, checkY)) {
+                        if (map.isWalkable(checkX, checkY) || !isNPCHere(checkX, checkY)) {
                             return new int[]{checkX, checkY};
                         }
                     }
@@ -172,7 +170,6 @@ public class Pathfinder {
             searchRadius++;
         }
 
-        // Default to original coordinates if no walkable found
         return new int[]{x, y};
     }
 

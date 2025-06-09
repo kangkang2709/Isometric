@@ -21,7 +21,7 @@ public class NPCRenderer {
     private TextureRegion interactButton;
     private TextureRegion backstoryButton;
     private Character player;
-    private int interactionDistance = 1; // Grid units
+ // Grid units
 
     // Button dimensions
     private final int BUTTON_SIZE = 20;
@@ -58,24 +58,26 @@ public class NPCRenderer {
         }
     }
 
+
     private boolean isPlayerNearNPC(NPC npc) {
         // Calculate manhattan distance between player and NPC
         float dx = Math.abs(player.getGridX() - npc.getXPosition());
         float dy = Math.abs(player.getGridY() - npc.getYPosition());
-        return dx + dy <= interactionDistance;
+        return Math.max(dx, dy) <= 1;
     }
 
     private void renderActionButtons(NPC npc, SpriteBatch batch) {
-        int gridX = npc.getXPosition();
-        int gridY = npc.getYPosition();
+        // Use player's position instead of NPC's position
+        int gridX = (int)player.getGridX();
+        int gridY = (int)player.getGridY();
 
-        // Convert grid position to isometric screen position
+        // Convert player's grid position to isometric screen position
         float[] screenPos = mapRenderer.toIsometric(gridX, gridY);
         float isoX = screenPos[0];
         float isoY = screenPos[1];
 
-        // Position buttons above the NPC
-        float buttonY = isoY + 80; // Adjust based on NPC height
+        // Position buttons above the player
+        float buttonY = isoY + 80; // Adjust based on player height
 
         // Draw interact button
         batch.draw(interactButton,
@@ -87,7 +89,7 @@ public class NPCRenderer {
         // Draw backstory button
         batch.draw(backstoryButton,
                 isoX + BUTTON_SPACING + 40,
-                buttonY -36,
+                buttonY - 36,
                 BUTTON_SIZE,
                 BUTTON_SIZE);
     }
@@ -137,10 +139,6 @@ public class NPCRenderer {
         backstoryButton.getTexture().dispose();
     }
 
-    // Set interaction distance (in grid cells)
-    public void setInteractionDistance(int distance) {
-        this.interactionDistance = distance;
-    }
 
 
 }

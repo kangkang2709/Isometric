@@ -112,7 +112,6 @@ public class GameController {
         this.wordNetValidator.loadDictionary();
 
 
-
         this.gameplayController = new GameplayController(this);
         this.quizController = new QuizController(this);
         this.mulChoiceQuizController = new MulChoiceQuizController(this);
@@ -136,9 +135,9 @@ public class GameController {
     boolean isLoadNPCs = false;
 
     public void initializeNPCs(MapRenderer mapRenderer) {
-        this.npcRenderer = new NPCRenderer(npcManager.getNpcs(),mapRenderer,character);
+        this.npcRenderer = new NPCRenderer(npcManager.getNpcs(), mapRenderer, character);
 
-        if(isLoadNPCs ==false) {
+        if (isLoadNPCs == false) {
             npcRenderer.loadNPCAnimations();
             isLoadNPCs = true;
         }
@@ -146,19 +145,43 @@ public class GameController {
     }
 
 
-
     public void interactWithNPC() {
         NPC npc = findNPCNear(character.getGridX(), character.getGridY());
         if (npc != null) {
-            if (getCharacter().getAttempFlags().get("quizAttempts") >= 1) {
-                dialogController.showSimpleMessage("You have already attempted this quiz today. Come back tomorrow!");
-            } else {
-                dialogController.setOnDialogFinishedAction(() -> startQuiz());
-                dialogController.startDialog("chapter_quiz_intro", "scene_meet_npc");
-                getCharacter().getAttempFlags().put("quizAttempts", 1);
+            npc.setBehaviorState("Dialogue");
+            switch (npc.getNpcName()) {
+                case "QuizMaster":
+                    if (getCharacter().getAttempFlags().get("quizAttempts") >= 1) {
+                        dialogController.showSimpleMessage("You have already attempted this quiz today. Come back tomorrow!");
+                    } else {
+                        dialogController.setOnDialogFinishedAction(() -> {
+                            startQuiz();
+                            getCharacter().getAttempFlags().put("quizAttempts", 1);
+                        });
+                        dialogController.startDialog("chapter_quiz_intro", "scene_meet_npc");
+
+                    }
+                    break;
+                case "Merchant":
+                    merchantUI.show();
+                    break;
+                case "Healer":
+                    character.recovery();
+                    break;
+                default:
+                    break;
             }
+
         } else {
             dialogController.showSimpleMessage("No NPC nearby to interact with.");
+        }
+    }
+
+    public void changeBehaviorStateNPC() {
+        for (NPC npc : npcManager.getNpcs().values()) {
+            if (npc.getBehaviorState().equals("Dialogue")) {
+                npc.setBehaviorState("Idle");
+            }
         }
     }
 
@@ -167,7 +190,7 @@ public class GameController {
             float npcX = npc.getXPosition();
             float npcY = npc.getYPosition();
             // Check if the NPC is within a 1 tile distance
-            if (Math.abs(npcX - x) <= 1 && Math.abs(npcY - y) <= 1) {
+            if (Math.abs(npcX - x) <= 1f && Math.abs(npcY - y) <= 1f) {
                 return npc; // Return the first NPC found in range
             }
         }
@@ -183,7 +206,6 @@ public class GameController {
             dictionaryView = new ctu.game.isometric.view.view.DictionaryView(this, dictionary, this.wordNetValidator);
         }
     }
-
 
 
     public void showAchievementUI() {
@@ -294,25 +316,23 @@ public class GameController {
     }
 
     public void update(float delta) {
-        // Update level up notification if it exists
-        if (levelUpNotification != null) {
-            levelUpNotification.update(delta);
-        }
 
         switch (currentState) {
             case EXPLORING:
                 if (dialogController.isDialogActive()) {
                     if (currentEvent != null && currentEvent.getEventType().equals("treasure")) {
                         effectManager.update(delta);
+
                     }
+                    npcRenderer.update(delta);
                 } else if (!merchantUI.isVisible()) {
                     inputController.updateCooldown(delta);
                     character.update(delta);
                     npcRenderer.update(delta);
                 }
-                else if (levelUpNotification.isActive()){
-                    levelUpNotification.update(delta);
-                }
+
+                levelUpNotification.update(delta);
+
                 break;
             case CHARACTER_CREATION:
                 characterCreationController.update(delta);
@@ -855,7 +875,7 @@ public class GameController {
         if (achievementUI != null) {
             achievementUI.dispose();
         }
-       if( npcManager != null) {
+        if (npcManager != null) {
             npcManager.dispose();
         }
 

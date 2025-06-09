@@ -1,7 +1,7 @@
 [
   {
     "npcID": 2,
-    "npcName": "Elara the Healer",
+    "npcName": "QuizMaster",
     "npcDescription": "A skilled healer who can restore your health and mana",
     "arcId": "village",
     "sceneId": "healing_hut",
@@ -52,7 +52,7 @@
   },
   {
     "npcID": 3,
-    "npcName": "Riddle Master",
+    "npcName": "Merchant",
     "npcDescription": "A mysterious figure who challenges adventurers with riddles",
     "arcId": "village",
     "sceneId": "tavern",
