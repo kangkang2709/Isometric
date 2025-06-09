@@ -304,7 +304,7 @@ public class GameplayController {
 
         // Get reward information
         Reward reward = RewardLoader.getRewardById(this.enemy.getRewardID());
-        Items item = reward.getItemID();
+        Items item =  ItemLoader.getItemById(reward.getItemID());
 
         // Title
         drawCenteredText(batch, titleFont, "CHIẾN THĂNG!", viewport.getWorldWidth() / 2, panelY + panelHeight - 50, new Color(1, 0.9f, 0.3f, 1));

@@ -6,6 +6,7 @@ import com.badlogic.gdx.utils.Array;
 import ctu.game.isometric.model.dictionary.Word;
 import ctu.game.isometric.model.game.Achievement;
 import ctu.game.isometric.model.game.Items;
+import ctu.game.isometric.model.game.Quest;
 import ctu.game.isometric.model.world.IsometricMap;
 import ctu.game.isometric.util.ItemLoader;
 
@@ -40,6 +41,10 @@ public class Character {
     private IsometricMap gameMap;
     private float targetX, targetY;
     private float moveSpeed = 2.5f; // Grid cells per second
+
+    // Quest tracking
+    private List<Quest> activeQuests;
+    private List<Quest> completedQuests;
 
     private float score;
     // Score for the character
@@ -102,7 +107,8 @@ public class Character {
         this.ettempFlags.put("mulQuizAttempts", 0);
         this.ettempFlags.put("fallen", 0);
         this.ettempFlags.put("wrongWord", 0);
-
+        this.activeQuests = new ArrayList<>();
+        this.completedQuests = new ArrayList<>();
     }
 
 
@@ -127,7 +133,35 @@ public class Character {
         this.ettempFlags.put("fallen", 0);
         this.ettempFlags.put("wrongWord", 0);
         this.score = 0;
+        this.activeQuests = new ArrayList<>();
+        this.completedQuests = new ArrayList<>();
 
+    }
+
+
+    public boolean hasQuest(Quest quest) {
+        return activeQuests.stream()
+                .anyMatch(q -> q.getQuestName().equals(quest.getQuestName()));
+    }
+
+    public void addQuest(Quest quest) {
+        activeQuests.add(quest);
+        // Trigger UI update or notification
+    }
+
+    public void completeQuest(Quest quest) {
+        activeQuests.remove(quest);
+        completedQuests.add(quest);
+        // Apply rewards, show completion message, etc.
+    }
+
+    // Getters and setters
+    public List<Quest> getActiveQuests() {
+        return activeQuests;
+    }
+
+    public List<Quest> getCompletedQuests() {
+        return completedQuests;
     }
 
 
@@ -520,7 +554,7 @@ public class Character {
                 }
                 existingAchievement.updateProgress(value);
 
-                if (!existingAchievement.isUnlocked() &&
+                if (existingAchievement.isUnlocked() &&
                         existingAchievement.getCurrentValue() >= existingAchievement.getTargetValue()) {
                     // If the achievement is now unlocked, set it to unlocked and update the score
                     score += existingAchievement.getTargetValue();

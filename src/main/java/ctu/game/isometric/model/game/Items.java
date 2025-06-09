@@ -59,10 +59,6 @@ public class Items {
         this.value = value;
     }
 
-    public void setValue(int value) {
-        this.value = value;
-    }
-
     public String getItemEffect() {
         return itemEffect;
     }

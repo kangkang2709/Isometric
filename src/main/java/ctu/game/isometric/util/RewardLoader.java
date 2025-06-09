@@ -22,7 +22,7 @@ public class RewardLoader {
             for (JsonValue rewardJson : rewardsJson) {
                 Reward reward = new Reward();
                 reward.setRewardID(rewardJson.getInt("rewardID"));
-                reward.setItemID(ItemLoader.getItemById(rewardJson.getInt("itemID")));
+                reward.setItemID(rewardJson.getInt("itemID"));
                 reward.setAmount(rewardJson.getInt("amount"));
                 reward.setDescription(rewardJson.getString("description"));
 
@@ -55,7 +55,7 @@ public class RewardLoader {
     private static Reward createDefaultReward() {
         Reward reward = new Reward();
         reward.setRewardID(0);
-        reward.setItemID(ItemLoader.getItemById(1)); // Default to first item
+        reward.setItemID(1); // Default to first item
         reward.setAmount(1);
         reward.setDescription("A basic reward.");
         return reward;

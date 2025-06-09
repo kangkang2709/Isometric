@@ -10,5 +10,23 @@
     "itemID": 2,
     "amount": 2,
     "description": "Reward from a hidden chest."
+  },
+  {
+    "rewardID": 3,
+    "itemID": 2,
+    "amount": 2,
+    "description": "Reward from a hidden chest."
+  },
+  {
+    "rewardID": 10,
+    "itemID": 10,
+    "amount": 1,
+    "description": "Reward from a hidden chest."
+  },
+  {
+    "rewardID": 10,
+    "itemID": 20,
+    "amount": 1,
+    "description": "Reward from a hidden chest."
   }
 ]

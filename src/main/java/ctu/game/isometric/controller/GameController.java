@@ -12,6 +12,7 @@ import ctu.game.isometric.IsometricGame;
 import ctu.game.isometric.controller.quiz.MulChoiceQuizController;
 import ctu.game.isometric.model.dictionary.Dictionary;
 import ctu.game.isometric.model.dictionary.Word;
+import ctu.game.isometric.model.entity.NPC;
 import ctu.game.isometric.model.game.Items;
 import ctu.game.isometric.model.world.MapEvent;
 import ctu.game.isometric.util.ItemLoader;
@@ -79,7 +80,7 @@ public class GameController {
 
     // Add LevelUpNotification field
     private LevelUpNotification levelUpNotification;
-
+    private NPCManager npcManager;
 
     public GameController(IsometricGame game) {
         this.game = game;
@@ -123,8 +124,8 @@ public class GameController {
 
         // Initialize the level up notification
         this.levelUpNotification = new LevelUpNotification(this);
+        npcManager = new NPCManager(this);
     }
-
 
     public void initializeDictionary() {
         if (dictionary == null) {
