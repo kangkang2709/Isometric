@@ -179,6 +179,11 @@ public class InputController extends InputAdapter {
         // Only process left clicks during EXPLORING state
         GameState state = gameController.getCurrentState();
 
+        if (gameController.getDialogController().isDialogActive()) {
+            return false;
+
+        }
+
         if (state == GameState.EXPLORING) {
             if (moveCooldown > 0) return false;
 
@@ -186,7 +191,8 @@ public class InputController extends InputAdapter {
                 gameController.getInventoryUI().handleClick(screenX, screenY);
                 return true;
             }
-            if(gameController.getMerchantUI().isVisible()){
+
+            if (gameController.getMerchantUI().isVisible()) {
                 gameController.getMerchantUI().handleClick(screenX, screenY);
                 return true;
             }
@@ -299,11 +305,11 @@ public class InputController extends InputAdapter {
         if (state == GameState.LOAD_GAME) {
             return gameController.getLoadGameController().handleMouseMove(screenX, screenY);
         }
-        if (state == GameState.EXPLORING ) {
-           if (gameController.getMerchantUI().isVisible()){
-               gameController.getMerchantUI().handleMouseMove(screenX,screenY);
-               return true;
-           }
+        if (state == GameState.EXPLORING) {
+            if (gameController.getMerchantUI().isVisible()) {
+                gameController.getMerchantUI().handleMouseMove(screenX, screenY);
+                return true;
+            }
             if (gameController.getInventoryUI().isVisible()) {
                 gameController.getInventoryUI().handleMouseMove(screenX, screenY);
                 return true;
@@ -333,8 +339,11 @@ public class InputController extends InputAdapter {
             }
         }
         switch (keycode) {
-            case Keys.F ->{
+            case Keys.F -> {
                 gameController.interactWithNPC();
+            }
+            case Keys.G -> {
+                gameController.showNPCBackStory();
             }
             case Keys.V -> {
                 if (gameController.getInventoryUI().isVisible()) {

@@ -1,7 +1,7 @@
 [
   {
     "npcID": 2,
-    "npcName": "QuizMaster",
+    "npcName": "Healer Elara",
     "npcDescription": "A skilled healer who can restore your health and mana",
     "arcId": "village",
     "sceneId": "healing_hut",
@@ -47,8 +47,8 @@
         }
       }
     ],
-    "xPosition": 5,
-    "yPosition": 5
+    "xPosition": 18,
+    "yPosition": 16
   },
   {
     "npcID": 3,
@@ -61,7 +61,7 @@
     "behaviorState": "idle",
     "quests": [],
     "xPosition": 12,
-    "yPosition": 12
+    "yPosition": 14
   },
   {
     "npcID": 4,
@@ -73,7 +73,7 @@
     "npcBackStory": "Lucy travels from town to town entertaining locals with her games of chance.",
     "behaviorState": "idle",
     "quests": [],
-    "xPosition": 6,
-    "yPosition": 6
+    "xPosition": 15,
+    "yPosition": 15
   }
 ]

@@ -163,10 +163,12 @@ public class GameController {
                     }
                     break;
                 case "Merchant":
-                    merchantUI.show();
+                    dialogController.showMessageWithChoices("I have something to trade. What do you want", "Magic Book",
+                            "Yes", "No", () -> merchantUI.show());
                     break;
-                case "Healer":
-                    character.recovery();
+                case "Healer Elara":
+                    dialogController.showMessageWithChoices("Do want to heal", "Magic Book",
+                            "Yes", "No", () -> getCharacter().recovery());
                     break;
                 default:
                     break;
@@ -176,6 +178,16 @@ public class GameController {
             dialogController.showSimpleMessage("No NPC nearby to interact with.");
         }
     }
+
+    public void showNPCBackStory() {
+        NPC npc = findNPCNear(character.getGridX(), character.getGridY());
+        if (npc != null) {
+            dialogController.startDialog("healer_backstory", "scene_intro");
+        } else {
+            dialogController.showSimpleMessage("No NPC nearby to interact with.");
+        }
+    }
+
 
     public void changeBehaviorStateNPC() {
         for (NPC npc : npcManager.getNpcs().values()) {
@@ -319,7 +331,7 @@ public class GameController {
 
         switch (currentState) {
             case EXPLORING:
-                if (dialogController.isDialogActive()) {
+                if (dialogController.isDialogActive() && !dialogController.shouldRenderBackground()) {
                     if (currentEvent != null && currentEvent.getEventType().equals("treasure")) {
                         effectManager.update(delta);
 

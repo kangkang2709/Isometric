@@ -14,10 +14,12 @@ public class AnimationManager {
     public void loadCharacterAnimations(String idleSpritePath, String walkSpritePath) {
         // Load texture sheets
         Texture idleSpriteSheet = new Texture(Gdx.files.internal(idleSpritePath));
+        idleSpriteSheet.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
         Texture walkSpriteSheet = new Texture(Gdx.files.internal(walkSpritePath));
+//        walkSpriteSheet.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
 
         // Apply texture filtering for smoother rendering
-        idleSpriteSheet.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+//        idleSpriteSheet.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         walkSpriteSheet.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
         // Split sprites

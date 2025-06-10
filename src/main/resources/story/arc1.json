@@ -355,7 +355,7 @@
       "scenes": [
         {
           "id": "scene_meet_npc",
-          "background": "village_center.jpg",
+          "background": "village_center.png",
           "music": "village_theme.mp3",
           "sound_effects": [],
           "dialogues": [
@@ -398,7 +398,7 @@
 
         {
           "id": "scene_allow_quiz",
-          "background": "village_center.jpg",
+          "background": "village_center.png",
           "music": "magic_open.mp3",
           "dialogues": [
             {
@@ -424,7 +424,7 @@
         },
         {
           "id": "scene_not_enough_item",
-          "background": "village_center.jpg",
+          "background": "village_center.png",
           "music": "sad_piano.mp3",
           "dialogues": [
             {
@@ -449,7 +449,7 @@
         },
         {
           "id": "scene_start_quiz",
-          "background": "quiz_hall.jpg",
+          "background": "quiz_hall.png",
           "music": "quiz_intro.mp3",
           "dialogues": [
             {
@@ -462,7 +462,7 @@
         },
         {
           "id": "scene_end",
-          "background": "village_center.jpg",
+          "background": "village_center.png",
           "music": "village_theme.mp3",
           "dialogues": [
             {
@@ -474,8 +474,236 @@
           "choices": []
         }
       ]
-    }
+    },
 
+    {
+      "id": "healer_backstory",
+      "title": "Ký Ức Mùi Khói Bếp",
+      "description": "Tìm hiểu câu chuyện của Lyra, người phục vụ tại quán rượu cũ kỹ – và lý do vì sao cô ấy luôn sẵn lòng giúp đỡ lữ khách.",
+      "scenes": [
+        {
+          "id": "scene_personality",
+          "background": "tavern_interior.png",
+          "music": "casual_tavern.mp3",
+          "dialogues": [
+            {
+              "character": "Lyra",
+              "characterImage": "npc_healer.png",
+              "text": "Lâu đến mức mọi vết xước trên quầy này đều có một câu chuyện. Ta không phải người giỏi phép thuật… nhưng ta hiểu con người."
+            },
+            {
+              "character": "Lyra",
+              "characterImage": "npc_healer.png",
+              "text": "Người say, kẻ lạc lối, cả những kẻ bị thương – họ đều đến đây. Và ta chỉ làm điều duy nhất ta biết: khiến họ cảm thấy ấm áp."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Thật tuyệt vời. Quay lại đầu.",
+              "next_scene": "scene_start",
+              "required_item": null,
+              "reward_item": null
+            },
+            {
+              "text": "Tạm biệt. Tôi sẽ quay lại sau.",
+              "next_scene": "scene_end",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_intro",
+          "background": "tavern_interior.png",
+          "music": "soft_fireplace.mp3",
+          "sound_effects": ["clinking_glasses.wav", "murmur.wav"],
+          "dialogues": [
+            {
+              "character": "MC",
+              "characterImage": "mc_default.png",
+              "text": "Khá đông nhỉ… Nhưng người kia đứng ở góc bếp trông có vẻ đặc biệt..."
+            },
+            {
+              "character": "Lyra",
+              "characterImage": "npc_healer.png",
+              "text": "Ồ, một gương mặt lạ. Chào mừng đến với quán 'Lửa & Lá' – ta là Lyra. Ngươi cần gì? Một món ăn? Hay là một câu chuyện?"
+            }
+          ],
+          "choices": [
+            {
+              "text": "Tiếp tục.",
+              "next_scene": "scene_start",
+              "required_item": null,
+              "reward_item": null
+            }
+
+          ]
+        },
+        {
+          "id": "scene_start",
+          "background": "tavern_interior.png",
+          "music": "casual_tavern.mp3",
+          "dialogues": [
+            {
+              "character": "Lyra",
+              "characterImage": "npc_healer.png",
+              "text": "Bạn muốn nghe câu chuyện của ta? Hay chỉ muốn biết ta đã làm gì ở đây?"
+            }
+          ],
+          "choices": [
+            {
+              "text": "Kể ta nghe câu chuyện của cô đi.",
+              "next_scene": "scene_story_1",
+              "required_item": null,
+              "reward_item": null
+            },
+            {
+              "text": "Cô làm việc ở đây đã lâu chưa?",
+              "next_scene": "scene_personality",
+              "required_item": null,
+              "reward_item": null
+            },
+            {
+              "text": "Không có gì, chỉ đi ngang qua thôi.",
+              "next_scene": "scene_end",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_story_1",
+          "background": "tavern_interior.png",
+          "music": "nostalgic_theme.mp3",
+          "dialogues": [
+            {
+              "character": "Lyra",
+              "characterImage": "npc_healer.png",
+              "text": "Trước đây ta từng là học viên chữa thương ở học viện thủ đô. Nhưng một sai sót nhỏ… đã cướp đi cơ hội trở thành pháp sư y thuật."
+            },
+            {
+              "character": "Lyra",
+              "characterImage": "npc_healer.png",
+              "text": "Ta quay về quê và mở quán này cùng mẹ. Từ đó, ta học cách dùng món ăn làm dịu nỗi đau và hồi phục cơ thể – một cách khác để chữa lành, đúng không?"
+            }
+          ],
+          "choices": [
+            {
+              "text": "Đó là một cách chữa lành đẹp đẽ.",
+              "next_scene": "scene_more_past",
+              "required_item": null,
+              "reward_item": null
+            },
+            {
+              "text": "Quay lại lựa chọn khác.",
+              "next_scene": "scene_start",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_not_enough_item",
+          "background": "village_center.png",
+          "music": "sad_piano.mp3",
+          "dialogues": [
+            {
+              "character": "NPC_Learna",
+              "characterImage": "npc_teacher.png",
+              "text": "Hmm... có vẻ như ngươi chưa có vật phẩm cần thiết."
+            },
+            {
+              "character": "NPC_Learna",
+              "characterImage": "npc_teacher.png",
+              "text": "Hãy quay lại khi ngươi đã tìm thấy vật phẩm đó."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Hiểu rồi. Tôi sẽ quay lại.",
+              "next_scene": "scene_end",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_more_past",
+          "background": "tavern_kitchen.png",
+          "music": "healing_memory.mp3",
+          "dialogues": [
+            {
+              "character": "Lyra",
+              "characterImage": "npc_healer.png",
+              "text": "Ngươi biết không… có lần một chiến binh gục ngã ngay tại ngưỡng cửa quán. Ta chỉ còn đúng một nồi súp dược thảo – và nó đã cứu được anh ta."
+            },
+            {
+              "character": "Lyra",
+              "characterImage": "npc_healer.png",
+              "text": "Từ đó, ta tự hứa sẽ nấu ăn không chỉ bằng tay – mà bằng cả trái tim."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Cảm ơn vì đã chia sẻ câu chuyện của cô.",
+              "next_scene": "scene_end",
+              "required_item": null,
+              "reward_item": null
+            },
+            {
+              "text": "Trở lại đầu.",
+              "next_scene": "scene_start",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_personality",
+          "background": "tavern_interior.png",
+          "music": "casual_tavern.mp3",
+          "dialogues": [
+            {
+              "character": "Lyra",
+              "characterImage": "npc_healer.png",
+              "text": "Lâu đến mức mọi vết xước trên quầy này đều có một câu chuyện. Ta không phải người giỏi phép thuật… nhưng ta hiểu con người."
+            },
+            {
+              "character": "Lyra",
+              "characterImage": "npc_healer.png",
+              "text": "Người say, kẻ lạc lối, cả những kẻ bị thương – họ đều đến đây. Và ta chỉ làm điều duy nhất ta biết: khiến họ cảm thấy ấm áp."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Thật tuyệt vời. Quay lại đầu.",
+              "next_scene": "scene_start",
+              "required_item": null,
+              "reward_item": null
+            },
+            {
+              "text": "Tạm biệt. Tôi sẽ quay lại sau.",
+              "next_scene": "scene_end",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_end",
+          "background": "tavern_door.png",
+          "music": "village_theme.mp3",
+          "dialogues": [
+            {
+              "character": "MC",
+              "characterImage": "mc_default.png",
+              "text": "Có lẽ... ta sẽ quay lại đây sau. Quán này có điều gì đó đặc biệt thật."
+            }
+          ],
+          "choices": []
+        }
+      ]
+    }
 
   ]
 }

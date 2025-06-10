@@ -36,6 +36,7 @@ public class IsometricGame extends Game {
     public void dispose() {
         assetManager.dispose();
         super.dispose();
+
     }
 
     public GameScreen getGameScreen() {

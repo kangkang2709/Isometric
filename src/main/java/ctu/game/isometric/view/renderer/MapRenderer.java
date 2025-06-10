@@ -100,6 +100,13 @@ public class MapRenderer {
         return toIsometric(x, y, 1.0f);
     }
 
+    public OrthographicCamera getCamera() {
+        return camera;
+    }
+
+    public void setCamera(OrthographicCamera camera) {
+        this.camera = camera;
+    }
 
     public void render(SpriteBatch batch) {
         // Draw background for the entire screen

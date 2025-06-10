@@ -7,8 +7,10 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import ctu.game.isometric.controller.DialogController;
+import ctu.game.isometric.model.dialog.Arc;
 import ctu.game.isometric.model.dialog.Dialog;
 import ctu.game.isometric.model.dialog.Choice;
+import ctu.game.isometric.model.dialog.Scene;
 
 import java.util.List;
 
@@ -22,6 +24,9 @@ public class DialogUI {
 
     private Texture characterImage;
     private String currentImagePath;
+
+    private Texture backgroundTexture;
+    private String currentBackgroundPath;
 
     // UI dimensions
     private static final int DIALOG_BOX_X = 50;
@@ -77,15 +82,59 @@ public class DialogUI {
         }
     }
 
+    private void loadBackgroundImage(String imagePath) {
+        if (imagePath != null && !imagePath.equals(currentBackgroundPath)) {
+            // Dispose previous background to avoid memory leaks
+            if (backgroundTexture != null) {
+                backgroundTexture.dispose();
+                backgroundTexture = null;
+            }
+
+            try {
+                // Validate imagePath before loading
+                String fullPath = "backgrounds/" + imagePath;
+                backgroundTexture = new Texture(Gdx.files.internal(fullPath));
+                currentBackgroundPath = imagePath;
+                Gdx.app.log("DialogUI", "Loaded background image: " + imagePath);
+            } catch (Exception e) {
+                Gdx.app.error("DialogUI", "Failed to load background image: " + imagePath, e);
+                backgroundTexture = null;
+                currentBackgroundPath = null;
+            }
+        }
+    }
+
     public void render() {
         if (dialogController == null || !dialogController.isDialogActive()) {
             return;
         }
 
+        // Start with base rendering setup
         Gdx.gl.glEnable(Gdx.gl.GL_BLEND);
         Gdx.gl.glBlendFunc(Gdx.gl.GL_SRC_ALPHA, Gdx.gl.GL_ONE_MINUS_SRC_ALPHA);
 
-        // Draw dialog background
+        // Render background first (bottom layer)
+        if (dialogController.shouldRenderBackground()) {
+            String currentArcId = dialogController.getCurrentArcId();
+            String currentSceneId = dialogController.getCurrentSceneId();
+
+            if (currentArcId != null && currentSceneId != null) {
+                Arc arc = dialogController.findArc(currentArcId);
+                Scene scene = dialogController.findScene(arc, currentSceneId);
+
+                if (scene != null && scene.getBackground() != null) {
+                    loadBackgroundImage(scene.getBackground());
+
+                    batch.begin();
+                    if (backgroundTexture != null) {
+                        batch.draw(backgroundTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+                    }
+                    batch.end();
+                }
+            }
+        }
+
+        // Draw dialog background (middle layer)
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(0, 0, 0, 0.8f);
         shapeRenderer.rect(DIALOG_BOX_X, DIALOG_BOX_Y, DIALOG_BOX_WIDTH, DIALOG_BOX_HEIGHT);
@@ -165,7 +214,7 @@ public class DialogUI {
     private void updateTextAnimation(float deltaTime) {
         if (!isTextFullyDisplayed) {
             textTimer += deltaTime;
-            int charactersToShow = (int)(textTimer * charactersPerSecond);
+            int charactersToShow = (int) (textTimer * charactersPerSecond);
 
             if (charactersToShow >= currentFullText.length()) {
                 displayedText = currentFullText;
@@ -197,5 +246,6 @@ public class DialogUI {
         batch.dispose();
         shapeRenderer.dispose();
         if (characterImage != null) characterImage.dispose();
+        if (backgroundTexture != null) backgroundTexture.dispose();
     }
 }

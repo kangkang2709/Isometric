@@ -8,6 +8,7 @@ import java.util.Map;
 public class Scene {
     private String id;
     private String music;
+    private String background;
     private List<Dialog> dialogues;
     private List<String> sound_effects;
     private List<Choice> choices;
@@ -16,6 +17,14 @@ public class Scene {
     // Getters and setters
     public String getId() {
         return id;
+    }
+
+    public String getBackground() {
+        return background;
+    }
+
+    public void setBackground(String background) {
+        this.background = background;
     }
 
     public void setId(String id) {

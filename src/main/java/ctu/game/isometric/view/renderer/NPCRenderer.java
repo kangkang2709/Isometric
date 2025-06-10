@@ -2,6 +2,7 @@ package ctu.game.isometric.view.renderer;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
@@ -10,6 +11,8 @@ import ctu.game.isometric.model.entity.NPC;
 import ctu.game.isometric.util.AnimationManager;
 
 import java.util.Map;
+
+import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
 
 public class NPCRenderer {
     private Map<Integer, NPC> npcs;
@@ -27,7 +30,7 @@ public class NPCRenderer {
     private final int BUTTON_SIZE = 20;
     private final int BUTTON_SPACING = 5;
 
-
+    private BitmapFont font;
 
     public NPCRenderer(Map<Integer, NPC> npcs, MapRenderer mapRenderer, Character player) {
         this.npcs = npcs;
@@ -41,6 +44,10 @@ public class NPCRenderer {
         Texture backstoryTexture = new Texture(Gdx.files.internal("ui/backstory_button.png"));
         interactButton = new TextureRegion(interactTexture);
         backstoryButton = new TextureRegion(backstoryTexture);
+
+        this.font = new BitmapFont(Gdx.files.internal("fonts/IMFellEnglishSC-Regular.fnt"));
+        this.font.getRegion().getTexture().setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+
     }
 
     public void update(float delta) {
@@ -98,26 +105,25 @@ public class NPCRenderer {
         int gridX = npc.getXPosition();
         int gridY = npc.getYPosition();
 
-        // Convert grid position to isometric screen position
         float[] screenPos = mapRenderer.toIsometric(gridX, gridY);
         float isoX = screenPos[0];
         float isoY = screenPos[1];
 
-        // Get animation frame based on NPC's behavior state
         TextureRegion currentFrame = animationManager.getNpcFrame(
                 String.valueOf(npc.getNpcID()),
                 npc.getBehaviorState(),
                 stateTime
         );
 
-        // Only draw if we have a valid frame
         if (currentFrame != null) {
-            batch.draw(currentFrame,
-                    isoX,
-                    isoY + 4,
-                    64,
-                    64);
+            batch.draw(currentFrame, isoX, isoY + 4, 64, 64);
         }
+
+        // Draw NPC name above the sprite
+        String name = npc.getNpcName();
+        float nameX = isoX; // Centered
+        float nameY = isoY + 58; // Above the sprite
+        font.draw(batch, name, nameX, nameY);
     }
 
 
@@ -135,6 +141,7 @@ public class NPCRenderer {
 
     public void dispose() {
         animationManager.dispose();
+        this.font.dispose();
         interactButton.getTexture().dispose();
         backstoryButton.getTexture().dispose();
     }
