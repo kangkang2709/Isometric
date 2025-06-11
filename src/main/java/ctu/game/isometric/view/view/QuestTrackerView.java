@@ -15,11 +15,14 @@ import org.w3c.dom.ls.LSException;
 import java.util.List;
 import java.util.Map;
 
+import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
+
 public class QuestTrackerView {
     private GameController gameController;
     private Texture backgroundTexture;
     private Texture arrowTexture;
     private BitmapFont font;
+    private BitmapFont smallFont;
     private GlyphLayout layout;
     private Rectangle closeButtonBounds;
     private boolean isVisible;
@@ -27,7 +30,7 @@ public class QuestTrackerView {
     private Matrix4 uiMatrix;
 
     // Constants for positioning and scroll behavior
-    private final float QUEST_LIST_Y = 560;
+    private final float QUEST_LIST_Y = 510;
     private float scrollOffset = 0;
     private final float SCROLL_AMOUNT = 40;
     private final int MAX_VISIBLE_QUESTS = 5;
@@ -36,11 +39,15 @@ public class QuestTrackerView {
     private Rectangle scrollUpButton;
     private Rectangle scrollDownButton;
 
+
     public QuestTrackerView(GameController gameController) {
         this.gameController = gameController;
         this.backgroundTexture = new Texture(Gdx.files.internal("ui/quest_tracker.png"));
         this.arrowTexture = new Texture(Gdx.files.internal("ui/arrow.png"));
-        this.font = new BitmapFont();
+
+        this.font = generateVietNameseFont("IMFellEnglishSC-Regular.ttf", 19);
+        this.smallFont = generateVietNameseFont("IMFellEnglishSC-Regular.ttf", 16);
+
         this.font.setColor(Color.WHITE);
         this.layout = new GlyphLayout();
         this.closeButtonBounds = new Rectangle(750, 550, 40, 40);
@@ -57,23 +64,23 @@ public class QuestTrackerView {
 
         // Draw background
         batch.setProjectionMatrix(uiMatrix);
-        batch.draw(backgroundTexture, 100, 100, 800, 600);
+        batch.draw(backgroundTexture, 270, 50, 800, 600);
 
         // Draw title
-        font.getData().setScale(1.5f);
-        font.setColor(Color.GOLD);
-        layout.setText(font, "Quest Tracker");
-        font.draw(batch, layout, 500 - layout.width / 2, 650);
+//        font.getData().setScale(1.5f);
+//        font.setColor(Color.GOLD);
+//        layout.setText(font, "Quest Tracker");
+//        font.draw(batch, layout, 500 - layout.width / 2, 650);
 
         // Draw active quests only
         font.getData().setScale(1.0f);
         font.setColor(Color.WHITE);
 
-        drawQuestList(batch, "Active Quests", activeQuests, 130, QUEST_LIST_Y);
+        drawQuestList(batch, "Active Quests", activeQuests, 300, QUEST_LIST_Y + 20);
 
         // Draw selected quest details
         if (selectedQuest != null) {
-            drawQuestDetails(batch, selectedQuest, 550, QUEST_LIST_Y);
+            drawQuestDetails(batch, selectedQuest, 720, QUEST_LIST_Y);
         }
 
         // Draw close button
@@ -83,7 +90,7 @@ public class QuestTrackerView {
 
     private void drawQuestDetails(SpriteBatch batch, Quest quest, float x, float y) {
         font.setColor(Color.GOLD);
-        font.draw(batch, "Quest Details", x, y);
+        font.draw(batch, "Quest Details", x, y + 20);
 
         font.setColor(Color.YELLOW);
         font.draw(batch, "Title: " + quest.getTitle(), x, y - 30);
@@ -114,7 +121,6 @@ public class QuestTrackerView {
     private void drawQuestList(SpriteBatch batch, String title, List<Quest> quests, float x, float y) {
         // Draw section title with underline
         font.setColor(Color.GOLD);
-        font.getData().setScale(1.2f);
         layout.setText(font, title);
 
         font.draw(batch, title, x + 20, y + 20);
@@ -133,7 +139,7 @@ public class QuestTrackerView {
             return;
         }
 
-        float questItemHeight = 60;
+        float questItemHeight = 65;
         float questItemWidth = 350;
 
         // Calculate scroll indicators
@@ -190,11 +196,11 @@ public class QuestTrackerView {
                     font.setColor(Color.WHITE);
             }
 
-            font.draw(batch, quest.getTitle(), x + 25, itemY + 30);
+            font.draw(batch, quest.getTitle(), x + 40, itemY + 35);
 
             // Show progress for active quests
             if (quest.getStatus() == Quest.QuestStatus.IN_PROGRESS) {
-                drawQuestProgress(batch, quest, x + 20, itemY - 5, questItemWidth - 30);
+                drawQuestProgress(batch, quest, x + 35, itemY, questItemWidth - 30);
             }
         }
 
@@ -213,9 +219,8 @@ public class QuestTrackerView {
             int collected = inventory != null ? inventory.getOrDefault(item, 0) : 0;
 
             // Draw text
-            font.setColor(Color.LIGHT_GRAY);
-            font.getData().setScale(0.8f);
-            font.draw(batch, item + ": " + collected + "/" + required, x+5, y+12);
+            smallFont.setColor(Color.LIGHT_GRAY);
+            smallFont.draw(batch, item + ": " + collected + "/" + required, x+5, y+12);
 
             // Draw progress bar
             float progress = Math.min(1.0f, (float)collected / required);
@@ -245,7 +250,7 @@ public class QuestTrackerView {
         List<Quest> activeQuests = gameController.getCharacter().getQuestTracker().getActiveQuests();
         boolean canScrollUp = scrollOffset > 0;
         boolean canScrollDown = activeQuests.size() > MAX_VISIBLE_QUESTS &&
-                scrollOffset < (activeQuests.size() - MAX_VISIBLE_QUESTS) * 60;
+                scrollOffset < (activeQuests.size() - MAX_VISIBLE_QUESTS) * 65;
 
         if (canScrollUp && scrollUpButton.contains(screenX, screenY)) {
             scrollUp();
