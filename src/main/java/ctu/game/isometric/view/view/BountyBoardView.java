@@ -29,6 +29,14 @@ public class BountyBoardView {
     private BitmapFont normalFont;
     private GlyphLayout layout;
 
+    // New fields for scroll functionality
+    private int maxVisibleQuests = 6;
+    private int scrollOffset = 0;
+    private Rectangle scrollUpButton;
+    private Rectangle scrollDownButton;
+    private Texture scrollButtonTexture;
+    private List<Quest> currentQuestList = new ArrayList<>();
+
     private float boardX;
     private float boardY;
     private float boardWidth;
@@ -61,6 +69,7 @@ public class BountyBoardView {
         buttonTexture = new Texture(Gdx.files.internal("ui/button.png"));
         tabTexture = new Texture(Gdx.files.internal("ui/tab.png"));
         tabActiveTexture = new Texture(Gdx.files.internal("ui/tab_active.png"));
+        scrollButtonTexture = new Texture(Gdx.files.internal("ui/scroll_button.png"));
 
         // Initialize fonts
         titleFont = new BitmapFont();
@@ -90,6 +99,12 @@ public class BountyBoardView {
         // Create buttons
         acceptButton = new Rectangle(boardX + 500, boardY + 50, 150, 50);
         submitButton = new Rectangle(boardX + 500, boardY + 110, 150, 50);
+
+        // Initialize scroll buttons
+        float scrollButtonSize = 40;
+        float scrollButtonX = boardX + 380;
+        scrollUpButton = new Rectangle(scrollButtonX, boardY + boardHeight - 100, scrollButtonSize, scrollButtonSize);
+        scrollDownButton = new Rectangle(scrollButtonX, boardY + boardHeight - 400, scrollButtonSize, scrollButtonSize);
 
         uiMatrix = new Matrix4().setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
@@ -161,6 +176,22 @@ public class BountyBoardView {
                     slot.bounds.x + 10, slot.bounds.y + slot.bounds.height - 40);
         }
 
+        // Draw scroll buttons if needed
+        boolean canScrollUp = scrollOffset > 0;
+        boolean canScrollDown = currentQuestList.size() > scrollOffset + maxVisibleQuests;
+
+        if (canScrollUp) {
+            batch.draw(scrollButtonTexture, scrollUpButton.x, scrollUpButton.y,
+                    scrollUpButton.width, scrollUpButton.height);
+            normalFont.draw(batch, "▲", scrollUpButton.x + 15, scrollUpButton.y + 25);
+        }
+
+        if (canScrollDown) {
+            batch.draw(scrollButtonTexture, scrollDownButton.x, scrollDownButton.y,
+                    scrollDownButton.width, scrollDownButton.height);
+            normalFont.draw(batch, "▼", scrollDownButton.x + 15, scrollDownButton.y + 25);
+        }
+
         // Draw selected quest details
         if (selectedQuest != null) {
             float detailX = boardX + 400;
@@ -213,7 +244,6 @@ public class BountyBoardView {
                         acceptButton.y + 30);
             }
 
-
             if (selectedQuest.getStatus() == Quest.QuestStatus.IN_PROGRESS &&
                     controller.checkQuestCompletion(selectedQuest.getId())) {
                 batch.draw(buttonTexture, submitButton.x, submitButton.y, submitButton.width, submitButton.height);
@@ -222,7 +252,7 @@ public class BountyBoardView {
                         submitButton.x + (submitButton.width - layout.width) / 2,
                         submitButton.y + 30);
             }
-//             Draw submit button if quest is completed
+            // Draw submit button if quest is completed
             if (selectedQuest.getStatus() == Quest.QuestStatus.COMPLETED) {
                 batch.draw(buttonTexture, submitButton.x, submitButton.y, submitButton.width, submitButton.height);
                 layout.setText(normalFont, "Submit Quest");
@@ -234,36 +264,41 @@ public class BountyBoardView {
     }
 
     private void updateQuestSlots() {
-        List<Quest> quests;
-
         // Filter quests based on the current tab
         switch (currentTab) {
             case AVAILABLE:
                 controller.updateQuestStatusFromQuestTracker(controller.getGameController().getCharacter().getQuestTracker());
-                quests = controller.getAllQuests().values().stream()
+                currentQuestList = controller.getAllQuests().values().stream()
                         .filter(quest -> quest.getStatus() == Quest.QuestStatus.AVAILABLE)
                         .toList();
                 break;
             case ACTIVE:
-                quests = controller.getActiveQuests();
+                currentQuestList = controller.getActiveQuests();
                 break;
             case COMPLETED:
-                quests = controller.getCompletedQuests();
+                currentQuestList = controller.getCompletedQuests();
                 break;
             default:
-                quests = new ArrayList<>();
+                currentQuestList = new ArrayList<>();
         }
 
-        // Clear and populate quest slots
+        // Ensure scrollOffset is valid
+        if (scrollOffset > currentQuestList.size() - maxVisibleQuests) {
+            scrollOffset = Math.max(0, currentQuestList.size() - maxVisibleQuests);
+        }
+
+        // Clear and populate only visible quest slots
         questSlots.clear();
         float slotWidth = 350;
         float slotHeight = 80;
         float slotX = boardX + 20;
         float slotY = boardY + boardHeight - 100;
 
-        for (int i = 0; i < quests.size(); i++) {
-            float yOffset = slotY - (i * (slotHeight + 10));
-            questSlots.add(new QuestSlot(quests.get(i), new Rectangle(slotX, yOffset, slotWidth, slotHeight)));
+        int end = Math.min(scrollOffset + maxVisibleQuests, currentQuestList.size());
+        for (int i = scrollOffset; i < end; i++) {
+            int displayIndex = i - scrollOffset;
+            float yOffset = slotY - (displayIndex * (slotHeight + 10));
+            questSlots.add(new QuestSlot(currentQuestList.get(i), new Rectangle(slotX, yOffset, slotWidth, slotHeight)));
         }
     }
 
@@ -275,8 +310,25 @@ public class BountyBoardView {
             if (tab.getValue().contains(pos)) {
                 currentTab = tab.getKey();
                 selectedQuest = null;
+                scrollOffset = 0; // Reset scroll position when changing tabs
                 return true;
             }
+        }
+
+        // Check scroll button clicks
+        boolean canScrollUp = scrollOffset > 0;
+        boolean canScrollDown = currentQuestList.size() > scrollOffset + maxVisibleQuests;
+
+        if (canScrollUp && scrollUpButton.contains(pos)) {
+            scrollOffset--;
+            updateQuestSlots();
+            return true;
+        }
+
+        if (canScrollDown && scrollDownButton.contains(pos)) {
+            scrollOffset++;
+            updateQuestSlots();
+            return true;
         }
 
         // Check if a quest slot was clicked
@@ -308,12 +360,32 @@ public class BountyBoardView {
         return false;
     }
 
+    public boolean scrollUp() {
+        if (scrollOffset > 0) {
+            scrollOffset--;
+            updateQuestSlots();
+            return true;
+        }
+        return false;
+    }
+
+    public boolean scrollDown() {
+        if (currentQuestList.size() > scrollOffset + maxVisibleQuests) {
+            scrollOffset++;
+            updateQuestSlots();
+            return true;
+        }
+        return false;
+    }
+
+
     public void dispose() {
         backgroundTexture.dispose();
         questSlotTexture.dispose();
         buttonTexture.dispose();
         tabTexture.dispose();
         tabActiveTexture.dispose();
+        scrollButtonTexture.dispose();
         titleFont.dispose();
         normalFont.dispose();
     }

@@ -150,6 +150,11 @@ public class BountyBoardController {
         }
     }
 
+    public void dispose() {
+        allQuests.clear();
+        gameController = null;
+    }
+
     public GameController getGameController() {
         return gameController;
     }

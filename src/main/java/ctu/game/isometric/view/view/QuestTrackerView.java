@@ -10,6 +10,7 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import ctu.game.isometric.controller.GameController;
 import ctu.game.isometric.model.quest.Quest;
+import org.w3c.dom.ls.LSException;
 
 import java.util.List;
 import java.util.Map;
@@ -17,22 +18,39 @@ import java.util.Map;
 public class QuestTrackerView {
     private GameController gameController;
     private Texture backgroundTexture;
+    private Texture arrowTexture;
     private BitmapFont font;
     private GlyphLayout layout;
     private Rectangle closeButtonBounds;
     private boolean isVisible;
     private Quest selectedQuest;
     private Matrix4 uiMatrix;
+
+    // Constants for positioning and scroll behavior
+    private final float QUEST_LIST_Y = 560;
+    private float scrollOffset = 0;
+    private final float SCROLL_AMOUNT = 40;
+    private final int MAX_VISIBLE_QUESTS = 5;
+
+    // Scroll button rectangles
+    private Rectangle scrollUpButton;
+    private Rectangle scrollDownButton;
+
     public QuestTrackerView(GameController gameController) {
         this.gameController = gameController;
         this.backgroundTexture = new Texture(Gdx.files.internal("ui/quest_tracker.png"));
+        this.arrowTexture = new Texture(Gdx.files.internal("ui/arrow.png"));
         this.font = new BitmapFont();
         this.font.setColor(Color.WHITE);
         this.layout = new GlyphLayout();
-        this.closeButtonBounds = new Rectangle(750, 550, 40, 40); // Example close button
+        this.closeButtonBounds = new Rectangle(750, 550, 40, 40);
+        this.scrollUpButton = new Rectangle(430, QUEST_LIST_Y - 10, 30, 30);
+        this.scrollDownButton = new Rectangle(430, QUEST_LIST_Y - 300, 30, 30);
         this.isVisible = false;
         uiMatrix = new Matrix4().setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
     }
+
+    List<Quest> activeQuests;
 
     public void render(SpriteBatch batch) {
         if (!isVisible) return;
@@ -47,23 +65,15 @@ public class QuestTrackerView {
         layout.setText(font, "Quest Tracker");
         font.draw(batch, layout, 500 - layout.width / 2, 650);
 
-        // Draw active quests
+        // Draw active quests only
         font.getData().setScale(1.0f);
         font.setColor(Color.WHITE);
-        List<Quest> activeQuests = gameController.getCharacter().getQuestTracker().getActiveQuests();
-        drawQuestList(batch, "Active Quests", activeQuests, 120, 550);
 
-        // Draw completed quests
-        List<Quest> completedQuests = gameController.getCharacter().getQuestTracker().getCompletedQuests();
-        drawQuestList(batch, "Completed Quests", completedQuests, 120, 350);
-
-//        // Draw available quests
-//        List<Quest> availableQuests = gameController.getCharacter().getQuestTracker().getAvailableQuests();
-//        drawQuestList(batch, "Available Quests", availableQuests, 120, 150);
+        drawQuestList(batch, "Active Quests", activeQuests, 130, QUEST_LIST_Y);
 
         // Draw selected quest details
         if (selectedQuest != null) {
-            drawQuestDetails(batch, selectedQuest, 500, 550);
+            drawQuestDetails(batch, selectedQuest, 550, QUEST_LIST_Y);
         }
 
         // Draw close button
@@ -95,51 +105,208 @@ public class QuestTrackerView {
         offset += 30;
         font.draw(batch, "- XP: " + quest.getReward().getExperience(), x + 20, y - 150 - offset);
         font.draw(batch, "- Gold: " + quest.getReward().getGold(), x + 20, y - 170 - offset);
-    }
-    private void drawQuestList(SpriteBatch batch, String title, List<Quest> quests, float x, float y) {
-        font.setColor(Color.YELLOW);
-        font.draw(batch, title, x, y);
-
-        font.setColor(Color.WHITE);
-        for (int i = 0; i < quests.size(); i++) {
-            Quest quest = quests.get(i);
-            font.draw(batch, "- " + quest.getTitle(), x + 20, y - (i + 1) * 20);
+        for (Map.Entry<String, Integer> item : quest.getReward().getItems().entrySet()) {
+            font.draw(batch, "- " + item.getValue() + "x " + item.getKey(), x + 20, y - 190 - offset);
+            offset += 20;
         }
+    }
+
+    private void drawQuestList(SpriteBatch batch, String title, List<Quest> quests, float x, float y) {
+        // Draw section title with underline
+        font.setColor(Color.GOLD);
+        font.getData().setScale(1.2f);
+        layout.setText(font, title);
+
+        font.draw(batch, title, x + 20, y + 20);
+
+        // Draw underline
+        batch.setColor(Color.GOLD);
+        batch.draw(backgroundTexture, x, y - 5, layout.width, 2);
+        batch.setColor(Color.WHITE);
+
+        // Reset font for quest items
+        font.getData().setScale(1.0f);
+
+        if (quests.isEmpty()) {
+            font.setColor(Color.GRAY);
+            font.draw(batch, "No quests available", x + 20, y - 30);
+            return;
+        }
+
+        float questItemHeight = 60;
+        float questItemWidth = 350;
+
+        // Calculate scroll indicators
+        boolean canScrollUp = scrollOffset > 0;
+        boolean canScrollDown = quests.size() > MAX_VISIBLE_QUESTS &&
+                scrollOffset < (quests.size() - MAX_VISIBLE_QUESTS) * questItemHeight;
+
+        // Draw scroll buttons if needed
+        if (canScrollUp) {
+            batch.setColor(Color.WHITE);
+            batch.draw(arrowTexture, scrollUpButton.x, scrollUpButton.y, scrollUpButton.width, scrollUpButton.height,
+                    0, 0, 16, 16, false, false);
+        }
+
+        if (canScrollDown) {
+            batch.setColor(Color.WHITE);
+            batch.draw(arrowTexture, scrollDownButton.x, scrollDownButton.y, scrollDownButton.width, scrollDownButton.height,
+                    0, 0, 16, 16, false, true);
+        }
+
+        // Calculate visible indices based on scroll position
+        int startIndex = (int)(scrollOffset / questItemHeight);
+        int endIndex = Math.min(quests.size(), startIndex + MAX_VISIBLE_QUESTS);
+
+        float visibleAreaTop = y - 20;
+        float visibleAreaBottom = y - 20 - (MAX_VISIBLE_QUESTS * questItemHeight);
+
+        // Only render the visible quests
+        for (int i = startIndex; i < endIndex; i++) {
+            Quest quest = quests.get(i);
+            float itemY = visibleAreaTop - ((i - startIndex) + 1) * questItemHeight + 40;
+
+            // Draw quest background (highlight if selected)
+            if (quest == selectedQuest) {
+                batch.setColor(0.3f, 0.3f, 0.4f, 0.7f);
+            } else {
+                batch.setColor(0.2f, 0.2f, 0.3f, 0.5f);
+            }
+            batch.draw(backgroundTexture, x + 10, itemY - 10, questItemWidth, questItemHeight - 5);
+            batch.setColor(Color.WHITE);
+
+            // Draw quest title with appropriate color based on status
+            switch (quest.getStatus()) {
+                case IN_PROGRESS:
+                    font.setColor(Color.CYAN);
+                    break;
+                case COMPLETED:
+                    font.setColor(Color.LIME);
+                    break;
+                case CLAIMED:
+                    font.setColor(Color.LIGHT_GRAY);
+                    break;
+                default:
+                    font.setColor(Color.WHITE);
+            }
+
+            font.draw(batch, quest.getTitle(), x + 25, itemY + 30);
+
+            // Show progress for active quests
+            if (quest.getStatus() == Quest.QuestStatus.IN_PROGRESS) {
+                drawQuestProgress(batch, quest, x + 20, itemY - 5, questItemWidth - 30);
+            }
+        }
+
+        // Reset font color
+        font.setColor(Color.WHITE);
+    }
+
+    private void drawQuestProgress(SpriteBatch batch, Quest quest, float x, float y, float width) {
+        Map<String, Integer> requirements = quest.getRequirements();
+        Map<String, Integer> inventory = gameController.getCharacter().getItems();
+
+        // Choose the first requirement to display (simplified)
+        if (!requirements.isEmpty()) {
+            String item = requirements.keySet().iterator().next();
+            int required = requirements.get(item);
+            int collected = inventory != null ? inventory.getOrDefault(item, 0) : 0;
+
+            // Draw text
+            font.setColor(Color.LIGHT_GRAY);
+            font.getData().setScale(0.8f);
+            font.draw(batch, item + ": " + collected + "/" + required, x+5, y+12);
+
+            // Draw progress bar
+            float progress = Math.min(1.0f, (float)collected / required);
+            batch.setColor(0.2f, 0.2f, 0.2f, 1);
+            batch.draw(backgroundTexture, x, y - 10, width, 5);
+            batch.setColor(0.2f, 0.7f, 1.0f, 1);
+            batch.draw(backgroundTexture, x, y - 10, width * progress, 5);
+            font.getData().setScale(1.0f);
+        }
+
+        batch.setColor(Color.WHITE);
     }
 
     public boolean handleClick(float screenX, float screenY) {
         if (!isVisible) return false;
 
+        screenY = Gdx.graphics.getHeight() - screenY; // Convert to OpenGL coordinates
+
         // Check if close button is clicked
-        if (closeButtonBounds.contains(screenX, Gdx.graphics.getHeight() - screenY)) {
+        if (closeButtonBounds.contains(screenX, screenY)) {
             gameController.returnToPreviousState();
             isVisible = false;
             return true;
         }
 
-        // Check if a quest is clicked
-        List<Quest> allQuests = gameController.getCharacter().getQuestTracker().getActiveQuests();
-        allQuests.addAll(gameController.getCharacter().getQuestTracker().getCompletedQuests());
+        // Check if scroll buttons are clicked
+        List<Quest> activeQuests = gameController.getCharacter().getQuestTracker().getActiveQuests();
+        boolean canScrollUp = scrollOffset > 0;
+        boolean canScrollDown = activeQuests.size() > MAX_VISIBLE_QUESTS &&
+                scrollOffset < (activeQuests.size() - MAX_VISIBLE_QUESTS) * 60;
 
-        float questY = 550; // Starting Y position for quests
-        for (Quest quest : allQuests) {
-            Rectangle questBounds = new Rectangle(120, questY - 20, 300, 20);
-            if (questBounds.contains(screenX, Gdx.graphics.getHeight() - screenY)) {
+        if (canScrollUp && scrollUpButton.contains(screenX, screenY)) {
+            scrollUp();
+            return true;
+        }
+
+        if (canScrollDown && scrollDownButton.contains(screenX, screenY)) {
+            scrollDown();
+            return true;
+        }
+
+        // Check if a quest is clicked
+        int startIndex = (int)(scrollOffset / 60);
+        int endIndex = Math.min(activeQuests.size(), startIndex + MAX_VISIBLE_QUESTS);
+
+        float visibleAreaTop = QUEST_LIST_Y - 20;
+
+        for (int i = startIndex; i < endIndex; i++) {
+            Quest quest = activeQuests.get(i);
+            float itemY = visibleAreaTop - ((i - startIndex) + 1) * 60 + 40;
+
+            Rectangle questBounds = new Rectangle(130, itemY - 10, 350, 55);
+            if (questBounds.contains(screenX, screenY)) {
                 selectedQuest = quest;
                 return true;
             }
-            questY -= 30; // Adjust for next quest
         }
 
         return false;
     }
 
     public void toggleVisibility() {
+        selectedQuest = null; // Reset selected quest when toggling visibility
         isVisible = !isVisible;
+
+        activeQuests = gameController.getCharacter().getQuestTracker().getActiveQuests();
+        if (activeQuests == null) {
+            activeQuests = List.of(); // Use an empty list if null
+        }
+
+        for (Quest quest : activeQuests) {
+            gameController.getBountyBoardController().checkQuestCompletion(quest.getId());
+        }
     }
 
     public void dispose() {
         backgroundTexture.dispose();
+        arrowTexture.dispose();
         font.dispose();
+    }
+
+    public void scrollUp() {
+        scrollOffset = Math.max(0, scrollOffset - SCROLL_AMOUNT);
+    }
+
+    public void scrollDown() {
+        List<Quest> activeQuests = gameController.getCharacter().getQuestTracker().getActiveQuests();
+        if (activeQuests.size() <= MAX_VISIBLE_QUESTS) return;
+
+        float maxScroll = (activeQuests.size() - MAX_VISIBLE_QUESTS) * 60;
+        scrollOffset = Math.min(maxScroll, scrollOffset + SCROLL_AMOUNT);
+
     }
 }

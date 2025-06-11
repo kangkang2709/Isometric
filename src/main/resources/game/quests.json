@@ -81,5 +81,73 @@
         "Magic Book": 1
       }
     }
+  },
+  {
+    "id": "quest_006",
+    "title": "Magic Book Quest",
+    "description": "Deliver 1 magic book to the wizard",
+    "status": "AVAILABLE",
+    "visible": true,
+    "requirements": {
+      "Magic Book": 1
+    },
+    "reward": {
+      "experience": 150,
+      "gold": 75,
+      "items": {
+        "Magic Book": 1
+      }
+    }
+  },
+  {
+    "id": "quest_007",
+    "title": "Magic Book Quest2",
+    "description": "Deliver 1 magic book to the wizard",
+    "status": "AVAILABLE",
+    "visible": true,
+    "requirements": {
+      "Magic Book": 2
+    },
+    "reward": {
+      "experience": 150,
+      "gold": 75,
+      "items": {
+        "Magic Book": 1
+      }
+    }
+  },
+  {
+    "id": "quest_008",
+    "title": "Magic Book Quest3",
+    "description": "Deliver 1 magic book to the wizard",
+    "status": "AVAILABLE",
+    "visible": true,
+    "requirements": {
+      "Magic Book": 2
+    },
+    "reward": {
+      "experience": 150,
+      "gold": 75,
+      "items": {
+        "Magic Book": 1
+      }
+    }
+  },
+  {
+    "id": "quest_009",
+    "title": "Magic Book Quest3",
+    "description": "Deliver 1 magic book to the wizard",
+    "status": "AVAILABLE",
+    "visible": true,
+    "requirements": {
+      "Magic Book": 2
+    },
+    "reward": {
+      "experience": 150,
+      "gold": 75,
+      "items": {
+        "Magic Book": 1
+      }
+    }
   }
 ]

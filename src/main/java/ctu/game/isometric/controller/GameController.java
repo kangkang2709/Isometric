@@ -84,6 +84,7 @@ public class GameController {
     private BountyBoardController bountyBoardController;
     private BountyBoardView bountyBoardView;
     private QuestTrackerView questTrackerView;
+
     public GameController(IsometricGame game) {
         this.game = game;
 
@@ -917,22 +918,19 @@ public class GameController {
         effectManager.dispose();
         musicController.dispose();
         merchantUI.dispose();
-        if (dictionaryView != null) {
-            dictionaryView.dispose();
-        }
-        if (achievementUI != null) {
-            achievementUI.dispose();
-        }
-        if (npcManager != null) {
-            npcManager.dispose();
-        }
+        dictionaryView.dispose();
+        achievementUI.dispose();
 
+        npcRenderer.dispose();
+        npcManager.dispose();
+        bountyBoardView.dispose();
+        questTrackerView.dispose();
+        bountyBoardController.dispose();
         if (quizController != null) {
             quizController.dispose();
         }
-        if (npcRenderer != null) {
-            npcRenderer.dispose();
-        }
+
+
     }
 
 

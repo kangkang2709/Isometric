@@ -262,11 +262,11 @@ public class InputController extends InputAdapter {
         if (state == GameState.MULTIPLE_CHOICE_QUIZZES) {
             return gameController.getMultipleChoiceQuizController().handleClick(screenX, screenY);
         }
-        if(state == GameState.BOUNTY_BOARD){
+        if (state == GameState.BOUNTY_BOARD) {
             return gameController.getBountyBoardView().handleClick(screenX, screenY);
         }
 
-        if(state == GameState.QUEST_TRACKER){
+        if (state == GameState.QUEST_TRACKER) {
             return gameController.getQuestTrackerView().handleClick(screenX, screenY);
         }
 
@@ -459,23 +459,30 @@ public class InputController extends InputAdapter {
 
     public boolean handleBountyBoardInput(int keycode) {
         switch (keycode) {
-            case Keys.ESCAPE -> gameController.returnToPreviousState();
-            default -> {}
+            case Keys.ESCAPE -> gameController.setState(GameState.EXPLORING);
+            case Keys.UP -> gameController.getBountyBoardView().scrollUp();
+            case Keys.DOWN -> gameController.getBountyBoardView().scrollDown();
+            default -> {
+            }
 
         }
         return true;
     }
+
     public boolean handleQuestTrackerInput(int keycode) {
         switch (keycode) {
             case Keys.ESCAPE -> {
-                gameController.returnToPreviousState();
+                gameController.setState(GameState.EXPLORING);
                 gameController.getQuestTrackerView().toggleVisibility();
             }
-            default -> {}
-
+            case Keys.UP -> gameController.getQuestTrackerView().scrollUp();
+            case Keys.DOWN -> gameController.getQuestTrackerView().scrollDown();
+            default -> {
+            }
         }
         return true;
     }
+
     private boolean handleDictionaryInput(int keycode) {
         switch (keycode) {
             case Keys.ESCAPE -> gameController.setCurrentState(GameState.EXPLORING);
@@ -641,26 +648,46 @@ public class InputController extends InputAdapter {
     public boolean scrolled(float amountX, float amountY) {
         GameState state = gameController.getCurrentState();
 
-        if (state == GameState.DICTIONARY) {
-            gameController.getDictionaryView().handleMouseScroll(amountX, -amountY, Gdx.input.getX(), Gdx.graphics.getHeight() - Gdx.input.getY());
-            return true;
-        }
-
-        if (state == GameState.EXPLORING) {
-            float defaultZoom = 1.0f;
-            float minZoom = 0.5f;
-            float zoomStep = 0.1f;
-
-            if (amountY < 0) {
-                gameController.getCamera().zoom -= zoomStep;
-            } else if (amountY > 0 && gameController.getCamera().zoom < defaultZoom) {
-                gameController.getCamera().zoom += zoomStep;
+        switch (state) {
+            case DICTIONARY -> {
+                gameController.getDictionaryView().handleMouseScroll(amountX, -amountY, Gdx.input.getX(), Gdx.graphics.getHeight() - Gdx.input.getY());
+                return true;
             }
 
-            gameController.getCamera().zoom = MathUtils.clamp(gameController.getCamera().zoom, minZoom, defaultZoom);
-            gameController.getCamera().update();
+            case EXPLORING -> {
+                float defaultZoom = 1.0f;
+                float minZoom = 0.5f;
+                float zoomStep = 0.1f;
 
-            return true;
+                if (amountY < 0) {
+                    gameController.getCamera().zoom -= zoomStep;
+                } else if (amountY > 0 && gameController.getCamera().zoom < defaultZoom) {
+                    gameController.getCamera().zoom += zoomStep;
+                }
+
+                gameController.getCamera().zoom = MathUtils.clamp(gameController.getCamera().zoom, minZoom, defaultZoom);
+                gameController.getCamera().update();
+
+                return true;
+            }
+
+
+            case BOUNTY_BOARD -> {
+                if (amountY > 0) {
+                    gameController.getBountyBoardView().scrollDown();
+                } else if (amountY < 0) {
+                    gameController.getBountyBoardView().scrollUp();
+                }
+                return true;
+            }
+            case QUEST_TRACKER -> {
+                if (amountY > 0) {
+                    gameController.getQuestTrackerView().scrollDown();
+                } else if (amountY < 0) {
+                    gameController.getQuestTrackerView().scrollUp();
+                }
+                return true;
+            }
         }
         return false;
     }
