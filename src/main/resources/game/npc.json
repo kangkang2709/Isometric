@@ -3,50 +3,23 @@
     "npcID": 2,
     "npcName": "Healer Elara",
     "npcDescription": "A skilled healer who can restore your health and mana",
-    "arcId": "village",
-    "sceneId": "healing_hut",
+    "arcId": "healer_backstory",
+    "sceneId": "scene_intro",
     "npcImage": "healer.png",
     "npcBackStory": "Elara studied ancient healing arts in the mystical forest before settling in this village.",
     "behaviorState": "idle",
-    "quests": [],
     "xPosition": 10,
     "yPosition": 12
   },
   {
     "npcID": 1,
-    "npcName": "Captain Thorne",
+    "npcName": "Bounty Board",
     "npcDescription": "The village guard captain who offers tasks to adventurers",
     "arcId": "village",
     "sceneId": "town_square",
     "npcImage": "captain.png",
     "npcBackStory": "A veteran soldier who now protects the village from various threats.",
     "behaviorState": "idle",
-    "quests": [
-      {
-        "questId": "monster_hunt",
-        "questName": "Monster Hunt",
-        "questDescription": "Clear the nearby forest of dangerous creatures.",
-        "isCompleted": false,
-        "objectives": [
-          {
-            "description": "Defeat forest spiders",
-            "required": 5,
-            "current": 0
-          },
-          {
-            "description": "Collect troll fangs",
-            "required": 3,
-            "current": 0
-          }
-        ],
-        "reward": {
-          "rewardID": 101,
-          "itemID": 10,
-          "amount": 1,
-          "description": "A powerful sword that increases your strength"
-        }
-      }
-    ],
     "xPosition": 18,
     "yPosition": 16
   },
@@ -59,7 +32,6 @@
     "npcImage": "riddler.png",
     "npcBackStory": "No one knows where he came from, but his riddles have stumped even the wisest scholars.",
     "behaviorState": "idle",
-    "quests": [],
     "xPosition": 12,
     "yPosition": 14
   },
@@ -72,7 +44,6 @@
     "npcImage": "gambler.png",
     "npcBackStory": "Lucy travels from town to town entertaining locals with her games of chance.",
     "behaviorState": "idle",
-    "quests": [],
     "xPosition": 15,
     "yPosition": 15
   }

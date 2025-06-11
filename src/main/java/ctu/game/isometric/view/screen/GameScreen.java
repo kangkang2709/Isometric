@@ -113,6 +113,10 @@ public class GameScreen implements Screen {
                 case INFORMATION:
                     gameController.getCharacterDisplay().render(batch);
                     break;
+                case BOUNTY_BOARD:
+                    gameController.getBountyBoardView().render(batch);
+                    break;
+
                 case EXPLORING:
                     gameController.getMap().cleanupChunks();
                     gameController.setCharacterCreationController(null);
@@ -223,7 +227,7 @@ public class GameScreen implements Screen {
     @Override
     public void pause() {
         if (gameController.getCurrentState() == GameState.MAIN_MENU || gameController.getCurrentState() == GameState.SETTINGS) {
-                return;
+            return;
         }
         System.out.println("GameScreen paused");
         gameController.setState(GameState.MENU);

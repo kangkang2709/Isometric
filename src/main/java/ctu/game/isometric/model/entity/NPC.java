@@ -1,9 +1,5 @@
 package ctu.game.isometric.model.entity;
 
-import ctu.game.isometric.model.game.Quest;
-
-import java.util.List;
-
 public class NPC {
     int npcID;
     String npcName;
@@ -13,7 +9,6 @@ public class NPC {
     String npcImage;
     String npcBackStory;
     String behaviorState;
-    List<Quest> quests;
     // Additional attributes can be added as needed
     int xPosition;
     int yPosition;
@@ -22,7 +17,7 @@ public class NPC {
         this.behaviorState = "idle";
     }
 
-    public NPC(int npcID, String npcName, String npcDescription, String arcId, String sceneId, String npcImage, String npcBackStory, String behaviorState, List<Quest> quests, int xPosition, int yPosition) {
+    public NPC(int npcID, String npcName, String npcDescription, String arcId, String sceneId, String npcImage, String npcBackStory, String behaviorState, int xPosition, int yPosition) {
         this.npcID = npcID;
         this.npcName = npcName;
         this.npcDescription = npcDescription;
@@ -31,7 +26,6 @@ public class NPC {
         this.npcImage = npcImage;
         this.npcBackStory = npcBackStory;
         this.behaviorState = behaviorState;
-        this.quests = quests;
         this.xPosition = xPosition;
         this.yPosition = yPosition;
     }
@@ -80,13 +74,7 @@ public class NPC {
         this.behaviorState = behaviorState;
     }
 
-    public List<Quest> getQuests() {
-        return quests;
-    }
 
-    public void setQuests(List<Quest> quests) {
-        this.quests = quests;
-    }
 
     public int getXPosition() {
         return xPosition;
@@ -110,20 +98,20 @@ public class NPC {
         return npcID;
     }
 
-    public void interact(Character player, String action) {
-        // Check if NPC has quests for the player
-        for (Quest quest : quests) {
-            if (!player.hasQuest(quest) && !quest.isCompleted()) {
-                // Offer a new quest
-                return;
-            } else if (player.hasQuest(quest) && !quest.isCompleted()) {
-                // Check if the quest can be completed
-                return;
-            }
-        }
-
-
-    }
+//    public void interact(Character player, String action) {
+//        // Check if NPC has quests for the player
+//        for (Quest quest : quests) {
+//            if (!player.hasQuest(quest) && !quest.isCompleted()) {
+//                // Offer a new quest
+//                return;
+//            } else if (player.hasQuest(quest) && !quest.isCompleted()) {
+//                // Check if the quest can be completed
+//                return;
+//            }
+//        }
+//
+//
+//    }
 
 
     public void setNpcID(int npcID) {

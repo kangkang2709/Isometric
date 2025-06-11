@@ -179,12 +179,8 @@ public class InputController extends InputAdapter {
         // Only process left clicks during EXPLORING state
         GameState state = gameController.getCurrentState();
 
-        if (gameController.getDialogController().isDialogActive()) {
-            return false;
 
-        }
-
-        if (state == GameState.EXPLORING) {
+        if (state == GameState.EXPLORING && !gameController.getDialogController().isDialogActive()) {
             if (moveCooldown > 0) return false;
 
             if (gameController.getInventoryUI().isVisible()) {
@@ -262,7 +258,9 @@ public class InputController extends InputAdapter {
         if (state == GameState.MULTIPLE_CHOICE_QUIZZES) {
             return gameController.getMultipleChoiceQuizController().handleClick(screenX, screenY);
         }
-
+        if(state == GameState.BOUNTY_BOARD){
+            return gameController.getBountyBoardView().handleClick(screenX, screenY);
+        }
         return false;
     }
 

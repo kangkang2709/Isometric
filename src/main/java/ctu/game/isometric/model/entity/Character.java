@@ -1,12 +1,10 @@
 package ctu.game.isometric.model.entity;
 
-import com.badlogic.gdx.graphics.g2d.Animation;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
-import ctu.game.isometric.model.dictionary.Word;
 import ctu.game.isometric.model.game.Achievement;
 import ctu.game.isometric.model.game.Items;
-import ctu.game.isometric.model.game.Quest;
+import ctu.game.isometric.model.quest.Quest;
+import ctu.game.isometric.model.quest.QuestTracker;
 import ctu.game.isometric.model.world.IsometricMap;
 import ctu.game.isometric.util.ItemLoader;
 
@@ -43,8 +41,7 @@ public class Character {
     private float moveSpeed = 2.5f; // Grid cells per second
 
     // Quest tracking
-    private List<Quest> activeQuests;
-    private List<Quest> completedQuests;
+    private QuestTracker questTracker;
 
     private float score;
     // Score for the character
@@ -107,8 +104,8 @@ public class Character {
         this.ettempFlags.put("mulQuizAttempts", 0);
         this.ettempFlags.put("fallen", 0);
         this.ettempFlags.put("wrongWord", 0);
-        this.activeQuests = new ArrayList<>();
-        this.completedQuests = new ArrayList<>();
+
+        this.questTracker = new QuestTracker();
     }
 
 
@@ -133,38 +130,24 @@ public class Character {
         this.ettempFlags.put("fallen", 0);
         this.ettempFlags.put("wrongWord", 0);
         this.score = 0;
-        this.activeQuests = new ArrayList<>();
-        this.completedQuests = new ArrayList<>();
+        this.questTracker = new QuestTracker();
 
     }
 
-
-    public boolean hasQuest(Quest quest) {
-        return activeQuests.stream()
-                .anyMatch(q -> q.getQuestName().equals(quest.getQuestName()));
+    public QuestTracker getQuestTracker() {
+        return questTracker;
     }
 
-    public void addQuest(Quest quest) {
-        activeQuests.add(quest);
-        // Trigger UI update or notification
+    public void setQuestTracker(QuestTracker questTracker) {
+        this.questTracker = questTracker;
     }
-
-    public void completeQuest(Quest quest) {
-        activeQuests.remove(quest);
-        completedQuests.add(quest);
-        // Apply rewards, show completion message, etc.
-    }
-
-    // Getters and setters
     public List<Quest> getActiveQuests() {
-        return activeQuests;
+        return questTracker.getActiveQuests();
     }
 
     public List<Quest> getCompletedQuests() {
-        return completedQuests;
+        return questTracker.getCompletedQuests();
     }
-
-
     public boolean gameOver() {
         int amount = (items != null) ? items.getOrDefault("Potion of Healing", 0) : 0;
         if (amount <= 0) {

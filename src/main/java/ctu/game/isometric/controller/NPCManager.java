@@ -3,15 +3,12 @@ package ctu.game.isometric.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import ctu.game.isometric.model.entity.NPC;
-import ctu.game.isometric.model.game.Quest;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class NPCManager {
     private GameController gameController;

@@ -1,0 +1,69 @@
+[
+  {
+    "id": "quest_001",
+    "title": "Wolf Hunter",
+    "description": "Hunt 3 wolves in the forest",
+    "status": "AVAILABLE",
+    "visible": true,
+    "requirements": {
+      "Wolf Pelt": 3
+    },
+    "reward": {
+      "experience": 100,
+      "gold": 50,
+      "items": {
+        "Potion of Healing": 1
+      }
+    }
+  },
+  {
+    "id": "quest_002",
+    "title": "Herbalist's Request",
+    "description": "Gather 5 healing herbs",
+    "status": "AVAILABLE",
+    "visible": true,
+    "requirements": {
+      "Healing Herb": 5
+    },
+    "reward": {
+      "experience": 75,
+      "gold": 40,
+      "items": {}
+    }
+  },
+  {
+    "id": "quest_003",
+    "title": "Spider Problem",
+    "description": "Kill 2 giant spiders",
+    "status": "AVAILABLE",
+    "visible": true,
+    "requirements": {
+      "Spider Fang": 2
+    },
+    "reward": {
+      "experience": 120,
+      "gold": 60,
+      "items": {
+        "Potion of Healing": 1,
+        "Spider Silk": 1
+      }
+    }
+  },
+  {
+    "id": "quest_004",
+    "title": "Mushroom Collector",
+    "description": "Collect 8 glowing mushrooms from the cave",
+    "status": "AVAILABLE",
+    "visible": false,
+    "requirements": {
+      "Glowing Mushroom": 8
+    },
+    "reward": {
+      "experience": 150,
+      "gold": 75,
+      "items": {
+        "Magic Essence": 2
+      }
+    }
+  }
+]

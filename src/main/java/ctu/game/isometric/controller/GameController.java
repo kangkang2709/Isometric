@@ -2,20 +2,16 @@ package ctu.game.isometric.controller;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.maps.MapLayer;
-import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.MapProperties;
-import com.badlogic.gdx.maps.objects.RectangleMapObject;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 import ctu.game.isometric.IsometricGame;
+import ctu.game.isometric.controller.quest.BountyBoardController;
 import ctu.game.isometric.controller.quiz.MulChoiceQuizController;
 import ctu.game.isometric.model.dictionary.Dictionary;
 import ctu.game.isometric.model.dictionary.Word;
 import ctu.game.isometric.model.entity.NPC;
 import ctu.game.isometric.model.game.Items;
 import ctu.game.isometric.model.world.MapEvent;
-import ctu.game.isometric.util.AnimationManager;
 import ctu.game.isometric.util.ItemLoader;
 import ctu.game.isometric.view.menu.CharacterCreation;
 import ctu.game.isometric.view.menu.MainMenu;
@@ -34,11 +30,10 @@ import ctu.game.isometric.view.renderer.MapRenderer;
 import ctu.game.isometric.view.renderer.NPCRenderer;
 import ctu.game.isometric.view.renderer.TransitionRenderer;
 import ctu.game.isometric.view.ui.*;
+import ctu.game.isometric.view.view.BountyBoardView;
 import ctu.game.isometric.view.view.CharacterInfoDisplay;
 
 import java.util.*;
-
-import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
 
 public class GameController {
     private IsometricGame game;
@@ -80,11 +75,13 @@ public class GameController {
     private Pathfinder pathfinder;
     private Date currentPlayTime;
     private MerchantUI merchantUI;
-
     // Add LevelUpNotification field
     private LevelUpNotification levelUpNotification;
+
     private NPCManager npcManager;
     private NPCRenderer npcRenderer;
+    private BountyBoardController bountyBoardController;
+    private BountyBoardView bountyBoardView;
 
     public GameController(IsometricGame game) {
         this.game = game;
@@ -130,6 +127,9 @@ public class GameController {
 
         this.pathfinder = new Pathfinder(map);
         npcManager = new NPCManager(this);
+
+        bountyBoardController = new BountyBoardController(this);
+        bountyBoardView = new BountyBoardView(bountyBoardController);
     }
 
     boolean isLoadNPCs = false;
@@ -151,7 +151,7 @@ public class GameController {
             npc.setBehaviorState("Dialogue");
             switch (npc.getNpcName()) {
                 case "QuizMaster":
-                    if (getCharacter().getAttempFlags().get("quizAttempts") >= 1) {
+                    if (getCharacter().getAttempFlags().get("quizAttempts") >= 3) {
                         dialogController.showSimpleMessage("You have already attempted this quiz today. Come back tomorrow!");
                     } else {
                         dialogController.setOnDialogFinishedAction(() -> {
@@ -161,6 +161,21 @@ public class GameController {
                         dialogController.startDialog("chapter_quiz_intro", "scene_meet_npc");
 
                     }
+                    break;
+                case "MulQuizMaster":
+                    if (getCharacter().getAttempFlags().get("mulQuizAttempts") >= 1) {
+                        dialogController.showSimpleMessage("You have already attempted this quiz today. Come back tomorrow!");
+                    } else {
+                        dialogController.setOnDialogFinishedAction(() -> {
+                            startMulChoiceQuiz();
+                            getCharacter().getAttempFlags().put("mulQuizAttempts", 1);
+
+                        });
+                        dialogController.startDialog("chapter_quiz_intro", "scene_meet_npc");
+                    }
+                    break;
+                case "Bounty Board":
+                    setState(GameState.BOUNTY_BOARD);
                     break;
                 case "Merchant":
                     dialogController.showMessageWithChoices("I have something to trade. What do you want", "Magic Book",
@@ -183,6 +198,7 @@ public class GameController {
         NPC npc = findNPCNear(character.getGridX(), character.getGridY());
         if (npc != null) {
             dialogController.startDialog("healer_backstory", "scene_intro");
+//            dialogController.startDialog(npc.getArcId(), npc.getSceneId());
         } else {
             dialogController.showSimpleMessage("No NPC nearby to interact with.");
         }
@@ -219,6 +235,13 @@ public class GameController {
         }
     }
 
+    public BountyBoardController getBountyBoardController() {
+        return bountyBoardController;
+    }
+
+    public void setBountyBoardController(BountyBoardController bountyBoardController) {
+        this.bountyBoardController = bountyBoardController;
+    }
 
     public void showAchievementUI() {
         achievementUI.show();
@@ -344,6 +367,9 @@ public class GameController {
                 }
 
                 levelUpNotification.update(delta);
+
+                break;
+            case BOUNTY_BOARD:
 
                 break;
             case CHARACTER_CREATION:
@@ -1002,6 +1028,14 @@ public class GameController {
 
     public LevelUpNotification getLevelUpNotification() {
         return levelUpNotification;
+    }
+
+    public BountyBoardView getBountyBoardView() {
+        return bountyBoardView;
+    }
+
+    public void setBountyBoardView(BountyBoardView bountyBoardView) {
+        this.bountyBoardView = bountyBoardView;
     }
 
     /**
