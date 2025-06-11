@@ -32,6 +32,7 @@ import ctu.game.isometric.view.renderer.TransitionRenderer;
 import ctu.game.isometric.view.ui.*;
 import ctu.game.isometric.view.view.BountyBoardView;
 import ctu.game.isometric.view.view.CharacterInfoDisplay;
+import ctu.game.isometric.view.view.QuestTrackerView;
 
 import java.util.*;
 
@@ -82,7 +83,7 @@ public class GameController {
     private NPCRenderer npcRenderer;
     private BountyBoardController bountyBoardController;
     private BountyBoardView bountyBoardView;
-
+    private QuestTrackerView questTrackerView;
     public GameController(IsometricGame game) {
         this.game = game;
 
@@ -130,6 +131,7 @@ public class GameController {
 
         bountyBoardController = new BountyBoardController(this);
         bountyBoardView = new BountyBoardView(bountyBoardController);
+        questTrackerView = new QuestTrackerView(this);
     }
 
     boolean isLoadNPCs = false;
@@ -851,6 +853,14 @@ public class GameController {
 
     public InputController getInputController() {
         return inputController;
+    }
+
+    public QuestTrackerView getQuestTrackerView() {
+        return questTrackerView;
+    }
+
+    public void setQuestTrackerView(QuestTrackerView questTrackerView) {
+        this.questTrackerView = questTrackerView;
     }
 
     public DialogController getDialogController() {

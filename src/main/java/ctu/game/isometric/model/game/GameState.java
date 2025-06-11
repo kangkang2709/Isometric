@@ -14,6 +14,7 @@ public enum GameState {
     LOAD_GAME,
     QUIZZES, // Quiz state
     DICTIONARY,
+    QUEST_TRACKER, // Quest state
     MULTIPLE_CHOICE_QUIZZES,
     INFORMATION, // Information state
 }

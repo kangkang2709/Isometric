@@ -232,6 +232,8 @@ public class GameSaveController {
         copy.setExp(original.getExp());
         copy.setMana(original.getMana());
 
+
+
         // Copy any other essential character data
         // (Items, stats, quests, etc. - add as needed)
 
@@ -266,6 +268,8 @@ public class GameSaveController {
        if(original.getAttempFlags() != null) {
             copy.setAttempFlags(new HashMap<>(original.getAttempFlags()));
         }
+
+        copy.setQuestTracker(original.getQuestTracker());
 
         copy.setWordFilePath(original.getWordFilePath());
 

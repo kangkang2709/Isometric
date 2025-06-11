@@ -332,7 +332,7 @@ public class LoadGameController {
                     gameController.loadCharacter(save.getCharacter(),save.getSaveDate());
                     gameController.getEventManager().updateAfterLoadGame(save);
                     gameController.getCharacter().setLearnedWords(words);
-
+                    gameController.getBountyBoardController().updateQuestStatusFromQuestTracker(gameController.getCharacter().getQuestTracker());
 
 
                     // THIS IS CRUCIAL: Mark as created to initialize renderers

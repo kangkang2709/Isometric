@@ -93,6 +93,7 @@ public class GameScreen implements Screen {
             gameController.getAchievementUI().hide();
             gameController.setMerchantUI(new MerchantUI(gameController));
             gameController.initializeNPCs(mapRenderer);
+            gameController.getBountyBoardController().reset();
             gameController.setCreated(false);
         }
 
@@ -156,6 +157,7 @@ public class GameScreen implements Screen {
                         gameController.getMerchantUI().render(batch);
                     }
 
+
                     if (dialogUI != null && gameController.getDialogController().isDialogActive()) {
                         dialogUI.render();
 
@@ -181,6 +183,9 @@ public class GameScreen implements Screen {
                     break;
                 case MULTIPLE_CHOICE_QUIZZES:
                     gameController.getMultipleChoiceQuizController().render(batch);
+                    break;
+                case QUEST_TRACKER:
+                    gameController.getQuestTrackerView().render(batch);
                     break;
                 case MENU:
                     gameController.getMenuController().render(batch);

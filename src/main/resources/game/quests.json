@@ -44,8 +44,7 @@
       "experience": 120,
       "gold": 60,
       "items": {
-        "Potion of Healing": 1,
-        "Spider Silk": 1
+        "Potion of Healing": 1
       }
     }
   },
@@ -54,7 +53,7 @@
     "title": "Mushroom Collector",
     "description": "Collect 8 glowing mushrooms from the cave",
     "status": "AVAILABLE",
-    "visible": false,
+    "visible": true,
     "requirements": {
       "Glowing Mushroom": 8
     },
@@ -62,7 +61,24 @@
       "experience": 150,
       "gold": 75,
       "items": {
-        "Magic Essence": 2
+        "Potion of Healing": 1
+      }
+    }
+  },
+  {
+    "id": "quest_005",
+    "title": "Healing Potion Delivery",
+    "description": "Deliver 3 healing potions to the village elder",
+    "status": "AVAILABLE",
+    "visible": true,
+    "requirements": {
+      "Potion of Healing": 1
+    },
+    "reward": {
+      "experience": 150,
+      "gold": 75,
+      "items": {
+        "Magic Book": 1
       }
     }
   }

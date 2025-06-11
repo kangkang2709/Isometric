@@ -121,6 +121,10 @@ public class InputController extends InputAdapter {
                 return false; // No other keys handled in INFORMATION state
             case QUIZZES:
                 return handleQuizInput(keycode);
+            case BOUNTY_BOARD:
+                return handleBountyBoardInput(keycode);
+            case QUEST_TRACKER:
+                return handleQuestTrackerInput(keycode);
             case CHARACTER_CREATION:
                 return gameController.getCharacterCreationController().handleTextInput(keycode);
             default:
@@ -261,6 +265,11 @@ public class InputController extends InputAdapter {
         if(state == GameState.BOUNTY_BOARD){
             return gameController.getBountyBoardView().handleClick(screenX, screenY);
         }
+
+        if(state == GameState.QUEST_TRACKER){
+            return gameController.getQuestTrackerView().handleClick(screenX, screenY);
+        }
+
         return false;
     }
 
@@ -337,6 +346,10 @@ public class InputController extends InputAdapter {
             }
         }
         switch (keycode) {
+            case Keys.F5 -> {
+                gameController.getQuestTrackerView().toggleVisibility();
+                gameController.setState(GameState.QUEST_TRACKER);
+            }
             case Keys.F -> {
                 gameController.interactWithNPC();
             }
@@ -444,6 +457,25 @@ public class InputController extends InputAdapter {
     }
 
 
+    public boolean handleBountyBoardInput(int keycode) {
+        switch (keycode) {
+            case Keys.ESCAPE -> gameController.returnToPreviousState();
+            default -> {}
+
+        }
+        return true;
+    }
+    public boolean handleQuestTrackerInput(int keycode) {
+        switch (keycode) {
+            case Keys.ESCAPE -> {
+                gameController.returnToPreviousState();
+                gameController.getQuestTrackerView().toggleVisibility();
+            }
+            default -> {}
+
+        }
+        return true;
+    }
     private boolean handleDictionaryInput(int keycode) {
         switch (keycode) {
             case Keys.ESCAPE -> gameController.setCurrentState(GameState.EXPLORING);
