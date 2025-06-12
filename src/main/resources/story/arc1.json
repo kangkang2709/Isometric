@@ -167,7 +167,7 @@
 
 
         {
-          "id": "not_enough_item",
+          "id": "scene_not_enough_item",
           "music": "sad_piano.mp3",
           "sound_effects": ["door_creak.mp3"],
           "dialogues": [
@@ -703,7 +703,89 @@
           "choices": []
         }
       ]
+    },
+    {"id": "teleporting_background",
+      "title": "Cổng Phép Thuật Cổ Đại",
+      "description": "Khám phá bí mật của cổng phép thuật cổ đại, nơi có thể đưa bạn đến bất kỳ đâu trong thế giới.",
+      "scenes": [
+        {
+          "id": "scene_intro",
+          "background": "transparent.png",
+          "music": "casual_tavern.mp3",
+          "dialogues": [
+            {
+              "character": "Teleport Gate",
+              "characterImage": "teleport.png",
+              "text": "Ta là Cổng Phép Thuật Cổ Đại. Nó có thể đưa ngươi đến bất kỳ đâu trong thế giới này – nhưng chỉ khi ngươi có đủ sức mạnh và trí tuệ."
+            },
+            {
+              "character": "Teleport Gate",
+              "characterImage": "teleport.png",
+              "text": "Nói cho ta nghe, ngươi muốn đi đâu? Ta có thể giúp ngươi đến bất kỳ nơi nào trong thế giới này."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Location 1",
+              "next_scene": "scene_end",
+              "required_item": "Magic Book",
+              "reward_item": "Location_Home"
+            },
+            {
+              "text": "Location 2",
+              "next_scene": "scene_end",
+              "required_item": "Magic Book",
+              "reward_item": "Location_Village"
+            },
+            {
+              "text": "Tôi chưa sẵn sàng để dịch chuyển.",
+              "next_scene": "scene_end2",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+        {
+            "id": "scene_end",
+            "background": "black.png",
+            "music": "village_theme.mp3",
+            "dialogues": [
+                {
+                "character": "Teleport Gate",
+                "characterImage": "teleport.png",
+                "text": "Hãy nhắm mắt lại và ngươi sẽ đến được nơi cần đến."
+                }
+            ],
+            "choices": []
+        },
+        {
+          "id": "scene_end2",
+          "background": "transparent.png",
+          "music": "village_theme.mp3",
+          "dialogues": [
+            {
+              "character": "Teleport Gate",
+              "characterImage": "teleport.png",
+              "text": "Ngươi đã quyết định không dịch chuyển. Hãy trở lại khi ngươi sẵn sàng."
+            }
+          ],
+          "choices": []
+        },
+        {
+            "id": "scene_not_enough_item",
+            "background": "transparent.png",
+            "music": "sad_piano.mp3",
+            "dialogues": [
+                {
+                "character": "Teleport Gate",
+                "characterImage": "teleport.png",
+                "text": "Ngươi chưa đủ sức mạnh để dịch chuyển đến nơi này. Tạm biệt, lữ khách."
+                }
+            ],
+            "choices": [
+            ]
+        }
+      ]
     }
-
   ]
 }

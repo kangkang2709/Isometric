@@ -37,7 +37,7 @@
   },
   {
     "npcID": 4,
-    "npcName": "Lucky Lucy",
+    "npcName": "Lucky Lucy2",
     "npcDescription": "A cheerful gambler who invites you to play games of chance",
     "arcId": "village",
     "sceneId": "market",
@@ -46,5 +46,17 @@
     "behaviorState": "idle",
     "xPosition": 15,
     "yPosition": 15
+  },
+  {
+    "npcID": 5,
+    "npcName": "Teleporter",
+    "npcDescription": "A magical gate that transports you to different locations",
+    "arcId": "village",
+    "sceneId": "market",
+    "npcImage": "gambler.png",
+    "npcBackStory": "Lucy travels from town to town entertaining locals with her games of chance.",
+    "behaviorState": "idle",
+    "xPosition": 16,
+    "yPosition": 19
   }
 ]

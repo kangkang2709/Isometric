@@ -23,6 +23,7 @@ public class DialogUI {
     private ShapeRenderer shapeRenderer;
 
     private Texture characterImage;
+    private Texture mainCharacterImage;
     private String currentImagePath;
 
     private Texture backgroundTexture;
@@ -48,6 +49,7 @@ public class DialogUI {
     private BitmapFont nameFont;
     private BitmapFont promptFont;
 
+    private String mainCharacterName = "Main Character";
 
     public DialogUI(DialogController dialogController) {
         this.dialogController = dialogController;
@@ -55,7 +57,7 @@ public class DialogUI {
         this.dialogFont = generateVietNameseFont("GrenzeGotisch.ttf", 20);
         this.nameFont = generateVietNameseFont("GrenzeGotisch.ttf", 18);
         this.promptFont = generateVietNameseFont("GrenzeGotisch.ttf", 18);
-
+        this.mainCharacterImage = new Texture(Gdx.files.internal("characters/avatar.png"));
         this.batch = new SpriteBatch();
         this.shapeRenderer = new ShapeRenderer();
     }
@@ -166,12 +168,12 @@ public class DialogUI {
             if (characterImage != null) {
                 batch.draw(characterImage,
                         DIALOG_BOX_X + 20,
-                        DIALOG_BOX_Y + DIALOG_BOX_HEIGHT - CHARACTER_IMAGE_SIZE - 100,
+                        DIALOG_BOX_Y + DIALOG_BOX_HEIGHT - CHARACTER_IMAGE_SIZE - 60,
                         CHARACTER_IMAGE_SIZE,
                         CHARACTER_IMAGE_SIZE);
             }
 
-            nameFont.draw(batch, currentDialog.getCharacterName(), DIALOG_BOX_X + 20, DIALOG_BOX_Y + DIALOG_BOX_HEIGHT - 20);
+            nameFont.draw(batch, currentDialog.getCharacterName(), DIALOG_BOX_X + 50, DIALOG_BOX_Y + DIALOG_BOX_HEIGHT - 20);
 
 
             dialogFont.draw(batch, displayedText, DIALOG_BOX_X + 150, DIALOG_BOX_Y + DIALOG_BOX_HEIGHT - 50,
@@ -190,6 +192,13 @@ public class DialogUI {
         int selectedIndex = dialogController.getSelectedChoiceIndex();
 
         if (choices != null && !choices.isEmpty()) {
+                nameFont.draw(batch,mainCharacterName, DIALOG_BOX_X + 50, DIALOG_BOX_Y + DIALOG_BOX_HEIGHT - 20);
+                batch.draw(mainCharacterImage,
+                        DIALOG_BOX_X + 20,
+                        DIALOG_BOX_Y + DIALOG_BOX_HEIGHT - CHARACTER_IMAGE_SIZE - 60,
+                        CHARACTER_IMAGE_SIZE,
+                        CHARACTER_IMAGE_SIZE);
+
             for (int i = 0; i < choices.size(); i++) {
                 if (i == selectedIndex) {
                     dialogFont.setColor(Color.YELLOW);
@@ -197,7 +206,7 @@ public class DialogUI {
                     dialogFont.setColor(Color.WHITE);
                 }
                 String choiceText = (i == selectedIndex ? "> " : "  ") + choices.get(i).getText();
-                dialogFont.draw(batch, choiceText, DIALOG_BOX_X + 150, DIALOG_BOX_Y + 80 - (i * 30));
+                dialogFont.draw(batch, choiceText, DIALOG_BOX_X + 150, DIALOG_BOX_Y + 120 - (i * 30));
             }
             dialogFont.setColor(Color.WHITE); // Reset after loop
         }
@@ -237,6 +246,14 @@ public class DialogUI {
 
     public boolean isTextFullyDisplayed() {
         return isTextFullyDisplayed;
+    }
+
+    public String getMainCharacterName() {
+        return mainCharacterName;
+    }
+
+    public void setMainCharacterName(String mainCharacterName) {
+        this.mainCharacterName = mainCharacterName;
     }
 
     public void dispose() {

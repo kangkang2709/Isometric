@@ -81,6 +81,7 @@ public class GameScreen implements Screen {
             exploringUI = new ExploringUI(gameController);
 
             dialogUI = new DialogUI(gameController.getDialogController());
+            dialogUI.setMainCharacterName(gameController.getCharacter().getName());
             gameController.getInputController().setDialogUI(dialogUI);
 
             if (gameController.getDictionaryView() != null) {

@@ -106,14 +106,14 @@ public class Pathfinder {
         openSet.add(startNode);
         openMap.put(packCoords(startX, startY), startNode);
 
-        final int MAX_NODE_EXPANSION = 50; // Limit the number of nodes explored
+        final int MAX_NODE_EXPANSION = 30; // Limit the number of nodes explored
         int expandedCount = 0;
 
         while (!openSet.isEmpty()) {
             if (expandedCount++ > MAX_NODE_EXPANSION) {
-                System.out.println("Aborting pathfinding: too many nodes explored.");
                 Array<int[]> fallbackPath = new Array<>();
-                fallbackPath.add(new int[]{startX, startY}); // Return starting position as fallback
+                fallbackPath.add(new int[]{startX, startY});
+                System.out.println("MAX NODE");// Return starting position as fallback
                 return fallbackPath;
             }
             Node current = openSet.poll();
@@ -170,9 +170,9 @@ public class Pathfinder {
 
     private int[] findClosestWalkable(int x, int y, int startX, int startY) {
         // Check if the current tile is walkable
-        if (map.isWalkable(x, y)) {
-            return new int[]{x, y};
-        }
+//        if (map.isWalkable(x, y) && !isNPCHere(x, y)) {
+//            return new int[]{x, y};
+//        }
 
         // Check immediate neighbors (1-tile radius)
         int[] closestTile = null;

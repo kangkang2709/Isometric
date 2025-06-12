@@ -188,6 +188,8 @@ public class GameController {
                     dialogController.showMessageWithChoices("Do want to heal", "Magic Book",
                             "Yes", "No", () -> getCharacter().recovery());
                     break;
+                case "Teleporter":
+                    dialogController.startDialog("teleporting_background", "scene_intro");
                 default:
                     break;
             }
@@ -200,6 +202,7 @@ public class GameController {
     public void showNPCBackStory() {
         NPC npc = findNPCNear(character.getGridX(), character.getGridY());
         if (npc != null) {
+//            dialogController.startDialog("teleporting_background", "scene_intro");
             dialogController.startDialog("healer_backstory", "scene_intro");
 //            dialogController.startDialog(npc.getArcId(), npc.getSceneId());
         } else {

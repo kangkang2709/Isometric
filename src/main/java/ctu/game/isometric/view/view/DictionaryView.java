@@ -155,13 +155,14 @@ public class DictionaryView {
                     detailsScrollPosition = Math.min(maxDetailsScrollPosition, Math.max(0, clickRatio * maxDetailsScrollPosition));
                 }
             }
-        } else if (!showingLearnedWords && selectedWord != null &&
-                x >= detailsArea.x + 20 && x <= detailsArea.x + 200 &&
-                y >= detailsArea.y + 15 && y <= detailsArea.y + 45) {
-            dictionary.markWordAsLearned(selectedWord.getTerm());
-            updateWordList();
-            selectedWord = null;
         }
+//        else if (!showingLearnedWords && selectedWord != null &&
+//                x >= detailsArea.x + 20 && x <= detailsArea.x + 200 &&
+//                y >= detailsArea.y + 15 && y <= detailsArea.y + 45) {
+//            dictionary.markWordAsLearned(selectedWord.getTerm());
+//            updateWordList();
+//            selectedWord = null;
+//        }
     }
 
     public void handleMouseScroll(float amountX, float amountY, float mouseX, float mouseY) {
@@ -171,7 +172,6 @@ public class DictionaryView {
         if (wordListArea.contains(mouseX, mouseY) || wordListScrollBar.contains(mouseX, mouseY)) {
             wordListStartIndex = Math.min(displayedWords.size() - WORDS_PER_PAGE,
                     Math.max(0, wordListStartIndex - (int)(cappedScrollAmount * 4)));
-            System.out.printf("wordListStartIndex: %d\n", wordListStartIndex);
         } else if ((detailsArea.contains(mouseX, mouseY) || detailsScrollBar.contains(mouseX, mouseY))
                 && selectedWord != null) {
             detailsScrollPosition = Math.min(maxDetailsScrollPosition,
@@ -429,8 +429,8 @@ public class DictionaryView {
 
         // Enable scissors to clip content to details area
         batch.flush();
-        Rectangle scissors = new Rectangle(detailsArea.x, detailsArea.y, detailsArea.width, detailsArea.height);
-        ScissorStack.pushScissors(scissors);
+        scissorRect.set(detailsArea.x, detailsArea.y, detailsArea.width, detailsArea.height);
+        ScissorStack.pushScissors(scissorRect);
 
         float y = detailsArea.y + detailsArea.height - 20 + detailsScrollPosition;
 
@@ -479,15 +479,23 @@ public class DictionaryView {
                             detailsArea.width - 60, Align.left, true);
                     y -= synonymsHeight + 15;
                 }
+                if (!def.getAntonyms().isEmpty()) {
+                    String antonyms = "Antonyms: " + String.join(", ", def.getAntonyms());
+                    float antonymsHeight = calculateTextHeight(antonyms, 16, detailsArea.width - 60);
+                    labelFont.draw(batch, antonyms, detailsArea.x + 40, y,
+                            detailsArea.width - 60, Align.left, true);
+                    y -= antonymsHeight + 15;
+
+                }
             }
         }
 
         // Mark as learned button for new words
-        if (!showingLearnedWords) {
-            labelFont.setColor(0.4f, 0.7f, 1, 1);
-            labelFont.draw(batch, "[ Mark as Learned ]", detailsArea.x + 20, detailsArea.y + 30);
-            labelFont.setColor(Color.WHITE);
-        }
+//        if (!showingLearnedWords) {
+//            labelFont.setColor(0.4f, 0.7f, 1, 1);
+//            labelFont.draw(batch, "[ Mark as Learned ]", detailsArea.x + 20, detailsArea.y + 30);
+//            labelFont.setColor(Color.WHITE);
+//        }
 
         // End scissor
         batch.flush();
@@ -524,6 +532,10 @@ public class DictionaryView {
                     String synonyms = "Synonyms: " + String.join(", ", def.getSynonyms());
                     height += calculateTextHeight(synonyms, 16, detailsArea.width - 60) + 15;
                 }
+                if(!def.getAntonyms().isEmpty()) {
+                    String antonyms = "Antonyms: " + String.join(", ", def.getAntonyms());
+                    height += calculateTextHeight(antonyms, 16, detailsArea.width - 60) + 15;
+                }
             }
         }
 
@@ -537,10 +549,13 @@ public class DictionaryView {
         }
     }
 
+    private final com.badlogic.gdx.graphics.g2d.GlyphLayout glyphLayout = new com.badlogic.gdx.graphics.g2d.GlyphLayout();
+    private final Rectangle scissorRect = new Rectangle();
+    private final Vector3 tempVector = new Vector3();
+    private final Color tempColor = new Color();
     private float calculateTextHeight(String text, int fontSize, float width) {
-        com.badlogic.gdx.graphics.g2d.GlyphLayout layout = new com.badlogic.gdx.graphics.g2d.GlyphLayout();
-        layout.setText(labelFont, text, Color.WHITE, width, com.badlogic.gdx.utils.Align.left, true);
-        return layout.height;
+        glyphLayout.setText(labelFont, text, Color.WHITE, width, Align.left, true);
+        return glyphLayout.height;
     }
 
     public Dictionary getDictionary() {
@@ -549,13 +564,20 @@ public class DictionaryView {
 
     // ScissorStack helper class to clip rendering
     private static class ScissorStack {
+        private static final Rectangle scissors = new Rectangle();
+
         public static void pushScissors(Rectangle scissor) {
             Gdx.gl.glEnable(GL20.GL_SCISSOR_TEST);
+            scissors.set(
+                    scissor.x,
+                    Gdx.graphics.getHeight() - scissor.y - scissor.height,
+                    scissor.width,
+                    scissor.height);
             Gdx.gl.glScissor(
-                    (int)scissor.x,
-                    (int)(Gdx.graphics.getHeight() - scissor.y - scissor.height),
-                    (int)scissor.width,
-                    (int)scissor.height);
+                    (int)scissors.x,
+                    (int)scissors.y,
+                    (int)scissors.width,
+                    (int)scissors.height);
         }
 
         public static void popScissors() {

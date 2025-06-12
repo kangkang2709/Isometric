@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ctu.game.isometric.model.dialog.*;
 import ctu.game.isometric.model.game.GameState;
+import ctu.game.isometric.util.ItemLoader;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -32,7 +33,7 @@ public class DialogController {
     }
 
     public boolean shouldRenderBackground() {
-        return currentArcId != null && currentArcId.contains("_backstory");
+        return currentArcId != null && (currentArcId.contains("_backstory") || currentArcId.contains("_background"));
     }
 
     private void loadStoryData() {
@@ -260,8 +261,17 @@ public class DialogController {
 
             // Check if player has required item
             if (choice.getRequired_item() != null) {
-                if (gameController.getCharacter().hasItem(choice.getRequired_item())) {
+                if (gameController != null && gameController.getCharacter() != null &&
+                        gameController.getCharacter().hasItem(choice.getRequired_item())) {
                     performAction = true; // Only set to true when choice has required item
+
+                    String itemName = choice.getReward_item();
+                    if (itemName != null) {
+                        if (itemName.contains("Location"))
+                            gameController.getCharacter().teleportToLocation(itemName);
+                        else
+                            gameController.getCharacter().addItem(ItemLoader.getItemByName(itemName), 1);
+                    }
 
                     // Move to the next scene if specified
                     if (choice.getNext_scene() != null) {

@@ -50,14 +50,19 @@ public class Character {
         this.level += level; // Increase level
 
         float scale = level * 0.5f;
-        this.maxHealth += this.maxHealth + 10;
-        this.maxMana += this.maxMana + 10;
-        this.health = maxHealth; // Restore health to max
+
+        this.maxHealth = this.maxHealth + 10;
+        this.maxMana = this.maxMana + 10;
+
+        this.health = maxHealth;
+        this.mana = maxHealth;// Restore health to max
         this.damage += scale; // Increase damage by level
         this.defend += scale; // Increase defense by level
 
         return true; // Indicates level up occurred
     }
+
+
 
 
     public int expToLevelUp(float exp) {
@@ -134,6 +139,25 @@ public class Character {
 
     }
 
+    public void teleportToLocation(String location) {
+        if (location == null || location.isEmpty()) {
+            throw new IllegalArgumentException("Location cannot be null or empty");
+        }
+
+        switch (location) {
+            case "Location_Village":
+                this.gridX = 15;
+                this.gridY = 15;
+                break;
+            case "Location_Home":
+                this.gridX = 20;
+                this.gridY = 20;
+                break;
+            default:
+                break;
+        }
+    }
+
     public QuestTracker getQuestTracker() {
         return questTracker;
     }
@@ -164,18 +188,20 @@ public class Character {
         return false;
     }
 
-    // Modify the other levelUp method to return a boolean
-    public boolean levelUp() {
-        if (level < 10) { // Assuming max level is 10
-            level++;
-            maxHealth += 20; // Increase max health by 20 on level up
-            health = maxHealth; // Restore health to max
-            damage += 2; // Increase damage by 2 on level up
-            moveSpeed += 0.5f; // Increase move speed by 0.5 on level up
-            return true; // Indicates level up occurred
-        }
-        return false; // No level up occurred (at max level)
-    }
+//    // Modify the other levelUp method to return a boolean
+//    public boolean levelUp() {
+//        if (level < 10) { // Assuming max level is 10
+//            level++;
+//            maxHealth += 10; // Increase max health by 20 on level up
+//            health = maxHealth;
+//            mana = maxMana + 10; // Increase max mana by 20 on level up
+//            mana = maxMana;// Restore health to max
+//            damage += 1; // Increase damage by 2 on level up
+//            moveSpeed += 0.5f; // Increase move speed by 0.5 on level up
+//            return true; // Indicates level up occurred
+//        }
+//        return false; // No level up occurred (at max level)
+//    }
 
     // Existing getters/setters...
     private Array<int[]> currentPath = new Array<>();
