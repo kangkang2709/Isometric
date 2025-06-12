@@ -825,7 +825,7 @@ public class GameplayController {
             enemyHealth = Math.min(enemyMaxHealth, enemyHealth + heal);
             combatLog = enemyName + " recovers " + heal + " health!";
         }
-        effectManager.spawnEffect("attack", viewport.getWorldWidth() - 300, 600);
+        effectManager.spawnEffect("attack", 185, 480);
         Timer.schedule(new Timer.Task() {
             @Override
             public void run() {
@@ -900,7 +900,7 @@ public class GameplayController {
 
                 combatLog = "Your word '" + word + "' deals " + damage + " damage!";
                 showMessage("+" + points + " points! " + damage + " damage!");
-                effectManager.spawnEffect("attack", viewport.getWorldWidth() - 300, 600);
+                effectManager.spawnEffect("attack", viewport.getWorldWidth() - 260, 440);
 
                 achievementManager.updateProgress(Achievement.AchievementType.WORD_COUNT, 1);
                 Timer.schedule(new Timer.Task() {

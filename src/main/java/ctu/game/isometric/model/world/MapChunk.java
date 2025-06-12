@@ -49,6 +49,13 @@ public class MapChunk {
         return false;
     }
 
+    public void setWalkable(int localX, int localY, boolean walkable) {
+        this.lastAccessTime = System.currentTimeMillis();
+        if (localX >= 0 && localX < CHUNK_SIZE && localY >= 0 && localY < CHUNK_SIZE) {
+            walkableData[localY][localX] = walkable;
+        }
+    }
+
     public long getLastAccessTime() {
         return lastAccessTime;
     }

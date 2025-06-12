@@ -9,6 +9,7 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.Vector2;
 import ctu.game.isometric.model.entity.Enemy;
+import ctu.game.isometric.model.puzzle.PressurePlatePuzzle;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -29,7 +30,7 @@ public class IsometricMap {
     private Map<Long, MapChunk> chunks = new HashMap<>();
     private static final int CHUNK_SIZE = 16;
     private boolean chunkingEnabled = false;
-
+    PressurePlatePuzzle puzzle;
     public IsometricMap(String tmxFilePath) {
         // Load the TMX file
         tiledMap = new TmxMapLoader().load(tmxFilePath);
@@ -52,6 +53,20 @@ public class IsometricMap {
         if (mapWidth * mapHeight > 10000) {
             enableChunking();
         }
+        puzzle = new PressurePlatePuzzle("puzzle1", this, 3);
+
+        loadPlate();
+    }
+
+
+    public void loadPlate(){
+        puzzle.addPlate(20, 12, "door", 19, 12);
+        puzzle.addPlate(22, 12, "trap", 22, 12);
+
+
+// Or load different textures for different plate types
+        puzzle.loadTexturesForType("door", "textures/door_plate_inactive.png", "textures/door_plate_active.png");
+        puzzle.loadTexturesForType("trap", "textures/trap_inactive.png", "textures/trap_active.png");
     }
     public TiledMapTileLayer.Cell getCell(int x, int y) {
         TiledMapTileLayer tiledMapLayer = (TiledMapTileLayer) tiledMap.getLayers().get("terrain_layer");
@@ -99,6 +114,20 @@ public class IsometricMap {
         }
     }
 
+
+    public void setTileWalkable(int x, int y, boolean walkable) {
+        if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight) {
+            throw new IndexOutOfBoundsException("Coordinates out of bounds: " + x + ", " + y);
+        }
+
+        if (!chunkingEnabled) {
+            walkableCache[y][x] = walkable;
+        } else {
+            MapChunk chunk = getOrCreateChunk(x, y);
+            chunk.setWalkable(x % CHUNK_SIZE, y % CHUNK_SIZE, walkable);
+        }
+    }
+
     // Get or create a chunk for the given position
     private MapChunk getOrCreateChunk(int x, int y) {
         int chunkX = x / CHUNK_SIZE;
@@ -126,6 +155,14 @@ public class IsometricMap {
             }
         }
         return true;
+    }
+
+    public PressurePlatePuzzle getPuzzle() {
+        return puzzle;
+    }
+
+    public void setPuzzle(PressurePlatePuzzle puzzle) {
+        this.puzzle = puzzle;
     }
 
     // Check if a tile is walkable - uses chunking if enabled

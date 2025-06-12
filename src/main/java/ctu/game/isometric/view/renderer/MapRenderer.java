@@ -22,6 +22,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import ctu.game.isometric.controller.EventManager;
 import ctu.game.isometric.model.entity.Character;
+import ctu.game.isometric.model.puzzle.PressurePlatePuzzle;
 import ctu.game.isometric.model.world.IsometricMap;
 import ctu.game.isometric.model.world.MapEvent;
 import ctu.game.isometric.util.AnimationManager;
@@ -48,7 +49,7 @@ public class MapRenderer {
     private EventManager eventManager;
 
     // In MapRenderer.java - modify constructor to take an existing camera
-    public MapRenderer(IsometricMap map, AssetManager assetManager,EventManager eventManager, Character character, OrthographicCamera camera) {
+    public MapRenderer(IsometricMap map, AssetManager assetManager, EventManager eventManager, Character character, OrthographicCamera camera) {
         this.map = map;
         this.assetManager = assetManager;
         this.eventManager = eventManager;
@@ -79,6 +80,23 @@ public class MapRenderer {
 //        backgroundTexture = new Texture(Gdx.files.internal("maps/background.png"));
         // Create the tiled map renderer
         this.tiledMapRenderer = new IsometricTiledMapRenderer(map.getTiledMap());
+         this.fogTexture= new Texture(Gdx.files.internal("textures/fog.png"));
+    }
+
+    Texture fogTexture;
+
+    public void renderPressurePlate(SpriteBatch batch) {
+        for (PressurePlatePuzzle.PressurePlate plate : map.getPuzzle().getPlates()) {
+            TextureRegion texture = plate.getCurrentTexture();
+            if (texture != null) {
+                float[] isoPos = toIsometric(plate.getGridX(), plate.getGridY());
+                batch.draw(texture, isoPos[0], isoPos[1], 64, 32);
+            }
+            if (!plate.getEffectType().equals("trap") && !plate.isActivated()) {
+                float[] isoPos = toIsometric(plate.getTargetX(), plate.getTargetY());
+                batch.draw(fogTexture, isoPos[0]-16, isoPos[1]-10, 64, 64);
+            }
+        }
     }
 
     public EventManager getEventManager() {
@@ -135,6 +153,7 @@ public class MapRenderer {
             batch.begin();
             batch.setProjectionMatrix(camera.combined);
             renderObjectLayer(batch, "object");
+            renderPressurePlate(batch);
         }
     }
 
@@ -147,7 +166,7 @@ public class MapRenderer {
 
                 // Skip completed events
                 if (object.getProperties().containsKey("id")) {
-                    String eventId = eventManager.getStringProperty(object.getProperties(),"id", "");
+                    String eventId = eventManager.getStringProperty(object.getProperties(), "id", "");
                     MapEvent event = eventManager.getEvent(eventId);
                     if (event != null && event.isOneTime() && event.isCompleted()) {
                         continue; // Skip rendering this object
@@ -202,7 +221,7 @@ public class MapRenderer {
         // Ensure positive values by adding an offset if needed
         // If your map can have negative coordinates, add an appropriate offset
         int mapOffsetX = 1; // Adjust as needed for your map
-        int mapOffsetY = -1 ; // Adjust as needed for your map
+        int mapOffsetY = -1; // Adjust as needed for your map
 
         return new int[]{x + mapOffsetX, y + mapOffsetY};
     }
@@ -220,7 +239,7 @@ public class MapRenderer {
         if (eventType == null || event == null) return;
 
 
-        if(event.isOneTime() && event.isCompleted()) {
+        if (event.isOneTime() && event.isCompleted()) {
             return;
         }
 

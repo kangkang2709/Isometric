@@ -373,7 +373,7 @@ public class GameController {
                 }
 
                 levelUpNotification.update(delta);
-
+                map.getPuzzle().update(character);
                 break;
             case BOUNTY_BOARD:
 
