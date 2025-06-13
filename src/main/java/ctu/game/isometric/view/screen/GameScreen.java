@@ -128,6 +128,7 @@ public class GameScreen implements Screen {
                     gameController.setCharacterCreationController(null);
                     gameController.setLoadGameController(null);
                     mapRenderer.render(batch);
+                    mapRenderer.update(delta);
 
                     if (gameController.hasActiveEvent()) {
                         mapRenderer.renderActionButton(

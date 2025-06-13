@@ -47,6 +47,7 @@ public class MapRenderer {
     Texture buttonTexture;
 
     private EventManager eventManager;
+    private WeatherRenderer weatherRenderer;
 
     // In MapRenderer.java - modify constructor to take an existing camera
     public MapRenderer(IsometricMap map, AssetManager assetManager, EventManager eventManager, Character character, OrthographicCamera camera) {
@@ -80,7 +81,21 @@ public class MapRenderer {
 //        backgroundTexture = new Texture(Gdx.files.internal("maps/background.png"));
         // Create the tiled map renderer
         this.tiledMapRenderer = new IsometricTiledMapRenderer(map.getTiledMap());
-        this.fogTexture= new Texture(Gdx.files.internal("textures/fog.png"));
+        this.fogTexture = new Texture(Gdx.files.internal("textures/fog.png"));
+
+        this.weatherRenderer = new WeatherRenderer(camera);
+
+        setWeather("snow", 0.4f); // Set default weather to foggy with medium intensity
+    }
+
+
+    public void changeWeather(String type, float intensity) {
+        weatherRenderer.setWeather(type, intensity);
+    }
+
+
+    public WeatherRenderer.WeatherType getCurrentWeather() {
+        return weatherRenderer.getCurrentWeather();
     }
 
     Texture fogTexture;
@@ -94,7 +109,7 @@ public class MapRenderer {
             }
             if (!plate.getEffectType().equals("trap") && !plate.isActivated()) {
                 float[] isoPos = toIsometric(plate.getTargetX(), plate.getTargetY());
-                batch.draw(fogTexture, isoPos[0]-16, isoPos[1]-10, 64, 64);
+                batch.draw(fogTexture, isoPos[0] - 16, isoPos[1] - 10, 64, 64);
             }
         }
     }
@@ -154,7 +169,19 @@ public class MapRenderer {
             batch.setProjectionMatrix(camera.combined);
             renderObjectLayer(batch, "object");
             renderPressurePlate(batch);
+
+
+            weatherRenderer.render(batch);
         }
+    }
+
+
+    public void update(float delta) {
+        weatherRenderer.update(delta);
+    }
+
+    public void setWeather(String type, float intensity) {
+        weatherRenderer.setWeather(type, intensity);
     }
 
     private void renderObjectLayer(SpriteBatch batch, String layerName) {

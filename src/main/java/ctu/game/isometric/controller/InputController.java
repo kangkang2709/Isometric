@@ -14,6 +14,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import ctu.game.isometric.controller.quiz.QuizController;
 import ctu.game.isometric.model.game.GameState;
+import ctu.game.isometric.view.renderer.WeatherRenderer;
 import ctu.game.isometric.view.ui.DialogUI;
 import ctu.game.isometric.view.renderer.MapRenderer;
 import ctu.game.isometric.view.ui.MerchantUI;
@@ -346,6 +347,14 @@ public class InputController extends InputAdapter {
             }
         }
         switch (keycode) {
+            case Keys.F12 -> {
+                if (mapRenderer.getCurrentWeather() == WeatherRenderer.WeatherType.SNOW) {
+                    mapRenderer.setWeather("rain", 2f);
+                } else {
+                    mapRenderer.setWeather("snow", 0.4f);
+                }
+
+            }
             case Keys.F5 -> {
                 gameController.getQuestTrackerView().toggleVisibility();
                 gameController.setState(GameState.QUEST_TRACKER);

@@ -1,22 +1,22 @@
 flakes
 - Delay -
 active: true
-lowMin: 0.0
-lowMax: 0.0
+lowMin: 30.0
+lowMax: 30.0
 - Duration - 
-lowMin: 90.0
-lowMax: 90.0
+lowMin: 87.0
+lowMax: 87.0
 - Count - 
 min: -2
-max: 600
+max: 500
 - Emission - 
-lowMin: 3.0
-lowMax: 3.0
-highMin: -1.0
-highMax: -1.0
+lowMin: -2.0
+lowMax: -2.0
+highMin: -3.0
+highMax: -3.0
 relative: false
 scalingCount: 1
-scaling0: 0.7118644
+scaling0: 0.23728813
 timelineCount: 1
 timeline0: 0.0
 - Life - 
