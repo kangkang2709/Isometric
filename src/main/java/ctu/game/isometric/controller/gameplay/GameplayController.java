@@ -202,9 +202,6 @@ public class GameplayController {
         if (isCombatMode) updateCombat(delta);
     }
 
-    private void spawnAttackEffect(float x, float y) {
-        effectManager.spawnEffect("attack", x, y);
-    }
 
 
     private void updateCombat(float delta) {
@@ -825,7 +822,7 @@ public class GameplayController {
             enemyHealth = Math.min(enemyMaxHealth, enemyHealth + heal);
             combatLog = enemyName + " recovers " + heal + " health!";
         }
-        effectManager.spawnEffect("attack", 185, 480);
+        effectManager.spawnEffect("Starlight", 180, 470);
         Timer.schedule(new Timer.Task() {
             @Override
             public void run() {
@@ -900,7 +897,7 @@ public class GameplayController {
 
                 combatLog = "Your word '" + word + "' deals " + damage + " damage!";
                 showMessage("+" + points + " points! " + damage + " damage!");
-                effectManager.spawnEffect("attack", viewport.getWorldWidth() - 260, 440);
+                effectManager.spawnEffect("Starlight", viewport.getWorldWidth() - 180, 440);
 
                 achievementManager.updateProgress(Achievement.AchievementType.WORD_COUNT, 1);
                 Timer.schedule(new Timer.Task() {

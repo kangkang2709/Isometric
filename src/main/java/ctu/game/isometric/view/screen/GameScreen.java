@@ -165,7 +165,6 @@ public class GameScreen implements Screen {
 
                     if (dialogUI != null && gameController.getDialogController().isDialogActive()) {
                         dialogUI.render();
-
                         gameController.getEffectManager().render(batch);
                     }
 

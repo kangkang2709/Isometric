@@ -99,7 +99,7 @@ public class GameController {
         this.pauseMenu = new PauseMenu(this);
 
 
-        effectManager = new EffectManager("effects");
+        effectManager = new EffectManager();
         this.loadEffects();
         this.settingsMenu = new SettingsMenu(this);
         this.mainMenuController = new MainMenu(this);
@@ -295,9 +295,9 @@ public class GameController {
 
 
     public void loadEffects() {
-        effectManager.loadEffect("attack", "effects/blood.p");
-        effectManager.loadEffect("rain", "effects/rain.p");
-        effectManager.loadEffect("treasure", "effects/demolition.p");
+        effectManager.loadEffect("Starlight", "effects/Starlight/");
+        effectManager.loadEffect("Leaf_fall", "effects/Leaf_fall/");
+        effectManager.loadEffect("Star_Trail", "effects/Star_Trail/");
     }
 
     public void loadCharacter(Character character, Date lastSaveTime) {
@@ -784,8 +784,8 @@ public class GameController {
     private void openTreasureWithAnimation(Items item, int amount, int x, int y) {
         // Get character position for effect placement
         float[] isoPos = toIsometric(x, y);
-        // Spawn treasure effect
-        effectManager.spawnEffectEvent("treasure", isoPos[0], isoPos[1]);
+
+        effectManager.spawnEffectEvent("Star_Trail", 660, 390);
 
         // Create dialog message about the found item
         String message = "You found " + amount + " " + item.getItemName() + "!";

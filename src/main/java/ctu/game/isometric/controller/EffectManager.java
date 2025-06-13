@@ -18,11 +18,9 @@ public class EffectManager implements Disposable {
     private final Array<ParticleEffectPool.PooledEffect> activeEffects = new Array<>();
     private final ObjectMap<ParticleEffectPool.PooledEffect, EffectData> effectDataMap = new ObjectMap<>();
     private final Array<ScheduledEffect> scheduledEffects = new Array<>();
-    private final String imageDir;
     Map<String, Sound> effectSound;
 
-    public EffectManager(String imageDir) {
-        this.imageDir = imageDir;
+    public EffectManager() {
         this.effectSound = new HashMap<>();
         this.loadSoundEffects();
     }
@@ -39,7 +37,7 @@ public class EffectManager implements Disposable {
     public void loadEffect(String effectName, String effectPath) {
         try {
             ParticleEffect prototype = new ParticleEffect();
-            prototype.load(Gdx.files.internal(effectPath), Gdx.files.internal(imageDir));
+            prototype.load(Gdx.files.internal(effectPath + effectName + ".p"), Gdx.files.internal(effectPath));
             effectPools.put(effectName, new ParticleEffectPool(prototype, 5, 30));
             loadSound(effectName, "effects/sound");
         } catch (Exception e) {
@@ -53,9 +51,10 @@ public class EffectManager implements Disposable {
 
     // Spawn effect immediately
     public void spawnEffect(String effectName, float x, float y) {
-        spawnEffect(effectName, x, y, 2.0f);
+        spawnEffect(effectName, x, y, 1.0f);
         playSound(effectName);
     }
+
     public void spawnEffectEvent(String effectName, float x, float y) {
         spawnEffect(effectName, x, y, 0.2f);
         playSound(effectName);
@@ -70,6 +69,7 @@ public class EffectManager implements Disposable {
             Gdx.app.debug("EffectManager", "Sound not found for effect: " + effectName);
         }
     }
+
     private boolean sfxEnabled = true;
 
     public void setEnabled(boolean enabled) {
@@ -103,7 +103,6 @@ public class EffectManager implements Disposable {
         activeEffects.add(effect);
         effectDataMap.put(effect, new EffectData(duration));
     }
-
 
 
     // Schedule effect to appear after delay

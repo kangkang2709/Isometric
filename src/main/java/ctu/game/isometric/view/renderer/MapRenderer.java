@@ -74,13 +74,13 @@ public class MapRenderer {
         this.font = generator.generateFont(parameter);
         generator.dispose();
 
-        initLeafParticles();
+
         // Use the provided camera instead of creating a new one
         this.camera = camera;
 //        backgroundTexture = new Texture(Gdx.files.internal("maps/background.png"));
         // Create the tiled map renderer
         this.tiledMapRenderer = new IsometricTiledMapRenderer(map.getTiledMap());
-         this.fogTexture= new Texture(Gdx.files.internal("textures/fog.png"));
+        this.fogTexture= new Texture(Gdx.files.internal("textures/fog.png"));
     }
 
     Texture fogTexture;
@@ -154,7 +154,6 @@ public class MapRenderer {
             batch.setProjectionMatrix(camera.combined);
             renderObjectLayer(batch, "object");
             renderPressurePlate(batch);
-            renderLeaves(batch, Gdx.graphics.getDeltaTime());
         }
     }
 
@@ -289,140 +288,7 @@ public class MapRenderer {
             }
         }
     }
-    // For leaf particle system
-    private TextureRegion[] leafTextures;
-    private static final int LEAF_COUNT = 100;
-    private static final float WIND_SPEED = 30f;
-    private float[] leafX, leafY, leafRotation, leafScale, leafAlpha;
-    private float[] leafSpeedX, leafSpeedY, leafRotationSpeed;
-    private boolean[] leafActive;
-    private float windDirection = 1.0f;  // 1.0 = right, -1.0 = left
-    private float windTimer = 0;
-    private float windChangeInterval = 5f; // Change wind direction every 5 seconds
 
-    private void initLeafParticles() {
-        // Load leaf textures
-        Texture leafAtlas = new Texture(Gdx.files.internal("textures/leaves.png"));
-        leafTextures = new TextureRegion[4];
-        for (int i = 0; i < 4; i++) {
-            leafTextures[i] = new TextureRegion(leafAtlas, i * 32, 0, 32, 32);
-        }
-
-        // Initialize leaf arrays
-        leafX = new float[LEAF_COUNT];
-        leafY = new float[LEAF_COUNT];
-        leafRotation = new float[LEAF_COUNT];
-        leafScale = new float[LEAF_COUNT];
-        leafAlpha = new float[LEAF_COUNT];
-        leafSpeedX = new float[LEAF_COUNT];
-        leafSpeedY = new float[LEAF_COUNT];
-        leafRotationSpeed = new float[LEAF_COUNT];
-        leafActive = new boolean[LEAF_COUNT];
-
-        // Do not initialize leaves here - we'll do it in the first render call
-        for (int i = 0; i < LEAF_COUNT; i++) {
-            leafActive[i] = false;
-        }
-    }
-
-    private void resetLeaf(int index, boolean randomizeY) {
-
-
-        if (camera == null) {
-            return;
-        }
-
-        float viewportWidth = camera.viewportWidth * camera.zoom;
-        float viewportHeight = camera.viewportHeight * camera.zoom;
-
-        // Position either at the top or at the side depending on wind direction
-        if (windDirection > 0) {
-            leafX[index] = camera.position.x - viewportWidth/2 - 50;
-        } else {
-            leafX[index] = camera.position.x + viewportWidth/2 + 50;
-        }
-
-        if (randomizeY) {
-            // Spread leaves across entire height
-            leafY[index] = camera.position.y - viewportHeight/2 + (float)Math.random() * viewportHeight * 1.5f;
-        } else {
-            // New leaves appear at the top
-            leafY[index] = camera.position.y + viewportHeight/2 + 50;
-        }
-
-        // Randomize properties
-        leafRotation[index] = (float)(Math.random() * 360);
-        leafScale[index] = 0.5f + (float)Math.random() * 0.5f;
-        leafAlpha[index] = 0.6f + (float)Math.random() * 0.4f;
-        leafSpeedX[index] = windDirection * (WIND_SPEED + (float)Math.random() * 20);
-        leafSpeedY[index] = -10f - (float)Math.random() * 20;
-        leafRotationSpeed[index] = -2f + (float)(Math.random() * 4);
-        leafActive[index] = true;
-    }
-
-    private boolean leavesInitialized = false;
-    public void renderLeaves(SpriteBatch batch, float deltaTime) {
-
-        // Initialize leaves on first render when camera is available
-        if (!leavesInitialized && camera != null) {
-            for (int i = 0; i < LEAF_COUNT; i++) {
-                resetLeaf(i, true);
-            }
-            leavesInitialized = true;
-        }
-
-        // Skip if camera is not available or leaves not initialized
-        if (camera == null || !leavesInitialized) {
-            return;
-        }
-
-        // Update wind direction periodically
-        windTimer += deltaTime;
-        if (windTimer >= windChangeInterval) {
-            windTimer = 0;
-            windDirection = -windDirection;
-            windChangeInterval = 3f + (float)Math.random() * 5f; // Random interval
-        }
-
-        float viewportWidth = camera.viewportWidth * camera.zoom;
-        float viewportHeight = camera.viewportHeight * camera.zoom;
-
-        Color originalColor = batch.getColor().cpy();
-
-        for (int i = 0; i < LEAF_COUNT; i++) {
-            if (!leafActive[i]) continue;
-
-            // Update leaf position and rotation
-            leafX[i] += leafSpeedX[i] * deltaTime;
-            leafY[i] += leafSpeedY[i] * deltaTime;
-            leafRotation[i] += leafRotationSpeed[i] * deltaTime;
-
-            // Simulate wind influence with sine wave
-            leafX[i] += Math.sin(leafY[i] * 0.01f + windTimer) * deltaTime * 15;
-
-            // Check if leaf is off screen
-            if (leafX[i] < camera.position.x - viewportWidth/2 - 100 ||
-                    leafX[i] > camera.position.x + viewportWidth/2 + 100 ||
-                    leafY[i] < camera.position.y - viewportHeight/2 - 100) {
-                resetLeaf(i, false);
-            }
-
-            // Draw leaf
-            batch.setColor(1, 1, 1, leafAlpha[i]);
-            TextureRegion leafTexture = leafTextures[i % leafTextures.length];
-            batch.draw(leafTexture,
-                    leafX[i] - 16 * leafScale[i],
-                    leafY[i] - 16 * leafScale[i],
-                    16 * leafScale[i],
-                    16 * leafScale[i],
-                    32 * leafScale[i],
-                    32 * leafScale[i],
-                    1, 1,
-                    leafRotation[i]);
-        }
-
-        batch.setColor(originalColor);
-    }
 
     public float getOffsetX() {
         return offsetX;
@@ -450,9 +316,6 @@ public class MapRenderer {
         }
         if (font != null) {
             font.dispose();
-        }
-        if (leafTextures != null && leafTextures.length > 0) {
-            leafTextures[0].getTexture().dispose();
         }
     }
 }
