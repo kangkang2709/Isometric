@@ -30,6 +30,8 @@ public class Character {
     private Map<String, Integer> ettempFlags;
     // Status effects (e.g., buffs, debuffs)
 
+    Map<String, Boolean> isTutorials; // Track if tutorials are completed
+
     private float damage = 1; // Damage dealt by the character
 
     private float defend = 10;
@@ -61,8 +63,6 @@ public class Character {
 
         return true; // Indicates level up occurred
     }
-
-
 
 
     public int expToLevelUp(float exp) {
@@ -111,8 +111,25 @@ public class Character {
         this.ettempFlags.put("wrongWord", 0);
 
         this.questTracker = new QuestTracker();
+
+        initialTutorial();
     }
 
+
+    public void initialTutorial() {
+        this.isTutorials = new HashMap<>();
+
+        this.isTutorials.put("movement", false);
+        this.isTutorials.put("combat", false);
+        this.isTutorials.put("item", false);
+        this.isTutorials.put("map", false);
+        this.isTutorials.put("quest", false);
+        this.isTutorials.put("word", false);
+        this.isTutorials.put("achievement", false);
+        this.isTutorials.put("dialog", false);
+        this.isTutorials.put("npc",false);
+
+    }
 
     public Character(float startX, float startY) {
         this.gridX = startX;
@@ -137,6 +154,8 @@ public class Character {
         this.score = 0;
         this.questTracker = new QuestTracker();
 
+
+        initialTutorial();
     }
 
     public void teleportToLocation(String location) {
@@ -165,6 +184,7 @@ public class Character {
     public void setQuestTracker(QuestTracker questTracker) {
         this.questTracker = questTracker;
     }
+
     public List<Quest> getActiveQuests() {
         return questTracker.getActiveQuests();
     }
@@ -172,6 +192,7 @@ public class Character {
     public List<Quest> getCompletedQuests() {
         return questTracker.getCompletedQuests();
     }
+
     public boolean gameOver() {
         int amount = (items != null) ? items.getOrDefault("Potion of Healing", 0) : 0;
         if (amount <= 0) {
@@ -181,7 +202,7 @@ public class Character {
             if (healingPotion != null) {
                 this.mana = healingPotion.getManaCost();
                 useItem(healingPotion);
-                this.exp = Math.max(0, this.exp - this.exp*0.1f); // Reset exp to 0 after using potion
+                this.exp = Math.max(0, this.exp - this.exp * 0.1f); // Reset exp to 0 after using potion
                 this.ettempFlags.put("fallen", this.ettempFlags.getOrDefault("fallen", 0) + 1);
             }
         }
