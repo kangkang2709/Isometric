@@ -4,7 +4,7 @@
     "enemyName": "Goblin Warrior",
     "enemyDescription": "A sneaky forest creature wielding a crude sword.",
     "texturePath": "enemy/goblin_warrior.png",
-    "health": 5,
+    "health": 20,
     "attackPower": 1.2,
     "rewardId": 1
   },
@@ -13,7 +13,7 @@
     "enemyName": "Skeleton Archer",
     "enemyDescription": "An undead archer that shoots arrows from afar.",
     "texturePath": "enemy/skeleton_archer.png",
-    "health": 5,
+    "health": 20,
     "attackPower": 1,
     "rewardId": 2
   }

@@ -76,7 +76,7 @@ public class GameplayController {
     private String combatLog = "";
     private float wordDamageMultiplier = 1f;
     private boolean autoStartCombat = false;
-    private String playerName;
+    private String playerName= "Player";
     private boolean isVictory = false;
     private EffectManager effectManager;
     private WordNetValidator wordValidator;
@@ -89,7 +89,6 @@ public class GameplayController {
 
         this.effectManager = gameController.getEffectManager();
         this.wordValidator = gameController.getWordNetValidator();
-        this.playerName = gameController.getCharacter().getName();
         this.achievementManager = gameController.getAchievementManager();
 
         initializeUI();
@@ -216,13 +215,13 @@ public class GameplayController {
         }
     }
 
-    public boolean handleCombatClick(float x, float ScreenY) {
-        float y = Gdx.graphics.getHeight() - ScreenY;
+    public boolean handleCombatClick(float x, float screenY) {
+        float y = Gdx.graphics.getHeight() - screenY;
 
-        if (submitButtonRect.contains(x, y)) {
+        if (submitButtonRect != null && submitButtonRect.contains(x, y)) {
             submitWord();
             return true;
-        } else if (clearButtonRect.contains(x, y)) {
+        } else if (clearButtonRect != null && clearButtonRect.contains(x, y)) {
             clearSelection();
             return true;
         } else {
@@ -239,14 +238,23 @@ public class GameplayController {
     }
 
     private void checkGridClick(float x, float y) {
-        float gridSize = isCombatMode ? 350 : 500;
-        float gridX = isCombatMode ? (viewport.getWorldWidth() - gridSize) / 2 : 250;
-        float gridY = isCombatMode ? 60 : 110;
-        float cellSize = gridSize / 5;
+        // Calculate grid position based on new layout
+        final float SCREEN_WIDTH = viewport.getWorldWidth();
+        final float MARGIN = 20;
+        final float PLAYER_COLUMN_WIDTH = 250;
+        final float ITEM_COLUMN_WIDTH = 200;
+        final float GRID_COLUMN_WIDTH = SCREEN_WIDTH - PLAYER_COLUMN_WIDTH - ITEM_COLUMN_WIDTH - 4 * MARGIN;
+        final float GRID_COLUMN_X = MARGIN + PLAYER_COLUMN_WIDTH + MARGIN;
 
-        if (x >= gridX && x < gridX + gridSize && y >= gridY && y < gridY + gridSize) {
-            int cellX = (int) ((x - gridX) / cellSize);
-            int cellY = 4 - (int) ((y - gridY) / cellSize);
+        final float GRID_SIZE = Math.min(GRID_COLUMN_WIDTH - 40, 300); // Adjust based on available space
+        final float GRID_X = GRID_COLUMN_X + (GRID_COLUMN_WIDTH - GRID_SIZE) / 2;
+        final float GRID_Y = 80; // Match drawLetterGridColumn
+
+        float cellSize = GRID_SIZE / 5;
+
+        if (x >= GRID_X && x < GRID_X + GRID_SIZE && y >= GRID_Y && y < GRID_Y + GRID_SIZE) {
+            int cellX = (int) ((x - GRID_X) / cellSize);
+            int cellY = 4 - (int) ((y - GRID_Y) / cellSize);
             selectCell(cellX, cellY);
         }
     }
@@ -398,61 +406,359 @@ public class GameplayController {
         // Draw battle background
         batch.setColor(0.15f, 0.15f, 0.3f, 1);
         batch.draw(whiteTexture, 0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
+        batch.setColor(Color.WHITE);
 
-        // Draw player and enemy
-        drawCombatCharacter(batch, playerName, playerHealth, playerMaxHealth, 40, 620, true);
-        drawCombatCharacter(batch, enemyName, (float) enemyHealth, (float) enemyMaxHealth, viewport.getWorldWidth() - 300, 600, false);
+        // Layout constants
+        final float SCREEN_WIDTH = viewport.getWorldWidth();
+        final float SCREEN_HEIGHT = viewport.getWorldHeight();
+        final float MARGIN = 20;
 
-        // Draw combat log
+        // Top section - Enemy Status (full width)
+        final float ENEMY_SECTION_HEIGHT = 120;
+        final float ENEMY_SECTION_Y = SCREEN_HEIGHT - ENEMY_SECTION_HEIGHT - MARGIN;
+        drawEnemyStatusSection(batch, MARGIN, ENEMY_SECTION_Y, SCREEN_WIDTH - 2 * MARGIN, ENEMY_SECTION_HEIGHT);
 
+        // Middle section - Combat Log (full width)
+        final float LOG_SECTION_HEIGHT = 100;
+        final float LOG_SECTION_Y = ENEMY_SECTION_Y - LOG_SECTION_HEIGHT - MARGIN;
+        drawCombatLogSection(batch, MARGIN, LOG_SECTION_Y, SCREEN_WIDTH - 2 * MARGIN, LOG_SECTION_HEIGHT);
 
-        drawMessageBox(batch, combatLog, 900, 50, 300, 220);
+        // Bottom section - Three columns
+        final float BOTTOM_SECTION_Y = MARGIN;
+        final float BOTTOM_SECTION_HEIGHT = LOG_SECTION_Y - 2 * MARGIN;
 
-        final float ENEMY_DESC_X = 920;
-        final float ENEMY_DESC_Y = 250;
-        final float ENEMY_DESC_WIDTH = 260;
+        // Column widths
+        final float PLAYER_COLUMN_WIDTH = 250;
+        final float ITEM_COLUMN_WIDTH = 200;
+        final float GRID_COLUMN_WIDTH = SCREEN_WIDTH - PLAYER_COLUMN_WIDTH - ITEM_COLUMN_WIDTH - 4 * MARGIN;
 
-// Check for null and draw with text wrapping
-        if (this.enemy != null && this.enemy.getEnemyDescription() != null) {
-            String description = this.enemy.getEnemyDescription();
-            drawWrappedText(batch, bigFont, description, ENEMY_DESC_X, ENEMY_DESC_Y, ENEMY_DESC_WIDTH);
-        }
+        // Column positions
+        final float PLAYER_COLUMN_X = MARGIN;
+        final float GRID_COLUMN_X = PLAYER_COLUMN_X + PLAYER_COLUMN_WIDTH + MARGIN;
+        final float ITEM_COLUMN_X = GRID_COLUMN_X + GRID_COLUMN_WIDTH + MARGIN;
 
-        drawItemBox(batch, 50, 50, 300, 220);
+        // Draw three columns
+        drawPlayerStatusColumn(batch, PLAYER_COLUMN_X, BOTTOM_SECTION_Y, PLAYER_COLUMN_WIDTH, BOTTOM_SECTION_HEIGHT);
+        drawLetterGridColumn(batch, GRID_COLUMN_X, BOTTOM_SECTION_Y, GRID_COLUMN_WIDTH, BOTTOM_SECTION_HEIGHT);
+        drawItemColumn(batch, ITEM_COLUMN_X, BOTTOM_SECTION_Y, ITEM_COLUMN_WIDTH, BOTTOM_SECTION_HEIGHT);
+    }
+    private void drawItemColumn(SpriteBatch batch, float x, float y, float width, float height) {
+        // Draw column background
+        batch.setColor(0.3f, 0.2f, 0.4f, 0.9f);
+        batch.draw(whiteTexture, x, y, width, height);
 
+        // Draw border
+        batch.setColor(0.8f, 0.4f, 0.8f, 1); // Purple border for items
+        drawRect(batch, x, y, width, height, 2);
 
-        regularFont.setColor(Color.WHITE);
-//        regularFont.draw(batch, combatLog, 80, 170);
-        drawCenteredText(batch, regularFont, "Lượt của " + (isPlayerTurn ? "Bạn" : enemyName), viewport.getWorldWidth() / 2, 700, Color.WHITE);
+        // Column title
+        batch.setColor(Color.WHITE);
+        drawCenteredText(batch, regularFont, "🎒 ITEM", x + width/2, y + height - 15, Color.MAGENTA);
 
-        // Update and draw buttons
-        float buttonX = ((viewport.getWorldWidth() - 70) / 2);
-        float buttonY = 10;
-        float buttonWidth = 130;
-        float buttonHeight = 50;
-        float buttonSpacing = 60;
+        // Draw items
+        drawItemInventory(batch, x + 10, y + 10, width - 20, height - 40);
+    }
+    private void drawLetterGridColumn(SpriteBatch batch, float x, float y, float width, float height) {
+        // Draw column background
+        batch.setColor(0.25f, 0.25f, 0.35f, 0.9f);
+        batch.draw(whiteTexture, x, y, width, height);
 
-        submitButtonRect = new Rectangle(buttonX - 90, buttonY, buttonWidth, buttonHeight);
-        clearButtonRect = new Rectangle(buttonX + 32, buttonY, buttonWidth, buttonHeight);
+        // Draw border
+        batch.setColor(0.7f, 0.7f, 0.9f, 1);
+        drawRect(batch, x, y, width, height, 2);
 
+        // Column title
+        batch.setColor(Color.WHITE);
+        String currentWord = letterGrid.getCurrentWord();
 
-        // Draw compact letter grid and word info during player turn
-        if (isPlayerTurn) {
-            drawCompactLetterGrid(batch);
-            drawButton(batch, submitButtonRect, "CAST WORD");
-            drawButton(batch, clearButtonRect, "CLEAR");
-            String currentWord = letterGrid.getCurrentWord();
-            if (!currentWord.isEmpty()) {
-                drawCenteredText(batch, regularFont, "Spell: " + currentWord, viewport.getWorldWidth() / 2, 600, Color.WHITE);
+        drawCenteredText(batch, regularFont, currentWord, x + width/2, y + height - 15, Color.WHITE);
+
+        // Current word display
+        final float WORD_DISPLAY_Y = y + height - 45;
+
+        if (currentWord.isEmpty()) {
+            regularFont.setColor(Color.YELLOW);
+//            regularFont.draw(batch, "👉 Từ hiện tại: **" + currentWord + "**", x + 15, WORD_DISPLAY_Y);
+
+            // Word meaning (if available and recently submitted)
+            if (isDrawingWordMeaning && !lastSubmittedWord.isEmpty()) {
+                regularFont.setColor(Color.CYAN);
+                String meaning = wordValidator.getWordMeaning(lastSubmittedWord);
+                regularFont.draw(batch, "✨ Nghĩa từ: \"" + meaning + "\"", x + 150,y + height - 15);
             }
         }
 
-// Display word meaning regardless of whose turn it is
-        if (isDrawingWordMeaning && !lastSubmittedWord.isEmpty()) {
-            drawCenteredText(batch, regularFont, "Meaning: " + wordValidator.getWordMeaning(lastSubmittedWord),
-                    viewport.getWorldWidth() / 2, 570, Color.WHITE);
+        // Letter grid
+        final float GRID_SIZE = Math.min(width - 40, height - 150);
+        final float GRID_X = x + (width - GRID_SIZE) / 2;
+        final float GRID_Y = y + 80; // Leave space for buttons at bottom
+
+        drawLetterGrid(batch, GRID_X, GRID_Y, GRID_SIZE);
+
+        // Action buttons
+        final float BUTTON_WIDTH = 120;
+        final float BUTTON_HEIGHT = 40;
+        final float BUTTON_SPACING = 20;
+        final float BUTTONS_START_X = x + (width - (2 * BUTTON_WIDTH + BUTTON_SPACING)) / 2;
+        final float BUTTONS_Y = y + 20;
+
+        submitButtonRect = new Rectangle(BUTTONS_START_X, BUTTONS_Y, BUTTON_WIDTH, BUTTON_HEIGHT);
+        clearButtonRect = new Rectangle(BUTTONS_START_X + BUTTON_WIDTH + BUTTON_SPACING, BUTTONS_Y, BUTTON_WIDTH, BUTTON_HEIGHT);
+
+        if (isPlayerTurn) {
+            drawButton(batch, submitButtonRect, "CAST SPELL");
+            drawButton(batch, clearButtonRect, "CLEAR WORD");
         }
     }
+    private void drawLetterGrid(SpriteBatch batch, float gridX, float gridY, float gridSize) {
+        float cellSize = gridSize / 5;
+
+        char[][] grid = letterGrid.getGrid();
+        boolean[][] selected = letterGrid.getSelectedCells();
+
+        for (int y = 0; y < 5; y++) {
+            for (int x = 0; x < 5; x++) {
+                float screenX = gridX + x * cellSize;
+                float screenY = gridY + (4 - y) * cellSize;
+
+                // Draw cell background
+                batch.setColor(Color.WHITE);
+                if (selected[y][x]) {
+                    batch.draw(selectedCellTexture, screenX, screenY, cellSize, cellSize);
+                } else {
+                    batch.draw(cellTexture, screenX, screenY, cellSize, cellSize);
+                }
+
+                // Draw letter
+                String letter = String.valueOf(grid[y][x]);
+                layout.setText(regularFont, letter);
+                regularFont.setColor(Color.BLACK);
+                regularFont.draw(batch, letter,
+                        screenX + (cellSize - layout.width) / 2,
+                        screenY + cellSize - (cellSize - layout.height) / 2);
+            }
+        }
+    }
+    private void drawPlayerStatusColumn(SpriteBatch batch, float x, float y, float width, float height) {
+        // Draw column background
+        batch.setColor(0.2f, 0.4f, 0.2f, 0.9f);
+        batch.draw(whiteTexture, x, y, width, height);
+
+        // Draw border
+        batch.setColor(0.2f, 0.8f, 0.2f, 1); // Green border for player
+        drawRect(batch, x, y, width, height, 2);
+
+        // Column title
+        batch.setColor(Color.WHITE);
+        drawCenteredText(batch, regularFont, "TRẠNG THÁI", x + width/2, y + height - 15, Color.GREEN);
+        drawCenteredText(batch, regularFont, "NGƯỜI CHƠI", x + width/2, y + height - 35, Color.GREEN);
+
+        // Player image
+        final float PLAYER_IMG_SIZE = 100;
+        final float PLAYER_IMG_X = x + (width - PLAYER_IMG_SIZE) / 2;
+        final float PLAYER_IMG_Y = y + height - 160;
+
+        Texture playerTexture = getCharacterTexture("characters/player.png");
+        if (playerTexture != null) {
+            batch.setColor(Color.WHITE);
+            batch.draw(playerTexture, PLAYER_IMG_X, PLAYER_IMG_Y, PLAYER_IMG_SIZE, PLAYER_IMG_SIZE);
+        }
+
+        // Player stats
+        final float STATS_X = x + 15;
+        final float STATS_Y = PLAYER_IMG_Y - 20;
+
+        regularFont.setColor(Color.WHITE);
+        regularFont.draw(batch, "Tên: " + playerName, STATS_X, STATS_Y);
+
+        // Player health bar
+        regularFont.draw(batch, "HP: " + playerHealth + "/" + playerMaxHealth, STATS_X, STATS_Y - 20);
+        drawHealthBar(batch, playerHealth, playerMaxHealth, STATS_X, STATS_Y - 45, width - 50, 12);
+
+        // Player mana bar
+        regularFont.draw(batch, "MP: " + playerMana + "/" + playerMaxMana, STATS_X, STATS_Y - 60);
+        drawManaBar(batch, playerMana, playerMaxMana, STATS_X, STATS_Y - 85, width - 50, 12);
+    }private void drawManaBar(SpriteBatch batch, float current, float max, float x, float y, float width, float height) {
+        // Background
+        batch.setColor(0.3f, 0.3f, 0.3f, 1);
+        batch.draw(whiteTexture, x, y, width, height);
+
+        // Fill
+        float percentage = current / max;
+        batch.setColor(0.2f, 0.4f, 0.9f, 1); // Blue for mana
+        batch.draw(whiteTexture, x, y, width * percentage, height);
+    }
+    private void drawItemInventory(SpriteBatch batch, float x, float y, float width, float height) {
+        // Clear previous item rectangles
+        itemRectMap.clear();
+
+        // Get character items
+        Map<String, Integer> characterItems = gameController.getCharacter().getBuffItems();
+
+        if (characterItems == null || characterItems.isEmpty()) {
+            regularFont.setColor(Color.GRAY);
+            regularFont.draw(batch, "Không có\nvật phẩm!", x + 10, y + height - 30);
+            return;
+        }
+
+        // Display items
+        final float ITEM_HEIGHT = 35;
+        final int MAX_ITEMS_TO_SHOW = (int) ((height - 20) / ITEM_HEIGHT);
+        int itemsShown = 0;
+        float itemY = y + height - 30;
+
+        // Get mouse position
+        Vector3 mousePos = getTouchPosition();
+
+        for (Map.Entry<String, Integer> entry : characterItems.entrySet()) {
+            if (itemsShown >= MAX_ITEMS_TO_SHOW) break;
+
+            String itemName = entry.getKey();
+            int amount = entry.getValue();
+            Items item = ItemLoader.getItemByName(itemName);
+
+            if (item == null) continue;
+
+            // Create item rectangle
+            Rectangle itemRect = new Rectangle(x, itemY - 25, width, 30);
+            itemRectMap.put(itemRect, item);
+
+            // Check if hovered
+            boolean isHovered = itemRect.contains(mousePos.x, mousePos.y);
+
+            // Draw item background
+            if (isHovered) {
+                batch.setColor(0.5f, 0.5f, 0.7f, 0.8f);
+                batch.draw(whiteTexture, itemRect.x, itemRect.y, itemRect.width, itemRect.height);
+                hoveredItem = item;
+            }
+
+            // Draw item icon (small)
+            Texture itemIcon = getItemIcon(item.getTexturePath());
+            if (itemIcon != null) {
+                batch.setColor(Color.WHITE);
+                batch.draw(itemIcon, x + 5, itemY - 20, 20, 20);
+            }
+
+            // Draw item text
+            regularFont.setColor(isHovered ? Color.YELLOW : Color.WHITE);
+            String itemText = itemName.length() > 12 ? itemName.substring(0, 9) + "..." : itemName;
+            regularFont.draw(batch, itemText, x + 30, itemY);
+            regularFont.draw(batch, "x" + amount, x + width - 30, itemY);
+
+            if (isHovered && isPlayerTurn) {
+                regularFont.setColor(Color.GREEN);
+                regularFont.draw(batch, "[USE]", x + width - 60, itemY - 15);
+            }
+
+            itemY -= ITEM_HEIGHT;
+            itemsShown++;
+        }
+
+        // Show item tooltip
+        if (hoveredItem != null) {
+            drawItemTooltip(batch, mousePos.x, mousePos.y, hoveredItem);
+            hoveredItem = null;
+        }
+
+        // Show scroll indicator if needed
+        int remainingItems = characterItems.size() - MAX_ITEMS_TO_SHOW;
+        if (remainingItems > 0) {
+            regularFont.setColor(Color.GRAY);
+            regularFont.draw(batch, "+" + remainingItems + " more", x + 10, y + 15);
+        }
+    }
+    private void drawHealthBar(SpriteBatch batch, float current, float max, float x, float y, float width, float height) {
+        // Background
+        batch.setColor(0.3f, 0.3f, 0.3f, 1);
+        batch.draw(whiteTexture, x, y, width, height);
+
+        // Fill
+        float percentage = current / max;
+        batch.setColor(getHealthColor(percentage));
+        batch.draw(whiteTexture, x, y, width * percentage, height);
+    }
+    private void drawCombatLogSection(SpriteBatch batch, float x, float y, float width, float height) {
+        // Draw section background
+        batch.setColor(0.1f, 0.1f, 0.2f, 0.9f);
+        batch.draw(whiteTexture, x, y, width, height);
+
+        // Draw border
+        batch.setColor(0.6f, 0.6f, 0.8f, 1);
+        drawRect(batch, x, y, width, height, 2);
+
+        // Section title
+        batch.setColor(Color.WHITE);
+        drawCenteredText(batch, titleFont, "NHẬT KÝ GIAO CHIẾN / THÔNG BÁO", x + width/2, y + height - 15, Color.CYAN);
+
+        // Combat log text
+        final float LOG_TEXT_X = x + 40;
+        final float LOG_TEXT_Y = y + height - 20;
+
+        regularFont.setColor(Color.WHITE);
+        if (!combatLog.isEmpty()) {
+            regularFont.draw(batch, combatLog, LOG_TEXT_X, LOG_TEXT_Y);
+        }
+
+        // Current turn indicator
+        String turnText = "► Lượt hiện tại: " + (isPlayerTurn ? "✦ Người Chơi ✦" : "✦ " + enemyName + " ✦");
+        Color turnColor = isPlayerTurn ? Color.GREEN : Color.RED;
+        regularFont.setColor(turnColor);
+        regularFont.draw(batch, turnText, LOG_TEXT_X + 950, y + 60);
+    }
+    private void drawEnemyStatusSection(SpriteBatch batch, float x, float y, float width, float height) {
+        // Draw section background
+        batch.setColor(0.2f, 0.2f, 0.4f, 0.9f);
+        batch.draw(whiteTexture, x, y, width, height);
+
+        // Draw border
+        batch.setColor(0.8f, 0.2f, 0.2f, 1); // Red border for enemy
+        drawRect(batch, x, y, width, height, 2);
+
+        // Section title
+        batch.setColor(Color.WHITE);
+        drawCenteredText(batch, titleFont, "TRẠNG THÁI KẺ ĐỊCH", x + width/2, y + height - 20, Color.RED);
+
+        // Enemy image
+        final float ENEMY_IMG_SIZE = 80;
+        final float ENEMY_IMG_X = x + 20;
+        final float ENEMY_IMG_Y = y + 20;
+
+        Texture enemyTexture = getCharacterTexture(this.enemy.getTexturePath());
+        if (enemyTexture != null) {
+            batch.setColor(Color.WHITE);
+            batch.draw(enemyTexture, ENEMY_IMG_X, ENEMY_IMG_Y, ENEMY_IMG_SIZE, ENEMY_IMG_SIZE);
+        }
+
+        // Enemy info text area
+        final float TEXT_START_X = ENEMY_IMG_X + ENEMY_IMG_SIZE + 20;
+        final float TEXT_Y = y + height - 50;
+
+        regularFont.setColor(Color.WHITE);
+        regularFont.draw(batch, "Tên: " + enemyName, TEXT_START_X, TEXT_Y);
+
+        // Health bar
+        final float HP_BAR_WIDTH = 200;
+        final float HP_BAR_HEIGHT = 15;
+        final float HP_BAR_X = TEXT_START_X + 100;
+        final float HP_BAR_Y = TEXT_Y - 25;
+
+        regularFont.draw(batch, "HP: " + enemyHealth+"/"+ enemyMaxHealth , TEXT_START_X, HP_BAR_Y);
+
+        // Health bar background
+        batch.setColor(0.3f, 0.3f, 0.3f, 1);
+        batch.draw(whiteTexture, HP_BAR_X - 100, HP_BAR_Y - 30, HP_BAR_WIDTH, HP_BAR_HEIGHT);
+
+        // Health bar fill
+        float healthPercentage = (float) enemyHealth / enemyMaxHealth;
+        batch.setColor(getHealthColor(healthPercentage));
+        batch.draw(whiteTexture, HP_BAR_X - 100, HP_BAR_Y - 30, HP_BAR_WIDTH * healthPercentage, HP_BAR_HEIGHT);
+
+        // Status effects (if any)
+        regularFont.setColor(Color.ORANGE);
+        regularFont.draw(batch, "Tiểu sử:" + this.enemy.getEnemyDescription(), TEXT_START_X + 350, TEXT_Y);
+    }
+
 
     // Add these fields to the GameplayController class
     private Map<Rectangle, Items> itemRectMap = new HashMap<>();
@@ -953,6 +1259,9 @@ public class GameplayController {
         this.achievementManager = gameController.getAchievementManager();
         this.isCombatMode = true;
         this.isPlayerTurn = true;
+
+        this.playerName = gameController.getCharacter().getName();
+
         this.currentLevel = gameController.getCharacter().getLevel();
         this.combatLog = "Bắt đầu cạnh tranh với " + enemyName + "!";
         letterGrid.regenerateGrid();
