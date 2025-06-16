@@ -91,7 +91,7 @@ public class InputController extends InputAdapter {
         GameState state = gameController.getCurrentState();
 
         if (gameController.getTutorialUI().isVisible()) {
-            return true; // Key was handled by tutorial
+            return gameController.getTutorialUI().handleKeyPress(keycode);
         }
 
         // Handle dialog input first
@@ -187,12 +187,19 @@ public class InputController extends InputAdapter {
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         // Only process left clicks during EXPLORING state
 
+        GameState state = gameController.getCurrentState();
 
-        if (gameController.getTutorialUI().handleClick(screenX,screenY)) {
+        if (gameController.getTutorialUI().isVisible()) {
+
+            if (state == GameState.MENU) {
+                return gameController.getMenuController().handleMouseClick(screenX, screenY);
+            }
+             else if (gameController.getTutorialUI().handleClick(screenX, screenY)) {
+                effectManager.playClickSound();
+            }
             return true; // Click was handled by tutorial
         }
 
-        GameState state = gameController.getCurrentState();
 
 
         if (state == GameState.EXPLORING && !gameController.getDialogController().isDialogActive()) {

@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
+
 public class TutorialUI implements Disposable {
     // UI theme constants
     private static final Color BACKGROUND_COLOR = new Color(0.1f, 0.1f, 0.15f, 0.95f);
@@ -33,7 +35,7 @@ public class TutorialUI implements Disposable {
     private static final int FIXED_IMAGE_HEIGHT = 250;
     private static final int FIXED_IMAGE_WIDTH = 400;
 
-    private boolean isVisible= false;
+    private boolean isVisible = false;
 
     // Tutorial Page inner class
     public static class TutorialPage {
@@ -88,7 +90,7 @@ public class TutorialUI implements Disposable {
     private boolean animatingOut = false;
 
     public TutorialUI() {
-        this(250, 200, 800, 400); // Default size and position
+        this(250, 100, 800, 550); // Increased height from 400 to 550
     }
 
     public TutorialUI(float x, float y, float width, float height) {
@@ -114,8 +116,8 @@ public class TutorialUI implements Disposable {
 
         // Set up hit detection areas
         float buttonSize = 60;
-        nextBtnRect = new Rectangle(x + width, y + padding, buttonSize, buttonSize);
-        prevBtnRect = new Rectangle(x + padding -buttonSize - 25, y + padding, buttonSize, buttonSize);
+        nextBtnRect = new Rectangle(x + width - padding - buttonSize + 23, y + padding - 22, buttonSize, buttonSize);
+        prevBtnRect = new Rectangle(x + padding -23, y + padding - 22, buttonSize, buttonSize);
         closeBtnRect = new Rectangle(x + width - padding - 40, y + height - padding - 40, 40, 40);
     }
 
@@ -129,29 +131,13 @@ public class TutorialUI implements Disposable {
     }
 
     private void initializeFonts() {
-        // This assumes you have FreeType extension
-        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/IMFellEnglishSC-Regular.ttf"));
-        FreeTypeFontGenerator.FreeTypeFontParameter params = new FreeTypeFontGenerator.FreeTypeFontParameter();
 
-        // Title font
-        params.size = 24;
-        params.color = TITLE_COLOR;
-        params.borderWidth = 1;
-        params.borderColor = new Color(0, 0, 0, 0.3f);
-        titleFont = generator.generateFont(params);
+        titleFont = generateVietNameseFont("ModernAntiqua-Regular.ttf", 30);
 
-        // Content font
-        params.size = 18;
-        params.color = TEXT_COLOR;
-        params.borderWidth = 0;
-        contentFont = generator.generateFont(params);
+        contentFont = generateVietNameseFont("ModernAntiqua-Regular.ttf", 20);
 
-        // Button font
-        params.size = 22;
-        params.color = Color.WHITE;
-        buttonFont = generator.generateFont(params);
+        buttonFont = generateVietNameseFont("ModernAntiqua-Regular.ttf", 20);
 
-        generator.dispose();
     }
 
     public void render(SpriteBatch batch) {
@@ -207,10 +193,11 @@ public class TutorialUI implements Disposable {
         drawImageFixed(batch, currentPage);
 
         // Draw content text
+        // Draw content text
         contentFont.setColor(TEXT_COLOR.r, TEXT_COLOR.g, TEXT_COLOR.b, alpha);
         contentLayout.setText(contentFont, currentPage.content,
                 TEXT_COLOR, width - padding * 2, Align.left, true);
-        float textY = y + height - padding * 2 - titleLayout.height - FIXED_IMAGE_HEIGHT - padding;
+        float textY = y + height - padding * 2 - titleLayout.height - FIXED_IMAGE_HEIGHT - padding * 2 - 20;
         contentFont.draw(batch, contentLayout, x + padding, textY);
 
         // Draw navigation controls
@@ -232,7 +219,7 @@ public class TutorialUI implements Disposable {
 
         // Calculate the position to center the image
         float imageX = x + (width - FIXED_IMAGE_WIDTH) / 2;
-        float imageY = y + height - padding - titleLayout.height - FIXED_IMAGE_HEIGHT - padding -20;
+        float imageY = y + height - padding - titleLayout.height - FIXED_IMAGE_HEIGHT - padding - 20;
 
         // Draw image border
         batch.setColor(TITLE_COLOR.r, TITLE_COLOR.g, TITLE_COLOR.b, alpha * 0.5f);
@@ -251,8 +238,8 @@ public class TutorialUI implements Disposable {
         buttonFont.setColor(Color.WHITE.r, Color.WHITE.g, Color.WHITE.b, alpha);
 
         // Draw next button if not on last page
-        if (currentPageIndex < pages.size() - 1) {
-            Color btnColor = nextBtnRect == hoverButton ? BUTTON_HOVER_COLOR : BUTTON_COLOR;
+        if (pages != null && currentPageIndex < pages.size() - 1) {
+            Color btnColor = nextBtnRect.equals(hoverButton) ? BUTTON_HOVER_COLOR : BUTTON_COLOR;
             batch.setColor(btnColor.r, btnColor.g, btnColor.b, alpha);
 
             if (nextButton != null) {
@@ -260,14 +247,14 @@ public class TutorialUI implements Disposable {
             } else {
                 // Draw styled "Next" button
                 batch.draw(whitePixel, nextBtnRect.x, nextBtnRect.y, nextBtnRect.width, nextBtnRect.height);
-                buttonFont.draw(batch, ">", nextBtnRect.x + nextBtnRect.width/2 - 6,
-                        nextBtnRect.y + nextBtnRect.height/2 + 8);
+                buttonFont.draw(batch, ">", nextBtnRect.x + nextBtnRect.width / 2 - 6,
+                        nextBtnRect.y + nextBtnRect.height / 2 + 8);
             }
         }
 
         // Draw previous button if not on first page
-        if (currentPageIndex > 0) {
-            Color btnColor = prevBtnRect == hoverButton ? BUTTON_HOVER_COLOR : BUTTON_COLOR;
+        if (pages != null && currentPageIndex > 0) {
+            Color btnColor = prevBtnRect.equals(hoverButton) ? BUTTON_HOVER_COLOR : BUTTON_COLOR;
             batch.setColor(btnColor.r, btnColor.g, btnColor.b, alpha);
 
             if (prevButton != null) {
@@ -275,23 +262,23 @@ public class TutorialUI implements Disposable {
             } else {
                 // Draw styled "Prev" button
                 batch.draw(whitePixel, prevBtnRect.x, prevBtnRect.y, prevBtnRect.width, prevBtnRect.height);
-                buttonFont.draw(batch, "<", prevBtnRect.x + prevBtnRect.width/2 - 6,
-                        prevBtnRect.y + prevBtnRect.height/2 + 8);
+                buttonFont.draw(batch, "<", prevBtnRect.x + prevBtnRect.width / 2 - 6,
+                        prevBtnRect.y + prevBtnRect.height / 2 + 8);
             }
         }
 
         // Draw page counter
         batch.setColor(TEXT_COLOR.r, TEXT_COLOR.g, TEXT_COLOR.b, alpha);
         String pageText = (currentPageIndex + 1) + "/" + pages.size();
-        GlyphLayout pageLayout = new GlyphLayout(buttonFont, pageText);
-        buttonFont.draw(batch, pageText, x + width/2 - pageLayout.width/2, y + 40);
+        contentLayout.setText(buttonFont, pageText);
+        buttonFont.draw(batch, pageText, x + width / 2 - contentLayout.width / 2, y + 40);
 
         // Draw close button
-        Color closeBtnColor = closeBtnRect == hoverButton ? BUTTON_HOVER_COLOR : BUTTON_COLOR;
+        Color closeBtnColor = closeBtnRect.equals(hoverButton) ? BUTTON_HOVER_COLOR : BUTTON_COLOR;
         batch.setColor(closeBtnColor.r, closeBtnColor.g, closeBtnColor.b, alpha);
         batch.draw(whitePixel, closeBtnRect.x, closeBtnRect.y, closeBtnRect.width, closeBtnRect.height);
-        buttonFont.draw(batch, "X", closeBtnRect.x + closeBtnRect.width/2 - 8,
-                closeBtnRect.y + closeBtnRect.height/2 + 8);
+        buttonFont.draw(batch, "X", closeBtnRect.x + closeBtnRect.width / 2 - 8,
+                closeBtnRect.y + closeBtnRect.height / 2 + 8);
     }
 
     private void updateButtonHover(float touchX, float touchY) {
@@ -331,6 +318,30 @@ public class TutorialUI implements Disposable {
             return true;
         }
 
+        return false;
+    }
+
+    public boolean handleKeyPress(int keycode) {
+        if (!visible) return false;
+
+        switch (keycode) {
+            case com.badlogic.gdx.Input.Keys.RIGHT:
+                if (currentPageIndex < pages.size() - 1) {
+                    currentPageIndex++;
+                    return true;
+                }
+                break;
+            case com.badlogic.gdx.Input.Keys.LEFT:
+                if (currentPageIndex > 0) {
+                    currentPageIndex--;
+                    return true;
+                }
+                break;
+            case com.badlogic.gdx.Input.Keys.ESCAPE:
+                markCurrentTutorialCompleted();
+                animatingOut = true;
+                return true;
+        }
         return false;
     }
 
@@ -389,7 +400,7 @@ public class TutorialUI implements Disposable {
                 // Load or reuse texture
                 image = loadedTextures.computeIfAbsent(
                         tutorial.getImage(),
-                        path -> new Texture(Gdx.files.internal("tutorials/"+path))
+                        path -> new Texture(Gdx.files.internal("tutorials/" + path))
                 );
             }
             pages.add(new TutorialPage(tutorial.getTitle(), tutorial.getText(), image));
