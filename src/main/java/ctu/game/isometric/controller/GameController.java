@@ -1,7 +1,10 @@
 package ctu.game.isometric.controller;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.utils.Array;
 import ctu.game.isometric.IsometricGame;
@@ -85,6 +88,8 @@ public class GameController {
     private BountyBoardView bountyBoardView;
     private QuestTrackerView questTrackerView;
 
+    private TutorialUI tutorialUI;
+
     public GameController(IsometricGame game) {
         this.game = game;
 
@@ -133,6 +138,14 @@ public class GameController {
         bountyBoardController = new BountyBoardController(this);
         bountyBoardView = new BountyBoardView(bountyBoardController);
         questTrackerView = new QuestTrackerView(this);
+
+        iniTutorial();
+
+    }
+
+    public void iniTutorial() {
+
+        tutorialUI = new TutorialUI();
     }
 
     boolean isLoadNPCs = false;
@@ -151,6 +164,7 @@ public class GameController {
     public void interactWithNPC() {
         NPC npc = findNPCNear(character.getGridX(), character.getGridY());
         if (npc != null) {
+            tutorialUI.show("movement");
             npc.setBehaviorState("Dialogue");
             switch (npc.getNpcName()) {
                 case "QuizMaster":
@@ -239,6 +253,19 @@ public class GameController {
         if (dictionaryView == null) {
             dictionaryView = new ctu.game.isometric.view.view.DictionaryView(this, dictionary, this.wordNetValidator);
         }
+    }
+
+    public TutorialUI getTutorialUI() {
+        return tutorialUI;
+    }
+
+    // You might want to add methods to show/hide the tutorial at appropriate times
+    public void showTutorial() {
+        tutorialUI.show();
+    }
+
+    public void hideTutorial() {
+        tutorialUI.hide();
     }
 
     public BountyBoardController getBountyBoardController() {
@@ -409,8 +436,8 @@ public class GameController {
                 if (character.getFlags() != null) {
                     if (character.getFlags().isEmpty())
                         startCutscene("intro");
-//                    if (flags != null && flags != "intro" && getTransitionController().isTransitioning() == false) {
-//                    }
+                            tutorialUI.show("movement");
+                            getCharacter().setTutorialCompleted("movement");
                 }
                 cutsceneController.update(delta);
                 break;

@@ -756,7 +756,7 @@ public class GameplayController {
 
         // Status effects (if any)
         regularFont.setColor(Color.ORANGE);
-        regularFont.draw(batch, "Tiểu sử:" + this.enemy.getEnemyDescription(), TEXT_START_X + 350, TEXT_Y);
+        regularFont.draw(batch, "Mô tả:" + this.enemy.getEnemyDescription(), TEXT_START_X + 350, TEXT_Y);
     }
 
 

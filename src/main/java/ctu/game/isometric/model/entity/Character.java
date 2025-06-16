@@ -131,6 +131,26 @@ public class Character {
 
     }
 
+
+    public boolean isTutorialCompleted(String tutorialType) {
+        if (tutorialType == null || tutorialType.isEmpty()) {
+            throw new IllegalArgumentException("Tutorial ID cannot be null or empty");
+        }
+        if (isTutorials == null) {
+            return false; // No tutorials initialized
+        }
+        return isTutorials.getOrDefault(tutorialType, false);
+    }
+    public void setTutorialCompleted(String tutorialType) {
+        if (tutorialType == null || tutorialType.isEmpty()) {
+            throw new IllegalArgumentException("Tutorial ID cannot be null or empty");
+        }
+        if (isTutorials == null) {
+            isTutorials = new HashMap<>();
+        }
+        isTutorials.put(tutorialType, true);
+    }
+
     public Character(float startX, float startY) {
         this.gridX = startX;
         this.gridY = startY;
@@ -867,6 +887,14 @@ public class Character {
 
     public void setWordFilePath(String wordFilePath) {
         this.wordFilePath = wordFilePath;
+    }
+
+    public Map<String, Boolean> getIsTutorials() {
+        return isTutorials;
+    }
+
+    public void setIsTutorials(Map<String, Boolean> isTutorials) {
+        this.isTutorials = isTutorials;
     }
 
     public Set<String> getNewlearneWords() {

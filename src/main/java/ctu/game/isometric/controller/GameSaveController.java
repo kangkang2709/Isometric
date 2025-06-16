@@ -269,6 +269,10 @@ public class GameSaveController {
             copy.setAttempFlags(new HashMap<>(original.getAttempFlags()));
         }
 
+       if (original.getIsTutorials() != null) {
+            copy.setIsTutorials(new HashMap<>(original.getIsTutorials()));
+        }
+
         copy.setQuestTracker(original.getQuestTracker());
 
         copy.setWordFilePath(original.getWordFilePath());

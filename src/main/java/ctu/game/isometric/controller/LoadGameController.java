@@ -341,6 +341,10 @@ public class LoadGameController {
                     // Start the game
                     gameController.setState(GameState.EXPLORING);
 
+                    if (!gameController.getCharacter().getFlags().contains("intro"))
+                        gameController.startCutscene("intro");
+
+
                     System.out.println("Game loaded: " + fileName);
                 } else {
                     System.out.println("Failed to load save: " + fileName);

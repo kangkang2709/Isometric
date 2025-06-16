@@ -90,6 +90,10 @@ public class InputController extends InputAdapter {
     public boolean keyDown(int keycode) {
         GameState state = gameController.getCurrentState();
 
+        if (gameController.getTutorialUI().isVisible()) {
+            return true; // Key was handled by tutorial
+        }
+
         // Handle dialog input first
         if (gameController.getDialogController().isDialogActive() && state == GameState.DIALOG) {
             return handleDialogInput(keycode);
@@ -182,6 +186,12 @@ public class InputController extends InputAdapter {
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         // Only process left clicks during EXPLORING state
+
+
+        if (gameController.getTutorialUI().handleClick(screenX,screenY)) {
+            return true; // Click was handled by tutorial
+        }
+
         GameState state = gameController.getCurrentState();
 
 
