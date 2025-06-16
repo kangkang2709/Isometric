@@ -1115,21 +1115,27 @@ public class GameplayController {
 
     private void performEnemyAction() {
         float damage = (random.nextInt(8) + 3) * enemy.getAttackPower();
-        playerHealth  = Math.max(0, playerHealth - damage);
+
 
         int action = random.nextInt(10);
-        if (action < 8) { // 80% normal attack
+        if (action < 4) { // 40% normal attack
             combatLog = enemyName + " attack for " + damage + " damage!\n" + "Your current health is " + this.playerHealth + ".";
-        } else if (action < 1) { // 10% power attack
+        } else if (action < 4) { // 40% power attack
             int extraDamage = random.nextInt(5) + 1;
             playerHealth  = Math.max(0, playerHealth - extraDamage);
             combatLog = enemyName + " performs a power attack for " + (damage + extraDamage) + " damage!\n" + "Your current health is " + this.playerHealth + ".";
 
-        } else { // 10% heal
+        } else if (action <= 1){ // 10% heal
             int heal = random.nextInt(8) + 3;
             enemyHealth = Math.min(enemyMaxHealth, enemyHealth + heal);
             combatLog = enemyName + " recovers " + heal + " health!";
         }
+        else {
+            damage = 0;
+        }
+
+        playerHealth  = Math.max(0, playerHealth - damage);
+
         effectManager.spawnEffect("Starlight", 180, 470);
         Timer.schedule(new Timer.Task() {
             @Override

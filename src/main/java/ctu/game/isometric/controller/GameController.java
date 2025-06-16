@@ -161,7 +161,6 @@ public class GameController {
     public void interactWithNPC() {
         NPC npc = findNPCNear(character.getGridX(), character.getGridY());
         if (npc != null) {
-            tutorialUI.show("movement");
             npc.setBehaviorState("Dialogue");
             switch (npc.getNpcName()) {
                 case "QuizMaster":
@@ -192,12 +191,12 @@ public class GameController {
                     setState(GameState.BOUNTY_BOARD);
                     break;
                 case "Merchant":
-                    dialogController.showMessageWithChoices("I have something to trade. What do you want", "Magic Book",
-                            "Yes", "No", () -> merchantUI.show());
+                    dialogController.showMessageWithChoices("I have something to trade. What do you want", "CCCD",
+                            "Yes [Cần CCCD]", "No", () -> merchantUI.show());
                     break;
                 case "Healer Elara":
-                    dialogController.showMessageWithChoices("Do want to heal", "Magic Book",
-                            "Yes", "No", () -> getCharacter().recovery());
+                    dialogController.showMessageWithChoices("Do want to heal", "CCCD",
+                            "Yes [Cần CCCD]", "No", () -> getCharacter().recovery());
                     break;
                 case "Teleporter":
                     dialogController.startDialog("teleporting_background", "scene_intro");
@@ -812,7 +811,7 @@ public class GameController {
         effectManager.spawnEffectEvent("Star_Trail", 660, 390);
 
         // Create dialog message about the found item
-        String message = "You found " + amount + " " + item.getItemName() + "!";
+        String message = "Bạn nhận được" + amount + " " + item.getItemName() + "!";
         dialogController.showSimpleMessage(message);
 
         // Add the item to inventory after a short delay

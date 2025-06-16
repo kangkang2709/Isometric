@@ -44,6 +44,28 @@ public class ItemLoader {
         if (!initialized) initialize();
         return new ArrayList<>(items.values());
     }
+    public static List<Items> getAllItemsWithout(String itemEffect) {
+        if (!initialized) initialize();
+
+        List<Items> filteredItems = new ArrayList<>();
+        for (Items item : items.values()) {
+            if (!item.getItemEffect().equalsIgnoreCase(itemEffect)) {
+                filteredItems.add(item);
+            }
+        }
+        return filteredItems;
+    }
+    public static List<Items> getAllItemsWithout(String itemEffect1, String itemEffect2) {
+        if (!initialized) initialize();
+
+        List<Items> filteredItems = new ArrayList<>();
+        for (Items item : items.values()) {
+            if (!item.getItemEffect().equalsIgnoreCase(itemEffect1) && !item.getItemEffect().equalsIgnoreCase(itemEffect2)) {
+                filteredItems.add(item);
+            }
+        }
+        return filteredItems;
+    }
 
     public static Items getItemById(int id) {
         if (!initialized) initialize();
@@ -80,7 +102,7 @@ public class ItemLoader {
         item.setItemID(0);
         item.setItemName("Unknown Item");
         item.setItemDescription("A mysterious item.");
-        item.setTexturePath("items/default.png");
+        item.setTexturePath("game/items/default.png");
         return item;
     }
 }

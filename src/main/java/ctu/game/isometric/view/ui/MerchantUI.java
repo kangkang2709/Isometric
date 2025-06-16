@@ -178,7 +178,7 @@ public class MerchantUI {
 
             itemSlots[i] = new Rectangle(
                     merchantBounds.x + PADDING * 2 + (col * (SLOT_SIZE + PADDING)) + 50,
-                    merchantBounds.y + merchantBounds.height - PADDING * 2  - 30 - SLOT_SIZE - (row * (SLOT_SIZE + PADDING)),
+                    merchantBounds.y + merchantBounds.height - PADDING * 2  - 30 - SLOT_SIZE - (row * (SLOT_SIZE + PADDING + 16)),
                     SLOT_SIZE,
                     SLOT_SIZE
             );
@@ -374,13 +374,13 @@ public class MerchantUI {
                 }
 
                 // Draw item texture if available
-                if (item != null && item.getTexturePath() != null) {
-                    Texture itemTexture = getItemTexture(item.getTexturePath());
-                    float itemSize = SLOT_SIZE - 16;
-                    float centerX = slot.x + SLOT_SIZE / 2f - itemSize / 2f;
-                    float centerY = slot.y + SLOT_SIZE / 2f - itemSize / 2f;
-                    batch.draw(itemTexture, centerX, centerY, itemSize, itemSize);
-                }
+//                if (item != null && item.getTexturePath() != null) {
+//                    Texture itemTexture = getItemTexture(item.getTexturePath());
+//                    float itemSize = 40;
+//                    float centerX = slot.x + SLOT_SIZE / 2f - itemSize / 2f;
+//                    float centerY = slot.y + SLOT_SIZE / 2f - itemSize / 2f;
+//                    batch.draw(itemTexture, centerX, centerY, itemSize, 34);
+//                }
             }
         }
 
@@ -518,11 +518,11 @@ public class MerchantUI {
 
                 // Apply subtle pulse animation to selected item
                 float scale = (i == selectedItemIndex) ? pulse : 1.0f;
-                float itemSize = SLOT_SIZE - 16;
+                float itemSize = 37;
                 float centerX = currentSlots[i].x + SLOT_SIZE/2f - itemSize*scale/2f;
                 float centerY = currentSlots[i].y + SLOT_SIZE/2f - itemSize*scale/2f;
 
-                batch.draw(itemTexture, centerX, centerY, itemSize * scale, itemSize * scale);
+                batch.draw(itemTexture, centerX, centerY, itemSize * scale, itemSize);
 
                 // Draw price/quantity
                 smallFont.setColor(Color.WHITE);
@@ -615,7 +615,9 @@ public class MerchantUI {
 
     // Keep existing methods for functionality
     private void loadMerchantItems() {
+//        merchantItems = ItemLoader.getAllItemsWithout("N/A");
         merchantItems = ItemLoader.getAllItems();
+
         Gdx.app.log("MerchantUI", "Loaded " + merchantItems.size() + " merchant items");
 
         if (merchantItems.isEmpty()) {
@@ -653,7 +655,9 @@ public class MerchantUI {
 
     private Texture getItemTexture(String texturePath) {
         if (!itemTextures.containsKey(texturePath)) {
-            itemTextures.put(texturePath, new Texture(Gdx.files.internal(texturePath)));
+            Texture texture = new Texture(Gdx.files.internal(texturePath));
+            texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+            itemTextures.put(texturePath, texture);
         }
         return itemTextures.get(texturePath);
     }

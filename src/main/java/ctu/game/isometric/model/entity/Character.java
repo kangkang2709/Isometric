@@ -113,6 +113,8 @@ public class Character {
         this.questTracker = new QuestTracker();
 
         initialTutorial();
+
+        addItem(ItemLoader.getItemByName("CCCD"), 1);
     }
 
 
@@ -127,7 +129,10 @@ public class Character {
         this.isTutorials.put("word", false);
         this.isTutorials.put("achievement", false);
         this.isTutorials.put("dialog", false);
-        this.isTutorials.put("npc",false);
+        this.isTutorials.put("npc", false);
+
+
+        addItem(ItemLoader.getItemByName("CCCD"), 1);
 
     }
 
@@ -141,6 +146,7 @@ public class Character {
         }
         return isTutorials.getOrDefault(tutorialType, false);
     }
+
     public void setTutorialCompleted(String tutorialType) {
         if (tutorialType == null || tutorialType.isEmpty()) {
             throw new IllegalArgumentException("Tutorial ID cannot be null or empty");
@@ -195,6 +201,7 @@ public class Character {
             default:
                 break;
         }
+        this.mana = Math.max(0, this.mana - 10); // Reduce mana cost for teleportation
     }
 
     public QuestTracker getQuestTracker() {

@@ -726,16 +726,23 @@
           ],
           "choices": [
             {
-              "text": "Location 1",
+              "text": "Location 1 [Ruby Omega]",
               "next_scene": "scene_end",
-              "required_item": "Magic Book",
+              "required_item": "Ruby Omega",
               "reward_item": "Location_Home"
             },
+
             {
-              "text": "Location 2",
+              "text": "Location 2 [Saphire Alpha]",
               "next_scene": "scene_end",
-              "required_item": "Magic Book",
+              "required_item": "Saphire Alpha",
               "reward_item": "Location_Village"
+            },
+            {
+              "text": "Location 3 [Emeral Delta]",
+              "next_scene": "scene_end",
+              "required_item": "Emeral Delta",
+              "reward_item": "Location_Home"
             },
             {
               "text": "Tôi chưa sẵn sàng để dịch chuyển.",

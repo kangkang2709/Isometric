@@ -1,74 +1,173 @@
 [
-    {
-      "itemID": 1,
-      "itemName": "Potion of Healing",
-      "itemDescription": "A red potion that restores a small amount of health.",
-      "texturePath": "game/items/potion_healing.png",
-      "itemEffect": "heal",
-      "value": 20.0,
-      "itemPrice" : "100",
-      "manaCost": 5.0
-    },
-    {
-      "itemID": 2,
-      "itemName": "Slow Potion",
-      "itemDescription": "A glowing crystal that restores mana when consumed.",
-      "texturePath": "game/items/mana_crystal.png",
-      "itemEffect":"debuff",
-      "value": 0.3,
-      "itemPrice" : "100",
-      "manaCost": 5.0
-    },
-    {
-      "itemID": 3,
-      "itemName": "Magic Book",
-      "itemDescription": "A book that teaches you a new spell.",
-      "texturePath": "game/items/magic_book.png",
-      "itemEffect":"N/A",
-      "itemPrice" : "100",
-      "value": 0.0,
-      "manaCost": 5.0
-    },
+  {
+    "itemID": 1,
+    "itemName": "Elixir",
+    "itemDescription": "Hồi phục 20 HP.",
+    "texturePath": "game/items/elixir.png",
+    "itemEffect": "heal",
+    "value": 20.0,
+    "itemPrice": 100,
+    "manaCost": 5.0
+  },
+  {
+    "itemID": 2,
+    "itemName": "Arcane Essence",
+    "itemDescription": "Hồi phục 20 Mana.",
+    "texturePath": "game/items/arcane_essence.png",
+    "itemEffect": "heal",
+    "value": 20.0,
+    "itemPrice": 100,
+    "manaCost": 0.0
+  },
+  {
+    "itemID": 3,
+    "itemName": "Draught of Fury",
+    "itemDescription": "Tăng chỉ số tấn công thêm 1.",
+    "texturePath": "game/items/draught_of_fury.png",
+    "itemEffect": "buff",
+    "value": 1.0,
+    "itemPrice": 300,
+    "manaCost": 10.0
+  },
+  {
+    "itemID": 4,
+    "itemName": "Aegis Brew",
+    "itemDescription": "Tăng chỉ số phòng thủ thêm 1.",
+    "texturePath": "game/items/aegis_brew.png",
+    "itemEffect": "buff",
+    "value": 1.0,
+    "itemPrice": 300,
+    "manaCost": 10.0
+  },
   {
     "itemID": 5,
-    "itemName": "Mana Potion",
-    "itemDescription": "A glowing crystal that restores mana when consumed.",
-    "texturePath": "game/items/mana_crystal.png",
-    "itemEffect":"debuff",
-    "value": 0.3,
-    "itemPrice" : "100",
-    "manaCost": 5.0
+    "itemName": "Book of Returned",
+    "itemDescription": "Vật phẩm rơi ra từ Final-Boss dùng để hoàn thành cốt truyệ.",
+    "texturePath": "game/items/book_of_returned.png",
+    "itemEffect": "N/A",
+    "value": 0.0,
+    "itemPrice": 9999,
+    "manaCost": 0.0
+  },
+  {
+    "itemID": 6,
+    "itemName": "Grimoire of Trials I",
+    "itemDescription": "Mở khóa mini-game 1 sau khi trò chuyện với NPC huyền bí.",
+    "texturePath": "game/items/grimoire_trials_1.png",
+    "itemEffect": "N/A",
+    "value": 0.0,
+    "itemPrice": 9999,
+    "manaCost": 0.0
+  },
+  {
+    "itemID": 7,
+    "itemName": "Grimoire of Trials II",
+    "itemDescription": "Mở khóa mini-game 2 sau khi trò chuyện với NPC huyền bí.",
+    "texturePath": "game/items/grimoire_trials_2.png",
+    "itemEffect": "N/A",
+    "value": 0.0,
+    "itemPrice": 9999,
+    "manaCost": 0.0
+  },
+  {
+    "itemID": 8,
+    "itemName": "Ruby Omega",
+    "itemDescription": "Dùng tại Cổng Dịch Chuyển để đến vùng đất …",
+    "texturePath": "game/items/ruby_omega.png",
+    "itemEffect": "N/A",
+    "value": 0.0,
+    "itemPrice": 9999,
+    "manaCost": 0.0
+  },
+  {
+    "itemID": 9,
+    "itemName": "Saphire Alpha",
+    "itemDescription": "Dùng tại Cổng Dịch Chuyển để đến vùng đất …",
+    "texturePath": "game/items/saphire_alpha.png",
+    "itemEffect": "N/A",
+    "value": 0.0,
+    "itemPrice": 9999,
+    "manaCost": 0.0
   },
   {
     "itemID": 10,
-    "itemName": "Experience Core",
-    "itemDescription": "A glowing crystal that restores mana when consumed.",
-    "texturePath": "game/items/mana_crystal.png",
-    "itemEffect":"buff",
-    "value": 20.0,
-    "itemPrice" : "9999",
+    "itemName": "Emeral Delta",
+    "itemDescription": "Dùng tại Cổng Dịch Chuyển để đến khu rừng cổ xưa.",
+    "texturePath": "game/items/emeral_delta.png",
+    "itemEffect": "N/A",
+    "value": 0.0,
+    "itemPrice": 9999,
     "manaCost": 0.0
   },
   {
-    "itemID": 20,
-    "itemName": "Score Pouch",
-    "itemDescription": "A glowing crystal that restores mana when consumed.",
-    "texturePath": "game/items/mana_crystal.png",
-    "itemEffect":"buff",
-    "value": 20.0,
-    "itemPrice" : "9999",
+    "itemID": 11,
+    "itemName": "Healing Herb",
+    "itemDescription": "Nguyên liệu chế tạo Elixir hoặc dùng cho nhiệm vụ.",
+    "texturePath": "game/items/healing_herb.png",
+    "itemEffect": "craft",
+    "value": 0.0,
+    "itemPrice": 200,
     "manaCost": 0.0
   },
-
   {
-    "itemID": 7,
-    "itemName": "Attack Potion",
-    "itemDescription": "A glowing crystal that restores mana when consumed.",
-    "texturePath": "game/items/mana_crystal.png",
-    "itemEffect":"debuff",
-    "value": 0.3,
-    "itemPrice" : "100",
-    "manaCost": 5.0
+    "itemID": 12,
+    "itemName": "Mana Blossom",
+    "itemDescription": "Nguyên liệu chế tạo Arcane Essence hoặc dùng cho nhiệm vụ.",
+    "texturePath": "game/items/mana_blossom.png",
+    "itemEffect": "craft",
+    "value": 0.0,
+    "itemPrice": 200,
+    "manaCost": 0.0
+  },
+  {
+    "itemID": 13,
+    "itemName": "Enchanted Stone",
+    "itemDescription": "Đá ma thuật – nguyên liệu dùng cho nhiệm vụ, nhận được khi đánh bại quái vật.",
+    "texturePath": "game/items/enchanted_stone.png",
+    "itemEffect": "quest",
+    "value": 0.0,
+    "itemPrice": 200,
+    "manaCost": 0.0
+  },
+  {
+    "itemID": 14,
+    "itemName": "Beast Flesh",
+    "itemDescription": "Thịt quái vật – nguyên liệu dùng cho nhiệm vụ, nhận được khi đánh bại quái vật.",
+    "texturePath": "game/items/beast_flesh.png",
+    "itemEffect": "quest",
+    "value": 0.0,
+    "itemPrice": 200,
+    "manaCost": 0.0
+  },
+  {
+    "itemID": 15,
+    "itemName": "Hide of the Fallen",
+    "itemDescription": "Da quái vật – nguyên liệu dùng cho nhiệm vụ, nhận được khi đánh bại quái vật.",
+    "texturePath": "game/items/hide_of_the_fallen.png",
+    "itemEffect": "quest",
+    "value": 0.0,
+    "itemPrice": 200,
+    "manaCost": 0.0
+  },
+  {
+    "itemID": 16,
+    "itemName": "Toxic Poiton",
+    "itemDescription": "Gây 20 sát thương cho kẻ địch",
+    "texturePath": "game/items/toxic_potion.png",
+    "itemEffect": "debuff",
+    "value": 20.0,
+    "itemPrice": 300,
+    "manaCost": 10.0
+  },
+  {
+    "itemID": 16,
+    "itemName": "CCCD",
+    "itemDescription": "Chứng nhận thân phận của bạn với thế giới này.",
+    "texturePath": "game/items/CCCD.png",
+    "itemEffect": "N/A",
+    "value": 0.0,
+    "itemPrice": 9999,
+    "manaCost": 0.0
   }
+
 ]
-  
