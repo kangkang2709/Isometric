@@ -139,14 +139,11 @@ public class GameController {
         bountyBoardView = new BountyBoardView(bountyBoardController);
         questTrackerView = new QuestTrackerView(this);
 
-        iniTutorial();
+        tutorialUI = new TutorialUI(this);
 
     }
 
-    public void iniTutorial() {
 
-        tutorialUI = new TutorialUI();
-    }
 
     boolean isLoadNPCs = false;
 

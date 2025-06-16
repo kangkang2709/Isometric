@@ -191,15 +191,13 @@ public class InputController extends InputAdapter {
 
         if (gameController.getTutorialUI().isVisible()) {
 
-            if (state == GameState.MENU) {
+            if (state == GameState.MENU && !gameController.getMenuController().isTutorialShowing()) {
                 return gameController.getMenuController().handleMouseClick(screenX, screenY);
-            }
-             else if (gameController.getTutorialUI().handleClick(screenX, screenY)) {
+            } else if (gameController.getTutorialUI().handleClick(screenX, screenY)) {
                 effectManager.playClickSound();
             }
             return true; // Click was handled by tutorial
         }
-
 
 
         if (state == GameState.EXPLORING && !gameController.getDialogController().isDialogActive()) {
@@ -558,7 +556,14 @@ public class InputController extends InputAdapter {
 
     private boolean handleMenuInput(int keycode) {
         switch (keycode) {
-            case Keys.ESCAPE -> gameController.returnToPreviousState();
+            case Keys.ESCAPE -> {
+                if (gameController.getMenuController().isTutorialShowing()) {
+                    gameController.getMenuController().showTutorialMenu();
+                } else 
+                    gameController.returnToPreviousState();
+
+
+            }
             case Keys.UP -> gameController.getMenuController().selectPreviousItem();
             case Keys.DOWN -> gameController.getMenuController().selectNextItem();
             case Keys.ENTER, Keys.SPACE -> gameController.getMenuController().activateSelectedItem();

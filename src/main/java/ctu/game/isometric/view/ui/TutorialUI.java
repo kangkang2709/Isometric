@@ -1,6 +1,7 @@
 package ctu.game.isometric.view.ui;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
@@ -13,7 +14,9 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Disposable;
+import ctu.game.isometric.controller.GameController;
 import ctu.game.isometric.controller.TutorialManager;
+import ctu.game.isometric.model.game.GameState;
 import ctu.game.isometric.model.game.Tutorial;
 
 import java.util.ArrayList;
@@ -89,8 +92,11 @@ public class TutorialUI implements Disposable {
     private boolean animatingIn = false;
     private boolean animatingOut = false;
 
-    public TutorialUI() {
+    private GameController gameController;
+
+    public TutorialUI(GameController gameController) {
         this(250, 100, 800, 550); // Increased height from 400 to 550
+        this.gameController = gameController;
     }
 
     public TutorialUI(float x, float y, float width, float height) {
@@ -117,7 +123,7 @@ public class TutorialUI implements Disposable {
         // Set up hit detection areas
         float buttonSize = 60;
         nextBtnRect = new Rectangle(x + width - padding - buttonSize + 23, y + padding - 22, buttonSize, buttonSize);
-        prevBtnRect = new Rectangle(x + padding -23, y + padding - 22, buttonSize, buttonSize);
+        prevBtnRect = new Rectangle(x + padding - 23, y + padding - 22, buttonSize, buttonSize);
         closeBtnRect = new Rectangle(x + width - padding - 40, y + height - padding - 40, 40, 40);
     }
 
@@ -313,6 +319,9 @@ public class TutorialUI implements Disposable {
         }
 
         if (closeBtnRect.contains(touchX, touchY)) {
+            if (gameController.getCurrentState() == GameState.MENU){
+                gameController.getMenuController().setTutorialShowing(false);
+            }
             markCurrentTutorialCompleted();
             animatingOut = true;
             return true;
@@ -325,19 +334,22 @@ public class TutorialUI implements Disposable {
         if (!visible) return false;
 
         switch (keycode) {
-            case com.badlogic.gdx.Input.Keys.RIGHT:
+            case Input.Keys.RIGHT:
                 if (currentPageIndex < pages.size() - 1) {
                     currentPageIndex++;
                     return true;
                 }
                 break;
-            case com.badlogic.gdx.Input.Keys.LEFT:
+            case Input.Keys.LEFT:
                 if (currentPageIndex > 0) {
                     currentPageIndex--;
                     return true;
                 }
                 break;
-            case com.badlogic.gdx.Input.Keys.ESCAPE:
+            case Input.Keys.ESCAPE:
+                if (gameController.getCurrentState() == GameState.MENU){
+                    gameController.getMenuController().setTutorialShowing(false);
+                }
                 markCurrentTutorialCompleted();
                 animatingOut = true;
                 return true;

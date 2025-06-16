@@ -16,6 +16,7 @@ import ctu.game.isometric.controller.GameController;
 import ctu.game.isometric.controller.GameSaveController;
 import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.game.GameState;
+import ctu.game.isometric.view.ui.TutorialUI;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -54,6 +55,10 @@ public class PauseMenu {
     private float notificationTimer = 0f;
     private static final float NOTIFICATION_DURATION = 3f;
 
+
+
+
+
     // Animation properties
 
     public PauseMenu(GameController gameController) {
@@ -73,7 +78,10 @@ public class PauseMenu {
 
         // Add default menu items
         addMenuItem("Tiếp Tục", () -> gameController.returnToPreviousState());
-        addMenuItem("Xem Hướng Dẫn", this::showOptionsMenu);
+        //all tutorials in there
+        // gameController.setState(GameState.TUTORIAL);
+        addMenuItem("Xem Hướng Dẫn", this::showTutorialMenu);
+
         addMenuItem("Tùy chỉnh Âm Thanh", () -> gameController.setState(GameState.SETTINGS));
         addMenuItem("Lưu Tiến Trình", this::showSaveGameDialog);
         addMenuItem("Quay Về Menu", () -> {
@@ -88,7 +96,88 @@ public class PauseMenu {
         menuHeight = (menuItems.size() * (itemHeight + buttonPadding)) + (padding * 3) + 60; // Extra space for title
         menuX = Gdx.graphics.getWidth() / 2 - menuWidth / 2;
         menuY = Gdx.graphics.getHeight() / 2 - menuHeight / 2;
+
+
+
     }
+
+    public boolean isTutorialShowing() {
+        return isTutorialShowing;
+    }
+
+
+    boolean isTutorialShowing = false;
+
+    public void showTutorialMenu() {
+        // Clear existing menu items
+        isTutorialShowing = false;
+        this.menuItems.clear();
+
+        // Save original menu title
+        String originalTitle = this.menuTitle;
+        this.menuTitle = "Chọn Hướng Dẫn";
+
+        // Add tutorial categories based on what's available in TutorialManager
+        addMenuItem("Movement Tutorial", () -> showTutorial("movement"));
+        addMenuItem("Combat Tutorial", () -> showTutorial("combat"));
+        addMenuItem("Inventory Tutorial", () -> showTutorial("inventory"));
+        addMenuItem("Movement Tutorial", () -> showTutorial("movement"));
+        addMenuItem("Combat Tutorial", () -> showTutorial("combat"));
+        addMenuItem("Inventory Tutorial", () -> showTutorial("inventory"));
+        addMenuItem("Movement Tutorial", () -> showTutorial("movement"));
+        addMenuItem("Combat Tutorial", () -> showTutorial("combat"));
+        addMenuItem("Inventory Tutorial", () -> showTutorial("inventory"));
+
+        // Add back button
+        addMenuItem("Quay Lại", () -> restoreMainMenu(originalTitle));
+
+        // Update menu dimensions based on new item count
+        updateMenuDimensions();
+    }
+
+    public void setTutorialShowing(boolean tutorialShowing) {
+        isTutorialShowing = tutorialShowing;
+    }
+
+    private void showTutorial(String tutorialType) {
+        // Save current game state
+        isTutorialShowing = true;
+        // Show the tutorial UI
+        gameController.getTutorialUI().show(tutorialType);
+
+        // Set game state to show tutorial
+    }
+
+    private void restoreMainMenu(String originalTitle) {
+        // Restore original pause menu
+        isTutorialShowing = false;
+        this.menuItems.clear();
+        this.menuTitle = originalTitle;
+
+        // Re-add all original menu items
+        addMenuItem("Tiếp Tục", () -> gameController.returnToPreviousState());
+        addMenuItem("Xem Hướng Dẫn", this::showTutorialMenu);
+        addMenuItem("Tùy chỉnh Âm Thanh", () -> gameController.setState(GameState.SETTINGS));
+        addMenuItem("Lưu Tiến Trình", this::showSaveGameDialog);
+        addMenuItem("Quay Về Menu", () -> {
+            gameController.setCurrentState(GameState.MAIN_MENU);
+            gameController.setPreviousState(GameState.MAIN_MENU);
+            gameController.resetGame();
+        });
+        addMenuItem("Thoát", () -> Gdx.app.exit());
+
+        // Reset selection and update menu dimensions
+        selectedIndex = 0;
+        updateMenuDimensions();
+    }
+    private void updateMenuDimensions() {
+        menuHeight = (menuItems.size() * (itemHeight + buttonPadding)) + (padding * 3) + 60;
+        menuX = Gdx.graphics.getWidth() / 2 - menuWidth / 2;
+        menuY = Gdx.graphics.getHeight() / 2 - menuHeight / 2;
+    }
+
+
+
 
     private void showSaveGameDialog() {
         // For now, just generate a timestamp-based name
@@ -152,6 +241,8 @@ public class PauseMenu {
     }
 
     public void render(SpriteBatch batch) {
+        if (isTutorialShowing) return;
+
         Matrix4 originalMatrix = new Matrix4(batch.getProjectionMatrix());
 
         boolean wasBatchDrawing = batch.isDrawing();

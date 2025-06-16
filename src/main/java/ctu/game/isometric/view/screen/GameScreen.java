@@ -225,7 +225,9 @@ public class GameScreen implements Screen {
                 currentState == GameState.MULTIPLE_CHOICE_QUIZZES ||
                 currentState == GameState.QUEST_TRACKER ||
                 currentState == GameState.INFORMATION ||
-                currentState == GameState.BOUNTY_BOARD) {
+                currentState == GameState.BOUNTY_BOARD ||
+                currentState == GameState.MENU
+        ) {
 
             gameController.getTutorialUI().render(batch);
         }

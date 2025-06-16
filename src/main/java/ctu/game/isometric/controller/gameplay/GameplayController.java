@@ -229,6 +229,8 @@ public class GameplayController {
             handleItemBoxClick(x, y);
             return true;
         }
+
+
     }
 
     private Vector3 getTouchPosition() {
