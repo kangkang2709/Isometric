@@ -8,6 +8,7 @@ import ctu.game.isometric.model.dictionary.WordDefinition;
 import edu.mit.jwi.Dictionary;
 import edu.mit.jwi.IDictionary;
 import edu.mit.jwi.item.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -16,7 +17,7 @@ import java.util.*;
 
 public class WordNetValidator {
     private static IDictionary dictionary;
-    private final Map<String, Boolean> cache;
+    private final Map<String, Integer> cache;
     private volatile boolean dictionaryLoaded = false;
     private static final int CACHE_SIZE = 100;
 
@@ -27,9 +28,9 @@ public class WordNetValidator {
 
     public WordNetValidator() {
         // Thread-safe LRU cache
-        this.cache = Collections.synchronizedMap(new LinkedHashMap<String, Boolean>(CACHE_SIZE, 0.75f, true) {
+        this.cache = Collections.synchronizedMap(new LinkedHashMap<String, Integer>(CACHE_SIZE, 0.75f, true) {
             @Override
-            protected boolean removeEldestEntry(Map.Entry<String, Boolean> eldest) {
+            protected boolean removeEldestEntry(Map.Entry<String, Integer> eldest) {
                 return size() > CACHE_SIZE;
             }
         });
@@ -60,23 +61,22 @@ public class WordNetValidator {
 //            Gdx.app.error("WordNetValidator", "Failed to load WordNet dictionary", e);
 //        }
 //    }
-    
-//    for dev
-public synchronized void loadDictionary() {
-    if (dictionaryLoaded) return;
 
-    try {
-        String wordNetPath = "src/main/resources/game/dict";
-        URL url = new File(wordNetPath).toURI().toURL();
-        dictionary = new Dictionary(url);
-        dictionary.open();
-        dictionaryLoaded = true;
-        Gdx.app.log("WordNetValidator", "WordNet dictionary loaded");
-    } catch (IOException e) {
-        Gdx.app.error("WordNetValidator", "Failed to load WordNet dictionary", e);
+    //    for dev
+    public synchronized void loadDictionary() {
+        if (dictionaryLoaded) return;
+
+        try {
+            String wordNetPath = "src/main/resources/game/dict";
+            URL url = new File(wordNetPath).toURI().toURL();
+            dictionary = new Dictionary(url);
+            dictionary.open();
+            dictionaryLoaded = true;
+            Gdx.app.log("WordNetValidator", "WordNet dictionary loaded");
+        } catch (IOException e) {
+            Gdx.app.error("WordNetValidator", "Failed to load WordNet dictionary", e);
+        }
     }
-}
-
 
 
     public boolean isValidWord(String word) {
@@ -88,9 +88,10 @@ public synchronized void loadDictionary() {
         String upperWord = word.toUpperCase();
 
         // Check cache first
-        Boolean cachedResult = cache.get(upperWord);
+        Integer cachedResult = cache.get(upperWord);
+
         if (cachedResult != null) {
-            return cachedResult;
+            return true;
         }
 
         // Load dictionary if not already loaded
@@ -103,13 +104,17 @@ public synchronized void loadDictionary() {
 
         // Perform the search
         boolean result = searchWord(upperWord);
-        cache.put(upperWord, result);
+
+        if (result)
+            cache.put(upperWord, getTotalScore(word));
 
         return result;
     }
 
     private boolean searchWord(String word) {
-        // Check if the word exists in any part of speech
+        if (dictionary == null) {
+            return false;
+        }
         for (POS pos : POS.values()) {
             IIndexWord indexWord = dictionary.getIndexWord(word.toLowerCase(), pos);
             if (indexWord != null) {
@@ -193,6 +198,9 @@ public synchronized void loadDictionary() {
                 // Get examples if available (examples are in the gloss after ';')
                 String gloss = synset.getGloss();
                 String[] parts = gloss.split(";");
+                if (parts.length > 0) {
+                    definition.setDefinition(parts[0].trim());
+                }
                 if (parts.length > 1) {
                     List<String> examples = new ArrayList<>();
                     for (int i = 1; i < parts.length; i++) {
@@ -236,34 +244,35 @@ public synchronized void loadDictionary() {
 
 
     public enum PartOfSpeech {
-        NOUN, VERB, ADJECTIVE, ADVERB, PRONOUN, PREPOSITION, CONJUNCTION, INTERJECTION, UNKNOWN
+        NOUN, VERB, ADJECTIVE, ADVERB, SENSE, UNKNOWN;
     }
 
     private static final Map<Character, Integer> LETTER_BONUS = new HashMap<>();
     private static final Map<PartOfSpeech, Integer> POS_BONUS = new HashMap<>();
-    private static final String[] COMMON_WORDS = {"the", "be", "to", "of", "and", "a", "in", "that", "have", "it"};
+//    private static final String[] COMMON_WORDS = {"the", "be", "to", "of", "and", "a", "in", "that", "have", "it"};
 
     static {
         // Initialize letter bonuses
-        LETTER_BONUS.put('Q', 3);
-        LETTER_BONUS.put('Z', 3);
-        LETTER_BONUS.put('X', 3);
+        LETTER_BONUS.put('Q', 2);
+        LETTER_BONUS.put('Z', 2);
+        LETTER_BONUS.put('X', 2);
         LETTER_BONUS.put('J', 2);
-        LETTER_BONUS.put('K', 2);
         LETTER_BONUS.put('V', 1);
         LETTER_BONUS.put('W', 1);
-        LETTER_BONUS.put('Y', 1);
+
+        //vowels
+        LETTER_BONUS.put('A', 2);
+        LETTER_BONUS.put('I', 2);
+        LETTER_BONUS.put('U', 2);
+        LETTER_BONUS.put('E', 2);
+        LETTER_BONUS.put('O', 2);
 
         // Initialize part-of-speech bonuses
-        POS_BONUS.put(PartOfSpeech.NOUN, 3);
-        POS_BONUS.put(PartOfSpeech.VERB, 4);
+        POS_BONUS.put(PartOfSpeech.NOUN, 1);
+        POS_BONUS.put(PartOfSpeech.VERB, 2);
         POS_BONUS.put(PartOfSpeech.ADJECTIVE, 2);
         POS_BONUS.put(PartOfSpeech.ADVERB, 3);
-        POS_BONUS.put(PartOfSpeech.PRONOUN, 1);
-        POS_BONUS.put(PartOfSpeech.PREPOSITION, 1);
-        POS_BONUS.put(PartOfSpeech.CONJUNCTION, 1);
-        POS_BONUS.put(PartOfSpeech.INTERJECTION, 2);
-        POS_BONUS.put(PartOfSpeech.UNKNOWN, 0);
+        POS_BONUS.put(PartOfSpeech.UNKNOWN, 1);
 
     }
 
@@ -271,20 +280,24 @@ public synchronized void loadDictionary() {
     public static int calculateScore(String word) {
         if (word == null || word.length() < 3) return 0;
 
+
+        System.out.println("Length of word: " + word.length());
+
         int length = word.length();
-        if (length <= 8) {
+
+        if (length <= 7) {
             return switch (length) {
                 case 3 -> 1;
                 case 4 -> 2;
                 case 5 -> 4;
-                case 6 -> 6;
-                case 7 -> 10;
-                case 8 -> 15;
+                case 6 -> 5;
+                case 7 -> 6;
                 default -> 0;
             };
         }
-        return 20 + (length - 9) * 5;
+        return length + 1;
     }
+
     //ki tu hiem
     public static int calculateBonusPoints(String word) {
         if (word == null) return 0;
@@ -293,84 +306,56 @@ public synchronized void loadDictionary() {
         for (char c : word.toCharArray()) {
             bonus += LETTER_BONUS.getOrDefault(Character.toUpperCase(c), 0);
         }
+        System.out.println("Bonus points for rare letters: " + bonus);
         return bonus;
     }
+
     // loai tu
     public static int calculatePartOfSpeechBonus(PartOfSpeech pos) {
+        System.out.println(pos + " bonus: " + POS_BONUS.getOrDefault(pos, 0));
         return POS_BONUS.getOrDefault(pos, 0);
     }
 
-    //nguyena am
-    public static int getEnhancedScore(String word, PartOfSpeech pos,
-                                       int synonymCount) {
+    public static int getEnhancedScore(String word, PartOfSpeech pos) {
         int baseScore = calculateScore(word);
         int letterBonus = calculateBonusPoints(word);
         int posBonus = calculatePartOfSpeechBonus(pos);
-        int synonymBonus = getSynonymCountBonus(synonymCount);
 
-        return baseScore + letterBonus + posBonus  + synonymBonus;
-    }
-    // tu hiem
-    public static int getRarityBonus(double frequency) {
-        if (frequency < 0.0001) return 10;
-        if (frequency < 0.001) return 7;
-        if (frequency < 0.01) return 5;
-        if (frequency < 0.1) return 3;
-        return 0;
-    }
-    // so tu dong nghia
-    public static int getSynonymCountBonus(int synonymCount) {
-        if (synonymCount == 0) return 5;
-        if (synonymCount < 3) return 3;
-        if (synonymCount < 7) return 1;
-        return 0;
+//        return baseScore + letterBonus + posBonus;
+        return baseScore + letterBonus + posBonus;
     }
 
 
-
-
-    /**
-     * Calculates semantic uniqueness bonus based on distance from common words
-     */
-    public static int getSemanticUniquenessBonus(double distanceFromCommonWords) {
-        if (distanceFromCommonWords > 0.8) return 8;
-        if (distanceFromCommonWords > 0.6) return 5;
-        if (distanceFromCommonWords > 0.4) return 3;
-        return 0;
-    }
-
-    public static int getTotalScore(Word word) {
+    public int getTotalScore(Word word) {
         if (word == null) return 0;
 
         String text = word.getTerm().trim();
 
-        // Get part of speech from WordNet or word definitions
-        PartOfSpeech pos = determinePartOfSpeech(text, word);
-        // Estimate word frequency using WordNet
-        // Count synonyms from WordNet
-        int synonymCount = countSynonyms(text);
+        if (cache.get(text.toUpperCase()) != null) {
+            return cache.get(text.toUpperCase());
+        }
 
-        // Calculate semantic distance using WordNet
+        PartOfSpeech pos = determinePartOfSpeech(text);
 
-        return getEnhancedScore(text, pos, synonymCount);
+        return getEnhancedScore(text, pos);
     }
 
-    public static int getTotalScore(String word) {
-        if (word == null) return 0;
-        return calculateScore(word) + calculateBonusPoints(word);
+
+    public int getTotalScore(String word) {
+        if (cache.get(word.toUpperCase()) != null) {
+            System.out.println("Cache hit for word: " + cache.get(word.toUpperCase()));
+            return cache.get(word.toUpperCase());
+        }
+
+        PartOfSpeech pos = determinePartOfSpeech(word);
+
+        return getEnhancedScore(word, pos);
     }
 
     // loai tu POS
-    private static PartOfSpeech determinePartOfSpeech(String text, Word word) {
+    private static PartOfSpeech determinePartOfSpeech(String text) {
         if (dictionary == null) {
             // Fallback if WordNet is not available
-            if (!word.getDefinitions().isEmpty() && word.getDefinitions().get(0).getPartOfSpeech() != null) {
-                try {
-                    return PartOfSpeech.valueOf(word.getDefinitions().get(0).getPartOfSpeech().toUpperCase());
-                } catch (IllegalArgumentException e) {
-                    // Ignore and use fallback
-                }
-            }
             return PartOfSpeech.UNKNOWN;
         }
 
@@ -385,24 +370,15 @@ public synchronized void loadDictionary() {
                 }
             }
 
+
             if (!posCount.isEmpty()) {
                 return posCount.entrySet().stream()
                         .max(Map.Entry.comparingByValue())
                         .get().getKey();
             }
-
-            // Fallback to definitions
-            if (!word.getDefinitions().isEmpty() && word.getDefinitions().get(0).getPartOfSpeech() != null) {
-                try {
-                    return PartOfSpeech.valueOf(word.getDefinitions().get(0).getPartOfSpeech().toUpperCase());
-                } catch (IllegalArgumentException e) {
-                    // Ignore and return UNKNOWN
-                }
-            }
         } catch (Exception e) {
-            // Fallback on exceptions
+            System.err.println("Error determining part of speech: " + e.getMessage());
         }
-
         return PartOfSpeech.UNKNOWN;
     }
 
@@ -494,7 +470,6 @@ public synchronized void loadDictionary() {
             return 0;
         }
     }
-
 
 
 }

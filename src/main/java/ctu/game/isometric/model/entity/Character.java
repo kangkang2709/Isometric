@@ -34,7 +34,7 @@ public class Character {
 
     private float damage = 1; // Damage dealt by the character
 
-    private float defend = 10;
+    private float defend = 1;
     private float mana = 20;
     private int level = 1;// Defense points of the character
     private float exp = 0; // Experience points
@@ -51,7 +51,7 @@ public class Character {
     public boolean levelUp(int level) {
         this.level += level; // Increase level
 
-        float scale = level * 0.5f;
+        float scale = level * 0.4f;
 
         this.maxHealth = this.maxHealth + 10;
         this.maxMana = this.maxMana + 10;

@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
-import static ctu.game.isometric.util.WordNetValidator.getTotalScore;
 
 public class GameplayController {
     // Constants
@@ -708,7 +707,7 @@ public class GameplayController {
         final float MAX_TEXT_HEIGHT = height - 50;
 
         regularFont.setColor(Color.WHITE);
-        drawScrollableTextFixed(batch, regularFont, getCombatLogText(), LOG_TEXT_X+20, LOG_TEXT_Y+20, LOG_WIDTH, MAX_TEXT_HEIGHT);
+        drawScrollableTextFixed(batch, regularFont, getCombatLogText(), LOG_TEXT_X + 20, LOG_TEXT_Y + 20, LOG_WIDTH, MAX_TEXT_HEIGHT);
 
         // Combat timer
         float timeLeft = COMBAT_TIME_LIMIT - combatTimer;
@@ -1219,12 +1218,14 @@ public class GameplayController {
         float damage = 0;
 
         if (action < 4) { // 40% normal attack
-            damage = (random.nextInt(5) + 1) + currentLevel + enemy.getAttackPower();
+            damage = (random.nextInt(10) + 1) + currentLevel + enemy.getAttackPower();
+            damage = damage - gameController.getCharacter().getDefend(); // Apply player's defense
             addCombatLog(enemyName + " tấn công gây " + damage + " sát thương!");
-        } else if (action < 8) { // 40% power attack
+        } else if (action < 10) { // 40% power attack
             damage = (random.nextInt(5) + 1) + (currentLevel * enemy.getAttackPower());
+            damage = damage - gameController.getCharacter().getDefend(); // Apply player's defense
             addCombatLog(enemyName + " tấn công mạnh gây " + damage + " sát thương!");
-        } else if (action == 8) { // 10% chance to heal
+        } else if (action == 10) { // 10% chance to heal
             float heal = enemyHealth * 0.2f; // Heal 20% of current health
             enemyHealth = Math.min(enemyMaxHealth, enemyHealth + heal);
             addCombatLog(enemyName + " hồi phục " + heal + " máu!");
@@ -1233,6 +1234,7 @@ public class GameplayController {
             addCombatLog(enemyName + " đã trượt đòn tấn công!");
             damage = 0;
         }
+
 
         playerHealth = Math.max(0, playerHealth - damage);
 
@@ -1268,7 +1270,7 @@ public class GameplayController {
         }
 
         if (gameController.getCharacter().getLearnedWords().contains(word.toUpperCase()) || wordValidator.isValidWord(word)) {
-            int points = getTotalScore(wordValidator.getWordDetails(word));
+            int points = wordValidator.getTotalScore(word.trim());
             this.experienceGain += points;
 
             isDrawingWordMeaning = true;
@@ -1278,7 +1280,7 @@ public class GameplayController {
                 gameController.getDictionaryView().addNewWord(word);
 
             if (isCombatMode && isPlayerTurn) {
-                float damage = points * wordDamageMultiplier;
+                float damage = points + wordDamageMultiplier;
 
                 // Apply Lord enemy effect
                 if (isEnemyLord() && damage < 10) {
@@ -1377,8 +1379,6 @@ public class GameplayController {
 
         this.enemy = enemy;
         this.enemyName = enemy.getEnemyName();
-        this.enemyMaxHealth = enemy.getHealth();
-        this.enemyHealth = enemy.getHealth();
         this.wordDamageMultiplier = gameController.getCharacter().getDamage();
         this.isVictory = false;
         this.experienceGain = 0;
@@ -1391,6 +1391,9 @@ public class GameplayController {
         this.isPlayerTurn = true;
         this.playerName = gameController.getCharacter().getName();
         this.currentLevel = gameController.getCharacter().getLevel();
+
+        this.enemyMaxHealth = enemy.getHealth() + currentLevel*2;
+        this.enemyHealth = enemy.getHealth() + currentLevel*2;
 
         addCombatLog("Bắt đầu chiến đấu với " + enemyName + "!");
 
@@ -1419,6 +1422,10 @@ public class GameplayController {
     // Letter grid interaction
     public boolean selectCell(int x, int y) {
         if (!active) return false;
+        if (letterGrid.getCurrentWord().length()>12) {
+            addCombatLog("Từ đã quá dài! Tối đa 10 chữ cái.");
+            return false;
+        }
         try {
             if (letterGrid.canSelect(x, y) && !isCellDisabled(x, y)) {
                 letterGrid.selectCell(x, y);
@@ -1439,6 +1446,7 @@ public class GameplayController {
     public void clearSelection() {
         letterGrid.clearSelection();
     }
+
     // Utility methods
     public void resize(int width, int height) {
         viewport.update(width, height, true);
