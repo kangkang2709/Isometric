@@ -1,5 +1,7 @@
 package ctu.game.isometric.model.game;
 
+import ctu.game.isometric.util.WordNetValidator;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -22,6 +24,7 @@ public class LetterGrid {
         regenerateGrid();
     }
 
+
     public void regenerateGrid() {
         for (int y = 0; y < GRID_SIZE; y++) {
             for (int x = 0; x < GRID_SIZE; x++) {
@@ -29,11 +32,40 @@ public class LetterGrid {
                 selectedCells[y][x] = false;
             }
         }
+
+        // Ensure there is at least one vowel in the grid
+        if (!hasVowel()) {
+            // Add a random vowel at a random position
+            int randomX = random.nextInt(GRID_SIZE);
+            int randomY = random.nextInt(GRID_SIZE);
+            grid[randomY][randomX] = getRandomVowel();
+        }
+
         currentSelection.clear();
     }
 
     private char getRandomLetter() {
         return LETTERS.charAt(random.nextInt(LETTERS.length()));
+    }
+
+    private boolean hasVowel() {
+        for (int y = 0; y < GRID_SIZE; y++) {
+            for (int x = 0; x < GRID_SIZE; x++) {
+                if (isVowel(grid[y][x])) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean isVowel(char c) {
+        return "AEIOU".indexOf(c) != -1;
+    }
+
+    private char getRandomVowel() {
+        String vowels = "AEIOU";
+        return vowels.charAt(random.nextInt(vowels.length()));
     }
 
     public boolean canSelect(int x, int y) {

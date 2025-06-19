@@ -7,7 +7,6 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -22,22 +21,45 @@ import ctu.game.isometric.util.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 
 import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
 import static ctu.game.isometric.util.WordNetValidator.getTotalScore;
 
-
 public class GameplayController {
+    // Constants
+    private static final float ENEMY_TURN_DELAY = 1.7f;
+    private static final float COMBAT_TIME_LIMIT = 300f; // 5 minutes in seconds
+    private static final String VOWELS = "AEIOU";
+    private static final int MAX_COMBAT_LOG_LINES = 20; // Limit combat log lines
+    private static final int MAX_CACHED_TEXTURES = 50; // Limit texture cache
+    private static final float CLICK_COOLDOWN = 0.1f; // 100ms cooldown between clicks
+
     // Core components
     private final GameController gameController;
     private final LetterGrid letterGrid;
     private final Random random = new Random();
+    private EffectManager effectManager;
+    private WordNetValidator wordValidator;
+    private AchievementManager achievementManager;
 
     // Game state
     private int currentScore;
     private boolean active;
     private String currentMessage = "";
     private float messageTimer = 0;
+    private boolean isGameOver = false;
+    private int currentLevel = 1;
+    private int newLevel = 1;
+    private float experienceGain = 0;
+    private float lastClickTime = 0;
+
+    // Combat timer
+    private float combatTimer = 0;
+    private boolean combatTimeUp = false;
 
     // UI components
     private BitmapFont titleFont, regularFont, bigFont;
@@ -46,15 +68,29 @@ public class GameplayController {
     private Texture whiteTexture;
     private Map<String, Texture> textureCache = new HashMap<>();
 
-    private Texture gridBackgroundTexture;
+    // UI textures
     private Texture buttonTexture;
     private Texture buttonSelectedTexture;
-    private Texture messageBoxTexture;
     private Texture cellTexture;
-    private Texture selectedCellTexture;
-    private Texture itemCellTexture;
-    float playerMaxHealth = 100;
-    private MapEvent currentEvent;
+    private Texture vowelCellTexture;
+    private Texture wordCellTexture;
+    private Texture disabledCellTexture;
+
+    // Boss mechanics
+    private Set<Integer> disabledCells = new HashSet<>();
+
+    // Player stats
+    private float playerMaxHealth = 100;
+    private float playerHealth = 100;
+    private float playerMana = 100;
+    private float playerMaxMana = 100;
+    private String playerName = "Player";
+
+    // Enemy stats
+    private float enemyHealth = 100;
+    private float enemyMaxHealth = 100;
+    private String enemyName = "Enemy";
+    private Enemy enemy;
 
     // Button areas
     private Rectangle submitButtonRect, clearButtonRect, exitButtonRect;
@@ -62,37 +98,29 @@ public class GameplayController {
     // Combat state
     private boolean isCombatMode = false;
     private boolean isPlayerTurn = true;
-
-    private float playerHealth = 100;
-    private float enemyHealth = 100;
-
-    private float playerMana = 100;
-    private float playerMaxMana = 100;
-    private float enemyMaxHealth = 100;
-
-    private String enemyName = "Enemy";
     private float enemyActionTimer = 0;
-    private static final float ENEMY_TURN_DELAY = 1.7f;
-    private String combatLog = "";
+    private List<String> combatLogLines = new ArrayList<>(); // Changed to list for better management
     private float wordDamageMultiplier = 1f;
-    private boolean autoStartCombat = false;
-    private String playerName= "Player";
     private boolean isVictory = false;
-    private EffectManager effectManager;
-    private WordNetValidator wordValidator;
+    private boolean isDrawingWordMeaning = false;
+    private String lastSubmittedWord = "";
 
-    private AchievementManager achievementManager;
+    // Item handling
+    private Map<Rectangle, Items> itemRectMap = new HashMap<>();
+    private Items hoveredItem = null;
+
+    // Current event
+    private MapEvent currentEvent;
 
     public GameplayController(GameController gameController) {
         this.gameController = gameController;
         this.letterGrid = new LetterGrid();
-
         this.effectManager = gameController.getEffectManager();
         this.wordValidator = gameController.getWordNetValidator();
         this.achievementManager = gameController.getAchievementManager();
 
         initializeUI();
-
+        initializeGridConstants();
     }
 
     private void initializeUI() {
@@ -101,88 +129,76 @@ public class GameplayController {
         regularFont = generateVietNameseFont("Tektur-Bold.ttf", 13);
         bigFont = regularFont;
 
-
         layout = new GlyphLayout();
         viewport = new FitViewport(1280, 720);
 
         // Create white texture for drawing colored rectangles
+        createWhiteTexture();
+
+        // Load UI textures with error handling
+        loadUITextures();
+
+        // Create special cell textures
+        createSpecialCellTextures();
+    }
+
+    private void createWhiteTexture() {
+        if (whiteTexture != null) {
+            whiteTexture.dispose();
+        }
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pixmap.setColor(Color.WHITE);
         pixmap.fill();
         whiteTexture = new Texture(pixmap);
         pixmap.dispose();
-
-        // Load UI textures
-        gridBackgroundTexture = new Texture(Gdx.files.internal("ui/grid_bg.png"));
-        buttonTexture = new Texture(Gdx.files.internal("ui/button.png"));
-        buttonSelectedTexture = new Texture(Gdx.files.internal("ui/button_selected.png"));
-        messageBoxTexture = new Texture(Gdx.files.internal("ui/message_box.png"));
-        cellTexture = new Texture(Gdx.files.internal("ui/cell.png"));
-        itemCellTexture = new Texture(Gdx.files.internal("ui/item_cell.png"));
-        selectedCellTexture = new Texture(Gdx.files.internal("ui/selected_cell.png"));
-
-        // Initialize button rectangles
-//        submitButtonRect = new Rectangle(900, 350, 200, 50);
-//        clearButtonRect = new Rectangle(900, 280, 200, 50);
-
-
     }
 
-    private void drawManaBar(SpriteBatch batch, float current, float max, float x, float y) {
-        // Mana label
-        regularFont.setColor(Color.WHITE);
-        regularFont.draw(batch, "MP:", x + 8, y - 10);
-
-        // Mana bar background
-        batch.setColor(0.3f, 0.3f, 0.3f, 1);
-        batch.draw(whiteTexture, x + 40, y - 20, 180, 10);
-
-        // Mana bar fill
-        float manaPercentage = current / max;
-        batch.setColor(0.2f, 0.4f, 0.9f, 1); // Blue for mana
-        batch.draw(whiteTexture, x + 40, y - 20, 180 * manaPercentage, 10);
-    }
-
-    private void drawMessageBox(SpriteBatch batch, String message, float x, float y, float width, float height) {
-        // Draw background
-        batch.setColor(Color.WHITE);
-        batch.draw(messageBoxTexture, x - 14, y + 10, width + 60, height);
-
-        // Setup positions
-        float textX = x + 20;
-        float textY = y + height - 80;
-        float maxWidth = width - 40;
-        float lineHeight = regularFont.getLineHeight() + 5;
-
-        regularFont.setColor(Color.WHITE);
-
-        // Split message into lines (in case of manual \n)
-        String[] paragraphs = message.split("\n");
-
-        for (String paragraph : paragraphs) {
-            String[] words = paragraph.split(" ");
-            StringBuilder line = new StringBuilder();
-
-            for (String word : words) {
-                String testLine = line.length() == 0 ? word : line + " " + word;
-                layout.setText(regularFont, testLine);
-
-                if (layout.width > maxWidth) {
-                    // Draw current line and reset
-                    regularFont.draw(batch, line.toString(), textX, textY);
-                    textY -= lineHeight;
-                    line = new StringBuilder(word);
-                } else {
-                    line = new StringBuilder(testLine);
-                }
-            }
-
-            // Draw last line of paragraph
-            if (line.length() > 0) {
-                regularFont.draw(batch, line.toString(), textX, textY);
-                textY -= lineHeight;
-            }
+    private void loadUITextures() {
+        try {
+            buttonTexture = new Texture(Gdx.files.internal("ui/button.png"));
+            buttonSelectedTexture = new Texture(Gdx.files.internal("ui/button_selected.png"));
+            wordCellTexture = new Texture(Gdx.files.internal("ui/cell.png"));
+        } catch (Exception e) {
+            Gdx.app.error("GameplayController", "Error loading UI textures", e);
+            // Create fallback textures
+            buttonTexture = createFallbackTexture(100, 40, Color.GRAY);
+            buttonSelectedTexture = createFallbackTexture(100, 40, Color.LIGHT_GRAY);
+            wordCellTexture = createFallbackTexture(64, 64, Color.WHITE);
         }
+    }
+
+    private Texture createFallbackTexture(int width, int height, Color color) {
+        Pixmap pixmap = new Pixmap(width, height, Pixmap.Format.RGBA8888);
+        pixmap.setColor(color);
+        pixmap.fill();
+        pixmap.setColor(Color.BLACK);
+        pixmap.drawRectangle(0, 0, width, height);
+        Texture texture = new Texture(pixmap);
+        pixmap.dispose();
+        return texture;
+    }
+
+    private void createSpecialCellTextures() {
+        // Dispose existing textures first
+        if (cellTexture != null) cellTexture.dispose();
+        if (vowelCellTexture != null) vowelCellTexture.dispose();
+        if (disabledCellTexture != null) disabledCellTexture.dispose();
+
+        // Create new textures
+        cellTexture = createTintedTexture(new Color(1.0f, 1.0f, 1.0f, 1.0f));
+        vowelCellTexture = createTintedTexture(new Color(0.8f, 0.9f, 1.0f, 1.0f));
+        disabledCellTexture = createTintedTexture(new Color(0.5f, 0.5f, 0.5f, 0.8f));
+    }
+
+    private Texture createTintedTexture(Color tint) {
+        Pixmap pixmap = new Pixmap(64, 64, Pixmap.Format.RGBA8888);
+        pixmap.setColor(tint);
+        pixmap.fill();
+        pixmap.setColor(Color.BLACK);
+        pixmap.drawRectangle(0, 0, 64, 64);
+        Texture texture = new Texture(pixmap);
+        pixmap.dispose();
+        return texture;
     }
 
     public void update(float delta) {
@@ -197,13 +213,45 @@ public class GameplayController {
             if (messageTimer <= 0) currentMessage = "";
         }
 
-        // Update appropriate mode
+        // Update combat mode if active
         if (isCombatMode) updateCombat(delta);
+
+        // Clean up texture cache periodically
+        if (textureCache.size() > MAX_CACHED_TEXTURES) {
+            cleanupTextureCache();
+        }
     }
 
+    private void cleanupTextureCache() {
+        // Remove some old textures to prevent memory overflow
+        int toRemove = textureCache.size() - MAX_CACHED_TEXTURES + 10;
+        List<String> keysToRemove = new ArrayList<>();
 
+        for (String key : textureCache.keySet()) {
+            if (keysToRemove.size() >= toRemove) break;
+            keysToRemove.add(key);
+        }
+
+        for (String key : keysToRemove) {
+            Texture texture = textureCache.remove(key);
+            if (texture != null) {
+                texture.dispose();
+            }
+        }
+
+        Gdx.app.log("GameplayController", "Cleaned up " + keysToRemove.size() + " textures from cache");
+    }
 
     private void updateCombat(float delta) {
+        // Update combat timer
+        combatTimer += delta;
+        if (combatTimer >= COMBAT_TIME_LIMIT && !combatTimeUp) {
+            combatTimeUp = true;
+            addCombatLog("Thời gian hết! Trận đấu kết thúc!");
+            endCombat(false);
+            return;
+        }
+
         // Process enemy turn
         if (!isPlayerTurn) {
             enemyActionTimer += delta;
@@ -211,8 +259,55 @@ public class GameplayController {
                 performEnemyAction();
                 enemyActionTimer = 0;
             }
-            return;
         }
+    }
+
+    private void addCombatLog(String message) {
+        combatLogLines.add(message);
+        handleCombatLogScroll(1);
+        if (combatLogLines.size() > MAX_COMBAT_LOG_LINES) {
+            combatLogLines.remove(0); // Remove oldest line if limit exceeded
+        }
+    }
+
+    private String getCombatLogText() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < combatLogLines.size(); i++) {
+            if (i > 0) sb.append("\n");
+            sb.append(combatLogLines.get(i));
+        }
+        return sb.toString();
+    }
+
+    private boolean isEnemyBoss() {
+        return enemyName.toLowerCase().contains("boss");
+    }
+
+    private boolean isEnemyLord() {
+        return enemyName.toLowerCase().contains("lord");
+    }
+
+
+    private void applyBossEffects() {
+        if (isEnemyBoss()) {
+            // Disable 1-2 random cells
+            disabledCells.clear();
+            int cellsToDisable = random.nextInt(2) + 1; // 1 or 2
+
+            for (int i = 0; i < cellsToDisable; i++) {
+                int cellIndex;
+                do {
+                    cellIndex = random.nextInt(25); // 5x5 grid = 25 cells
+                } while (disabledCells.contains(cellIndex));
+
+                disabledCells.add(cellIndex);
+            }
+        }
+    }
+
+    private boolean isCellDisabled(int x, int y) {
+        int cellIndex = y * 5 + x;
+        return disabledCells.contains(cellIndex);
     }
 
     public boolean handleCombatClick(float x, float screenY) {
@@ -229,8 +324,6 @@ public class GameplayController {
             handleItemBoxClick(x, y);
             return true;
         }
-
-
     }
 
     private Vector3 getTouchPosition() {
@@ -239,24 +332,102 @@ public class GameplayController {
         return touchPos;
     }
 
-    private void checkGridClick(float x, float y) {
-        // Calculate grid position based on new layout
-        final float SCREEN_WIDTH = viewport.getWorldWidth();
+    private boolean handleItemBoxClick(float x, float y) {
+        for (Map.Entry<Rectangle, Items> entry : itemRectMap.entrySet()) {
+            if (entry.getKey().contains(x, y)) {
+                useItem(entry.getValue());
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    private void useItem(Items item) {
+        if (item == null) return;
+
+        // Only allow item usage during player's turn in combat
+        if (!isPlayerTurn || !isCombatMode) return;
+
+        // Check if player has enough mana
+        if (playerMana < item.getManaCost()) {
+            addCombatLog("Nhân vật không đủ mana để sử dụng " + item.getItemName() + "!");
+            return;
+        }
+
+        // Remove one of this item from inventory
+        Map<String, Integer> items = gameController.getCharacter().getItems();
+        if (items.containsKey(item.getItemName()) && items.get(item.getItemName()) > 0) {
+            // Apply effect based on item type
+            switch (item.getItemEffect()) {
+                case "heal":
+                    playerHealth = Math.min(playerMaxHealth, playerHealth + item.getValue());
+                    addCombatLog("Đã dùng " + item.getItemName() + "! HỒI " + item.getValue() + " Sinh Lực!");
+                    break;
+                case "buff":
+                    wordDamageMultiplier += item.getValue();
+                    addCombatLog("Đã dùng " + item.getItemName() + "! MẠNH MẼ!");
+                    break;
+                default:
+                    addCombatLog("Đã dùng " + item.getItemName() + "!");
+                    break;
+            }
+
+            // Reduce player mana
+            this.playerMana = Math.max(0, this.playerMana - item.getManaCost());
+
+            // Reduce item count
+            int newCount = items.get(item.getItemName()) - 1;
+            if (newCount <= 0) {
+                items.remove(item.getItemName());
+            } else {
+                items.put(item.getItemName(), newCount);
+            }
+
+            // End player's turn after using an item
+            addCombatLog("Bạn đã dùng " + item.getItemName() + ".Tới Lượt Của Kẻ Địch!");
+            isPlayerTurn = false;
+        }
+    }
+
+    // Add these class fields to store pre-calculated values
+    private float gridX, gridY, gridSize, cellSize;
+    private float gridXMax, gridYMax;
+    private static final float CLICK_PADDING = 2f;
+
+    // Call this method when viewport changes or during initialization
+    private void initializeGridConstants() {
+        final float SCREEN_WIDTH = 1280;
         final float MARGIN = 20;
         final float PLAYER_COLUMN_WIDTH = 250;
         final float ITEM_COLUMN_WIDTH = 200;
         final float GRID_COLUMN_WIDTH = SCREEN_WIDTH - PLAYER_COLUMN_WIDTH - ITEM_COLUMN_WIDTH - 4 * MARGIN;
         final float GRID_COLUMN_X = MARGIN + PLAYER_COLUMN_WIDTH + MARGIN;
 
-        final float GRID_SIZE = Math.min(GRID_COLUMN_WIDTH - 40, 300); // Adjust based on available space
-        final float GRID_X = GRID_COLUMN_X + (GRID_COLUMN_WIDTH - GRID_SIZE) / 2;
-        final float GRID_Y = 80; // Match drawLetterGridColumn
+        gridSize = 275;
+        gridX = GRID_COLUMN_X + (GRID_COLUMN_WIDTH - gridSize) / 2;
+        gridY = 70;
+        cellSize = gridSize / 5;
 
-        float cellSize = GRID_SIZE / 5;
+        // Pre-calculate grid boundaries with padding
+        gridXMax = gridX + gridSize - CLICK_PADDING;
+        gridYMax = gridY + gridSize - CLICK_PADDING;
+    }
 
-        if (x >= GRID_X && x < GRID_X + GRID_SIZE && y >= GRID_Y && y < GRID_Y + GRID_SIZE) {
-            int cellX = (int) ((x - GRID_X) / cellSize);
-            int cellY = 4 - (int) ((y - GRID_Y) / cellSize);
+    private void checkGridClick(float x, float y) {
+
+        // Fast bounds check using pre-calculated boundaries
+        if (x < gridX + CLICK_PADDING || x >= gridXMax ||
+                y < gridY + CLICK_PADDING || y >= gridYMax) {
+            return; // Outside grid bounds
+        }
+
+        // Calculate cell coordinates using fast approach
+        int cellX = (int) ((x - gridX) * 0.018181f); // 1/55 = 0.018181 (cellSize is 55)
+        int cellY = 4 - (int) ((y - gridY) * 0.018181f);
+
+        // Final bounds check and selection
+        if (cellX >= 0 && cellX < 5 && cellY >= 0 && cellY < 5 && !isCellDisabled(cellX, cellY)) {
             selectCell(cellX, cellY);
         }
     }
@@ -267,26 +438,27 @@ public class GameplayController {
         viewport.apply();
         batch.setProjectionMatrix(viewport.getCamera().combined);
 
-        // Draw background FIRST
+        // Draw background
         batch.setColor(0.1f, 0.1f, 0.2f, 1);
         batch.draw(whiteTexture, 0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
         batch.setColor(Color.WHITE);
 
-        if (isCombatMode) renderCombatUI(batch);
-
-        else if (isVictory) {
+        if (isCombatMode) {
+            renderCombatUI(batch);
+        } else if (isVictory) {
             renderReward(batch);
-        } else renderGameOver(batch);
+        } else {
+            renderGameOver(batch);
+        }
 
         effectManager.render(batch);
-
     }
 
-    public void renderGameOver(SpriteBatch batch)  {
+    public void renderGameOver(SpriteBatch batch) {
         if (!isGameOver) {
             gameController.setState(GameState.EXPLORING);
         } else {
-            drawCenteredText(batch, regularFont, "Game Over!", viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2, Color.RED);
+            drawCenteredText(batch, bigFont, "Game Over!", viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2, Color.RED);
         }
     }
 
@@ -306,24 +478,24 @@ public class GameplayController {
         batch.draw(whiteTexture, panelX, panelY, panelWidth, panelHeight);
 
         // Panel border
-        batch.setColor(0.8f, 0.7f, 0.2f, 1); // Gold border
+        batch.setColor(0.8f, 0.7f, 0.2f, 1);
         drawRect(batch, panelX, panelY, panelWidth, panelHeight, 3);
 
         // Get reward information
         Reward reward = RewardLoader.getRewardById(this.enemy.getRewardID());
-        Items item =  ItemLoader.getItemById(reward.getItemID());
+        Items item = ItemLoader.getItemById(reward.getItemID());
 
         // Title
         drawCenteredText(batch, titleFont, "CHIẾN THĂNG!", viewport.getWorldWidth() / 2, panelY + panelHeight - 50, new Color(1, 0.9f, 0.3f, 1));
 
         // Enemy defeated message
-        drawCenteredText(batch, regularFont, "Bạn đã thua " + enemyName + "!",
+        drawCenteredText(batch, regularFont, "Bạn đã thắng " + enemyName + "!",
                 viewport.getWorldWidth() / 2, panelY + panelHeight - 100, Color.WHITE);
-        Texture itemTexture = null;
+
         // Draw reward item
         if (item != null) {
             try {
-                itemTexture = getCharacterTexture(item.getTexturePath());
+                Texture itemTexture = getTexture(item.getTexturePath());
                 float iconSize = 64;
                 float iconX = panelX + 100;
                 float iconY = panelY + panelHeight / 2 - iconSize / 2;
@@ -341,32 +513,7 @@ public class GameplayController {
             regularFont.draw(batch, item.getItemName() + " x" + reward.getAmount(), textX, textY);
 
             regularFont.setColor(Color.WHITE);
-            // Wrap long descriptions
-            String description = reward.getDescription();
-            float wrapWidth = panelWidth - 200;
-            float lineHeight = 25;
-
-            int startIndex = 0;
-            int lastSpace = 0;
-            float lineWidth = 0;
-
-            for (int i = 0; i < description.length(); i++) {
-                char c = description.charAt(i);
-                layout.setText(regularFont, String.valueOf(c));
-                lineWidth += layout.width;
-
-                if (c == ' ') lastSpace = i;
-
-                if (lineWidth > wrapWidth || i == description.length() - 1) {
-                    int endIndex = (lineWidth > wrapWidth && lastSpace > startIndex) ? lastSpace : i + 1;
-                    String line = description.substring(startIndex, endIndex);
-                    regularFont.draw(batch, line, textX, textY - lineHeight);
-                    lineHeight += 25;
-                    startIndex = endIndex;
-                    if (startIndex < description.length() && description.charAt(startIndex) == ' ') startIndex++;
-                    lineWidth = 0;
-                }
-            }
+            drawWrappedText(batch, regularFont, reward.getDescription(), textX, textY - 25, panelWidth - 200);
         }
 
         // Continue button
@@ -383,7 +530,6 @@ public class GameplayController {
         if (Gdx.input.justTouched()) {
             Vector3 touchPos = getTouchPosition();
             if (continueButton.contains(touchPos.x, touchPos.y)) {
-
                 gameController.getCharacter().addItem(item, reward.getAmount());
                 gameController.getInventoryUI().notifyItemsChanged();
 
@@ -394,14 +540,36 @@ public class GameplayController {
                     @Override
                     public void run() {
                         gameController.setState(GameState.EXPLORING);
-                        gameController.showLevelUpNotification();
-                        dispose();
+                        if (newLevel > currentLevel) {
+                            gameController.showLevelUpNotification();
+
+                        }
+                        // Don't dispose here - just clean up combat state
+                        cleanupCombatState();
                     }
                 }, 0.5f);
             }
         }
 
-        batch.setColor(Color.WHITE); // Reset color
+        batch.setColor(Color.WHITE);
+    }
+
+    private void drawButton(SpriteBatch batch, Rectangle buttonRect, String text) {
+        batch.setColor(Color.WHITE);
+
+        // Check if mouse is hovering over the button
+        Vector3 mousePos = getTouchPosition();
+        boolean isSelected = buttonRect.contains(mousePos.x, mousePos.y);
+
+        // Draw appropriate button texture based on selection state
+        batch.draw(isSelected ? buttonSelectedTexture : buttonTexture,
+                buttonRect.x, buttonRect.y, buttonRect.width, buttonRect.height);
+
+        layout.setText(regularFont, text);
+        regularFont.setColor(Color.WHITE);
+        regularFont.draw(batch, text,
+                buttonRect.x + (buttonRect.width - layout.width) / 2,
+                buttonRect.y + (buttonRect.height + layout.height) / 2);
     }
 
     private void renderCombatUI(SpriteBatch batch) {
@@ -423,6 +591,7 @@ public class GameplayController {
         // Middle section - Combat Log (full width)
         final float LOG_SECTION_HEIGHT = 100;
         final float LOG_SECTION_Y = ENEMY_SECTION_Y - LOG_SECTION_HEIGHT - MARGIN;
+
         drawCombatLogSection(batch, MARGIN, LOG_SECTION_Y, SCREEN_WIDTH - 2 * MARGIN, LOG_SECTION_HEIGHT);
 
         // Bottom section - Three columns
@@ -444,123 +613,314 @@ public class GameplayController {
         drawLetterGridColumn(batch, GRID_COLUMN_X, BOTTOM_SECTION_Y, GRID_COLUMN_WIDTH, BOTTOM_SECTION_HEIGHT);
         drawItemColumn(batch, ITEM_COLUMN_X, BOTTOM_SECTION_Y, ITEM_COLUMN_WIDTH, BOTTOM_SECTION_HEIGHT);
     }
-    private void drawItemColumn(SpriteBatch batch, float x, float y, float width, float height) {
-        // Draw column background
-        batch.setColor(0.3f, 0.2f, 0.4f, 0.9f);
+
+    private void drawEnemyStatusSection(SpriteBatch batch, float x, float y, float width, float height) {
+        // Draw section background
+        batch.setColor(0.2f, 0.2f, 0.4f, 0.9f);
         batch.draw(whiteTexture, x, y, width, height);
 
         // Draw border
-        batch.setColor(0.8f, 0.4f, 0.8f, 1); // Purple border for items
+        batch.setColor(0.8f, 0.2f, 0.2f, 1);
         drawRect(batch, x, y, width, height, 2);
 
-        // Column title
+        // Section title
         batch.setColor(Color.WHITE);
-        drawCenteredText(batch, regularFont, "🎒 ITEM", x + width/2, y + height - 15, Color.MAGENTA);
+        String titleText = "TRẠNG THÁI KẺ ĐỊCH";
+        if (isEnemyBoss()) {
+            titleText += " (BOSS)";
+        } else if (isEnemyLord()) {
+            titleText += " (LORD)";
+        }
+        drawCenteredText(batch, titleFont, titleText, x + width / 2, y + height - 20, Color.RED);
 
-        // Draw items
-        drawItemInventory(batch, x + 10, y + 10, width - 20, height - 40);
+        // Enemy image
+        final float ENEMY_IMG_SIZE = 80;
+        final float ENEMY_IMG_X = x + 20;
+        final float ENEMY_IMG_Y = y + 20;
+
+        Texture enemyTexture = getTexture(this.enemy.getTexturePath());
+        if (enemyTexture != null) {
+            batch.setColor(Color.WHITE);
+            batch.draw(enemyTexture, ENEMY_IMG_X, ENEMY_IMG_Y, ENEMY_IMG_SIZE, ENEMY_IMG_SIZE);
+        }
+
+        // Enemy info text area
+        final float TEXT_START_X = ENEMY_IMG_X + ENEMY_IMG_SIZE + 20;
+        final float TEXT_Y = y + height - 50;
+
+        regularFont.setColor(Color.WHITE);
+        regularFont.draw(batch, "Tên: " + enemyName, TEXT_START_X, TEXT_Y);
+
+        // Health bar
+        final float HP_BAR_WIDTH = 200;
+        final float HP_BAR_HEIGHT = 15;
+        final float HP_BAR_X = TEXT_START_X + 100;
+        final float HP_BAR_Y = TEXT_Y - 25;
+
+        regularFont.draw(batch, "HP: " + enemyHealth + "/" + enemyMaxHealth, TEXT_START_X, HP_BAR_Y);
+
+        // Health bar background
+        batch.setColor(0.3f, 0.3f, 0.3f, 1);
+        batch.draw(whiteTexture, HP_BAR_X - 100, HP_BAR_Y - 30, HP_BAR_WIDTH, HP_BAR_HEIGHT);
+
+        // Health bar fill
+        float healthPercentage = (float) enemyHealth / enemyMaxHealth;
+        batch.setColor(getHealthColor(healthPercentage));
+        batch.draw(whiteTexture, HP_BAR_X - 100, HP_BAR_Y - 30, HP_BAR_WIDTH * healthPercentage, HP_BAR_HEIGHT);
+
+        // Status effects
+        regularFont.setColor(Color.ORANGE);
+        regularFont.draw(batch, "Mô tả:" + this.enemy.getEnemyDescription(), TEXT_START_X + 350, TEXT_Y);
+
+        // Special abilities
+        if (isEnemyBoss()) {
+            regularFont.setColor(Color.RED);
+            regularFont.draw(batch, "Khả năng: Vô hiệu hóa ô chữ", TEXT_START_X + 350, TEXT_Y - 20);
+        } else if (isEnemyLord()) {
+            regularFont.setColor(Color.PURPLE);
+            regularFont.draw(batch, "Khả năng: Giảm sát thương nhỏ", TEXT_START_X + 350, TEXT_Y - 20);
+        }
     }
-    private void drawLetterGridColumn(SpriteBatch batch, float x, float y, float width, float height) {
-        // Draw column background
-        batch.setColor(0.25f, 0.25f, 0.35f, 0.9f);
+
+    private Color getHealthColor(float percentage) {
+        if (percentage > 0.5f) return new Color(0.3f, 0.9f, 0.3f, 1);
+        else if (percentage > 0.2f) return new Color(0.9f, 0.9f, 0.2f, 1);
+        else return new Color(0.9f, 0.2f, 0.2f, 1);
+    }
+
+    private void drawCombatLogSection(SpriteBatch batch, float x, float y, float width, float height) {
+        // Draw section background
+        batch.setColor(0.1f, 0.1f, 0.2f, 0.9f);
         batch.draw(whiteTexture, x, y, width, height);
 
         // Draw border
-        batch.setColor(0.7f, 0.7f, 0.9f, 1);
+        batch.setColor(0.6f, 0.6f, 0.8f, 1);
         drawRect(batch, x, y, width, height, 2);
 
-        // Column title
+        // Section title
         batch.setColor(Color.WHITE);
-        String currentWord = letterGrid.getCurrentWord();
+        drawCenteredText(batch, titleFont, "NHẬT KÝ GIAO CHIẾN / THÔNG BÁO", (x + width / 2) + 50, y + height - 15, Color.CYAN);
 
-        drawCenteredText(batch, regularFont, currentWord, x + width/2, y + height - 15, Color.WHITE);
+        // Combat log text area
+        final float LOG_TEXT_X = x + 10;
+        final float LOG_TEXT_Y = y + height - 40;
+        final float LOG_WIDTH = width - 300;
+        final float MAX_TEXT_HEIGHT = height - 50;
 
-        // Current word display
-        final float WORD_DISPLAY_Y = y + height - 45;
+        regularFont.setColor(Color.WHITE);
+        drawScrollableTextFixed(batch, regularFont, getCombatLogText(), LOG_TEXT_X+20, LOG_TEXT_Y+20, LOG_WIDTH, MAX_TEXT_HEIGHT);
 
-        if (currentWord.isEmpty()) {
-            regularFont.setColor(Color.YELLOW);
-//            regularFont.draw(batch, "👉 Từ hiện tại: **" + currentWord + "**", x + 15, WORD_DISPLAY_Y);
+        // Combat timer
+        float timeLeft = COMBAT_TIME_LIMIT - combatTimer;
+        int minutes = (int) (timeLeft / 60);
+        int seconds = (int) (timeLeft % 60);
+        String timeText = String.format("⏰ %02d:%02d", minutes, seconds);
+        Color timeColor = timeLeft < 60 ? Color.RED : Color.WHITE;
 
-            // Word meaning (if available and recently submitted)
-            if (isDrawingWordMeaning && !lastSubmittedWord.isEmpty()) {
-                regularFont.setColor(Color.CYAN);
-                String meaning = wordValidator.getWordMeaning(lastSubmittedWord);
-                regularFont.draw(batch, "✨ Nghĩa từ: \"" + meaning + "\"", x + 150,y + height - 15);
+        drawCenteredText(batch, regularFont, timeText, x + width - 100, y + height - 25, timeColor);
+
+        // Current turn indicator
+        String turnText = "► " + "Lượt của: " + (isPlayerTurn ? "✦ Người Chơi ✦" : "✦ " + enemyName + " ✦");
+        Color turnColor = isPlayerTurn ? Color.GREEN : Color.RED;
+        regularFont.setColor(turnColor);
+        regularFont.draw(batch, turnText, x + width - 250, y + height - 50);
+    }
+
+    private void drawScrollableTextFixed(SpriteBatch batch, BitmapFont font, String text, float x, float y, float width, float maxHeight) {
+        if (text == null || text.isEmpty()) return;
+
+        String[] lines = text.split("\n");
+        float lineHeight = font.getLineHeight() + 2; // Small spacing between lines
+        float totalHeight = lines.length * lineHeight;
+
+        // Calculate how many lines can fit
+        int maxVisibleLines = (int) (maxHeight / lineHeight);
+
+        // Update scroll state
+        isCombatLogScrollable = lines.length > maxVisibleLines;
+
+        if (!isCombatLogScrollable) {
+            // If content fits, reset scroll and show all lines
+            combatLogScrollOffset = 0;
+            maxCombatLogScrollOffset = 0;
+
+            // Draw all lines
+            for (int i = 0; i < lines.length; i++) {
+                float lineY = y - (i * lineHeight);
+                drawColoredLine(batch, font, lines[i], x, lineY);
             }
-        }
+        } else {
+            // Content needs scrolling
+            maxCombatLogScrollOffset = (lines.length - maxVisibleLines) * lineHeight;
 
-        // Letter grid
-        final float GRID_SIZE = Math.min(width - 40, height - 150);
-        final float GRID_X = x + (width - GRID_SIZE) / 2;
-        final float GRID_Y = y + 80; // Leave space for buttons at bottom
+            // Clamp scroll offset
+            combatLogScrollOffset = Math.max(0, Math.min(maxCombatLogScrollOffset, combatLogScrollOffset));
 
-        drawLetterGrid(batch, GRID_X, GRID_Y, GRID_SIZE);
+            // Calculate which lines to show
+            int startLine = (int) (combatLogScrollOffset / lineHeight);
+            int endLine = Math.min(lines.length, startLine + maxVisibleLines + 1);
 
-        // Action buttons
-        final float BUTTON_WIDTH = 120;
-        final float BUTTON_HEIGHT = 40;
-        final float BUTTON_SPACING = 20;
-        final float BUTTONS_START_X = x + (width - (2 * BUTTON_WIDTH + BUTTON_SPACING)) / 2;
-        final float BUTTONS_Y = y + 20;
+            // Draw visible lines
+            for (int i = startLine; i < endLine; i++) {
+                float lineY = y - ((i - startLine) * lineHeight);
 
-        submitButtonRect = new Rectangle(BUTTONS_START_X, BUTTONS_Y, BUTTON_WIDTH, BUTTON_HEIGHT);
-        clearButtonRect = new Rectangle(BUTTONS_START_X + BUTTON_WIDTH + BUTTON_SPACING, BUTTONS_Y, BUTTON_WIDTH, BUTTON_HEIGHT);
-
-        if (isPlayerTurn) {
-            drawButton(batch, submitButtonRect, "CAST SPELL");
-            drawButton(batch, clearButtonRect, "CLEAR WORD");
-        }
-    }
-    private void drawLetterGrid(SpriteBatch batch, float gridX, float gridY, float gridSize) {
-        float cellSize = gridSize / 5;
-
-        char[][] grid = letterGrid.getGrid();
-        boolean[][] selected = letterGrid.getSelectedCells();
-
-        for (int y = 0; y < 5; y++) {
-            for (int x = 0; x < 5; x++) {
-                float screenX = gridX + x * cellSize;
-                float screenY = gridY + (4 - y) * cellSize;
-
-                // Draw cell background
-                batch.setColor(Color.WHITE);
-                if (selected[y][x]) {
-                    batch.draw(selectedCellTexture, screenX, screenY, cellSize, cellSize);
-                } else {
-                    batch.draw(cellTexture, screenX, screenY, cellSize, cellSize);
+                // Make sure line is within visible area
+                if (lineY <= y && lineY >= y - maxHeight) {
+                    drawColoredLine(batch, font, lines[i], x, lineY);
                 }
+            }
 
-                // Draw letter
-                String letter = String.valueOf(grid[y][x]);
-                layout.setText(regularFont, letter);
-                regularFont.setColor(Color.BLACK);
-                regularFont.draw(batch, letter,
-                        screenX + (cellSize - layout.width) / 2,
-                        screenY + cellSize - (cellSize - layout.height) / 2);
+            // Draw scroll indicators
+            font.setColor(0.7f, 0.7f, 0.9f, 0.8f);
+            if (combatLogScrollOffset > 0) {
+                font.draw(batch, "<", x + width - 30, y);
+            }
+            if (combatLogScrollOffset < maxCombatLogScrollOffset) {
+                font.draw(batch, ">", x + width - 30, y - maxHeight + 15);
             }
         }
     }
+
+    // Helper method to draw lines with color coding
+    private void drawColoredLine(SpriteBatch batch, BitmapFont font, String line, float x, float y) {
+        // Set color based on content
+        if (line.contains("---")) {
+            font.setColor(Color.GREEN);
+        } else if (line.contains("tấn công")) {
+            font.setColor(Color.ORANGE);
+        } else if (line.contains("hồi phục")) {
+            font.setColor(Color.LIME);
+        } else {
+            font.setColor(Color.WHITE);
+        }
+
+        font.draw(batch, line, x, y);
+    }
+
+    private float combatLogScrollOffset = 0; // Current scroll offset
+    private float maxCombatLogScrollOffset = 0; // Maximum possible scroll offset
+    private boolean isCombatLogScrollable = false; // Whether there's enough content to scroll
+    private static final float SCROLL_SPEED = 20f; // Increased for better responsiveness
+
+    public boolean handleCombatLogScroll(float scrollAmount) {
+        if (!isCombatLogScrollable) return false;
+
+        // Convert scroll amount to line-based scrolling
+        float lineHeight = regularFont.getLineHeight() + 2;
+        float scrollDelta = scrollAmount * lineHeight; // Move by full lines
+
+        float oldOffset = combatLogScrollOffset;
+        combatLogScrollOffset = Math.max(0, Math.min(maxCombatLogScrollOffset, combatLogScrollOffset + scrollDelta));
+
+        // Return true if scroll position actually changed
+        return oldOffset != combatLogScrollOffset;
+    }
+
+
+    // Helper method to handle text wrapping
+    private void drawWrappedText(SpriteBatch batch, BitmapFont font, String text, float x, float y, float width, float lineHeight) {
+        String[] words = text.split(" ");
+        StringBuilder currentLine = new StringBuilder();
+        float currentY = y;
+
+        for (String word : words) {
+            String testLine = currentLine.length() > 0 ? currentLine + " " + word : word;
+            GlyphLayout testLayout = new GlyphLayout(font, testLine);
+
+            if (testLayout.width <= width) {
+                currentLine.append(currentLine.length() > 0 ? " " + word : word);
+            } else {
+                // Draw current line and start new one
+                if (currentLine.length() > 0) {
+                    font.draw(batch, currentLine.toString(), x, currentY);
+                    currentY -= lineHeight;
+                    currentLine = new StringBuilder(word);
+                } else {
+                    // Single word is too long, draw it anyway
+                    font.draw(batch, word, x, currentY);
+                    currentY -= lineHeight;
+                }
+            }
+        }
+
+        // Draw the last line
+        if (currentLine.length() > 0) {
+            font.draw(batch, currentLine.toString(), x, currentY);
+        }
+    }
+
+    // Optional: Method to auto-scroll to bottom when new content is added
+    public void scrollToBottom() {
+        combatLogScrollOffset = maxCombatLogScrollOffset;
+    }
+
+    // Optional: Method to scroll to top
+    public void scrollToTop() {
+        combatLogScrollOffset = 0;
+    }
+
+    private void drawWrappedLine(SpriteBatch batch, BitmapFont font, String text, float x, float y, float width) {
+        String[] words = text.split("\\s+");
+        StringBuilder currentLine = new StringBuilder();
+        float lineHeight = font.getLineHeight();
+        float currentY = y;
+
+        for (String word : words) {
+            // Test if adding this word exceeds the width
+            String testLine = currentLine.length() == 0 ? word : currentLine + " " + word;
+            GlyphLayout layout = new GlyphLayout(font, testLine);
+
+            if (layout.width > width) {
+                // Draw current line and start a new one
+                if (currentLine.length() > 0) {
+                    font.draw(batch, currentLine.toString(), x, currentY);
+                    currentY -= lineHeight;
+                    currentLine = new StringBuilder(word);
+                } else {
+                    // Word is too long on its own, just draw it
+                    font.draw(batch, word, x, currentY);
+                    currentY -= lineHeight;
+                    currentLine = new StringBuilder();
+                }
+            } else {
+                currentLine = new StringBuilder(testLine);
+            }
+        }
+
+        // Draw the last line if any
+        if (currentLine.length() > 0) {
+            font.draw(batch, currentLine.toString(), x, currentY);
+        }
+    }
+
+    public MapEvent getCurrentEvent() {
+        return currentEvent;
+    }
+
+    public void setCurrentEvent(MapEvent currentEvent) {
+        this.currentEvent = currentEvent;
+    }
+
     private void drawPlayerStatusColumn(SpriteBatch batch, float x, float y, float width, float height) {
         // Draw column background
         batch.setColor(0.2f, 0.4f, 0.2f, 0.9f);
         batch.draw(whiteTexture, x, y, width, height);
 
         // Draw border
-        batch.setColor(0.2f, 0.8f, 0.2f, 1); // Green border for player
+        batch.setColor(0.2f, 0.8f, 0.2f, 1);
         drawRect(batch, x, y, width, height, 2);
 
         // Column title
         batch.setColor(Color.WHITE);
-        drawCenteredText(batch, regularFont, "TRẠNG THÁI", x + width/2, y + height - 15, Color.GREEN);
-        drawCenteredText(batch, regularFont, "NGƯỜI CHƠI", x + width/2, y + height - 35, Color.GREEN);
+        drawCenteredText(batch, regularFont, "TRẠNG THÁI", x + width / 2, y + height - 15, Color.GREEN);
+        drawCenteredText(batch, regularFont, "NGƯỜI CHƠI", x + width / 2, y + height - 35, Color.GREEN);
 
         // Player image
         final float PLAYER_IMG_SIZE = 100;
         final float PLAYER_IMG_X = x + (width - PLAYER_IMG_SIZE) / 2;
         final float PLAYER_IMG_Y = y + height - 160;
 
-        Texture playerTexture = getCharacterTexture("characters/player.png");
+        Texture playerTexture = getTexture("characters/player.png");
         if (playerTexture != null) {
             batch.setColor(Color.WHITE);
             batch.draw(playerTexture, PLAYER_IMG_X, PLAYER_IMG_Y, PLAYER_IMG_SIZE, PLAYER_IMG_SIZE);
@@ -580,16 +940,171 @@ public class GameplayController {
         // Player mana bar
         regularFont.draw(batch, "MP: " + playerMana + "/" + playerMaxMana, STATS_X, STATS_Y - 60);
         drawManaBar(batch, playerMana, playerMaxMana, STATS_X, STATS_Y - 85, width - 50, 12);
-    }private void drawManaBar(SpriteBatch batch, float current, float max, float x, float y, float width, float height) {
+    }
+
+    private void drawHealthBar(SpriteBatch batch, float current, float max, float x, float y, float width, float height) {
         // Background
         batch.setColor(0.3f, 0.3f, 0.3f, 1);
         batch.draw(whiteTexture, x, y, width, height);
 
         // Fill
         float percentage = current / max;
-        batch.setColor(0.2f, 0.4f, 0.9f, 1); // Blue for mana
+        batch.setColor(getHealthColor(percentage));
         batch.draw(whiteTexture, x, y, width * percentage, height);
     }
+
+    private void drawManaBar(SpriteBatch batch, float current, float max, float x, float y, float width, float height) {
+        // Background
+        batch.setColor(0.3f, 0.3f, 0.3f, 1);
+        batch.draw(whiteTexture, x, y, width, height);
+
+        // Fill
+        float percentage = current / max;
+        batch.setColor(0.2f, 0.4f, 0.9f, 1);
+        batch.draw(whiteTexture, x, y, width * percentage, height);
+    }
+
+    private void drawItemColumn(SpriteBatch batch, float x, float y, float width, float height) {
+        // Draw column background
+        batch.setColor(0.3f, 0.2f, 0.4f, 0.9f);
+        batch.draw(whiteTexture, x, y, width, height);
+
+        // Draw border
+        batch.setColor(0.8f, 0.4f, 0.8f, 1);
+        drawRect(batch, x, y, width, height, 2);
+
+        // Column title
+        batch.setColor(Color.WHITE);
+        drawCenteredText(batch, regularFont, "🎒 ITEM", x + width / 2, y + height - 15, Color.MAGENTA);
+
+        // Draw items
+        drawItemInventory(batch, x + 10, y + 10, width - 20, height - 40);
+    }
+
+    private void drawLetterGridColumn(SpriteBatch batch, float x, float y, float width, float height) {
+        // Draw column background
+        batch.setColor(0.25f, 0.25f, 0.35f, 0.9f);
+        batch.draw(whiteTexture, x, y, width, height);
+
+        // Draw border
+        batch.setColor(0.7f, 0.7f, 0.9f, 1);
+        drawRect(batch, x, y, width, height, 2);
+
+        // Current word display - each character in its own cell
+        String currentWord = letterGrid.getCurrentWord();
+        drawCurrentWordCells(batch, currentWord, x, y + height - 50, width);
+
+        // Word meaning display
+        if (isDrawingWordMeaning && !lastSubmittedWord.isEmpty()) {
+            String meaning = wordValidator.getWordMeaning(lastSubmittedWord);
+            if (meaning != null && !meaning.isEmpty()) {
+                drawWordMeaning(batch, meaning, x + 10, y + height - 5, width - 20);
+            }
+        }
+
+        // Letter grid (adjusted position)
+        final float GRID_SIZE = 275;
+        final float GRID_X = x + (width - GRID_SIZE) / 2;
+        final float GRID_Y = y + 80;
+
+        drawLetterGrid(batch, GRID_X, GRID_Y - 10, GRID_SIZE);
+
+        // Action buttons
+        final float BUTTON_WIDTH = 120;
+        final float BUTTON_HEIGHT = 40;
+        final float BUTTON_SPACING = 20;
+        final float BUTTONS_START_X = x + (width - (2 * BUTTON_WIDTH + BUTTON_SPACING)) / 2;
+        final float BUTTONS_Y = y + 20;
+
+        submitButtonRect = new Rectangle(BUTTONS_START_X, BUTTONS_Y, BUTTON_WIDTH, BUTTON_HEIGHT);
+        clearButtonRect = new Rectangle(BUTTONS_START_X + BUTTON_WIDTH + BUTTON_SPACING, BUTTONS_Y, BUTTON_WIDTH, BUTTON_HEIGHT);
+
+        if (isPlayerTurn && !combatTimeUp) {
+            drawButton(batch, submitButtonRect, "CAST SPELL");
+            drawButton(batch, clearButtonRect, "CLEAR WORD");
+        }
+    }
+
+    private void drawLetterGrid(SpriteBatch batch, float gridX, float gridY, float gridSize) {
+        float cellSize = gridSize / 5;
+
+        char[][] grid = letterGrid.getGrid();
+        boolean[][] selected = letterGrid.getSelectedCells();
+
+        // Reuse these objects instead of creating new ones per cell
+        GlyphLayout reusableLayout = new GlyphLayout();
+        Color letterColor = new Color();
+
+        for (int y = 0; y < 5; y++) {
+            for (int x = 0; x < 5; x++) {
+                float screenX = gridX + x * cellSize;
+                float screenY = gridY + (4 - y) * cellSize;
+
+                char letter = grid[y][x];
+                boolean isSelected = selected[y][x];
+                boolean isVowel = VOWELS.indexOf(Character.toUpperCase(letter)) != -1;
+                boolean isDisabled = isCellDisabled(x, y);
+
+                // Choose appropriate cell texture
+                Texture cellTexture;
+                if (isDisabled) {
+                    cellTexture = disabledCellTexture;
+                } else if (isSelected) {
+                    cellTexture = wordCellTexture;
+                } else if (isVowel) {
+                    cellTexture = vowelCellTexture;
+                } else {
+                    cellTexture = this.cellTexture;
+                }
+
+                // Draw cell background
+                batch.setColor(Color.WHITE);
+                batch.draw(cellTexture, screenX, screenY, cellSize, cellSize);
+
+                // Draw additional highlight for selected cells
+                if (isSelected && !isDisabled) {
+                    batch.setColor(1.0f, 0.8f, 0.2f, 0.7f); // Golden glow
+                    drawRect(batch, screenX + 2, screenY + 2, cellSize - 4, cellSize - 4, 3);
+                    batch.setColor(Color.WHITE);
+                }
+
+                // Set the appropriate letter color (reusing color object)
+                if (isDisabled) {
+                    letterColor.set(0.5f, 0.5f, 0.5f, 1.0f); // Gray
+                } else if (isSelected) {
+                    letterColor.set(0.8f, 0.2f, 0.2f, 1.0f); // Bright red for selected letters
+                } else if (isVowel) {
+                    letterColor.set(0.2f, 0.2f, 0.8f, 1.0f); // Dark blue for vowels
+                } else {
+                    letterColor.set(0, 0, 0, 1); // Black
+                }
+
+                // Draw letter with appropriate color
+                String letterStr = String.valueOf(letter);
+                reusableLayout.setText(regularFont, letterStr);
+                regularFont.setColor(letterColor);
+                regularFont.draw(batch, letterStr,
+                        screenX + (cellSize - reusableLayout.width) / 2,
+                        screenY + cellSize - (cellSize - reusableLayout.height) / 2);
+            }
+        }
+    }
+
+    private void drawWordMeaning(SpriteBatch batch, String meaning, float x, float y, float maxWidth) {
+        // Draw background for word meaning
+        float meaningHeight = 40;
+        batch.setColor(0.2f, 0.3f, 0.5f, 0.9f);
+        batch.draw(whiteTexture, x, y - meaningHeight, maxWidth, meaningHeight);
+
+        // Draw border
+        batch.setColor(Color.CYAN);
+        drawRect(batch, x, y - meaningHeight, maxWidth, meaningHeight, 1);
+
+        // Draw text with wrapping
+        regularFont.setColor(Color.CYAN);
+        drawWrappedText(batch, regularFont, "✨ " + meaning, x + 5, y - 10, maxWidth - 10);
+    }
+
     private void drawItemInventory(SpriteBatch batch, float x, float y, float width, float height) {
         // Clear previous item rectangles
         itemRectMap.clear();
@@ -636,7 +1151,7 @@ public class GameplayController {
             }
 
             // Draw item icon (small)
-            Texture itemIcon = getItemIcon(item.getTexturePath());
+            Texture itemIcon = getTexture(item.getTexturePath());
             if (itemIcon != null) {
                 batch.setColor(Color.WHITE);
                 batch.draw(itemIcon, x + 5, itemY - 20, 20, 20);
@@ -670,200 +1185,6 @@ public class GameplayController {
             regularFont.draw(batch, "+" + remainingItems + " more", x + 10, y + 15);
         }
     }
-    private void drawHealthBar(SpriteBatch batch, float current, float max, float x, float y, float width, float height) {
-        // Background
-        batch.setColor(0.3f, 0.3f, 0.3f, 1);
-        batch.draw(whiteTexture, x, y, width, height);
-
-        // Fill
-        float percentage = current / max;
-        batch.setColor(getHealthColor(percentage));
-        batch.draw(whiteTexture, x, y, width * percentage, height);
-    }
-    private void drawCombatLogSection(SpriteBatch batch, float x, float y, float width, float height) {
-        // Draw section background
-        batch.setColor(0.1f, 0.1f, 0.2f, 0.9f);
-        batch.draw(whiteTexture, x, y, width, height);
-
-        // Draw border
-        batch.setColor(0.6f, 0.6f, 0.8f, 1);
-        drawRect(batch, x, y, width, height, 2);
-
-        // Section title
-        batch.setColor(Color.WHITE);
-        drawCenteredText(batch, titleFont, "NHẬT KÝ GIAO CHIẾN / THÔNG BÁO", x + width/2, y + height - 15, Color.CYAN);
-
-        // Combat log text
-        final float LOG_TEXT_X = x + 40;
-        final float LOG_TEXT_Y = y + height - 20;
-
-        regularFont.setColor(Color.WHITE);
-        if (!combatLog.isEmpty()) {
-            regularFont.draw(batch, combatLog, LOG_TEXT_X, LOG_TEXT_Y);
-        }
-
-        // Current turn indicator
-        String turnText = "► Lượt hiện tại: " + (isPlayerTurn ? "✦ Người Chơi ✦" : "✦ " + enemyName + " ✦");
-        Color turnColor = isPlayerTurn ? Color.GREEN : Color.RED;
-        regularFont.setColor(turnColor);
-        regularFont.draw(batch, turnText, LOG_TEXT_X + 950, y + 60);
-    }
-    private void drawEnemyStatusSection(SpriteBatch batch, float x, float y, float width, float height) {
-        // Draw section background
-        batch.setColor(0.2f, 0.2f, 0.4f, 0.9f);
-        batch.draw(whiteTexture, x, y, width, height);
-
-        // Draw border
-        batch.setColor(0.8f, 0.2f, 0.2f, 1); // Red border for enemy
-        drawRect(batch, x, y, width, height, 2);
-
-        // Section title
-        batch.setColor(Color.WHITE);
-        drawCenteredText(batch, titleFont, "TRẠNG THÁI KẺ ĐỊCH", x + width/2, y + height - 20, Color.RED);
-
-        // Enemy image
-        final float ENEMY_IMG_SIZE = 80;
-        final float ENEMY_IMG_X = x + 20;
-        final float ENEMY_IMG_Y = y + 20;
-
-        Texture enemyTexture = getCharacterTexture(this.enemy.getTexturePath());
-        if (enemyTexture != null) {
-            batch.setColor(Color.WHITE);
-            batch.draw(enemyTexture, ENEMY_IMG_X, ENEMY_IMG_Y, ENEMY_IMG_SIZE, ENEMY_IMG_SIZE);
-        }
-
-        // Enemy info text area
-        final float TEXT_START_X = ENEMY_IMG_X + ENEMY_IMG_SIZE + 20;
-        final float TEXT_Y = y + height - 50;
-
-        regularFont.setColor(Color.WHITE);
-        regularFont.draw(batch, "Tên: " + enemyName, TEXT_START_X, TEXT_Y);
-
-        // Health bar
-        final float HP_BAR_WIDTH = 200;
-        final float HP_BAR_HEIGHT = 15;
-        final float HP_BAR_X = TEXT_START_X + 100;
-        final float HP_BAR_Y = TEXT_Y - 25;
-
-        regularFont.draw(batch, "HP: " + enemyHealth+"/"+ enemyMaxHealth , TEXT_START_X, HP_BAR_Y);
-
-        // Health bar background
-        batch.setColor(0.3f, 0.3f, 0.3f, 1);
-        batch.draw(whiteTexture, HP_BAR_X - 100, HP_BAR_Y - 30, HP_BAR_WIDTH, HP_BAR_HEIGHT);
-
-        // Health bar fill
-        float healthPercentage = (float) enemyHealth / enemyMaxHealth;
-        batch.setColor(getHealthColor(healthPercentage));
-        batch.draw(whiteTexture, HP_BAR_X - 100, HP_BAR_Y - 30, HP_BAR_WIDTH * healthPercentage, HP_BAR_HEIGHT);
-
-        // Status effects (if any)
-        regularFont.setColor(Color.ORANGE);
-        regularFont.draw(batch, "Mô tả:" + this.enemy.getEnemyDescription(), TEXT_START_X + 350, TEXT_Y);
-    }
-
-
-    // Add these fields to the GameplayController class
-    private Map<Rectangle, Items> itemRectMap = new HashMap<>();
-    private Items hoveredItem = null;
-    private String itemTooltip = "";
-
-    private void drawItemBox(SpriteBatch batch, float x, float y, float width, float height) {
-        // Clear previous item rectangles
-        itemRectMap.clear();
-
-        // Draw background
-        batch.setColor(Color.WHITE);
-        batch.draw(messageBoxTexture, x - 14, y + 10, width + 60, height);
-
-        // Setup positions
-        float textX = x + 60;
-        float textY = y + height - 20;
-
-        // Title
-        regularFont.setColor(Color.WHITE);
-        textY -= 25;
-
-        // Get character items
-        Map<String, Integer> characterItems = gameController.getCharacter().getBuffItems();
-
-        if (characterItems == null || characterItems.isEmpty()) {
-            regularFont.draw(batch, "Không có vật phẩm!", textX, textY);
-            return;
-        }
-
-        // Display items
-        final float itemHeight = 40;
-        final float itemCellWidth = width - 40;
-        final int maxItemsToShow = 5;
-        int itemsShown = 0;
-
-        // Get mouse position
-        Vector3 mousePos = getTouchPosition();
-
-        for (Map.Entry<String, Integer> entry : characterItems.entrySet()) {
-            if (itemsShown >= maxItemsToShow) break;
-
-            String itemName = entry.getKey();
-            int amount = entry.getValue();
-            Items item = ItemLoader.getItemByName(itemName);
-
-            if (item == null) continue;
-
-            // Create item cell rectangle
-            Rectangle itemRect = new Rectangle(x + 10, textY - 35, itemCellWidth, 35);
-            itemRectMap.put(itemRect, item);
-
-            // Draw item cell background
-            batch.setColor(Color.WHITE);
-            boolean isHovered = itemRect.contains(mousePos.x, mousePos.y);
-            if (isHovered) {
-                batch.setColor(0.9f, 0.9f, 1.0f, 1.0f);
-                hoveredItem = item;
-            }
-
-            batch.draw(itemCellTexture, itemRect.x, itemRect.y, itemRect.width, itemRect.height);
-            batch.setColor(Color.WHITE);
-
-            // Draw item icon
-            Texture itemIcon = item != null ? getItemIcon(item.getTexturePath()) : null;
-            if (itemIcon != null) {
-                batch.draw(itemIcon, x + 20, textY - 30, 32, 32);
-            }
-
-            // Draw item name and amount
-            regularFont.setColor(isHovered ? Color.YELLOW : Color.WHITE);
-            regularFont.draw(batch, itemName + " x" + amount, textX, textY);
-
-            if (isHovered) {
-                regularFont.setColor(Color.GREEN);
-                regularFont.draw(batch, "[DÙNG]", textX + 120, textY);
-            }
-
-            textY -= itemHeight;
-            itemsShown++;
-        }
-
-        // Show indicator if there are more items
-        int remainingItems = characterItems.size() - maxItemsToShow;
-        if (remainingItems > 0) {
-            regularFont.setColor(Color.WHITE);
-            regularFont.draw(batch, "... và " + remainingItems + " thêm", textX, textY);
-        }
-
-        // Display tooltip for hovered item
-        if (hoveredItem != null) {
-            drawItemTooltip(batch, mousePos.x, mousePos.y, hoveredItem);
-            hoveredItem = null;
-        }
-    }
-
-    public Texture getItemIcon(String itemPath) {
-        if (!textureCache.containsKey(itemPath)) {
-            textureCache.put(itemPath, new Texture(Gdx.files.internal(itemPath)));
-        }
-        return textureCache.get(itemPath);
-
-    }
 
     private void drawItemTooltip(SpriteBatch batch, float x, float y, Items item) {
         if (item == null) return;
@@ -891,6 +1212,377 @@ public class GameplayController {
         // Draw tooltip text
         regularFont.setColor(Color.WHITE);
         drawWrappedText(batch, regularFont, tooltip, tooltipX + 10, tooltipY - 10, tooltipWidth - 20);
+    }
+
+    private void performEnemyAction() {
+        int action = random.nextInt(10); // 0–9
+        float damage = 0;
+
+        if (action < 4) { // 40% normal attack
+            damage = (random.nextInt(5) + 1) + currentLevel + enemy.getAttackPower();
+            addCombatLog(enemyName + " tấn công gây " + damage + " sát thương!");
+        } else if (action < 8) { // 40% power attack
+            damage = (random.nextInt(5) + 1) + (currentLevel * enemy.getAttackPower());
+            addCombatLog(enemyName + " tấn công mạnh gây " + damage + " sát thương!");
+        } else if (action == 8) { // 10% chance to heal
+            float heal = enemyHealth * 0.2f; // Heal 20% of current health
+            enemyHealth = Math.min(enemyMaxHealth, enemyHealth + heal);
+            addCombatLog(enemyName + " hồi phục " + heal + " máu!");
+            damage = 0;
+        } else { // action == 9: 10% chance to miss
+            addCombatLog(enemyName + " đã trượt đòn tấn công!");
+            damage = 0;
+        }
+
+        playerHealth = Math.max(0, playerHealth - damage);
+
+        effectManager.spawnEffect("Starlight", 180, 470);
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                checkCombatEnd();
+            }
+        }, 0.8f);
+
+        if (isCombatMode) {
+            isPlayerTurn = true;
+            letterGrid.regenerateGrid();
+
+            // Add turn change notification to combat log
+            addCombatLog("---Đến lượt của bạn!---");
+
+            // Apply boss effects when regenerating grid
+            if (isEnemyBoss()) {
+                applyBossEffects();
+            }
+        }
+    }
+
+    public boolean submitWord() {
+        if (!active) return false;
+
+        String word = letterGrid.getCurrentWord();
+        if (word.isEmpty()) {
+            addCombatLog("Từ phải có ít nhất 1 chữ cái!");
+            return false;
+        }
+
+        if (gameController.getCharacter().getLearnedWords().contains(word.toUpperCase()) || wordValidator.isValidWord(word)) {
+            int points = getTotalScore(wordValidator.getWordDetails(word));
+            this.experienceGain += points;
+
+            isDrawingWordMeaning = true;
+            lastSubmittedWord = word;
+
+            if (gameController.getCharacter().updateDict(word))
+                gameController.getDictionaryView().addNewWord(word);
+
+            if (isCombatMode && isPlayerTurn) {
+                float damage = points * wordDamageMultiplier;
+
+                // Apply Lord enemy effect
+                if (isEnemyLord() && damage < 10) {
+                    damage = 0;
+                    addCombatLog("Lord " + enemyName + " chống chọi được đòn tấn công yếu!");
+                } else {
+                    damage = Math.min(enemyHealth, damage);
+                    enemyHealth -= damage;
+                    addCombatLog("Từ '" + word + "' gây " + damage + " sát thương!");
+                }
+
+                addCombatLog("+" + points + " điểm! " + damage + " sát thương!");
+                effectManager.spawnEffect("Starlight", viewport.getWorldWidth() - 180, 440);
+
+                achievementManager.updateProgress(Achievement.AchievementType.WORD_COUNT, 1);
+                Timer.schedule(new Timer.Task() {
+                    @Override
+                    public void run() {
+                        checkCombatEnd();
+                    }
+                }, 1.3f);
+
+                if (isCombatMode && enemyHealth > 0) {
+                    isPlayerTurn = false;
+                    // Add turn change notification to combat log
+                    addCombatLog("---Đến lượt của " + enemyName + "!---");
+                }
+            } else {
+                addCombatLog("+" + points + " điểm!");
+            }
+
+            letterGrid.regenerateGrid();
+
+            // Schedule meaning display to clear after a few seconds
+            Timer.schedule(new Timer.Task() {
+                @Override
+                public void run() {
+                    isDrawingWordMeaning = false;
+                }
+            }, 3.0f);
+
+            return true;
+        } else {
+            addCombatLog("Từ '" + word + "' không hợp lệ!");
+            gameController.getCharacter().updateWrongWordCount();
+            if (isCombatMode && enemyHealth > 0) {
+                isPlayerTurn = false;
+                // Add turn change notification for invalid words too
+                addCombatLog("---Đến lượt của " + enemyName + "!---");
+            }
+            return false;
+        }
+    }
+
+    private void checkCombatEnd() {
+        if (playerHealth <= 0 || combatTimeUp) {
+            String message = combatTimeUp ? "Hết thời gian! Bạn đã thua!" : "Bạn bị đánh bại bởi " + enemyName + "!";
+            addCombatLog(message);
+            playerHealth = 0;
+            endCombat(false);
+            isGameOver = gameController.getCharacter().gameOver();
+        } else if (enemyHealth <= 0) {
+            addCombatLog("Bạn đã hạ gục " + enemyName + "!");
+            enemyHealth = 0;
+            endCombat(true);
+
+            if (currentEvent != null && currentEvent.isOneTime()) {
+                gameController.getEventManager().recordDefeatedEnemy(this.enemy.getEnemyID());
+                gameController.getEventManager().completeEvent(currentEvent.getId());
+                gameController.setEndEvent();
+            }
+
+            achievementManager.updateProgress(Achievement.AchievementType.COMBAT_WIN, 1);
+            this.newLevel = gameController.getCharacter().expToLevelUp(this.experienceGain);
+        }
+    }
+
+    private void cleanupCombatState() {
+        isCombatMode = false;
+        combatTimer = 0;
+        combatTimeUp = false;
+        disabledCells.clear();
+        combatLogLines.clear();
+        isDrawingWordMeaning = false;
+        lastSubmittedWord = "";
+    }
+
+    private void endCombat(boolean victory) {
+        isVictory = victory;
+        cleanupCombatState();
+    }
+
+    public void startCombat(Enemy enemy) {
+        // Clean up previous combat state
+        cleanupCombatState();
+
+        this.enemy = enemy;
+        this.enemyName = enemy.getEnemyName();
+        this.enemyMaxHealth = enemy.getHealth();
+        this.enemyHealth = enemy.getHealth();
+        this.wordDamageMultiplier = gameController.getCharacter().getDamage();
+        this.isVictory = false;
+        this.experienceGain = 0;
+        this.playerHealth = gameController.getCharacter().getHealth();
+        this.playerMana = gameController.getCharacter().getMana();
+        this.playerMaxMana = gameController.getCharacter().getMaxMana();
+        this.playerMaxHealth = gameController.getCharacter().getMaxHealth();
+        this.achievementManager = gameController.getAchievementManager();
+        this.isCombatMode = true;
+        this.isPlayerTurn = true;
+        this.playerName = gameController.getCharacter().getName();
+        this.currentLevel = gameController.getCharacter().getLevel();
+
+        addCombatLog("Bắt đầu chiến đấu với " + enemyName + "!");
+
+        letterGrid.regenerateGrid();
+
+        // Apply initial boss effects
+        if (isEnemyBoss()) {
+            applyBossEffects();
+        }
+    }
+
+    // Core game functions
+    public void activate() {
+        this.active = true;
+        letterGrid.regenerateGrid();
+        currentScore = 0;
+        currentMessage = "";
+        viewport.update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
+    }
+
+    public void deactivate() {
+        this.active = false;
+        clearSelection();
+    }
+
+    // Letter grid interaction
+    public boolean selectCell(int x, int y) {
+        if (!active) return false;
+        try {
+            if (letterGrid.canSelect(x, y) && !isCellDisabled(x, y)) {
+                letterGrid.selectCell(x, y);
+                return true;
+            }
+            return false;
+        } catch (IndexOutOfBoundsException e) {
+            return false;
+        }
+    }
+
+    public boolean deselectLastCell() {
+        if (!active) return false;
+        letterGrid.deselectLastCell();
+        return true;
+    }
+
+    public void clearSelection() {
+        letterGrid.clearSelection();
+    }
+    // Utility methods
+    public void resize(int width, int height) {
+        viewport.update(width, height, true);
+    }
+
+    public void dispose() {
+        // Only dispose when completely shutting down
+        active = false;
+        disposeAllTextures();
+    }
+
+    private void disposeAllTextures() {
+        // Dispose texture cache
+        for (Texture texture : textureCache.values()) {
+            if (texture != null) {
+                texture.dispose();
+            }
+        }
+        textureCache.clear();
+
+        // Dispose UI textures
+        if (whiteTexture != null) {
+            whiteTexture.dispose();
+            whiteTexture = null;
+        }
+        if (buttonTexture != null) {
+            buttonTexture.dispose();
+            buttonTexture = null;
+        }
+        if (buttonSelectedTexture != null) {
+            buttonSelectedTexture.dispose();
+            buttonSelectedTexture = null;
+        }
+        if (wordCellTexture != null) {
+            wordCellTexture.dispose();
+            wordCellTexture = null;
+        }
+        if (cellTexture != null) {
+            cellTexture.dispose();
+            cellTexture = null;
+        }
+        if (vowelCellTexture != null) {
+            vowelCellTexture.dispose();
+            vowelCellTexture = null;
+        }
+        if (disabledCellTexture != null) {
+            disabledCellTexture.dispose();
+            disabledCellTexture = null;
+        }
+    }
+
+    private Texture getTexture(String path) {
+        if (!textureCache.containsKey(path)) {
+            try {
+                textureCache.put(path, new Texture(Gdx.files.internal(path)));
+            } catch (Exception e) {
+                Gdx.app.error("GameplayController", "Failed to load texture: " + path, e);
+                return whiteTexture; // Return fallback texture
+            }
+        }
+        return textureCache.get(path);
+    }
+
+    // Helper methods
+    private void drawCurrentWordCells(SpriteBatch batch, String currentWord, float columnX, float y, float columnWidth) {
+        if (currentWord.isEmpty() && !isDrawingWordMeaning) {
+            regularFont.setColor(Color.GRAY);
+            drawCenteredText(batch, regularFont, "Chọn các chữ cái để tạo từ", columnX + columnWidth / 2, y + 7, Color.GRAY);
+            return;
+        }
+
+        // Calculate cell dimensions
+        final float CELL_SIZE = 35;
+        final float CELL_SPACING = 5;
+        final int MAX_CHARS_PER_ROW = Math.max(1, (int) ((columnWidth - 20) / (CELL_SIZE + CELL_SPACING)));
+
+        int wordLength = currentWord.length();
+        int rows = (int) Math.ceil((double) wordLength / MAX_CHARS_PER_ROW);
+        float startY = y;
+
+        for (int row = 0; row < rows; row++) {
+            int startIndex = row * MAX_CHARS_PER_ROW;
+            int endIndex = Math.min(startIndex + MAX_CHARS_PER_ROW, wordLength);
+            int charsInThisRow = endIndex - startIndex;
+
+            float totalRowWidth = (charsInThisRow * CELL_SIZE) + ((charsInThisRow - 1) * CELL_SPACING);
+            float rowStartX = columnX + (columnWidth - totalRowWidth) / 2;
+
+            for (int i = startIndex; i < endIndex; i++) {
+                char letter = currentWord.charAt(i);
+                float cellX = rowStartX + ((i - startIndex) * (CELL_SIZE + CELL_SPACING));
+                float cellY = startY - (row * (CELL_SIZE + CELL_SPACING));
+
+                drawCharacterCell(batch, letter, cellX, cellY, CELL_SIZE, i);
+            }
+        }
+    }
+
+    private void drawCharacterCell(SpriteBatch batch, char letter, float x, float y, float cellSize, int index) {
+        boolean isVowel = VOWELS.indexOf(Character.toUpperCase(letter)) != -1;
+
+        Texture cellTexture;
+        Color letterColor;
+        Color borderColor;
+
+        if (isVowel) {
+            cellTexture = vowelCellTexture;
+            letterColor = new Color(0.2f, 0.2f, 0.8f, 1.0f);
+            borderColor = new Color(0.4f, 0.4f, 1.0f, 1.0f);
+        } else {
+            cellTexture = wordCellTexture;
+            letterColor = new Color(0.8f, 0.4f, 0.1f, 1.0f);
+            borderColor = new Color(1.0f, 0.8f, 0.2f, 1.0f);
+        }
+
+        batch.setColor(Color.WHITE);
+        batch.draw(cellTexture, x, y, cellSize, cellSize);
+
+        float time = System.currentTimeMillis() * 0.003f;
+        float pulseAlpha = 0.7f + 0.3f * (float) Math.sin(time + index * 0.5f);
+        batch.setColor(borderColor.r, borderColor.g, borderColor.b, pulseAlpha);
+        drawRect(batch, x, y, cellSize, cellSize, 2);
+
+        String letterStr = String.valueOf(Character.toUpperCase(letter));
+        layout.setText(regularFont, letterStr);
+        regularFont.setColor(letterColor);
+        regularFont.draw(batch, letterStr,
+                x + (cellSize - layout.width) / 2,
+                y + (cellSize + layout.height) / 2);
+
+        batch.setColor(Color.WHITE);
+    }
+
+    private void drawRect(SpriteBatch batch, float x, float y, float width, float height, float thickness) {
+        batch.draw(whiteTexture, x, y, width, thickness);
+        batch.draw(whiteTexture, x, y, thickness, height);
+        batch.draw(whiteTexture, x + width - thickness, y, thickness, height);
+        batch.draw(whiteTexture, x, y + height - thickness, width, thickness);
+    }
+
+    private void drawCenteredText(SpriteBatch batch, BitmapFont font, String text, float x, float y, Color color) {
+        layout.setText(font, text);
+        font.setColor(color);
+        font.draw(batch, text, x - layout.width / 2, y);
     }
 
     private void drawWrappedText(SpriteBatch batch, BitmapFont font, String text, float x, float y, float maxWidth) {
@@ -921,444 +1613,4 @@ public class GameplayController {
             }
         }
     }
-
-    // Add this method to handle item usage
-    private boolean handleItemBoxClick(float x, float y) {
-        for (Map.Entry<Rectangle, Items> entry : itemRectMap.entrySet()) {
-            if (entry.getKey().contains(x, y)) {
-                useItem(entry.getValue());
-                return true;
-            }
-
-        }
-        return false;
-    }
-
-    private void useItem(Items item) {
-        if (item == null) return;
-
-        // Only allow item usage during player's turn in combat
-        if (!isPlayerTurn || !isCombatMode) return;
-
-        // Check if player has enough mana
-
-        if (playerMana < item.getManaCost()) {
-            combatLog = "Không đủ Mana!";
-            return;
-        }
-
-        // Remove one of this item from inventory
-        Map<String, Integer> items = gameController.getCharacter().getItems();
-        if (items.containsKey(item.getItemName()) && items.get(item.getItemName()) > 0) {
-            // Apply effect based on item type
-
-            switch (item.getItemEffect()) {
-                case "heal":
-                    playerHealth = Math.min(playerMaxHealth, playerHealth + item.getValue());
-                    showMessage("Đã dùng " + item.getItemName() + "! HỒI " + item.getValue() + " Sinh Lực!");
-                    break;
-                case "buff":
-                    wordDamageMultiplier += item.getValue();
-                    showMessage("Đã dùng " + item.getItemName() + "! MẠNH MẼ!");
-                    break;
-                default:
-                    showMessage("Đã dùng " + item.getItemName() + "!");
-                    break;
-            }
-            // Reduce player mana
-            this.playerMana = Math.max(0, this.playerMana - item.getManaCost());
-
-            // Reduce item count
-            int newCount = items.get(item.getItemName()) - 1;
-            if (newCount <= 0) {
-                items.remove(item.getItemName());
-            } else {
-                items.put(item.getItemName(), newCount);
-            }
-
-            // End player's turn after using an item
-            combatLog += "\nBạn đã dùng " + item.getItemName() + ".\nTới Lượt Của Kẻ Địch!";
-            isPlayerTurn = false;
-        }
-    }
-
-
-    // Update your touchUp handling in a method like updateCombat to include:
-
-
-    private void drawCenteredText(SpriteBatch batch, BitmapFont font, String text, float x, float y, Color color) {
-        layout.setText(font, text);
-        font.setColor(color);
-        font.draw(batch, text, x - layout.width / 2, y);
-    }
-
-    private void drawCombatCharacter(SpriteBatch batch, String name, float currentHealth,
-                                     float maxHealth, float x, float y, boolean isPlayer) {
-        // Draw character image
-        batch.setColor(1, 1, 1, 1);
-        Texture characterTexture = getCharacterTexture(isPlayer ? "characters/player.png" : this.enemy.getTexturePath());
-        if (characterTexture != null) {
-            float imgSize = 150;
-            batch.draw(characterTexture, x + 60, y - imgSize - 100, imgSize, imgSize);
-        }
-        drawPokemonHealthBar(batch, name, currentHealth, maxHealth, x, y, isPlayer);
-        if (isPlayer) drawManaBar(batch, this.playerMana, playerMaxMana, x, y);
-    }
-
-    private void drawCompactLetterGrid(SpriteBatch batch) {
-        float gridSize = 350;
-        float cellSize = gridSize / 5;
-        float gridX = (viewport.getWorldWidth() - gridSize) / 2;
-        float gridY = 60;
-
-        // Draw grid background
-        batch.setColor(Color.WHITE);
-        batch.draw(gridBackgroundTexture, gridX - 16, gridY - 48, 380, 450);
-
-        char[][] grid = letterGrid.getGrid();
-        boolean[][] selected = letterGrid.getSelectedCells();
-
-        for (int y = 0; y < 5; y++) {
-            for (int x = 0; x < 5; x++) {
-                float screenX = gridX + x * cellSize;
-                float screenY = gridY + (4 - y) * cellSize;
-
-                // Draw cell background
-                batch.setColor(Color.WHITE);
-                if (selected[y][x]) {
-                    batch.draw(selectedCellTexture, screenX, screenY, cellSize, cellSize);
-                } else {
-                    batch.draw(cellTexture, screenX, screenY, cellSize, cellSize);
-                }
-
-                // Draw letter
-                String letter = String.valueOf(grid[y][x]);
-                layout.setText(regularFont, letter);
-                regularFont.setColor(Color.BLACK);
-                regularFont.draw(batch, letter,
-                        screenX + (cellSize - layout.width) / 2,
-                        screenY + cellSize - (cellSize - layout.height) / 2);
-            }
-        }
-        batch.setColor(Color.WHITE);
-    }
-
-    private Texture getCharacterTexture(String name) {
-        if (!textureCache.containsKey(name)) {
-            textureCache.put(name, new Texture(Gdx.files.internal(name)));
-        }
-        return textureCache.get(name);
-    }
-
-    private void drawPokemonHealthBar(SpriteBatch batch, String name, float current, float max, float x, float y, boolean isPlayer) {
-        // Name tag background
-        batch.setColor(0.2f, 0.2f, 0.2f, 0.8f);
-        if (isPlayer) {
-            batch.draw(whiteTexture, x, y - 40, 250, 90);
-        } else {
-            batch.draw(whiteTexture, x, y, 250, 50);
-        }
-
-        // Border
-        batch.setColor(0.8f, 0.8f, 0.8f, 1);
-        if (isPlayer)
-            drawRect(batch, x, y - 40, 250, 90, 2);
-        else drawRect(batch, x, y, 250, 50, 2);
-
-        // Name and HP label
-        regularFont.setColor(Color.WHITE);
-        regularFont.draw(batch, name, x + 10, y + 40);
-        regularFont.draw(batch, "HP:", x + 8, y + 20);
-
-        // Health bar background
-        // Health bar background
-        batch.setColor(0.3f, 0.3f, 0.3f, 1);
-        batch.draw(whiteTexture, x + 40, y + 10, 180, 10);
-
-        // Health bar fill
-        float healthPercentage = (float) current / max;
-        batch.setColor(getHealthColor(healthPercentage));
-        batch.draw(whiteTexture, x + 40, y + 10, 180 * healthPercentage, 10);
-    }
-
-    private Color getHealthColor(float percentage) {
-        if (percentage > 0.5f) return new Color(0.3f, 0.9f, 0.3f, 1);
-        else if (percentage > 0.2f) return new Color(0.9f, 0.9f, 0.2f, 1);
-        else return new Color(0.9f, 0.2f, 0.2f, 1);
-    }
-
-    // Helper to draw rectangle borders
-    private void drawRect(SpriteBatch batch, float x, float y, float width, float height, float thickness) {
-        batch.draw(whiteTexture, x, y, width, thickness); // Bottom
-        batch.draw(whiteTexture, x, y, thickness, height); // Left
-        batch.draw(whiteTexture, x + width - thickness, y, thickness, height); // Right
-        batch.draw(whiteTexture, x, y + height - thickness, width, thickness); // Top
-    }
-
-    private void drawButton(SpriteBatch batch, Rectangle buttonRect, String text) {
-        batch.setColor(Color.WHITE);
-
-        // Check if mouse is hovering over the button
-        Vector3 mousePos = getTouchPosition();
-        boolean isSelected = buttonRect.contains(mousePos.x, mousePos.y);
-
-        // Draw appropriate button texture based on selection state
-        batch.draw(isSelected ? buttonSelectedTexture : buttonTexture,
-                buttonRect.x, buttonRect.y, buttonRect.width, buttonRect.height);
-
-        layout.setText(regularFont, text);
-        regularFont.setColor(Color.WHITE);
-        regularFont.draw(batch, text,
-                buttonRect.x + (buttonRect.width - layout.width) / 2,
-                buttonRect.y + (buttonRect.height + layout.height) / 2);
-    }
-
-    private void performEnemyAction() {
-        float damage = (random.nextInt(8) + 3) * enemy.getAttackPower();
-
-
-        int action = random.nextInt(10);
-        if (action < 4) { // 40% normal attack
-            combatLog = enemyName + " attack for " + damage + " damage!\n" + "Your current health is " + this.playerHealth + ".";
-        } else if (action < 4) { // 40% power attack
-            int extraDamage = random.nextInt(5) + 1;
-            playerHealth  = Math.max(0, playerHealth - extraDamage);
-            combatLog = enemyName + " performs a power attack for " + (damage + extraDamage) + " damage!\n" + "Your current health is " + this.playerHealth + ".";
-
-        } else if (action <= 1){ // 10% heal
-            int heal = random.nextInt(8) + 3;
-            enemyHealth = Math.min(enemyMaxHealth, enemyHealth + heal);
-            combatLog = enemyName + " recovers " + heal + " health!";
-        }
-        else {
-            damage = 0;
-        }
-
-        playerHealth  = Math.max(0, playerHealth - damage);
-
-        effectManager.spawnEffect("Starlight", 180, 470);
-        Timer.schedule(new Timer.Task() {
-            @Override
-            public void run() {
-                checkCombatEnd();
-
-            }
-        }, 0.8f);
-        if (isCombatMode) {
-            isPlayerTurn = true;
-            letterGrid.regenerateGrid();
-        }
-    }
-
-    boolean isGameOver = false;
-    int currentLevel = 1;
-    int newLevel = 1;
-    private void checkCombatEnd() {
-        if (playerHealth <= 0) {
-            combatLog = "Bạn bị đánh bại bởi " + enemyName + "!";
-            playerHealth = 0;
-            endCombat(false);
-            isGameOver = gameController.getCharacter().gameOver();
-        } else if (enemyHealth <= 0) {
-            combatLog = "Bạn đã hạ gục " + enemyName + "!";
-            enemyHealth = 0;
-            endCombat(true);
-
-            if (currentEvent.isOneTime()) {
-                gameController.getEventManager().recordDefeatedEnemy(this.enemy.getEnemyID());
-                gameController.getEventManager().completeEvent(currentEvent.getId());
-                gameController.setEndEvent();
-            }
-
-            achievementManager.updateProgress(Achievement.AchievementType.COMBAT_WIN, 1);
-            newLevel = gameController.getCharacter().expToLevelUp(this.experienceGain);
-//            achievementManager.checkEnemyDefeat(enemy.getEnemyName());
-        }
-    }
-
-    private void endCombat(boolean victory) {
-        isCombatMode = false;
-        isVictory = victory;
-    }
-
-    boolean isDrawingWordMeaning = false;
-    private String lastSubmittedWord = "";
-    private float experienceGain = 0;
-
-    public boolean submitWord() {
-        if (!active) return false;
-
-        String word = letterGrid.getCurrentWord();
-        if (word.isEmpty()) {
-            combatLog = "Words must be at least 1 letter long!";
-            return false;
-        }
-
-        if (gameController.getCharacter().getLearnedWords().contains(word.toUpperCase()) || wordValidator.isValidWord(word)) {
-            int points = getTotalScore(wordValidator.getWordDetails(word));
-            this.experienceGain += points;
-
-            isDrawingWordMeaning = true;
-            lastSubmittedWord = word;
-
-            if (gameController.getCharacter().updateDict(word))
-                gameController.getDictionaryView().addNewWord(word);
-
-            if (isCombatMode && isPlayerTurn) {
-                float damage = points * wordDamageMultiplier;
-                damage = Math.min(enemyHealth, damage);
-                enemyHealth -= damage;
-
-                combatLog = "Your word '" + word + "' deals " + damage + " damage!";
-                showMessage("+" + points + " points! " + damage + " damage!");
-                effectManager.spawnEffect("Starlight", viewport.getWorldWidth() - 180, 440);
-
-                achievementManager.updateProgress(Achievement.AchievementType.WORD_COUNT, 1);
-                Timer.schedule(new Timer.Task() {
-                    @Override
-                    public void run() {
-                        checkCombatEnd();
-                    }
-                }, 1.3f);
-
-                if (isCombatMode && enemyHealth > 0) {
-                    isPlayerTurn = false;
-                }
-            } else {
-                showMessage("+" + points + " points!");
-            }
-
-            letterGrid.regenerateGrid();
-
-            // Schedule meaning display to clear after a few seconds
-            Timer.schedule(new Timer.Task() {
-                @Override
-                public void run() {
-                    isDrawingWordMeaning = false;
-                }
-            }, 1.3f);
-
-            return true;
-        } else {
-            combatLog = "Word '" + word + "' is not valid!";
-            gameController.getCharacter().updateWrongWordCount();
-            if (isCombatMode && enemyHealth > 0) {
-                isPlayerTurn = false;
-            }
-            return false;
-        }
-    }
-
-
-    private Enemy enemy;
-
-    public void startCombat(Enemy enemy) {
-        this.enemy = enemy;
-        this.enemyName = enemy.getEnemyName();
-        this.enemyMaxHealth = enemy.getHealth();
-        this.enemyHealth = enemy.getHealth();
-        this.wordDamageMultiplier = gameController.getCharacter().getDamage();
-        this.isVictory = false;
-        this.experienceGain = 0;
-        this.playerHealth = gameController.getCharacter().getHealth();
-        this.playerMana = gameController.getCharacter().getMana();
-        this.playerMaxMana = gameController.getCharacter().getMaxMana();
-        this.playerMaxHealth = gameController.getCharacter().getMaxHealth();
-        this.achievementManager = gameController.getAchievementManager();
-        this.isCombatMode = true;
-        this.isPlayerTurn = true;
-
-        this.playerName = gameController.getCharacter().getName();
-
-        this.currentLevel = gameController.getCharacter().getLevel();
-        this.combatLog = "Bắt đầu cạnh tranh với " + enemyName + "!";
-        letterGrid.regenerateGrid();
-    }
-
-    public MapEvent getCurrentEvent() {
-        return currentEvent;
-    }
-
-    public void setCurrentEvent(MapEvent currentEvent) {
-        this.currentEvent = currentEvent;
-    }
-
-    // Core game functions
-    public void activate() {
-        this.active = true;
-        letterGrid.regenerateGrid();
-        currentScore = 0;
-        currentMessage = "";
-        viewport.update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
-
-        if (autoStartCombat) {
-            startCombat(new Enemy());
-        }
-    }
-
-    public void deactivate() {
-        this.active = false;
-        clearSelection();
-    }
-
-    // Letter grid interaction
-    public boolean selectCell(int x, int y) {
-        if (!active) return false;
-        try {
-            if (letterGrid.canSelect(x, y)) {
-                letterGrid.selectCell(x, y);
-                return true;
-            }
-            return false;
-        } catch (IndexOutOfBoundsException e) {
-            return false;
-        }
-    }
-
-    public boolean deselectLastCell() {
-        if (!active) return false;
-        letterGrid.deselectLastCell();
-        return true;
-    }
-
-    public void clearSelection() {
-        letterGrid.clearSelection();
-    }
-
-    private void showMessage(String message) {
-        currentMessage = message;
-        messageTimer = 3.0f;
-    }
-
-    // Utility methods
-    public void resize(int width, int height) {
-        viewport.update(width, height, true);
-    }
-
-    public void dispose() {
-        active = false;
-        for (Texture texture : textureCache.values()) {
-            texture.dispose();
-        }
-        textureCache.clear();
-
-//        if (effectManager != null) {
-//            effectManager.dispose();
-//        }
-    }
-
-
-    public AchievementManager getAchievementManager() {
-        return achievementManager;
-    }
-
-    public void setAchievementManager(AchievementManager achievementManager) {
-        this.achievementManager = achievementManager;
-    }
-
-    public boolean isActive() {
-        return active;
-    }
-
-
 }

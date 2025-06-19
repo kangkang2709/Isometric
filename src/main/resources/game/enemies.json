@@ -4,7 +4,7 @@
     "enemyName": "Crystal Serpent",
     "enemyDescription": "Mini-boss – canh giữ đá Ruby, có khả năng vô hiệu hóa 1 số ký tự.",
     "texturePath": "enemies/crystal_serpent.png",
-    "health": 120,
+    "health": 10,
     "attackPower": 5,
     "rewardId": 7
   },
@@ -13,7 +13,7 @@
     "enemyName": "Frost Revenant",
     "enemyDescription": "Mini-Boss – canh giữ đá Saphire có khả năng vô hiệu hóa 1 số ký tự.",
     "texturePath": "enemies/frost_revenant.png",
-    "health": 130,
+    "health": 10,
     "attackPower": 5,
     "rewardId": 8
   },
@@ -22,7 +22,7 @@
     "enemyName": "Emerald Watcher",
     "enemyDescription": "Mini-Boss – bảo vệ đá Emerald có khả năng vô hiệu hóa 1 số ký tự.",
     "texturePath": "enemies/emerald_watcher.png",
-    "health": 140,
+    "health": 10,
     "attackPower": 5,
     "rewardId": 9
   },
@@ -31,17 +31,17 @@
     "enemyName": "Wildroot Spawn",
     "enemyDescription": "Thực vật hoang dại cấp thấp",
     "texturePath": "enemies/wildroot_spawn.png",
-    "health": 20,
+    "health": 10,
     "attackPower": 2,
     "rewardId": 10
   },
   {
     "enemyID": 5,
-    "enemyName": "Wildroot Brute",
+    "enemyName": "Wildroot Brute boss",
     "enemyDescription": "Thực vật đột biến có độc",
     "texturePath": "enemies/wildroot_brute.png",
-    "health": 50,
-    "attackPower": 2,
+    "health": 10,
+    "attackPower": 1,
     "rewardId": 11
   },
   {
@@ -49,7 +49,7 @@
     "enemyName": "Living Boulder",
     "enemyDescription": "Sinh vật mang lớp da dày – khó hạ",
     "texturePath": "enemies/living_boulder.png",
-    "health": 40,
+    "health": 10,
     "attackPower": 2,
     "rewardId": 14
   },
@@ -58,7 +58,7 @@
     "enemyName": "Hidebeast",
     "enemyDescription": "Sinh vật mang lớp da dày",
     "texturePath": "enemies/hidebeast.png",
-    "health": 60,
+    "health": 10,
     "attackPower": 2,
     "rewardId": 13
   },

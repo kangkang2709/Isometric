@@ -144,7 +144,6 @@ public class GameController {
     }
 
 
-
     boolean isLoadNPCs = false;
 
     public void initializeNPCs(MapRenderer mapRenderer) {
@@ -432,8 +431,8 @@ public class GameController {
                 if (character.getFlags() != null) {
                     if (character.getFlags().isEmpty())
                         startCutscene("intro");
-                            tutorialUI.show("movement");
-                            getCharacter().setTutorialCompleted("movement");
+                    tutorialUI.show("movement");
+                    getCharacter().setTutorialCompleted("movement");
                 }
                 cutsceneController.update(delta);
                 break;
@@ -660,7 +659,7 @@ public class GameController {
         }
 
         if (gameplayController != null) {
-//            getCutsceneController().dispose();
+            gameplayController.dispose();
             gameplayController = new GameplayController(this);
         }
 
@@ -1082,6 +1081,8 @@ public class GameController {
             if (effectManager != null) {
                 effectManager.playClickSound();
             }
+
+
         }
     }
 

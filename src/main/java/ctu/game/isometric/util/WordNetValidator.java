@@ -127,31 +127,35 @@ public synchronized void loadDictionary() {
             }
         }
 
-        StringBuilder meaning = new StringBuilder();
-//        POS là một enum : {NOUN, VERB, ADJECTIVE, ADVERB}
+        String normalizedWordText = wordText.toLowerCase();
+
         // Search in each part of speech
         for (POS pos : POS.values()) {
-            IIndexWord indexWord = dictionary.getIndexWord(wordText.toLowerCase(), pos);
+            IIndexWord indexWord = dictionary.getIndexWord(normalizedWordText, pos);
             if (indexWord == null) continue;
 
-            // Get first meaning for this part of speech
-            IWordID wordID = indexWord.getWordIDs().get(0);
+            List<IWordID> wordIDs = indexWord.getWordIDs();
+            if (wordIDs == null || wordIDs.isEmpty()) continue;
+
+            IWordID wordID = wordIDs.get(0);
             IWord iword = dictionary.getWord(wordID);
+            if (iword == null) continue;
 
-            // Add part of speech and main definition (before semicolon)
+            // Get definition (before semicolon)
             String gloss = iword.getSynset().getGloss();
-            String definition = gloss.contains(";") ?
-                    gloss.substring(0, gloss.indexOf(";")).trim() :
-                    gloss.trim();
+            String definition;
+            if (gloss.contains(";")) {
+                definition = gloss.substring(0, gloss.indexOf(";")).trim();
+            } else {
+                definition = gloss.trim();
+            }
 
-
-            meaning.append(pos.toString())
-                    .append(": ")
-                    .append(definition)
-                    .append("\n");
+            // Return the first valid meaning we find
+            return pos.toString() + ": " + definition;
         }
 
-        return meaning.toString().trim();
+        // If no meaning found
+        return null;
     }
 
     public Word getWordDetails(String wordText) {
@@ -296,6 +300,7 @@ public synchronized void loadDictionary() {
         return POS_BONUS.getOrDefault(pos, 0);
     }
 
+    //nguyena am
     public static int getEnhancedScore(String word, PartOfSpeech pos,
                                        int synonymCount) {
         int baseScore = calculateScore(word);
@@ -321,6 +326,19 @@ public synchronized void loadDictionary() {
         return 0;
     }
 
+
+
+
+    /**
+     * Calculates semantic uniqueness bonus based on distance from common words
+     */
+    public static int getSemanticUniquenessBonus(double distanceFromCommonWords) {
+        if (distanceFromCommonWords > 0.8) return 8;
+        if (distanceFromCommonWords > 0.6) return 5;
+        if (distanceFromCommonWords > 0.4) return 3;
+        return 0;
+    }
+
     public static int getTotalScore(Word word) {
         if (word == null) return 0;
 
@@ -340,17 +358,6 @@ public synchronized void loadDictionary() {
     public static int getTotalScore(String word) {
         if (word == null) return 0;
         return calculateScore(word) + calculateBonusPoints(word);
-    }
-
-
-    /**
-     * Calculates semantic uniqueness bonus based on distance from common words
-     */
-    public static int getSemanticUniquenessBonus(double distanceFromCommonWords) {
-        if (distanceFromCommonWords > 0.8) return 8;
-        if (distanceFromCommonWords > 0.6) return 5;
-        if (distanceFromCommonWords > 0.4) return 3;
-        return 0;
     }
 
     // loai tu POS

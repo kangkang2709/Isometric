@@ -384,7 +384,7 @@
             {
               "text": "Tôi muốn tham gia bài kiểm tra!",
               "next_scene": "scene_allow_quiz",
-              "required_item": "Magic Book",
+              "required_item": "CCCD",
               "reward_item": null
             },
             {

@@ -185,13 +185,10 @@ public class InputController extends InputAdapter {
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        // Only process left clicks during EXPLORING state
-
-        GameState state = gameController.getCurrentState();
-
+        // Handle tutorial UI separately since it overrides other interactions
         if (gameController.getTutorialUI().isVisible()) {
-
-            if (state == GameState.MENU && !gameController.getMenuController().isTutorialShowing()) {
+            // Special case for tutorial showing in MENU state
+            if (gameController.getCurrentState() == GameState.MENU && !gameController.getMenuController().isTutorialShowing()) {
                 return gameController.getMenuController().handleMouseClick(screenX, screenY);
             } else if (gameController.getTutorialUI().handleClick(screenX, screenY)) {
                 effectManager.playClickSound();
@@ -199,94 +196,108 @@ public class InputController extends InputAdapter {
             return true; // Click was handled by tutorial
         }
 
+        // Process state-specific interactions using switch-case
+        switch (gameController.getCurrentState()) {
+            case EXPLORING:
+                return handleExploringStateClick(screenX, screenY);
 
-        if (state == GameState.EXPLORING && !gameController.getDialogController().isDialogActive()) {
-            if (moveCooldown > 0) return false;
+            case MENU:
+                return gameController.getMenuController().handleMouseClick(screenX, screenY);
 
-            if (gameController.getInventoryUI().isVisible()) {
-                gameController.getInventoryUI().handleClick(screenX, screenY);
+            case LOAD_GAME:
+                return gameController.getLoadGameController().handleMouseClick(screenX, screenY);
+
+            case GAMEPLAY:
+                return gameController.getGameplayController().handleCombatClick(screenX, screenY);
+
+            case DICTIONARY:
+                gameController.getDictionaryView().handleMouseClick(screenX, screenY);
                 return true;
-            }
 
-            if (gameController.getMerchantUI().isVisible()) {
-                gameController.getMerchantUI().handleClick(screenX, screenY);
+            case MULTIPLE_CHOICE_QUIZZES:
+                return gameController.getMultipleChoiceQuizController().handleClick(screenX, screenY);
+
+            case BOUNTY_BOARD:
+                return gameController.getBountyBoardView().handleClick(screenX, screenY);
+
+            case QUEST_TRACKER:
+                return gameController.getQuestTrackerView().handleClick(screenX, screenY);
+
+            case QUIZZES:
                 return true;
-            }
 
-            if (gameController.getAchievementUI().isActive()) {
-                gameController.getAchievementUI().handleInput(screenX, screenY);
-                return true;
-            }
+            default:
+                return false;
+        }
+    }
 
-            // Convert screen coordinates to world coordinates
-            Vector3 worldCoords = new Vector3(screenX, screenY, 0);
-            gameController.getCamera().unproject(worldCoords);
+    /**
+     * Handles click interactions when in the EXPLORING state
+     */
+    private boolean handleExploringStateClick(int screenX, int screenY) {
+        // Don't process clicks during dialog or movement cooldown
+        if (gameController.getDialogController().isDialogActive() || moveCooldown > 0) {
+            return false;
+        }
 
-            // Convert world coordinates to grid coordinates
-            int[] gridPos = toIsometricGrid(worldCoords.x, worldCoords.y);
-            int targetX = gridPos[0];
-            int targetY = gridPos[1] - 1;
-
-            // Get character's current position
-            int characterX = (int) Math.floor(gameController.getCharacter().getGridX());
-            int characterY = (int) Math.floor(gameController.getCharacter().getGridY());
-
-            // Calculate the movement delta
-            int dx = targetX - characterX;
-            int dy = targetY - characterY;
-
-            // Debug output
-            if (debugLog) {
-                Gdx.app.log("Mouse", "Click at grid: " + targetX + "," + targetY);
-                Gdx.app.log("Mouse", "Character at: " + characterX + "," + characterY);
-                Gdx.app.log("Mouse", "Delta: " + dx + "," + dy);
-            }
-
-            /* Only allow movement to adjacent tiles ( not including diagonals)
-           if ((Math.abs(dx) == 1 && dy == 0) || (Math.abs(dy) == 1 && dx == 0)) */
-
-            // Only allow movement to adjacent tiles (including diagonals)
-            if (Math.abs(dx) <= 1 && Math.abs(dy) <= 1 && (dx != 0 || dy != 0)) {
-                moveCharacter(dx, dy);
-                moveCooldown = MOVE_DELAY;
-            } else {
-                // For non-adjacent tiles, use pathfinding
-                gameController.moveCharacterAlongPath(targetX, targetY);
-                moveCooldown = MOVE_DELAY;
-            }
+        // Check for UI element clicks first
+        if (gameController.getInventoryUI().isVisible()) {
+            gameController.getInventoryUI().handleClick(screenX, screenY);
             return true;
         }
 
-        if (state == GameState.MENU) {
-            return gameController.getMenuController().handleMouseClick(screenX, screenY);
-        }
-        if (state == GameState.LOAD_GAME) {
-            return gameController.getLoadGameController().handleMouseClick(screenX, screenY);
-        }
-
-        if (state == GameState.GAMEPLAY) {
-            return gameController.getGameplayController().handleCombatClick(screenX, screenY);
-        }
-
-        if (state == GameState.DICTIONARY) {
-            gameController.getDictionaryView().handleMouseClick(screenX, screenY);
+        if (gameController.getMerchantUI().isVisible()) {
+            gameController.getMerchantUI().handleClick(screenX, screenY);
             return true;
         }
-        if (state == GameState.QUIZZES) {
+
+        if (gameController.getAchievementUI().isActive()) {
+            gameController.getAchievementUI().handleInput(screenX, screenY);
             return true;
         }
-        if (state == GameState.MULTIPLE_CHOICE_QUIZZES) {
-            return gameController.getMultipleChoiceQuizController().handleClick(screenX, screenY);
-        }
-        if (state == GameState.BOUNTY_BOARD) {
-            return gameController.getBountyBoardView().handleClick(screenX, screenY);
+
+        // Handle character movement
+        return handleCharacterMovement(screenX, screenY);
+    }
+
+    /**
+     * Processes character movement based on click coordinates
+     */
+    private boolean handleCharacterMovement(int screenX, int screenY) {
+        // Convert screen coordinates to world coordinates
+        Vector3 worldCoords = new Vector3(screenX, screenY, 0);
+        gameController.getCamera().unproject(worldCoords);
+
+        // Convert world coordinates to grid coordinates
+        int[] gridPos = toIsometricGrid(worldCoords.x, worldCoords.y);
+        int targetX = gridPos[0];
+        int targetY = gridPos[1] - 1;
+
+        // Get character's current position
+        int characterX = (int) Math.floor(gameController.getCharacter().getGridX());
+        int characterY = (int) Math.floor(gameController.getCharacter().getGridY());
+
+        // Calculate the movement delta
+        int dx = targetX - characterX;
+        int dy = targetY - characterY;
+
+        // Debug output
+        if (debugLog) {
+            Gdx.app.log("Mouse", "Click at grid: " + targetX + "," + targetY);
+            Gdx.app.log("Mouse", "Character at: " + characterX + "," + characterY);
+            Gdx.app.log("Mouse", "Delta: " + dx + "," + dy);
         }
 
-        if (state == GameState.QUEST_TRACKER) {
-            return gameController.getQuestTrackerView().handleClick(screenX, screenY);
+        // Only allow movement to adjacent tiles (including diagonals)
+        if (Math.abs(dx) <= 1 && Math.abs(dy) <= 1 && (dx != 0 || dy != 0)) {
+            moveCharacter(dx, dy);
+        } else {
+            // For non-adjacent tiles, use pathfinding
+            gameController.moveCharacterAlongPath(targetX, targetY);
         }
 
-        return false;
+        moveCooldown = MOVE_DELAY;
+        return true;
     }
 
 
@@ -683,6 +694,9 @@ public class InputController extends InputAdapter {
             case DICTIONARY -> {
                 gameController.getDictionaryView().handleMouseScroll(amountX, -amountY, Gdx.input.getX(), Gdx.graphics.getHeight() - Gdx.input.getY());
                 return true;
+            }
+            case GAMEPLAY -> {
+                gameController.getGameplayController().handleCombatLogScroll(amountY);
             }
 
             case EXPLORING -> {
