@@ -1222,21 +1222,21 @@ public class GameplayController {
             damage = damage - gameController.getCharacter().getDefend(); // Apply player's defense
             addCombatLog(enemyName + " tấn công gây " + damage + " sát thương!");
         } else if (action < 10) { // 40% power attack
-            damage = (random.nextInt(5) + 1) + (currentLevel * enemy.getAttackPower());
-            damage = damage - gameController.getCharacter().getDefend(); // Apply player's defense
+            damage = (random.nextInt(10) + 1) + (currentLevel * enemy.getAttackPower());
+            damage = Math.max(10,damage - gameController.getCharacter().getDefend()); // Apply player's defense
             addCombatLog(enemyName + " tấn công mạnh gây " + damage + " sát thương!");
-        } else if (action == 10) { // 10% chance to heal
+        } else if (action == 9) { // 10% chance to heal
             float heal = enemyHealth * 0.2f; // Heal 20% of current health
             enemyHealth = Math.min(enemyMaxHealth, enemyHealth + heal);
             addCombatLog(enemyName + " hồi phục " + heal + " máu!");
             damage = 0;
-        } else { // action == 9: 10% chance to miss
+        } else { // 10% chance to miss
             addCombatLog(enemyName + " đã trượt đòn tấn công!");
             damage = 0;
         }
 
 
-        playerHealth = Math.max(0, playerHealth - damage);
+        playerHealth = Math.min(playerMaxHealth, Math.max(0, playerHealth - damage));
 
         effectManager.spawnEffect("Starlight", 180, 470);
         Timer.schedule(new Timer.Task() {

@@ -482,39 +482,8 @@
       "description": "Tìm hiểu câu chuyện của Lyra, người phục vụ tại quán rượu cũ kỹ – và lý do vì sao cô ấy luôn sẵn lòng giúp đỡ lữ khách.",
       "scenes": [
         {
-          "id": "scene_personality",
-          "background": "tavern_interior.png",
-          "music": "casual_tavern.mp3",
-          "dialogues": [
-            {
-              "character": "Lyra",
-              "characterImage": "npc_healer.png",
-              "text": "Lâu đến mức mọi vết xước trên quầy này đều có một câu chuyện. Ta không phải người giỏi phép thuật… nhưng ta hiểu con người."
-            },
-            {
-              "character": "Lyra",
-              "characterImage": "npc_healer.png",
-              "text": "Người say, kẻ lạc lối, cả những kẻ bị thương – họ đều đến đây. Và ta chỉ làm điều duy nhất ta biết: khiến họ cảm thấy ấm áp."
-            }
-          ],
-          "choices": [
-            {
-              "text": "Thật tuyệt vời. Quay lại đầu.",
-              "next_scene": "scene_start",
-              "required_item": null,
-              "reward_item": null
-            },
-            {
-              "text": "Tạm biệt. Tôi sẽ quay lại sau.",
-              "next_scene": "scene_end",
-              "required_item": null,
-              "reward_item": null
-            }
-          ]
-        },
-        {
           "id": "scene_intro",
-          "background": "tavern_interior.png",
+          "background": "transparent.png",
           "music": "soft_fireplace.mp3",
           "sound_effects": ["clinking_glasses.wav", "murmur.wav"],
           "dialogues": [
@@ -531,12 +500,45 @@
           ],
           "choices": [
             {
-              "text": "Tiếp tục.",
+              "text": "Tiếp tục câu chuyện.",
               "next_scene": "scene_start",
               "required_item": null,
               "reward_item": null
+            },
+            {
+              "text": "Hồi phục.",
+              "next_scene": "scene_healed",
+              "required_item": "CCCD",
+              "reward_item": null
             }
-
+          ]
+        },
+        {
+          "id": "scene_healed",
+          "background": "transparent.png",
+          "music": "sad_piano.mp3",
+          "dialogues": [
+            {
+              "character": "Lyra",
+              "characterImage": "npc_healer.png",
+              "text": "Hẹn gặp lại quý khách lần sau"
+            }
+          ],
+          "choices": [
+          ]
+        },
+        {
+          "id": "scene_not_enough_item",
+          "background": "transparent.png",
+          "music": "sad_piano.mp3",
+          "dialogues": [
+            {
+              "character": "Lyra",
+              "characterImage": "npc_healer.png",
+              "text": "Qúy khách chưa có minh chứng [Item `CCCD`]. Tôi không thể giúp gì nếu bạn không có minh chứng thân phận."
+            }
+          ],
+          "choices": [
           ]
         },
         {
@@ -603,31 +605,6 @@
           ]
         },
         {
-          "id": "scene_not_enough_item",
-          "background": "village_center.png",
-          "music": "sad_piano.mp3",
-          "dialogues": [
-            {
-              "character": "NPC_Learna",
-              "characterImage": "npc_teacher.png",
-              "text": "Hmm... có vẻ như ngươi chưa có vật phẩm cần thiết."
-            },
-            {
-              "character": "NPC_Learna",
-              "characterImage": "npc_teacher.png",
-              "text": "Hãy quay lại khi ngươi đã tìm thấy vật phẩm đó."
-            }
-          ],
-          "choices": [
-            {
-              "text": "Hiểu rồi. Tôi sẽ quay lại.",
-              "next_scene": "scene_end",
-              "required_item": null,
-              "reward_item": null
-            }
-          ]
-        },
-        {
           "id": "scene_more_past",
           "background": "tavern_kitchen.png",
           "music": "healing_memory.mp3",
@@ -645,8 +622,8 @@
           ],
           "choices": [
             {
-              "text": "Cảm ơn vì đã chia sẻ câu chuyện của cô.",
-              "next_scene": "scene_end",
+              "text": "Câu chuyện đó làm tôi nhớ tới mẹ tôi… Còn cô thì sao?",
+              "next_scene": "scene_mother_memory",
               "required_item": null,
               "reward_item": null
             },
@@ -655,6 +632,68 @@
               "next_scene": "scene_start",
               "required_item": null,
               "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_mother_memory",
+          "background": "tavern_kitchen_old.png",
+          "music": "memory_theme.mp3",
+          "dialogues": [
+            {
+              "character": "Lyra",
+              "characterImage": "npc_healer.png",
+              "text": "Mẹ ta là người đầu tiên dạy ta cách dùng thảo dược – không chỉ để chữa lành vết thương, mà còn là chữa lành tâm hồn."
+            },
+            {
+              "character": "Lyra",
+              "characterImage": "npc_healer.png",
+              "text": "Bà luôn nói: 'Một chén súp ngon có thể xoa dịu những nỗi đau mà lời nói không thể.'"
+            },
+            {
+              "character": "Lyra",
+              "characterImage": "npc_healer.png",
+              "text": "Khi bà qua đời, ta giữ lại quán này – như một lời hứa chưa trọn vẹn."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Tôi tin bà ấy sẽ tự hào về cô.",
+              "next_scene": "scene_gratitude",
+              "required_item": null,
+              "reward_item": null
+            },
+            {
+              "text": "Trở lại lựa chọn trước.",
+              "next_scene": "scene_start",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_gratitude",
+          "background": "tavern_interior_evening.png",
+          "music": "gentle_gratitude.mp3",
+          "dialogues": [
+            {
+              "character": "Lyra",
+              "characterImage": "npc_healer.png",
+              "text": "Cảm ơn vì đã lắng nghe. Không phải ai cũng quan tâm đến những điều nhỏ bé…"
+            },
+            {
+              "character": "Lyra",
+              "characterImage": "npc_healer.png",
+              "text": "Nếu một ngày nào đó ngươi cần chốn nghỉ chân – hãy nhớ rằng nơi này luôn mở cửa."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Tạm biệt, Lyra. Tôi sẽ nhớ điều đó.",
+              "next_scene": "scene_end",
+              "required_item": null,
+              "reward_item": null
+
             }
           ]
         },
@@ -704,6 +743,645 @@
         }
       ]
     },
+    {
+      "id": "bounty_hunter_backstory",
+      "title": "Dấu Chân Trên Cát Bụi",
+      "description": "Gặp gỡ Elden, vị trưởng làng có đôi mắt từng chứng kiến hàng trăm trận chiến. Hãy lắng nghe lý do ông chọn cách giao lại ngọn đuốc cho thế hệ tiếp theo.",
+      "scenes": [
+        {
+          "id": "scene_intro",
+          "background": "village_central_square.png",
+          "music": "calm_village_day.mp3",
+          "sound_effects": ["birds_chirping.wav", "wind_breeze.wav"],
+          "dialogues": [
+            {
+              "character": "MC",
+              "characterImage": "mc_default.png",
+              "text": "Đó có phải là Trưởng làng không? Ông ta đang quan sát bảng nhiệm vụ với ánh nhìn rất khác…"
+            },
+            {
+              "character": "Elden",
+              "characterImage": "npc_village_master.png",
+              "text": "A, mạo hiểm giả mới à? Lại gần đây nào. Ta đoán ngươi đang tìm việc làm… hay một lý tưởng để theo đuổi?"
+            }
+          ],
+          "choices": [
+            {
+              "text": "Tiếp tục.",
+              "next_scene": "scene_start",
+              "required_item": null,
+              "reward_item": null
+            }
+            ,
+            {
+              "text": "Tôi chỉ muốn xem bảng nhiệm vụ.",
+              "next_scene": "scene_end",
+              "required_item": "CCCD",
+              "reward_item": null
+            }
+          ]
+        },
+
+        {
+          "id": "scene_not_enough_item",
+          "background": "transparent.png",
+          "music": "sad_piano.mp3",
+          "dialogues": [
+            {
+              "character": "Elden",
+              "characterImage": "npc_village_master.png",
+              "text": "Ngươi cần có minh chứng thân phận [Item `CCCD`]. \n Ta có thể cho ngươi nếu như nhà ngươi lắng nghe câu chuyện của ta ."
+            }
+          ],
+          "choices": [
+          ]
+        },
+        {
+          "id": "scene_haved_item",
+          "background": "transparent.png",
+          "music": "sad_piano.mp3",
+          "dialogues": [
+            {
+              "character": "Elden",
+              "characterImage": "npc_village_master.png",
+              "text": "Ngươi đã có minh chứng thân phận rồi. Hãy tiếp nhận nhiệm vụ của ta và bắt đầu hành trình của mình."
+            }
+          ],
+          "choices": [
+          ]
+        },
+        {
+          "id": "scene_start",
+          "background": "village_central_square.png",
+          "music": "casual_village_theme.mp3",
+          "dialogues": [
+            {
+              "character": "Elden",
+              "characterImage": "npc_village_master.png",
+              "text": "Nhiều người chỉ xem bounty như cách kiếm vàng. Nhưng với ta, nó là lời thề – giữ cho ngôi làng này an toàn.\n Ngươi muốn biết tại sao ta tin vào hệ thống này đến vậy không?"
+
+            }
+          ],
+          "choices": [
+            {
+              "text": "Tôi muốn nghe về quá khứ của ông.",
+              "next_scene": "scene_story_1",
+              "required_item": null,
+              "reward_item": null
+            },
+            {
+              "text": "Ông nghĩ bounty thực sự giúp được làng sao?",
+              "next_scene": "scene_vision",
+              "required_item": null,
+              "reward_item": null
+            },
+            {
+              "text": "Tôi chỉ đến xem bảng nhiệm vụ thôi.",
+              "next_scene": "scene_end",
+              "required_item": "CCCD",
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_story_1",
+          "background": "battlefield_ruins.png",
+          "music": "memory_theme.mp3",
+          "dialogues": [
+            {
+              "character": "Elden",
+              "characterImage": "npc_village_master.png",
+              "text": "Ngày xưa ta từng là một kiếm sĩ – phiêu lưu khắp nơi, chém quái vật, săn tiền thưởng. Máu đổ nhiều, nhưng chẳng bao giờ là đủ để giữ hòa bình."
+            },
+            {
+              "character": "Elden",
+              "characterImage": "npc_village_master.png",
+              "text": "Chính trong một trận đánh ở phía Bắc, nơi đồng đội ngã xuống từng người một, ta nhận ra: chiến đấu vì danh tiếng… thì cuối cùng chẳng còn ai để kể \n lại câu chuyện."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Đó là lúc ông quyết định trở về?",
+              "next_scene": "scene_retreat",
+              "required_item": null,
+              "reward_item": null
+            },
+            {
+              "text": "Quay lại lựa chọn trước.",
+              "next_scene": "scene_start",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_retreat",
+          "background": "village_gate_evening.png",
+          "music": "nostalgic_theme.mp3",
+          "dialogues": [
+            {
+              "character": "Elden",
+              "characterImage": "npc_village_master.png",
+              "text": "Ta trở lại nơi mình sinh ra – một làng nhỏ bé bị lũ cướp đe dọa hằng tuần. Không còn kiếm phép thuật, không còn quân đội. Chỉ còn nông dân và sợ hãi."
+            },
+            {
+              "character": "Elden",
+              "characterImage": "npc_village_master.png",
+              "text": "Vậy nên ta lập ra bảng bounty – để những người như ngươi có thể chiến đấu và học cách bảo vệ."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Thật đáng kính trọng. Tôi muốn giúp ông.",
+              "next_scene": "scene_gratitude",
+              "required_item": null,
+              "reward_item": "CCCD"
+            },
+            {
+              "text": "Quay lại lựa chọn trước.",
+              "next_scene": "scene_start",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_vision",
+          "background": "village_planning_map.png",
+          "music": "planning_theme.mp3",
+          "dialogues": [
+            {
+              "character": "Elden",
+              "characterImage": "npc_village_master.png",
+              "text": "Ta không chỉ muốn bảo vệ làng – ta muốn xây nền cho thế hệ mới. Mỗi nhiệm vụ là cơ hội để mạo hiểm giả hiểu rằng trách nhiệm lớn hơn phần thưởng."
+            },
+            {
+              "character": "Elden",
+              "characterImage": "npc_village_master.png",
+              "text": "Ngươi không cần là anh hùng. Ngươi chỉ cần là người không quay lưng khi người khác cần giúp."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Tôi nghĩ tôi hiểu ông rồi. Tôi sẽ nhận lấy thẻ CCCD này và bắt đầu hành trình của mình.",
+              "next_scene": "scene_gratitude",
+              "required_item": null,
+              "reward_item": null
+            },
+            {
+              "text": "Quay lại đầu.",
+              "next_scene": "scene_start",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_gratitude",
+          "background": "village_central_square_evening.png",
+          "music": "gentle_gratitude.mp3",
+          "dialogues": [
+            {
+              "character": "Elden",
+              "characterImage": "npc_village_master.png",
+              "text": "Hừm… Có lẽ ngươi không giống những kẻ chỉ đến đây để cướp bảng rồi biến mất."
+            },
+            {
+              "character": "Elden",
+              "characterImage": "npc_village_master.png",
+              "text": "Cầm lấy thứ này. Giấy phép săn thưởng – từ giờ ngươi có thể nhận nhiệm vụ chính thức từ bảng."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Cảm ơn ông, Elden.",
+              "next_scene": "scene_end",
+              "required_item": null,
+              "reward_item": "CCCD"
+            }
+          ]
+        },
+
+
+        {
+          "id": "scene_end",
+          "background": "village_board_unlocked.png",
+          "music": "village_theme.mp3",
+          "dialogues": [
+            {
+              "character": "MC",
+              "characterImage": "mc_default.png",
+              "text": "Một người từng đi qua bao nhiêu chiến trường… giờ đặt kỳ vọng vào mình. Mình sẽ không làm ông thất vọng."
+            }
+          ],
+          "choices": []
+        }
+      ]
+    },
+    {
+      "id": "patche_trader_backstory",
+      "title": "Giao Dịch Là Một Nghệ Thuật",
+      "description": "Khám phá bí mật đằng sau nụ cười của Patche – kẻ buôn đồ lạ với những món hàng không ai dám hỏi nguồn gốc.",
+      "scenes": [
+        {
+          "id": "scene_not_enough_item",
+          "background": "transparent.png",
+          "music": "sad_piano.mp3",
+          "dialogues": [
+            {
+              "character": "Patche",
+              "characterImage": "npc_trader.png",
+              "text": "Ngươi chưa có minh chứng [Item `CCCD`]. Sẽ không có giao dịch nào diễn ra nếu không có nó."
+            }
+          ],
+          "choices": [
+          ]
+        },
+        {
+          "id": "scene_intro",
+          "background": "market_corner.png",
+          "music": "suspicious_bazaar.mp3",
+          "sound_effects": ["coin_jingle.wav"],
+          "dialogues": [
+            {
+              "character": "MC",
+              "characterImage": "mc_default.png",
+              "text": "Quầy hàng nhỏ đó… toàn là những thứ kỳ quặc. Và người kia, trông có vẻ… đang chờ đợi ai đó."
+            },
+            {
+              "character": "Patche",
+              "characterImage": "npc_trader.png",
+              "text": "Ồ, khách đây rồi. Ngươi trông như thể cần một thứ gì đó mà chợ bình thường không có, đúng chứ?"
+            }
+          ],
+          "choices": [
+            {
+              "text": "Tiếp tục trò chuyện.",
+              "next_scene": "scene_start",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_start",
+          "background": "market_corner.png",
+          "music": "casual_bazaar.mp3",
+          "dialogues": [
+            {
+              "character": "Patche",
+              "characterImage": "npc_trader.png",
+              "text": "Ta không bán – ta trao đổi. Với ta, giá trị nằm ở câu chuyện đằng sau món hàng. Ngươi có thứ gì để kể chứ?"
+            }
+          ],
+          "choices": [
+            {
+              "text": "Sao ông lại buôn bán kiểu này?",
+              "next_scene": "scene_story",
+              "required_item": null,
+              "reward_item": null
+            },
+            {
+              "text": "Tôi có đồ muốn trao đổi.",
+              "next_scene": "scene_trade_menu",
+              "required_item": "CCCD",
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_story",
+          "background": "desert_road.png",
+          "music": "traveler_theme.mp3",
+          "dialogues": [
+            {
+              "character": "Patche",
+              "characterImage": "npc_trader.png",
+              "text": "Ngày xưa, ta là người lữ hành. Đôi chân đi khắp bốn phương, mỗi vùng đều để lại một món đồ – hoặc một bí mật."
+            },
+            {
+              "character": "Patche",
+              "characterImage": "npc_trader.png",
+              "text": "Một ngày, ta nhận ra: thế giới không thiếu vàng – chỉ thiếu những kẻ biết lắng nghe giá trị thật sự."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Thú vị đấy. Cho tôi xem hàng.",
+              "next_scene": "scene_trade_menu",
+              "required_item": "CCCD",
+              "reward_item": null
+            },
+            {
+              "text": "Quay lại.",
+              "next_scene": "scene_start",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_trade_menu",
+          "background": "market_corner.png",
+          "music": "item_exchange.mp3",
+          "dialogues": [
+            {
+              "character": "Patche",
+              "characterImage": "npc_trader.png",
+              "text": "Rồi, mở túi ra đi. Có thể ta sẽ tìm thấy điều gì đó đáng đổi."
+            }
+          ],
+          "choices": []
+        }
+      ]
+    },
+
+
+    {
+      "id": "lorekeeper_tian_backstory",
+      "title": "Kho Tàng Bị Lãng Quên",
+      "description": "Gặp Tian – thủ thư sống giữa tầng tầng sách cổ. Chỉ những ai đủ kiên nhẫn mới được học lại cách gắn từ vào ký ức.",
+      "scenes": [
+        {
+          "id": "scene_intro",
+          "background": "library_interior.png",
+          "music": "mystic_library.mp3",
+          "sound_effects": ["pages_flipping.wav"],
+          "dialogues": [
+            {
+              "character": "MC",
+              "characterImage": "mc_default.png",
+              "text": "Khó mà nghe thấy tiếng động nào trong thư viện này… ngoài tiếng lật sách liên tục từ góc phòng."
+            },
+            {
+              "character": "Tian",
+              "characterImage": "npc_lorekeeper.png",
+              "text": "Yên lặng. Từng từ đều mang trọng lượng. Và những từ bị mất… cần được tìm lại."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Tiếp tục.",
+              "next_scene": "scene_start",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_not_enough_item",
+          "background": "transparent.png",
+          "music": "sad_piano.mp3",
+          "dialogues": [
+            {
+              "character": "Tian",
+              "characterImage": "npc_lorekeeper.png",
+              "text": "Ngươi chưa có  [Item `Grimoire of Trials I`]. Ta không thể hỗ trợ gì được."
+            }
+          ],
+          "choices": [
+          ]
+        },
+        {
+          "id": "scene_start",
+          "background": "library_interior.png",
+          "music": "thoughtful_theme.mp3",
+          "dialogues": [
+            {
+              "character": "Tian",
+              "characterImage": "npc_lorekeeper.png",
+              "text": "Ngươi muốn học lại những từ đã lạc khỏi trí nhớ? Ta có một phương pháp – nhưng cần sự tập trung tuyệt đối."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Ông đã học nó từ đâu?",
+              "next_scene": "scene_story",
+              "required_item": null,
+              "reward_item": null
+            },
+            {
+              "text": "Tôi muốn thử phương pháp đó.",
+              "next_scene": "scene_unlock_cloze",
+              "required_item": "CCCD",
+              "reward_item": null
+            },
+            {
+              "text": "Tôi có chút việc. Hẹn gặp lại sau.",
+              "next_scene": "scene_end",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_story",
+          "background": "ancient_library.png",
+          "music": "ancient_knowledge.mp3",
+          "dialogues": [
+            {
+              "character": "Tian",
+              "characterImage": "npc_lorekeeper.png",
+              "text": "Ta từng là học giả hoàng gia. Nhưng triều đình không cần người bảo tồn – chỉ cần kẻ làm sai ít lỗi nhất."
+            },
+            {
+              "character": "Tian",
+              "characterImage": "npc_lorekeeper.png",
+              "text": "Nay, ta chọn ở lại đây. Để ai muốn học thật sự… có cơ hội hoàn thiện chính mình, từng chỗ trống một."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Cho tôi thử phương pháp đó.",
+              "next_scene": "scene_unlock_cloze",
+              "required_item": "CCCD",
+              "reward_item": null
+            },
+            {
+              "text": "Tôi chưa sẳn sàng.",
+              "next_scene": "scene_end",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_end",
+          "background": "library_interior.png",
+          "music": "soft_closure.mp3",
+          "dialogues": [
+            {
+              "character": "Tian",
+              "characterImage": "npc_lorekeeper.png",
+              "text": "Khi nào ngươi sẵn sàng, bàn luyện từ luôn chờ. Đừng để trí nhớ bị phủ bụi lâu quá."
+            },
+            {
+              "character": "MC",
+              "characterImage": "mc_default.png",
+              "text": "Cảm ơn ông, Tian. Tôi sẽ quay lại… khi đã sẵn sàng nối lại những ký ức rời rạc."
+            }
+          ],
+          "choices": []
+        },
+
+        {
+          "id": "scene_unlock_cloze",
+          "background": "library_focus_room.png",
+          "music": "unlock_feature.mp3",
+          "dialogues": [
+            {
+              "character": "Tian",
+              "characterImage": "npc_lorekeeper.png",
+              "text": "Đây là bàn luyện từ. Ngồi xuống, đừng sợ lấp khoảng trống. Mỗi từ điền đúng… là một bước về phía ngươi từng là."
+            }
+          ],
+          "choices": []
+        }
+      ]
+    },
+
+    {
+      "id": "wordseer_kang_backstory",
+      "title": "Giữa Những Dòng Nghĩa",
+      "description": "Kang – thủ thư trực giác, người thấy sắc thái của từ ngữ như ánh sáng. Cô giúp người chơi luyện chọn đúng – giữa vô số lựa chọn gần đúng.",
+      "scenes": [
+        {
+          "id": "scene_intro",
+          "background": "library_balcony.png",
+          "music": "sharp_thinking.mp3",
+          "dialogues": [
+            {
+              "character": "MC",
+              "characterImage": "mc_default.png",
+              "text": "Trên gác cao thư viện, một cô gái trẻ đang sắp xếp những mảnh giấy có ký hiệu màu sắc…"
+            },
+            {
+              "character": "Kang",
+              "characterImage": "npc_wordseer.png",
+              "text": "Một từ có thể có nhiều nghĩa, nhưng ngữ cảnh thì không nói dối. Ngươi muốn học cách chọn đúng à?"
+            }
+          ],
+          "choices": [
+            {
+              "text": "Tiếp tục.",
+              "next_scene": "scene_start",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_start",
+          "background": "library_balcony.png",
+          "music": "wordseer_theme.mp3",
+          "dialogues": [
+            {
+              "character": "Kang",
+              "characterImage": "npc_wordseer.png",
+              "text": "Luyện trắc nghiệm không phải để chọn nhanh – mà để chọn chính xác. Học cách phân biệt giữa đúng, gần đúng, và sai hoàn toàn."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Làm sao cô luyện được khả năng đó?",
+              "next_scene": "scene_story",
+              "required_item": null,
+              "reward_item": null
+            },
+            {
+              "text": "Tôi muốn thử ôn tập trắc nghiệm.",
+              "next_scene": "scene_unlock_mcq",
+              "required_item": "CCCD",
+              "reward_item": null
+            },
+            {
+              "text": "Tôi có chút việc. Hẹn gặp lại sau.",
+              "next_scene": "scene_end",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_story",
+          "background": "language_temple.png",
+          "music": "mental_focus.mp3",
+          "dialogues": [
+            {
+              "character": "Kang",
+              "characterImage": "npc_wordseer.png",
+              "text": "Ta từng theo học ở đền Ngôn Từ – nơi mỗi từ được phân tích như ánh sáng qua lăng kính. Từ đó, ta nhận ra: chọn sai một từ, có thể sai cả số phận."
+            },
+            {
+              "character": "Kang",
+              "characterImage": "npc_wordseer.png",
+              "text": "Ta muốn giúp người khác thấy được sắc thái – chứ không chỉ là mặt chữ."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Tôi sẵn sàng học.",
+              "next_scene": "scene_unlock_mcq",
+              "required_item": null,
+              "reward_item": null
+            },
+            {
+              "text": "Tôi chưa sẳn sàng.",
+              "next_scene": "scene_end",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_end",
+          "background": "library_balcony.png",
+          "music": "soft_closure.mp3",
+          "dialogues": [
+            {
+              "character": "Kang",
+              "characterImage": "npc_wordseer.png",
+              "text": "Tập luyện không bao giờ dừng lại. Khi quay lại, hãy mang theo một câu hỏi – và khát khao hiểu nó đến tận cùng."
+            },
+            {
+              "character": "MC",
+              "characterImage": "mc_default.png",
+              "text": "Tôi sẽ nhớ lời cô. Hẹn gặp lại – giữa những dòng nghĩa."
+            }
+          ],
+          "choices": []
+        },
+
+        {
+          "id": "scene_not_enough_item",
+          "background": "transparent.png",
+          "music": "sad_piano.mp3",
+          "dialogues": [
+            {
+              "character": "Kang",
+              "characterImage": "npc_wordseer.png",
+              "text": "Ngươi chưa có  [Item `Grimoire of Trials 2`]. Ta không thể hỗ trợ gì được."
+            }
+          ],
+          "choices": [
+          ]
+        },
+        {
+          "id": "scene_unlock_mcq",
+          "background": "quiz_chamber.png",
+          "music": "unlock_feature.mp3",
+          "dialogues": [
+            {
+              "character": "Kang",
+              "characterImage": "npc_wordseer.png",
+              "text": "Hãy lắng nghe từng câu, nhìn từng từ. Sai cũng được – miễn là sau đó ngươi hiểu vì sao."
+            }
+          ],
+          "choices": []
+        }
+      ]
+    },
+
     {"id": "teleporting_background",
       "title": "Cổng Phép Thuật Cổ Đại",
       "description": "Khám phá bí mật của cổng phép thuật cổ đại, nơi có thể đưa bạn đến bất kỳ đâu trong thế giới.",

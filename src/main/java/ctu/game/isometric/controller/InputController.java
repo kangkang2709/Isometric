@@ -95,7 +95,7 @@ public class InputController extends InputAdapter {
         }
 
         // Handle dialog input first
-        if (gameController.getDialogController().isDialogActive() && state == GameState.DIALOG) {
+        if (gameController.getDialogController().isDialogActive() && state == GameState.EXPLORING) {
             return handleDialogInput(keycode);
         }
 

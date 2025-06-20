@@ -158,6 +158,12 @@ public class GameController {
 
 
     public void interactWithNPC() {
+//
+//        if (!getCharacter().getIsTutorials().get("npc")) {
+//            tutorialUI.show("npc");
+//            getCharacter().setTutorialCompleted("npc");
+//        }
+
         NPC npc = findNPCNear(character.getGridX(), character.getGridY());
         if (npc != null) {
             npc.setBehaviorState("Dialogue");
@@ -186,14 +192,16 @@ public class GameController {
                         dialogController.startDialog("chapter_quiz_intro", "scene_meet_npc");
                     }
                     break;
-                case "Bounty Board":
-                    setState(GameState.BOUNTY_BOARD);
+                case "Patche Trader":
+                    dialogController.showMessageWithChoices("Chúng tôi có vài ủy thác. Bạn có muốn tiếp nhận không?", "CCCD",
+                            "Yes [Cần CCCD]", "No", () -> setState(GameState.BOUNTY_BOARD));
+                    ;
                     break;
                 case "Merchant":
                     dialogController.showMessageWithChoices("I have something to trade. What do you want", "CCCD",
                             "Yes [Cần CCCD]", "No", () -> merchantUI.show());
                     break;
-                case "Healer Elara":
+                case "Waitess Hera":
                     dialogController.showMessageWithChoices("Do want to heal", "CCCD",
                             "Yes [Cần CCCD]", "No", () -> getCharacter().recovery());
                     break;
@@ -210,10 +218,59 @@ public class GameController {
 
     public void showNPCBackStory() {
         NPC npc = findNPCNear(character.getGridX(), character.getGridY());
+
         if (npc != null) {
-//            dialogController.startDialog("teleporting_background", "scene_intro");
-            dialogController.startDialog("healer_backstory", "scene_intro");
-//            dialogController.startDialog(npc.getArcId(), npc.getSceneId());
+            npc.setBehaviorState("Dialogue");
+            switch (npc.getNpcName()) {
+                case "WordSeer Kang":
+                    if (getCharacter().getAttempFlags().get("quizAttempts") >= 3) {
+                        dialogController.showSimpleMessage("You have already attempted this quiz today. Come back tomorrow!");
+                    } else {
+                        dialogController.setOnDialogFinishedAction(() -> {
+                            startQuiz();
+                            getCharacter().getAttempFlags().put("quizAttempts", 1);
+                        });
+                        dialogController.startDialog(npc.getArcId(), npc.getSceneId());
+                    }
+
+                    break;
+                case "Lorekeeper Tian":
+                    if (getCharacter().getAttempFlags().get("mulQuizAttempts") >= 3) {
+                        dialogController.showSimpleMessage("You have already attempted this quiz today. Come back tomorrow!");
+                    } else {
+                        dialogController.setOnDialogFinishedAction(() -> {
+                            startMulChoiceQuiz();
+                            getCharacter().getAttempFlags().put("mulQuizAttempts", 1);
+
+                        });
+                        dialogController.startDialog(npc.getArcId(), npc.getSceneId());
+                    }
+                    break;
+                case "Barbarian Captain":
+                    dialogController.setOnDialogFinishedAction(() -> {
+                        setState(GameState.BOUNTY_BOARD);
+                    });
+                    dialogController.startDialog(npc.getArcId(), npc.getSceneId());
+                    break;
+                case "Patche Trader":
+                    dialogController.setOnDialogFinishedAction(() -> {
+                        merchantUI.show();
+                    });
+                    dialogController.startDialog(npc.getArcId(), npc.getSceneId());
+                    break;
+                case "Waitess Hera":
+                    dialogController.setOnDialogFinishedAction(() -> {
+                        getCharacter().recovery();
+                        effectManager.spawnEffectEvent("Star_Trail", 660, 390);
+                    });
+                    dialogController.startDialog(npc.getArcId(), npc.getSceneId());
+                    break;
+                case "Teleporter":
+                    dialogController.startDialog("teleporting_background", "scene_intro");
+                default:
+                    break;
+            }
+
         } else {
             dialogController.showSimpleMessage("No NPC nearby to interact with.");
         }

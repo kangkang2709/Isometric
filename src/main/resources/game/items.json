@@ -160,7 +160,7 @@
     "manaCost": 10.0
   },
   {
-    "itemID": 16,
+    "itemID": 17,
     "itemName": "CCCD",
     "itemDescription": "Chứng nhận thân phận của bạn với thế giới này.",
     "texturePath": "game/items/CCCD.png",

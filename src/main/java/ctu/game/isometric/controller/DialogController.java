@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ctu.game.isometric.model.dialog.*;
 import ctu.game.isometric.model.game.GameState;
+import ctu.game.isometric.model.game.Items;
 import ctu.game.isometric.util.ItemLoader;
 
 import java.io.IOException;
@@ -258,6 +259,7 @@ public class DialogController {
 
             // Reset flags before processing the choice
             showingChoices = false;
+            String itemName = choice.getReward_item();
 
             // Check if player has required item
             if (choice.getRequired_item() != null) {
@@ -265,12 +267,13 @@ public class DialogController {
                         gameController.getCharacter().hasItem(choice.getRequired_item())) {
                     performAction = true; // Only set to true when choice has required item
 
-                    String itemName = choice.getReward_item();
                     if (itemName != null) {
                         if (itemName.contains("Location"))
                             gameController.getCharacter().teleportToLocation(itemName);
                         else
+
                             gameController.getCharacter().addItem(ItemLoader.getItemByName(itemName), 1);
+
                     }
 
                     // Move to the next scene if specified
@@ -282,6 +285,19 @@ public class DialogController {
                     startDialog(currentArcId, "scene_not_enough_item");
                 }
             } else {
+                if (itemName != null && !itemName.isEmpty()) {
+                    Items item = ItemLoader.getItemByName(itemName);
+                    System.out.println("Item selected: " + itemName);
+                    if (item != null) {
+                        if (item.getItemEffect().equals("N/A") && gameController.getCharacter().getItems().get(itemName) != null) {
+                            System.out.println("Item already exists, not adding again: " + itemName);
+                            startDialog(currentArcId, "scene_haved_item");
+                            return;
+                        } else {
+                            gameController.getCharacter().addItem(item, 1);
+                        }
+                    }
+                }
                 // No item required, proceed normally
                 if (choice.getNext_scene() != null) {
                     if (choice.getNext_scene().equals("scene_end")) {
