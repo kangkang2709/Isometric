@@ -33,8 +33,10 @@ public class EventManager {
             for (MapObject object : objectLayer.getObjects()) {
                 if (object instanceof RectangleMapObject) {
                     Rectangle rect = ((RectangleMapObject) object).getRectangle();
-                    int objGridX = (int) (rect.x / map.getTileWidth()) + 2;
-                    int objGridY = (int) (rect.y / map.getTileHeight()) - 2;
+                    int objGridX = (int) (rect.x / map.getTileHeight());
+                    int objGridY = (int) (rect.y / map.getTileHeight());
+
+                    System.out.println("Object at grid position: " + objGridX + ", " + objGridY);
 
                     MapProperties props = object.getProperties();
                     if (props.containsKey("event")) {
@@ -83,6 +85,7 @@ public class EventManager {
     public MapEvent checkPositionEvents(float x, float y) {
         int gridX = (int) x;
         int gridY = (int) y;
+        System.out.println("Checking events at grid position: " + gridX + ", " + gridY);
 
         for (MapEvent event : events.values()) {
             if (event.getGridX() == gridX && event.getGridY() == gridY) {
@@ -91,7 +94,6 @@ public class EventManager {
                         event.isCompleted()) {
                     continue;
                 }
-                System.out.println(event.toString());
                 return event;
             }
         }

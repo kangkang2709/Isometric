@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="isometric" renderorder="right-down" width="20" height="20" tilewidth="63" tileheight="32" infinite="0" nextlayerid="9" nextobjectid="96">
+<map version="1.10" tiledversion="1.11.2" orientation="isometric" renderorder="right-down" width="20" height="20" tilewidth="63" tileheight="32" infinite="0" nextlayerid="9" nextobjectid="117">
  <tileset firstgid="1" name="tile3" tilewidth="64" tileheight="32" tilecount="1" columns="1">
   <image source="tiles/tile3.png" trans="ff00ff" width="64" height="32"/>
  </tileset>
@@ -20,7 +20,6 @@
  <tileset firstgid="5" name="tree1" tilewidth="64" tileheight="128" tilecount="1" columns="1">
   <image source="tiles/city_game_tileset/city_game_tileset/tree1.png" trans="ff00ff" width="64" height="128"/>
  </tileset>
- <objectgroup id="8" name="collision_layer" locked="1"/>
  <layer id="1" name="ground_layer" width="20" height="20">
   <data encoding="csv">
 0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -69,8 +68,10 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="4" name="object_layer"/>
- <objectgroup id="7" name="overlay">
-  <object id="95" gid="5" x="34" y="494" width="58" height="111.5"/>
+ <objectgroup id="4" name="object">
+  <object id="114" gid="5" x="576" y="448" width="64" height="128"/>
+  <object id="115" gid="5" x="224" y="448" width="64" height="128"/>
+  <object id="116" gid="5" x="160" y="224" width="64" height="128"/>
  </objectgroup>
+ <objectgroup id="7" name="overlay"/>
 </map>

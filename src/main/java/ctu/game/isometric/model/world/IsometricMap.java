@@ -172,7 +172,6 @@ public class IsometricMap {
         }
 
         if (!chunkingEnabled) {
-            System.out.println("Using walkable cache");
             return walkableCache[y][x];
         } else {
             MapChunk chunk = getOrCreateChunk(x, y);

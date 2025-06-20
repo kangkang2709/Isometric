@@ -190,7 +190,6 @@ public class MapRenderer {
             for (MapObject object : objectLayer.getObjects()) {
                 Float x = object.getProperties().get("x", Float.class);
                 Float y = object.getProperties().get("y", Float.class);
-
                 // Skip completed events
                 if (object.getProperties().containsKey("id")) {
                     String eventId = eventManager.getStringProperty(object.getProperties(), "id", "");
@@ -220,10 +219,11 @@ public class MapRenderer {
                         float gridY = gridPos[1];
 
                         float[] isoPos = toIsometric(gridX, gridY);
+
                         TextureRegion region = tile.getTextureRegion();
                         batch.draw(region,
-                                isoPos[0] - width / 2,      // Center horizontally
-                                isoPos[1] - height / 4,     // Improved alignment for isometric view
+                                isoPos[0] - width / 2 +4,      // Center horizontally
+                                isoPos[1] - height / 4 + 8,     // Improved alignment for isometric view
                                 width, height);
                     }
                 }
@@ -233,25 +233,22 @@ public class MapRenderer {
 
     // Convert world coordinates to grid coordinates
     private int[] toGrid(float worldX, float worldY) {
-        // Basic conversion: divide by tile dimensions
-        float gridX = worldX / map.getTileWidth();
-        float gridY = worldY / map.getTileHeight();
+        float tileWidth = map.getTileWidth();   // ví dụ: 64
+        float tileHeight = map.getTileHeight(); // ví dụ: 32
 
-        // For isometric systems, you might need this transformation instead:
-        // float gridX = (worldX / (map.getTileWidth() / 2) - worldY / (map.getTileHeight() / 2)) / 2;
-        // float gridY = (worldX / (map.getTileWidth() / 2) + worldY / (map.getTileHeight() / 2)) / 2;
 
-        // Round to integers
-        int x = Math.round(gridX);
-        int y = Math.round(gridY);
 
-        // Ensure positive values by adding an offset if needed
-        // If your map can have negative coordinates, add an appropriate offset
-        int mapOffsetX = 1; // Adjust as needed for your map
-        int mapOffsetY = -1; // Adjust as needed for your map
 
-        return new int[]{x + mapOffsetX, y + mapOffsetY};
+        float gridX = worldX/tileHeight-1;
+        float gridY = worldY/tileHeight+1;
+
+        return new int[]{Math.round(gridX), Math.round(gridY)};
     }
+
+
+
+
+
     //
 
     public AnimationManager getAnimationManager() {
