@@ -19,13 +19,14 @@ import java.util.stream.Collectors;
 public class EventManager {
     private Map<String, MapEvent> events = new HashMap<>();
     private Map<Integer, Boolean> defeatedEnemies = new HashMap<>();
+    private String mapName;
 
-
-
-    public EventManager(IsometricMap map) {
-        loadEventsFromMap(map);
+    public EventManager(IsometricMap map,String mapName) {
+        if (!map.getMapName().equals("board")) loadEventsFromMap(map);
+        this.mapName = mapName;
 
     }
+
     // Load events from the map
     public void loadEventsFromMap(IsometricMap map) {
         MapLayer objectLayer = map.getTiledMap().getLayers().get("object");
@@ -47,7 +48,7 @@ public class EventManager {
                         boolean isOneTime = false; // Declare and initialize outside the block
                         if (props.containsKey("one_time"))
                             isOneTime = getBooleanProperty(props, "one_time", false);
-                        events.put(eventId, new MapEvent(eventId, eventType, objGridX, objGridY, props,isOneTime));
+                        events.put(eventId, new MapEvent(eventId, eventType, objGridX, objGridY, props, isOneTime));
                     }
                 }
             }
@@ -55,6 +56,20 @@ public class EventManager {
 
     }
 
+
+    public void resetEvents(IsometricMap map) {
+        events.clear();
+        defeatedEnemies.clear();
+        loadEventsFromMap(map);
+
+    }
+    public String getMapName() {
+        return mapName;
+    }
+
+    public void setMapName(String mapName) {
+        this.mapName = mapName;
+    }
 
     public List<String> getListIdCompletedEvents() {
         return events.values().stream()
@@ -70,7 +85,7 @@ public class EventManager {
     public void updateAfterLoadGame(GameSave save) {
         // Update completed events
         for (String eventId : save.getListIdCompletedEvents()) {
-            if (events.containsKey(eventId)) {
+            if (events.containsKey(eventId) && eventId.contains(mapName)) {
                 events.get(eventId).setCompleted(true);
             }
         }
@@ -153,7 +168,6 @@ public class EventManager {
             }
         }
     }
-
 
 
     public boolean getBooleanProperty(MapProperties props, String key, boolean defaultValue) {

@@ -14,6 +14,7 @@ import ctu.game.isometric.model.game.GameState;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
@@ -330,7 +331,16 @@ public class LoadGameController {
 
                     // Set character data in game controller
                     gameController.loadCharacter(save.getCharacter(),save.getSaveDate());
-                    gameController.getEventManager().updateAfterLoadGame(save);
+
+
+
+                    gameController.getEventManagerMap().get("main").updateAfterLoadGame(save);
+                    gameController.getEventManagerMap().get("board").updateAfterLoadGame(save);
+
+
+
+
+
                     gameController.getCharacter().setLearnedWords(words);
                     gameController.getBountyBoardController().updateQuestStatusFromQuestTracker(gameController.getCharacter().getQuestTracker());
 

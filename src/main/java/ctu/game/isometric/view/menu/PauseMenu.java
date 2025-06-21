@@ -189,7 +189,7 @@ public class PauseMenu {
         String filename = gameController.getCharacter().getName() + "_" + sdf.format(new Date());
 
 
-        boolean saved = saveService.saveGame(character, filename,gameController.getEventManager());
+        boolean saved = saveService.saveGame(character, filename, new ArrayList<>(gameController.getEventManagerMap().values()));
         if (saved) {
             showSaveSuccessNotification(filename);
             System.out.println("Game saved successfully as: " + filename + ".json");

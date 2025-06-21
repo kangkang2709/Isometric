@@ -43,7 +43,7 @@ public class GameSaveController {
         }
     }
 
-    public boolean saveGame(Character character, String saveName, EventManager eventManager) {
+    public boolean saveGame(Character character, String saveName, List<EventManager> eventManager) {
         try {
             maintainSaveLimit();
 
@@ -54,8 +54,25 @@ public class GameSaveController {
             gameSave.setCharacter(saveCharacter);
             gameSave.setSaveDate(new Date());
 
-            gameSave.setListIdCompletedEvents(eventManager.getListIdCompletedEvents());
-            gameSave.setListIdDefeatedEnemies(eventManager.getListIdDefeatedEnemies());
+            if (eventManager != null) {
+                List<String> allCompletedEvents = new ArrayList<>();
+                List<Integer> allDefeatedEnemies = new ArrayList<>();
+
+                for (EventManager manager : eventManager) {
+                    if (manager != null) {
+                        if (manager.getListIdCompletedEvents() != null) {
+                            allCompletedEvents.addAll(manager.getListIdCompletedEvents());
+                        }
+                        if (manager.getListIdDefeatedEnemies() != null) {
+                            allDefeatedEnemies.addAll(manager.getListIdDefeatedEnemies());
+                        }
+                    }
+                }
+
+                gameSave.setListIdCompletedEvents(allCompletedEvents);
+                gameSave.setListIdDefeatedEnemies(allDefeatedEnemies);
+            }
+
             gameSave.setWordFilePath("saves/dictionary/" + character.getWordFilePath() + ".json");
 
             // Generate file name

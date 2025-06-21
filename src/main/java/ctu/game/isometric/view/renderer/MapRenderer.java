@@ -202,6 +202,7 @@ public class MapRenderer {
             for (MapObject object : objectLayer.getObjects()) {
                 Float x = object.getProperties().get("x", Float.class);
                 Float y = object.getProperties().get("y", Float.class);
+
                 // Skip completed events
                 if (object.getProperties().containsKey("id")) {
                     String eventId = eventManager.getStringProperty(object.getProperties(), "id", "");

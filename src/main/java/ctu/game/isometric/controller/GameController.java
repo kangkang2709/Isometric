@@ -43,9 +43,11 @@ public class GameController {
     private IsometricGame game;
     private Character character;
 
+
     private IsometricMap map;
 
     private Map<String, IsometricMap> mapList = new HashMap<>();
+    private Map<String, EventManager> eventManagerMap = new HashMap<>();
 
     private OrthographicCamera camera;
     private InputController inputController;
@@ -92,18 +94,21 @@ public class GameController {
     private BountyBoardView bountyBoardView;
     private QuestTrackerView questTrackerView;
 
+
     private TutorialUI tutorialUI;
 
     public GameController(IsometricGame game) {
         this.game = game;
 
         this.map = new IsometricMap();
-
-
         this.mapList.put(map.getMapName(), map);
-        this.mapList.put("main", new IsometricMap("maps/main.tmx"));
+        this.eventManager = new EventManager(map, "board");
 
-        this.eventManager = new EventManager(map);
+        this.mapList.put("main", new IsometricMap("maps/main.tmx"));
+        this.eventManagerMap.put("board", eventManager);
+
+        this.eventManagerMap.put("main", new EventManager(this.mapList.get("main"), "main"));
+
 
         this.character = new Character(10, 0);
         this.inputController = new InputController(this);
@@ -160,7 +165,9 @@ public class GameController {
             this.character.setGameMap(map);
             this.game.getGameScreen().getMapRenderer().changeTiledMapRenderer(this.map);
             this.pathfinder.setMap(newMap);
-            this.eventManager = new EventManager(map);
+            this.eventManager = this.eventManagerMap.get(mapName);
+            this.game.getGameScreen().getMapRenderer().setEventManager(this.eventManager);
+
             return newMap;
         } else {
             Gdx.app.error("GameController", "Map not found: " + mapName);
@@ -402,6 +409,22 @@ public class GameController {
         effectManager.loadEffect("Starlight", "effects/Starlight/");
         effectManager.loadEffect("Leaf_fall", "effects/Leaf_fall/");
         effectManager.loadEffect("Star_Trail", "effects/Star_Trail/");
+    }
+
+    public Map<String, EventManager> getEventManagerMap() {
+        return eventManagerMap;
+    }
+
+    public void setEventManagerMap(Map<String, EventManager> eventManagerMap) {
+        this.eventManagerMap = eventManagerMap;
+    }
+
+    public Map<String, IsometricMap> getMapList() {
+        return mapList;
+    }
+
+    public void setMapList(Map<String, IsometricMap> mapList) {
+        this.mapList = mapList;
     }
 
     public void loadCharacter(Character character, Date lastSaveTime) {
@@ -696,8 +719,9 @@ public class GameController {
         float isoY = (y - x) * (map.getTileHeight() / 2.0f);
         return new float[]{isoX, isoY};
     }
-    public void disposeSome(){
-        if(!isCreated)
+
+    public void disposeSome() {
+        if (!isCreated)
             return;
 
         setCharacterCreationController(null);
@@ -720,26 +744,32 @@ public class GameController {
     // Add to GameController.java
     // In GameController.java, enhance resetGame method
     // In GameController.java - update the resetGame method
+
+    public void initMap(){
+
+
+
+    }
+
+    public void resetEventsManager() {
+        eventManagerMap.get("board").resetEvents(mapList.get("board"));
+        eventManagerMap.get("main").resetEvents(mapList.get("main"));
+    }
+
     public void resetGame() {
         // Reset character with a new instance
-        character = new Character(20, 20);
+        character = new Character(10, 0);
 
-        // Reset map with a new instance
-        this.map = new IsometricMap();
-
-
-        this.eventManager = null;
-        this.eventManager = new EventManager(map);
+        resetEventsManager();
+        changeMap("board");
 
         // Reset controllers to initial state - make sure to reset character creation controller
-        if (characterCreationController == null) {
-            characterCreationController = new CharacterCreation(this);
-        }
+        characterCreationController = null;
+        characterCreationController = new CharacterCreation(this);
 
 
-        if (loadGameController == null) {
-            loadGameController = new LoadGameController(this);
-        }
+        loadGameController = null;
+        loadGameController = new LoadGameController(this);
 
         if (cutsceneController != null) {
             cutsceneController.dispose();

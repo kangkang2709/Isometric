@@ -617,19 +617,19 @@
    </properties>
   </object>
   <object id="58" gid="3" x="992" y="15744" width="49" height="60"/>
-  <object id="61" x="832" y="15840" width="32" height="32">
+  <object id="61" x="256" y="15584" width="32" height="32">
    <properties>
     <property name="amount" type="int" value="1"/>
     <property name="event" value="treasure"/>
-    <property name="id" value="24"/>
+    <property name="id" value="main_24"/>
     <property name="item" value="7"/>
     <property name="one_time" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="62" gid="2" x="864" y="15872" width="64" height="32">
+  <object id="62" gid="2" x="288" y="15616" width="64" height="32">
    <properties>
     <property name="event" value="treasure"/>
-    <property name="id" value="24"/>
+    <property name="id" value="main_24"/>
    </properties>
   </object>
  </objectgroup>
