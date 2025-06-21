@@ -134,8 +134,7 @@ public class GameScreen implements Screen {
 
                 case EXPLORING:
                     gameController.getMap().cleanupChunks();
-                    gameController.setCharacterCreationController(null);
-                    gameController.setLoadGameController(null);
+                    gameController.disposeSome();
                     mapRenderer.render(batch);
                     mapRenderer.update(delta);
 
@@ -155,8 +154,11 @@ public class GameScreen implements Screen {
 
                     if (characterRenderer != null) characterRenderer.render(batch);
 
+
                     gameController.getInputController().renderTargetIndicator(batch);
+
                     batch.setProjectionMatrix(camera.combined);
+
 
                     // Render the UI on top
                     if (exploringUI != null) exploringUI.render();
@@ -299,5 +301,13 @@ public class GameScreen implements Screen {
         if (characterRenderer != null) {
             characterRenderer.dispose();
         }
+    }
+
+    public MapRenderer getMapRenderer() {
+        return mapRenderer;
+    }
+
+    public void setMapRenderer(MapRenderer mapRenderer) {
+        this.mapRenderer = mapRenderer;
     }
 }

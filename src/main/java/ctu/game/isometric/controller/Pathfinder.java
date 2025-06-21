@@ -37,7 +37,8 @@ public class Pathfinder {
         }
     }
 
-    private final IsometricMap map;
+    private  IsometricMap map;
+
     private int[][] npcPositions;
 
     // Directions for movement: right, down, left, up and diagonals
@@ -109,6 +110,9 @@ public class Pathfinder {
         final int MAX_NODE_EXPANSION = 30; // Limit the number of nodes explored
         int expandedCount = 0;
 
+        // Determine how many directions to check based on map name
+        int directionsToCheck = "board".equals(map.getMapName()) ? 4 : DIRECTIONS.length;
+
         while (!openSet.isEmpty()) {
             if (expandedCount++ > MAX_NODE_EXPANSION) {
                 Array<int[]> fallbackPath = new Array<>();
@@ -127,8 +131,8 @@ public class Pathfinder {
 
             closedSet.add(currentKey);
 
-            // Check all neighbors
-            for (int i = 0; i < DIRECTIONS.length; i++) {
+            // Check neighbors - only 4 directions for "board" map, all 8 for others
+            for (int i = 0; i < directionsToCheck; i++) {
                 int nx = current.x + DIRECTIONS[i][0];
                 int ny = current.y + DIRECTIONS[i][1];
 
@@ -177,8 +181,12 @@ public class Pathfinder {
         // Check immediate neighbors (1-tile radius)
         int[] closestTile = null;
         double closestDistance = Double.MAX_VALUE;
+        System.out.println(map.getMapName());
+        // Determine how many directions to check based on map name
+        int directionsToCheck = "board".equals(map.getMapName()) ? 4 : DIRECTIONS.length;
 
-        for (int[] direction : DIRECTIONS) {
+        for (int i = 0; i < directionsToCheck; i++) {
+            int[] direction = DIRECTIONS[i];
             int nx = x + direction[0];
             int ny = y + direction[1];
 
@@ -194,10 +202,6 @@ public class Pathfinder {
         // Return closest tile found or null if none was found
         return closestTile;
     }
-
-
-    // After
-
 
     // Pack coordinates into a single long for efficient hashing
     private long packCoords(int x, int y) {
@@ -221,5 +225,12 @@ public class Pathfinder {
         }
 
         return path;
+    }
+
+    public IsometricMap getMap() {
+        return map;
+    }
+    public void setMap(IsometricMap map) {
+        this.map = map;
     }
 }

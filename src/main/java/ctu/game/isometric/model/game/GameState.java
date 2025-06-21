@@ -1,6 +1,7 @@
 package ctu.game.isometric.model.game;
 
 public enum GameState {
+    BOARDING,   // Board state - restrict movement
     EXPLORING,   // Normal gameplay
     DIALOG,
     BOUNTY_BOARD,// Dialog active - restrict movement

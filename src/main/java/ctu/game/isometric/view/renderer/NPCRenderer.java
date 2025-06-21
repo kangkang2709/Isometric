@@ -24,7 +24,7 @@ public class NPCRenderer {
     private TextureRegion interactButton;
     private TextureRegion backstoryButton;
     private Character player;
- // Grid units
+    // Grid units
 
     // Button dimensions
     private final int BUTTON_SIZE = 20;
@@ -54,13 +54,19 @@ public class NPCRenderer {
         stateTime += delta;
     }
 
-    public void render(SpriteBatch batch) {
-        for (NPC npc : npcs.values()) {
-            renderNPC(npc, batch);
 
-            // Check if player is close enough to show action buttons
-            if (isPlayerNearNPC(npc)) {
-                renderActionButtons(npc, batch);
+    public void render(SpriteBatch batch) {
+        String currentMapName = mapRenderer.getMap().getMapName();
+        boolean isMainMap = currentMapName.equalsIgnoreCase("main");
+
+        for (NPC npc : npcs.values()) {
+            // Render if we're on main map (all NPCs) or if NPC belongs to current map
+            if (isMainMap || currentMapName.equalsIgnoreCase(npc.getMapName())) {
+                renderNPC(npc, batch);
+                // Check if player is close enough to show action buttons
+                if (isPlayerNearNPC(npc)) {
+                    renderActionButtons(npc, batch);
+                }
             }
         }
     }
@@ -75,8 +81,8 @@ public class NPCRenderer {
 
     private void renderActionButtons(NPC npc, SpriteBatch batch) {
         // Use player's position instead of NPC's position
-        int gridX = (int)player.getGridX();
-        int gridY = (int)player.getGridY();
+        int gridX = (int) player.getGridX();
+        int gridY = (int) player.getGridY();
 
         // Convert player's grid position to isometric screen position
         float[] screenPos = mapRenderer.toIsometric(gridX, gridY);
@@ -145,7 +151,6 @@ public class NPCRenderer {
         interactButton.getTexture().dispose();
         backstoryButton.getTexture().dispose();
     }
-
 
 
 }

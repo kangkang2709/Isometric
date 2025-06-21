@@ -9,7 +9,8 @@
     "npcBackStory": "Elara studied ancient healing arts in the mystical forest before settling in this village.",
     "behaviorState": "idle",
     "xPosition": 50,
-    "yPosition": 50
+    "yPosition": 50,
+    "mapName": "mage_tower"
   },
   {
     "npcID": 2,
@@ -21,7 +22,8 @@
     "npcBackStory": "Elara studied ancient healing arts in the mystical forest before settling in this village.",
     "behaviorState": "idle",
     "xPosition": 10,
-    "yPosition": 12
+    "yPosition": 12,
+    "mapName": "barbarian_village"
   },
   {
     "npcID": 4,
@@ -33,7 +35,8 @@
     "npcBackStory": "A veteran soldier who now protects the village from various threats.",
     "behaviorState": "idle",
     "xPosition": 18,
-    "yPosition": 16
+    "yPosition": 16,
+    "mapName": "barbarian_village"
   },
   {
     "npcID": 3,
@@ -45,7 +48,8 @@
     "npcBackStory": "No one knows where he came from, but his riddles have stumped even the wisest scholars.",
     "behaviorState": "idle",
     "xPosition": 12,
-    "yPosition": 14
+    "yPosition": 14,
+    "mapName": "board"
   },
   {
     "npcID": 7,
@@ -57,7 +61,8 @@
     "npcBackStory": "Lucy travels from town to town entertaining locals with her games of chance.",
     "behaviorState": "idle",
     "xPosition": 15,
-    "yPosition": 15
+    "yPosition": 15,
+    "mapName": "library"
   },
   {
     "npcID": 6,
@@ -69,7 +74,8 @@
     "npcBackStory": "Lucy travels from town to town entertaining locals with her games of chance.",
     "behaviorState": "idle",
     "xPosition": 19,
-    "yPosition": 20
+    "yPosition": 20,
+    "mapName": "library"
   },
   {
     "npcID": 5,
@@ -81,7 +87,7 @@
     "npcBackStory": "Lucy travels from town to town entertaining locals with her games of chance.",
     "behaviorState": "idle",
     "xPosition": 16,
-    "yPosition": 19
+    "yPosition": 19,
+    "mapName": "teleporting"
   }
-
 ]

@@ -100,12 +100,12 @@ public class GameController {
         this.map = new IsometricMap();
 
 
-        this.mapList.put("main", map);
-        this.mapList.put("board", new IsometricMap("maps/untitled.tmx"));
+        this.mapList.put(map.getMapName(), map);
+        this.mapList.put("main", new IsometricMap("maps/main.tmx"));
 
         this.eventManager = new EventManager(map);
 
-        this.character = new Character(10, 10);
+        this.character = new Character(10, 0);
         this.inputController = new InputController(this);
         this.dialogController = new DialogController(this);
         this.musicController = new MusicController();
@@ -150,6 +150,22 @@ public class GameController {
 
         tutorialUI = new TutorialUI(this);
 
+    }
+
+
+    public IsometricMap changeMap(String mapName) {
+        IsometricMap newMap = this.mapList.get(mapName);
+        if (newMap != null) {
+            this.map = newMap;
+            this.character.setGameMap(map);
+            this.game.getGameScreen().getMapRenderer().changeTiledMapRenderer(this.map);
+            this.pathfinder.setMap(newMap);
+            this.eventManager = new EventManager(map);
+            return newMap;
+        } else {
+            Gdx.app.error("GameController", "Map not found: " + mapName);
+            return null;
+        }
     }
 
 
@@ -680,6 +696,13 @@ public class GameController {
         float isoY = (y - x) * (map.getTileHeight() / 2.0f);
         return new float[]{isoX, isoY};
     }
+    public void disposeSome(){
+        if(!isCreated)
+            return;
+
+        setCharacterCreationController(null);
+        setLoadGameController(null);
+    }
 
     public boolean isCreated() {
         return isCreated;
@@ -687,9 +710,11 @@ public class GameController {
 
     public void setCreated(boolean created) {
         this.isCreated = created;
+
         if (created && characterCreationController != null && currentState != GameState.MAIN_MENU) {
             setState(GameState.CUTSCENE);
         }
+
     }
 
     // Add to GameController.java

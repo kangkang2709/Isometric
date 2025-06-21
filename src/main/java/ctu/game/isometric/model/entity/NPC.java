@@ -13,6 +13,8 @@ public class NPC {
     int xPosition;
     int yPosition;
 
+    String mapName;
+
     public NPC() {
         this.behaviorState = "idle";
     }
@@ -28,6 +30,14 @@ public class NPC {
         this.behaviorState = behaviorState;
         this.xPosition = xPosition;
         this.yPosition = yPosition;
+    }
+
+    public String getMapName() {
+        return mapName;
+    }
+
+    public void setMapName(String mapName) {
+        this.mapName = mapName;
     }
 
     public int getyPosition() {

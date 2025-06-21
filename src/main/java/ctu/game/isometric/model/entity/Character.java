@@ -740,6 +740,8 @@ public class Character {
 
     public void setGameMap(IsometricMap gameMap) {
         this.gameMap = gameMap;
+        this.gridX = gameMap.getStartX();
+        this.gridY = gameMap.getStartY();
     }
 
     public List<String> getFlags() {

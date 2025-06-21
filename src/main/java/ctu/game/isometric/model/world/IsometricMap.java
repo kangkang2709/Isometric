@@ -34,12 +34,40 @@ public class IsometricMap {
     private boolean chunkingEnabled = false;
     PressurePlatePuzzle puzzle;
 
+    int startX = 0;
+    int startY = 0;
+
+
     public IsometricMap(String tmxFilePath) {
         // Load the TMX file
+// Extract the map name by removing both "maps/" prefix and ".tmx" suffix
+
         tiledMap = new TmxMapLoader().load(tmxFilePath);
-        this.mapName = tmxFilePath.split(".tmx")[0];// Set map name from file path
+
+        String tempName = tmxFilePath.replaceAll("\\.tmx$", ""); // Remove .tmx extension
+        this.mapName = tempName.contains("/") ? tempName.substring(tempName.lastIndexOf("/") + 1) : tempName;
+
+        if (this.mapName == null || this.mapName.isEmpty()) {
+            this.mapName = "default_map"; // Fallback name
+        }
+
+        switch (this.mapName) {
+            case "board":
+                this.startX = 10;
+                this.startY = 0;
+                break;
+            case "main":
+                this.startX = 10;
+                this.startY = 0;
+                break;
+            default:
+                // Keep the original name
+        }
+
+
         // Get map properties
         MapProperties props = tiledMap.getProperties();
+
         tileWidth = props.get("tilewidth", Integer.class);
         tileHeight = props.get("tileheight", Integer.class);
         mapWidth = props.get("width", Integer.class);
@@ -52,6 +80,7 @@ public class IsometricMap {
         initializeMapData();
         initializeWalkableCache();
 
+
         // Auto-enable chunking for large maps
         if (mapWidth * mapHeight > 10000) {
             enableChunking();
@@ -59,6 +88,22 @@ public class IsometricMap {
         puzzle = new PressurePlatePuzzle("puzzle1", this, 3);
 
         loadPlate();
+    }
+
+    public int getStartX() {
+        return startX;
+    }
+
+    public void setStartX(int startX) {
+        this.startX = startX;
+    }
+
+    public int getStartY() {
+        return startY;
+    }
+
+    public void setStartY(int startY) {
+        this.startY = startY;
     }
 
     public String getMapName() {
@@ -69,7 +114,7 @@ public class IsometricMap {
         this.mapName = mapName;
     }
 
-    public void loadPlate(){
+    public void loadPlate() {
         puzzle.addPlate(20, 12, "door", 19, 12);
         puzzle.addPlate(22, 12, "trap", 22, 12);
 
@@ -78,17 +123,18 @@ public class IsometricMap {
         puzzle.loadTexturesForType("door", "textures/door_plate_inactive.png", "textures/door_plate_active.png");
         puzzle.loadTexturesForType("trap", "textures/trap_inactive.png", "textures/trap_active.png");
     }
+
     public TiledMapTileLayer.Cell getCell(int x, int y) {
         TiledMapTileLayer tiledMapLayer = (TiledMapTileLayer) tiledMap.getLayers().get("terrain_layer");
         if (tiledMapLayer == null) return null; // Ensure the layer exists
         return tiledMapLayer.getCell(x, y); // Delegate to the TiledMapTileLayer
     }
+
     // For backwards compatibility
     public IsometricMap() {
-        this("maps/untitled1.tmx");
+        this("maps/board.tmx");
         // Default map path
     }
-
 
 
     // Enable chunking for large maps
@@ -145,7 +191,7 @@ public class IsometricMap {
     private MapChunk getOrCreateChunk(int x, int y) {
         int chunkX = x / CHUNK_SIZE;
         int chunkY = y / CHUNK_SIZE;
-        long key = ((long)chunkX << 32) | (chunkY & 0xFFFFFFFFL);
+        long key = ((long) chunkX << 32) | (chunkY & 0xFFFFFFFFL);
 
         return chunks.computeIfAbsent(key, k -> new MapChunk(this, chunkX, chunkY));
     }
@@ -192,16 +238,17 @@ public class IsometricMap {
         }
     }
 
-  public void initializeWalkableCache() {
-            walkableCache = new boolean[mapHeight][mapWidth];
-            for (int y = 0; y < mapHeight; y++) {
-                for (int x = 0; x < mapWidth; x++) {
-                    walkableCache[y][x] = calculateWalkable(x, y);
-                }
+    public void initializeWalkableCache() {
+        walkableCache = new boolean[mapHeight][mapWidth];
+        for (int y = 0; y < mapHeight; y++) {
+            for (int x = 0; x < mapWidth; x++) {
+                walkableCache[y][x] = calculateWalkable(x, y);
             }
         }
+    }
 
     private static final long CHUNK_TIMEOUT_MS = 30000;
+
     public int cleanupChunks(long maxAgeMs) {
         if (!chunkingEnabled) return 0;
 
@@ -224,6 +271,7 @@ public class IsometricMap {
     public int cleanupChunks() {
         return cleanupChunks(CHUNK_TIMEOUT_MS);
     }
+
     public int[][] getMapData() {
         return mapData;
     }

@@ -383,9 +383,7 @@ public class InputController extends InputAdapter {
 
             }
             case Keys.F8 -> {
-                IsometricMap map = gameController.setMap("board");
-                gameController.getCharacter().setGameMap(map);
-                mapRenderer.changeTiledMapRenderer(map);
+             gameController.changeMap("main");
             }
             case Keys.F5 -> {
                 gameController.getQuestTrackerView().toggleVisibility();
