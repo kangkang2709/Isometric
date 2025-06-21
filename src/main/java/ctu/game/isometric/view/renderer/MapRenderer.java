@@ -80,7 +80,9 @@ public class MapRenderer {
         this.camera = camera;
 //        backgroundTexture = new Texture(Gdx.files.internal("maps/background.png"));
         // Create the tiled map renderer
+
         this.tiledMapRenderer = new IsometricTiledMapRenderer(map.getTiledMap());
+
         this.fogTexture = new Texture(Gdx.files.internal("textures/fog.png"));
 
         this.weatherRenderer = new WeatherRenderer(camera);
@@ -88,6 +90,16 @@ public class MapRenderer {
         setWeather("snow", 0.4f); // Set default weather to foggy with medium intensity
     }
 
+
+
+
+    public void changeTiledMapRenderer(IsometricMap map) {
+        if (this.tiledMapRenderer != null) {
+            this.tiledMapRenderer.dispose();
+        }
+        this.tiledMapRenderer = new IsometricTiledMapRenderer(map.getTiledMap());
+        this.map = map;
+    }
 
     public void changeWeather(String type, float intensity) {
         weatherRenderer.setWeather(type, intensity);

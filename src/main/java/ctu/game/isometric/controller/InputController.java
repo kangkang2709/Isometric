@@ -14,6 +14,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import ctu.game.isometric.controller.quiz.QuizController;
 import ctu.game.isometric.model.game.GameState;
+import ctu.game.isometric.model.world.IsometricMap;
 import ctu.game.isometric.view.renderer.WeatherRenderer;
 import ctu.game.isometric.view.ui.DialogUI;
 import ctu.game.isometric.view.renderer.MapRenderer;
@@ -381,6 +382,11 @@ public class InputController extends InputAdapter {
                 }
 
             }
+            case Keys.F8 -> {
+                IsometricMap map = gameController.setMap("board");
+                gameController.getCharacter().setGameMap(map);
+                mapRenderer.changeTiledMapRenderer(map);
+            }
             case Keys.F5 -> {
                 gameController.getQuestTrackerView().toggleVisibility();
                 gameController.setState(GameState.QUEST_TRACKER);
@@ -570,7 +576,7 @@ public class InputController extends InputAdapter {
             case Keys.ESCAPE -> {
                 if (gameController.getMenuController().isTutorialShowing()) {
                     gameController.getMenuController().showTutorialMenu();
-                } else 
+                } else
                     gameController.returnToPreviousState();
 
 

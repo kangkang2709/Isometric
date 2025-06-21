@@ -26,15 +26,18 @@ public class IsometricMap {
     private boolean[][] walkableCache;
     private int[][] mapData;
 
+    private String mapName; // Default map name
+
     // Chunking system
     private Map<Long, MapChunk> chunks = new HashMap<>();
     private static final int CHUNK_SIZE = 16;
     private boolean chunkingEnabled = false;
     PressurePlatePuzzle puzzle;
+
     public IsometricMap(String tmxFilePath) {
         // Load the TMX file
         tiledMap = new TmxMapLoader().load(tmxFilePath);
-
+        this.mapName = tmxFilePath.split(".tmx")[0];// Set map name from file path
         // Get map properties
         MapProperties props = tiledMap.getProperties();
         tileWidth = props.get("tilewidth", Integer.class);
@@ -58,6 +61,13 @@ public class IsometricMap {
         loadPlate();
     }
 
+    public String getMapName() {
+        return mapName;
+    }
+
+    public void setMapName(String mapName) {
+        this.mapName = mapName;
+    }
 
     public void loadPlate(){
         puzzle.addPlate(20, 12, "door", 19, 12);
@@ -75,8 +85,11 @@ public class IsometricMap {
     }
     // For backwards compatibility
     public IsometricMap() {
-        this("maps/untitled1.tmx"); // Default map path
+        this("maps/untitled1.tmx");
+        // Default map path
     }
+
+
 
     // Enable chunking for large maps
     public void enableChunking() {

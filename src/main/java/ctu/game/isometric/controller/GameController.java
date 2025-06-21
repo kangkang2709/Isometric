@@ -42,7 +42,11 @@ import java.util.*;
 public class GameController {
     private IsometricGame game;
     private Character character;
+
     private IsometricMap map;
+
+    private Map<String, IsometricMap> mapList = new HashMap<>();
+
     private OrthographicCamera camera;
     private InputController inputController;
     private DialogController dialogController; // New field
@@ -94,6 +98,11 @@ public class GameController {
         this.game = game;
 
         this.map = new IsometricMap();
+
+
+        this.mapList.put("main", map);
+        this.mapList.put("board", new IsometricMap("maps/untitled.tmx"));
+
         this.eventManager = new EventManager(map);
 
         this.character = new Character(10, 10);
@@ -693,6 +702,7 @@ public class GameController {
         // Reset map with a new instance
         this.map = new IsometricMap();
 
+
         this.eventManager = null;
         this.eventManager = new EventManager(map);
 
@@ -1015,6 +1025,10 @@ public class GameController {
 
     }
 
+    public IsometricMap setMap(String mapName) {
+        this.map = this.mapList.get(mapName);
+        return this.map;
+    }
 
     public QuizController getQuizController() {
         return quizController;
