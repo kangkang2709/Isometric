@@ -2,12 +2,11 @@ package ctu.game.isometric.controller;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.utils.Array;
 import ctu.game.isometric.IsometricGame;
+import ctu.game.isometric.controller.gameplay.BoardEventManager;
 import ctu.game.isometric.controller.quest.BountyBoardController;
 import ctu.game.isometric.controller.quiz.MulChoiceQuizController;
 import ctu.game.isometric.model.dictionary.Dictionary;

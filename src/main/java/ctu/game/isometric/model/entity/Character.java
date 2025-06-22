@@ -30,6 +30,7 @@ public class Character {
     private Map<String, Integer> ettempFlags;
     // Status effects (e.g., buffs, debuffs)
 
+
     Map<String, Boolean> isTutorials; // Track if tutorials are completed
 
     private float damage = 1; // Damage dealt by the character
@@ -106,10 +107,11 @@ public class Character {
         this.score = 0;
         this.ettempFlags = new HashMap<>();
         this.ettempFlags.put("quizAttempts", 0);
+        this.ettempFlags.put("run", 0);
         this.ettempFlags.put("mulQuizAttempts", 0);
         this.ettempFlags.put("fallen", 0);
         this.ettempFlags.put("wrongWord", 0);
-
+        this.ettempFlags.put("run", 0);
         this.questTracker = new QuestTracker();
 
         initialTutorial();
@@ -124,12 +126,12 @@ public class Character {
         this.isTutorials.put("movement", false);
         this.isTutorials.put("combat", false);
         this.isTutorials.put("item", false);
-        this.isTutorials.put("map", false);
+        this.isTutorials.put("board", false);
         this.isTutorials.put("quest", false);
         this.isTutorials.put("word", false);
         this.isTutorials.put("achievement", false);
-        this.isTutorials.put("dialog", false);
-        this.isTutorials.put("npc", false);
+        this.isTutorials.put("npc & dialog", false);
+
 
 
         addItem(ItemLoader.getItemByName("CCCD"), 1);
@@ -177,11 +179,23 @@ public class Character {
         this.ettempFlags.put("mulQuizAttempts", 0);
         this.ettempFlags.put("fallen", 0);
         this.ettempFlags.put("wrongWord", 0);
+        this.ettempFlags.put("run", 0);
         this.score = 0;
         this.questTracker = new QuestTracker();
 
 
         initialTutorial();
+    }
+
+    public int getRun(){
+        return ettempFlags.getOrDefault("run", 0);
+    }
+
+    public void updateRun() {
+        if (ettempFlags == null) {
+            ettempFlags = new HashMap<>();
+        }
+        ettempFlags.put("run", ettempFlags.getOrDefault("run", 0) + 1);
     }
 
     public void teleportToLocation(String location) {
@@ -485,7 +499,9 @@ public class Character {
     public void update(float delta) {
         animationTime += delta;
 
+
         if (!isMoving) return;
+
 
         float dx = targetX - gridX;
         float dy = targetY - gridY;
@@ -551,6 +567,12 @@ public class Character {
                     currentPath.clear();
                     currentPathIndex = 0;
                 }
+            }
+        }
+        if (gameMap.getMapName().equals("board")){
+            if (gridX == 9 && gridY == 0) {
+                this.updateRun();
+                this.setTutorialCompleted("board");
             }
         }
     }

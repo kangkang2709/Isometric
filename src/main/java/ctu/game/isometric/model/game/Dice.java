@@ -22,7 +22,7 @@ public class Dice {
     private float scale = 1f;
     private float rotation = 0f;
 
-    private static final float DICE_ROLL_DURATION = 1.5f;
+    private static final float DICE_ROLL_DURATION = 1f;
     private static final float BOUNCE_DURATION = 0.5f;
     private static final int DICE_SIZE = 90;
     private static final int MIN_DICE_VALUE = 1;
@@ -57,12 +57,16 @@ public class Dice {
         // Initialize particle effect
         rollEffect = new ParticleEffect();
         rollEffect.load(Gdx.files.internal("effects/dice_roll/dice_roll.p"), Gdx.files.internal("effects/dice_roll/"));
-        rollEffect.setPosition(diceX + DICE_SIZE/2, diceY + DICE_SIZE/2);
+        rollEffect.setPosition(diceX + DICE_SIZE / 2, diceY + DICE_SIZE / 2);
     }
 
     public int rollDice() {
+
+
+        if (gameController.getCharacter().isMoving())
+            return 0;
 //        currentFaceValue = MathUtils.random(MIN_DICE_VALUE, MAX_DICE_VALUE);
-        currentFaceValue = 20;
+        currentFaceValue = 18;
 
         isRolling = true;
         diceRollingTime = 0f;
@@ -104,19 +108,51 @@ public class Dice {
 
         // Calculate new position by moving clockwise around the board
         int steps = currentFaceValue;
+        int oldPathIndex = currentPathIndex;
         int newPathIndex = (currentPathIndex + steps) % boardPath.length;
 
-        // Get the target coordinates
-        int targetX = boardPath[newPathIndex][0];
-        int targetY = boardPath[newPathIndex][1];
+        // Check if we passed through or landed on the start position (index 0)
+        boolean passedStart = false;
+
+        if (oldPathIndex == 0) {
+            // Starting from start position - only count as "passing start" if we make a full lap
+            passedStart = steps >= boardPath.length;
+        } else {
+            // Not starting from start position
+            if (oldPathIndex + steps >= boardPath.length) {
+                // We wrapped around the board, so we passed through start (index 0)
+                passedStart = true;
+            }
+        }
+
+        // Auto-adjust target if passed start
+        int targetX, targetY;
+        if (passedStart) {
+            // Auto-adjust to position (9,0) when passing start
+            targetX = 9;
+            targetY = 0;
+            // Find the index for position (9,0) in the board path
+
+            newPathIndex = 0;
+
+
+        } else {
+            // Normal movement - use calculated position
+            targetX = boardPath[newPathIndex][0];
+            targetY = boardPath[newPathIndex][1];
+        }
+
+        // Validate the new position
+        if (newPathIndex < 0 || newPathIndex >= boardPath.length) {
+            return;
+        }
+
 
         // Use the game controller to move the character
         gameController.moveCharacterAlongPath(targetX, targetY);
 
         // Update the current position
         currentPathIndex = newPathIndex;
-
-        Gdx.app.log("Dice", "Moved to position: " + targetX + "," + targetY);
     }
 
     public void render(SpriteBatch batch) {

@@ -1,8 +1,7 @@
-package ctu.game.isometric.controller;
+package ctu.game.isometric.controller.gameplay;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import ctu.game.isometric.controller.EventManager;
+import ctu.game.isometric.controller.GameController;
 import ctu.game.isometric.model.entity.Enemy;
 import ctu.game.isometric.model.game.Items;
 import ctu.game.isometric.model.world.IsometricMap;
@@ -72,14 +71,11 @@ public class BoardEventManager {
     }
 
     public void checkBoardPlayerPosition(int playerX, int playerY) {
-
-        if (playerX == START_X && playerY == START_Y) {
-
-            System.out.println(isFirstPosition);
-            // Player has completed a turn and returned to start
+        if (playerX == 9 && playerY == 0) {
             randomBoardEveryRun();
-            gameController.getDialogController().showSimpleMessage("You have completed the run. The board has been randomized again.");
-            isFirstPosition = true; // Reset flag after completing a turn
+            gameController.getCharacter().updateRun();
+            gameController.getCharacter().setTutorialCompleted("board");
+            isFirstPosition = true;
         }
     }
 
