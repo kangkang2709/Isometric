@@ -15,6 +15,7 @@ import ctu.game.isometric.model.dictionary.Word;
 import ctu.game.isometric.model.entity.NPC;
 import ctu.game.isometric.model.game.Items;
 import ctu.game.isometric.model.world.MapEvent;
+import ctu.game.isometric.util.AssetManager;
 import ctu.game.isometric.util.ItemLoader;
 import ctu.game.isometric.view.menu.CharacterCreation;
 import ctu.game.isometric.view.menu.MainMenu;
@@ -43,6 +44,7 @@ public class GameController {
     private IsometricGame game;
     private Character character;
 
+    private AssetManager assetManager;
 
     private IsometricMap map;
 
@@ -155,9 +157,13 @@ public class GameController {
         questTrackerView = new QuestTrackerView(this);
 
         tutorialUI = new TutorialUI(this);
-        boardEventManager = new BoardEventManager(this);
     }
 
+
+    public  void createBoard(){
+        boardEventManager = new BoardEventManager(this);
+
+    }
 
     public IsometricMap changeMap(String mapName) {
         IsometricMap newMap = this.mapList.get(mapName);
@@ -1096,6 +1102,14 @@ public class GameController {
 
     public void setCamera(OrthographicCamera camera) {
         this.camera = camera;
+    }
+
+    public AssetManager getAssetManager() {
+        return assetManager;
+    }
+
+    public void setAssetManager(AssetManager assetManager) {
+        this.assetManager = assetManager;
     }
 
     public GameplayController getGameplayController() {

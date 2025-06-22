@@ -34,6 +34,7 @@ public class ItemLoader {
 
                 items.put(item.getItemID(), item);
             }
+            
             initialized = true;
         } catch (Exception e) {
             Gdx.app.error("ItemsLoader", "Error loading items", e);

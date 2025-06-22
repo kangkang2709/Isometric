@@ -34,6 +34,8 @@ public class GameScreen implements Screen {
     public GameScreen(IsometricGame game, GameController gameController) {
         this.game = game;
         this.gameController = gameController;
+        gameController.setAssetManager(game.getAssetManager());
+        gameController.createBoard();
         // Setup camera and viewport
         camera = new OrthographicCamera();
         viewport = new FitViewport(1280, 720, camera);
@@ -75,6 +77,7 @@ public class GameScreen implements Screen {
                     gameController.getCharacter(),
                     camera
             );
+
             gameController.getInputController().setMapRenderer(mapRenderer);
 
             characterRenderer = new CharacterRenderer(
@@ -104,7 +107,8 @@ public class GameScreen implements Screen {
             gameController.initializeNPCs(mapRenderer);
             gameController.getBountyBoardController().reset();
 
-
+            mapRenderer.loadTextures();
+            System.out.println("MapRenderer initialized with textures loaded.");
             gameController.setCreated(false);
         }
 

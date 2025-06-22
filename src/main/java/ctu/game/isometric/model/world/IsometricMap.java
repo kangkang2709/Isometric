@@ -128,8 +128,8 @@ public class IsometricMap {
 
     public void loadPlate() {
 
-        puzzle.loadTexturesForType("door", "textures/door_plate_inactive.png", "textures/door_plate_active.png");
-        puzzle.loadTexturesForType("trap", "textures/trap_inactive.png", "textures/trap_active.png");
+//        puzzle.loadTexturesForType("door", "textures/door_plate_inactive.png", "textures/door_plate_active.png");
+//        puzzle.loadTexturesForType("trap", "textures/trap_inactive.png", "textures/trap_active.png");
     }
 
 

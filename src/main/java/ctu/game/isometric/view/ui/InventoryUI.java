@@ -225,7 +225,7 @@ public class InventoryUI {
             // Draw item icon
             Items item = ItemLoader.getItemByName(itemName);
             if (item != null && item.getTexturePath() != null) {
-                Texture itemTexture = getItemTexture(item.getTexturePath());
+                Texture itemTexture = getItemTexture(item.getItemName(), item.getTexturePath());
                 float itemSize = SLOT_SIZE - 16;
                 float centerX = itemSlots[index].x + SLOT_SIZE/2f - itemSize/2f;
                 float centerY = itemSlots[index].y + SLOT_SIZE/2f - itemSize/2f;
@@ -283,20 +283,28 @@ public class InventoryUI {
     private void preloadCommonTextures() {
         // Preload commonly used item textures
         List<Items> commonItems = ItemLoader.getAllItems();
-        if (commonItems != null) {
-            for (Items item : commonItems) {
-                if (item != null && item.getTexturePath() != null) {
-                    getItemTexture(item.getTexturePath());
-                }
-            }
-        }
+
+        Map<String, Texture> textureMap = gameController.getAssetManager().loadAllItems(commonItems);
+
+        this.itemTextures.putAll(textureMap);
+
+//        if (commonItems != null) {
+//            for (Items item : commonItems) {
+//                if (item != null && item.getTexturePath() != null) {
+//                    getItemTexture(item.getTexturePath());
+//                }
+//            }
+//        }
+
+        System.out.println("Preloaded " + itemTextures.size() + " item textures.");
     }
 
-    private Texture getItemTexture(String texturePath) {
-        if (!itemTextures.containsKey(texturePath)) {
+    private Texture getItemTexture(String name,String texturePath) {
+        if (!itemTextures.containsKey(name)) {
+            System.out.println("Loading texture for item: " + name + " from path: " + texturePath);
             itemTextures.put(texturePath, new Texture(Gdx.files.internal(texturePath)));
         }
-        return itemTextures.get(texturePath);
+        return itemTextures.get(name);
     }
 
     private void updateItemList() {

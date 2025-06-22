@@ -30,6 +30,14 @@ public class PressurePlatePuzzle {
             map.setTileWalkable(targetX, targetY, false);
     }
 
+    public void addPlate(int x, int y, String effectType, int targetX, int targetY, TextureRegion inactiveTexture, TextureRegion activeTexture) {
+        PressurePlate plate = new PressurePlate(x, y, effectType, targetX, targetY, inactiveTexture, activeTexture);
+        plate.setTextures(inactiveTexture, activeTexture);
+        plates.add(plate);
+        if (!effectType.equals("trap"))
+            map.setTileWalkable(targetX, targetY, false);
+    }
+
     public void update(Character character) {
 
         for (PressurePlate plate : plates) {
@@ -106,6 +114,16 @@ public class PressurePlatePuzzle {
             this.effectType = effectType;
             this.targetX = targetX;
             this.targetY = targetY;
+        }
+
+        public PressurePlate(int x, int y, String effectType, int targetX, int targetY, TextureRegion inactiveTexture, TextureRegion activeTexture) {
+            this.gridX = x;
+            this.gridY = y;
+            this.effectType = effectType;
+            this.targetX = targetX;
+            this.targetY = targetY;
+            this.inactiveTexture = inactiveTexture;
+            this.activeTexture = activeTexture;
         }
 
         public boolean checkCharacter(Character character) {

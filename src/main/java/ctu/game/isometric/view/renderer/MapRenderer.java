@@ -22,11 +22,17 @@ import com.badlogic.gdx.math.Rectangle;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import ctu.game.isometric.controller.EventManager;
 import ctu.game.isometric.model.entity.Character;
+import ctu.game.isometric.model.game.Items;
 import ctu.game.isometric.model.puzzle.PressurePlatePuzzle;
 import ctu.game.isometric.model.world.IsometricMap;
 import ctu.game.isometric.model.world.MapEvent;
 import ctu.game.isometric.util.AnimationManager;
 import ctu.game.isometric.util.AssetManager;
+import ctu.game.isometric.util.ItemLoader;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class MapRenderer {
     private IsometricMap map;
@@ -48,6 +54,7 @@ public class MapRenderer {
 
     private EventManager eventManager;
     private WeatherRenderer weatherRenderer;
+
 
     // In MapRenderer.java - modify constructor to take an existing camera
     public MapRenderer(IsometricMap map, AssetManager assetManager, EventManager eventManager, Character character, OrthographicCamera camera) {
@@ -91,16 +98,13 @@ public class MapRenderer {
     }
 
 
-
-
-
-
     public void changeTiledMapRenderer(IsometricMap map) {
         if (this.tiledMapRenderer != null) {
             this.tiledMapRenderer.dispose();
         }
         this.tiledMapRenderer = new IsometricTiledMapRenderer(map.getTiledMap());
         this.map = map;
+
     }
 
     public void changeWeather(String type, float intensity) {
@@ -114,17 +118,35 @@ public class MapRenderer {
 
     Texture fogTexture;
 
+
+    Map<String, TextureRegion> textureRegions = new HashMap<>();
+    Map<String, Texture> textures = new HashMap<>();
+
+    public void loadTextures() {
+
+        this.textures.putAll(assetManager.getTextures());
+
+
+        Texture inactiveTexture = new Texture(Gdx.files.internal("textures/trap_inactive.png"));
+        Texture activeTexture = new Texture(Gdx.files.internal("textures/trap_active.png"));
+
+        textureRegions.put("trap_inactive", new TextureRegion(inactiveTexture));
+        textureRegions.put("trap_active", new TextureRegion(activeTexture));
+
+    }
+
+
     public void renderPressurePlate(SpriteBatch batch) {
-        for (PressurePlatePuzzle.PressurePlate plate : map.getPuzzle().getPlates()) {
-            TextureRegion texture = plate.getCurrentTexture();
+        for (PressurePlatePuzzle.PressurePlate plate : this.map.getPuzzle().getPlates()) {
+            TextureRegion texture = textureRegions.get(plate.getEffectType() + "_" + (plate.isActivated() ? "active" : "inactive"));
             if (texture != null) {
                 float[] isoPos = toIsometric(plate.getGridX(), plate.getGridY());
                 batch.draw(texture, isoPos[0], isoPos[1], 64, 32);
             }
-            if (!plate.getEffectType().equals("trap") && !plate.isActivated()) {
-                float[] isoPos = toIsometric(plate.getTargetX(), plate.getTargetY());
-                batch.draw(fogTexture, isoPos[0] - 16, isoPos[1] - 10, 64, 64);
-            }
+//            if (!plate.getEffectType().equals("trap") && !plate.isActivated()) {
+//                float[] isoPos = toIsometric(plate.getTargetX(), plate.getTargetY());
+//                batch.draw(fogTexture, isoPos[0] - 16, isoPos[1] - 10, 64, 64);
+//            }
         }
     }
 
@@ -184,11 +206,14 @@ public class MapRenderer {
             renderObjectLayer(batch, "object");
             renderPressurePlate(batch);
 
-
+            renderBoard(batch);
             weatherRenderer.render(batch);
         }
     }
 
+    public void renderBoard(SpriteBatch batch) {
+
+    }
 
     public void update(float delta) {
         weatherRenderer.update(delta);
@@ -237,7 +262,7 @@ public class MapRenderer {
 
                         TextureRegion region = tile.getTextureRegion();
                         batch.draw(region,
-                                isoPos[0] - width / 2 +4,      // Center horizontally
+                                isoPos[0] - width / 2 + 4,      // Center horizontally
                                 isoPos[1] - height / 4 + 8,     // Improved alignment for isometric view
                                 width, height);
                     }
@@ -252,16 +277,11 @@ public class MapRenderer {
         float tileHeight = map.getTileHeight(); // ví dụ: 32
 
 
-
-
-        float gridX = worldX/tileHeight-1;
-        float gridY = worldY/tileHeight+1;
+        float gridX = worldX / tileHeight - 1;
+        float gridY = worldY / tileHeight + 1;
 
         return new int[]{Math.round(gridX), Math.round(gridY)};
     }
-
-
-
 
 
     //

@@ -1,5 +1,8 @@
 package ctu.game.isometric.controller;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import ctu.game.isometric.model.entity.Enemy;
 import ctu.game.isometric.model.game.Items;
 import ctu.game.isometric.model.world.IsometricMap;
@@ -7,9 +10,7 @@ import ctu.game.isometric.model.world.MapEvent;
 import ctu.game.isometric.util.EnemyLoader;
 import ctu.game.isometric.util.ItemLoader;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class BoardEventManager {
     private GameController gameController;
@@ -25,6 +26,7 @@ public class BoardEventManager {
     private Random random = new Random();
     private List<String> listUsedId = new ArrayList<>();
 
+
     public BoardEventManager(GameController gameController) {
         this.gameController = gameController;
         this.eventManager = gameController.getEventManagerMap().get("board");
@@ -36,7 +38,10 @@ public class BoardEventManager {
         loadItems();
         loadEnemies();
         randomBoardEveryRun();
+
     }
+
+
 
     public void randomBoardEveryRun() {
         resetBoard();
@@ -47,15 +52,19 @@ public class BoardEventManager {
     }
 
 
+
+
     public void loadItems() {
         this.items = ItemLoader.getAllItemsWithout("N/A", "quest");
     }
 
     public void loadEnemies() {
         this.enemies = EnemyLoader.getAllEnemies();
+        gameController.getAssetManager().loadAllEnemy(this.enemies);
+        System.out.println("Enemies loaded: " + enemies.size());
     }
 
-    public void AddPlates(int x, int y, String effectType, int targetX, int targetY) {
+    public void addPlates(int x, int y, String effectType, int targetX, int targetY) {
         this.map.getPuzzle().addPlate(x, y, effectType, targetX, targetY);
     }
 
@@ -115,29 +124,31 @@ public class BoardEventManager {
     }
 
     private void placeRandomPlates() {
-        // Place random pressure plates
-        int numPlates = random.nextInt(3) + 1; // 1-3 plates
-        for (int i = 0; i < numPlates; i++) {
-            int x, y, targetX, targetY;
-            do {
-                x = random.nextInt(21);
-                y = random.nextInt(21);
-            } while (!isValidPosition(x, y) || (x == START_X && y == START_Y));
+//        // Place random pressure plates
+//        int numPlates = random.nextInt(3) + 1; // 1-3 plates
+//        for (int i = 0; i < numPlates; i++) {
+//            int x, y, targetX, targetY;
+//            do {
+//                x = random.nextInt(21);
+//                y = random.nextInt(21);
+//            } while (!isValidPosition(x, y) || (x == START_X && y == START_Y));
+//
+//            do {
+//                targetX = random.nextInt(21);
+//                targetY = random.nextInt(21);
+//            } while (!isValidPosition(targetX, targetY));
+//
+//            String effectType = "trap";
+//            // Generate unique ID for plate placement
+//            String plateId = "plate_" + x + "_" + y + "_" + effectType;
+//            listUsedId.add(plateId);
+//            if (effectType.equals("trap"))
+//                AddPlates(x, y, effectType, x, y);
+//            else AddPlates(x, y, effectType, targetX, targetY);
+//
+//        }
 
-            do {
-                targetX = random.nextInt(21);
-                targetY = random.nextInt(21);
-            } while (!isValidPosition(targetX, targetY));
-
-            String effectType = "trap";
-            // Generate unique ID for plate placement
-            String plateId = "plate_" + x + "_" + y + "_" + effectType;
-            listUsedId.add(plateId);
-            if (effectType.equals("trap"))
-                AddPlates(x, y, effectType, x, y);
-            else AddPlates(x, y, effectType, targetX, targetY);
-
-        }
+        addPlates(11, 0, "trap", 11, 0); // Example plate at (11, 0) with door effect
     }
 
 
