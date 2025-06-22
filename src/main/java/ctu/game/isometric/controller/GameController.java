@@ -160,7 +160,7 @@ public class GameController {
     }
 
 
-    public  void createBoard(){
+    public void createBoard() {
         boardEventManager = new BoardEventManager(this);
 
     }
@@ -407,6 +407,8 @@ public class GameController {
             // Set the target indicator position
             inputController.showTargetIndicator(targetX, targetY);
 
+            if (eventManager.getMapName().equals("board"))
+                this.boardEventManager.checkBoardPlayerPosition((int) targetX, (int) targetY);
             checkPositionEvents((int) targetX, (int) targetY);
         }
     }
@@ -718,6 +720,9 @@ public class GameController {
 //        character.setMoving(true);
 
         // Optional: Trigger a dialog when character reaches certain positions
+        if (eventManager.getMapName().equals("board"))
+            this.boardEventManager.checkBoardPlayerPosition((int) newX, (int) newY);
+
         checkPositionEvents(newX, newY);
     }
 
@@ -752,8 +757,7 @@ public class GameController {
     // In GameController.java, enhance resetGame method
     // In GameController.java - update the resetGame method
 
-    public void initMap(){
-
+    public void initMap() {
 
 
     }

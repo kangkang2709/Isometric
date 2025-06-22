@@ -71,13 +71,15 @@ public class BoardEventManager {
         this.listUsedId.clear(); // Clear used IDs when resetting board
     }
 
-    public void checkPlayerPosition(int playerX, int playerY) {
+    public void checkBoardPlayerPosition(int playerX, int playerY) {
+
         if (playerX == START_X && playerY == START_Y) {
-            if (!isFirstPosition) {
-                // Player has completed a turn and returned to start
-                randomBoardEveryRun();
-            }
-            isFirstPosition = false;
+
+            System.out.println(isFirstPosition);
+            // Player has completed a turn and returned to start
+            randomBoardEveryRun();
+            gameController.getDialogController().showSimpleMessage("You have completed the run. The board has been randomized again.");
+            isFirstPosition = true; // Reset flag after completing a turn
         }
     }
 
@@ -96,7 +98,7 @@ public class BoardEventManager {
             String itemId = "item_" + randomItem.getItemName() + "_" + x + "_" + y;
 
             listUsedId.add(String.valueOf(randomItem.getItemID()));
-            MapEvent itemEvent = new MapEvent(itemId, "treasure", x, y,randomItem.getItemName(),String.valueOf(randomItem.getItemID()));
+            MapEvent itemEvent = new MapEvent(itemId, "treasure", x, y, randomItem.getItemName(), String.valueOf(randomItem.getItemID()));
             eventManager.addEvent(itemEvent);
         }
     }
@@ -115,7 +117,7 @@ public class BoardEventManager {
             // Generate unique ID for enemy placement
             String enemyId = "enemy_" + randomEnemy.getEnemyName() + "_" + x + "_" + y;
             listUsedId.add(enemyId);
-            eventManager.addEnemyEvent(enemyId,x, y, randomEnemy);
+            eventManager.addEnemyEvent(enemyId, x, y, randomEnemy);
         }
     }
 
