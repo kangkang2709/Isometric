@@ -93,6 +93,8 @@ public class MapRenderer {
 
 
 
+
+
     public void changeTiledMapRenderer(IsometricMap map) {
         if (this.tiledMapRenderer != null) {
             this.tiledMapRenderer.dispose();

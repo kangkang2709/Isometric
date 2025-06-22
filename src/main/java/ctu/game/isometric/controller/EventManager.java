@@ -5,6 +5,7 @@ import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.math.Rectangle;
+import ctu.game.isometric.model.entity.Enemy;
 import ctu.game.isometric.model.game.GameSave;
 import ctu.game.isometric.model.world.IsometricMap;
 import ctu.game.isometric.model.world.MapEvent;
@@ -21,7 +22,7 @@ public class EventManager {
     private Map<Integer, Boolean> defeatedEnemies = new HashMap<>();
     private String mapName;
 
-    public EventManager(IsometricMap map,String mapName) {
+    public EventManager(IsometricMap map, String mapName) {
         if (!map.getMapName().equals("board")) loadEventsFromMap(map);
         this.mapName = mapName;
 
@@ -55,14 +56,28 @@ public class EventManager {
         }
 
     }
+    // Reset all events and defeated enemies
+    public void addEvent(MapEvent event) {
+        if (event != null && !events.containsKey(event.getId())) {
+            events.put(event.getId(), event);
+        }
+    }
+    public void addEnemyEvent(int x, int y, Enemy enemy) {
+        String eventId = "enemy_" + x + "_" + y + "_" + enemy.getEnemyID();
+        MapEvent event = new MapEvent(eventId, "battle", x, y, String.valueOf(enemy.getEnemyID()));
+        addEvent(event);
+    }
+
 
 
     public void resetEvents(IsometricMap map) {
         events.clear();
         defeatedEnemies.clear();
-        loadEventsFromMap(map);
+        if (!map.getMapName().equals("board"))
+            loadEventsFromMap(map);
 
     }
+
     public String getMapName() {
         return mapName;
     }

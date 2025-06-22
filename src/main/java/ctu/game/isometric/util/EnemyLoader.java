@@ -6,6 +6,7 @@ import com.badlogic.gdx.utils.JsonValue;
 import ctu.game.isometric.model.entity.Enemy;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class EnemyLoader {
@@ -59,6 +60,11 @@ public class EnemyLoader {
         enemy.setRewardID(template.getRewardID());
 
         return enemy;
+    }
+
+    public static List<Enemy> getAllEnemies() {
+        if (!initialized) initialize();
+        return List.copyOf(enemies.values());
     }
 
     private static Enemy createDefaultEnemy() {

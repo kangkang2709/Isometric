@@ -94,6 +94,7 @@ public class GameController {
     private BountyBoardView bountyBoardView;
     private QuestTrackerView questTrackerView;
 
+    private BoardEventManager boardEventManager;
 
     private TutorialUI tutorialUI;
 
@@ -154,7 +155,7 @@ public class GameController {
         questTrackerView = new QuestTrackerView(this);
 
         tutorialUI = new TutorialUI(this);
-
+        boardEventManager = new BoardEventManager(this);
     }
 
 

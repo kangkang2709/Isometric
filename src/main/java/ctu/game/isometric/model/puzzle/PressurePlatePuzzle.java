@@ -71,6 +71,11 @@ public class PressurePlatePuzzle {
         }
     }
 
+    public void clear() {
+        plates.clear();
+        completed = false;
+    }
+
     public boolean isCompleted() {
         return completed;
     }

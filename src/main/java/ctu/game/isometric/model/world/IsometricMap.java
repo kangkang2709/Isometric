@@ -90,6 +90,18 @@ public class IsometricMap {
         loadPlate();
     }
 
+    public boolean[][] getWalkableCache() {
+        return walkableCache;
+    }
+
+    public void setMapData(int[][] mapData) {
+        this.mapData = mapData;
+    }
+
+    public void setWalkableCache(boolean[][] walkableCache) {
+        this.walkableCache = walkableCache;
+    }
+
     public int getStartX() {
         return startX;
     }
@@ -115,14 +127,11 @@ public class IsometricMap {
     }
 
     public void loadPlate() {
-        puzzle.addPlate(20, 12, "door", 19, 12);
-        puzzle.addPlate(22, 12, "trap", 22, 12);
 
-
-// Or load different textures for different plate types
         puzzle.loadTexturesForType("door", "textures/door_plate_inactive.png", "textures/door_plate_active.png");
         puzzle.loadTexturesForType("trap", "textures/trap_inactive.png", "textures/trap_active.png");
     }
+
 
     public TiledMapTileLayer.Cell getCell(int x, int y) {
         TiledMapTileLayer tiledMapLayer = (TiledMapTileLayer) tiledMap.getLayers().get("terrain_layer");

@@ -626,7 +626,7 @@
     <property name="one_time" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="62" gid="2" x="288" y="15616" width="64" height="32">
+  <object id="62" gid="2" x="352" y="15680" width="64" height="32">
    <properties>
     <property name="event" value="treasure"/>
     <property name="id" value="main_24"/>
