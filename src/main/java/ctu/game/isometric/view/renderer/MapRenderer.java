@@ -23,6 +23,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import ctu.game.isometric.controller.EventManager;
 import ctu.game.isometric.model.entity.Character;
+import ctu.game.isometric.model.game.Dice;
 import ctu.game.isometric.model.game.Items;
 import ctu.game.isometric.model.puzzle.PressurePlatePuzzle;
 import ctu.game.isometric.model.world.IsometricMap;
@@ -98,23 +99,34 @@ public class MapRenderer {
 
         animationManager.loadDiceAnimations("textures/dice_static.png", "textures/dice_rolling.png");
 
-        this.diceRenderer = new DiceRenderer(animationManager, DICE_OFFSET_X-20, DICE_OFFSET_Y);
         setWeather("snow", 0.4f); // Set default weather to foggy with medium intensity
     }
-    private DiceRenderer diceRenderer;
+
+
+    private Dice diceRenderer;
+
+    public Dice getDiceRenderer() {
+        return diceRenderer;
+    }
+
+    public void setDice(Dice diceRenderer) {
+        this.diceRenderer = diceRenderer;
+    }
+
     /**
      * Rolls a 20-sided die and returns the face value.
      *
      * @return The face value of the rolled die (1-20).
      */
-    Random random = new Random();
     boolean isRolling = false;
     int currentFaceValue = 1; // Store the current face value
+    int prviousFaceValue = 1; // Store the previous face value
 
     public int rollingDice() {
-        return diceRenderer.rollDice();
+        prviousFaceValue = diceRenderer.getCurrentFaceValue();
+        currentFaceValue = diceRenderer.rollDice();
+        return currentFaceValue;
     }
-
 
 
     public void renderDice(SpriteBatch batch) {
@@ -131,7 +143,6 @@ public class MapRenderer {
         }
         return false;
     }
-
 
 
     public void changeTiledMapRenderer(IsometricMap map) {
@@ -318,7 +329,6 @@ public class MapRenderer {
     public void setWeather(String type, float intensity) {
         weatherRenderer.setWeather(type, intensity);
     }
-
 
 
     private void renderObjectLayer(SpriteBatch batch, String layerName) {

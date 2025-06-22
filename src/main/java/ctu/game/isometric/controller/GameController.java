@@ -797,6 +797,7 @@ public class GameController {
         }
 
 
+        createBoard();
         // Reset to main menu state
 
         setState(GameState.MAIN_MENU);

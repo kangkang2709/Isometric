@@ -11,6 +11,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import ctu.game.isometric.IsometricGame;
 import ctu.game.isometric.controller.GameController;
 import ctu.game.isometric.model.dictionary.Dictionary;
+import ctu.game.isometric.model.game.Dice;
 import ctu.game.isometric.model.game.GameState;
 import ctu.game.isometric.view.renderer.CharacterRenderer;
 import ctu.game.isometric.view.ui.*;
@@ -30,6 +31,7 @@ public class GameScreen implements Screen {
     private CharacterRenderer characterRenderer;
     private boolean isCharacterCreated = false;
     private GameState currentState = GameState.MAIN_MENU;
+    private Dice dice;
 
     public GameScreen(IsometricGame game, GameController gameController) {
         this.game = game;
@@ -70,6 +72,9 @@ public class GameScreen implements Screen {
         // Initialize gameController if created
         if (gameController.isCreated()) {
             cleanupForMainMenu();
+
+
+
             mapRenderer = new MapRenderer(
                     gameController.getMap(),
                     game.getAssetManager(),
@@ -77,6 +82,12 @@ public class GameScreen implements Screen {
                     gameController.getCharacter(),
                     camera
             );
+
+            this.dice = new Dice(
+                    game.getAssetManager().getAnimationManager(),
+                    620, -160, gameController
+            );
+            mapRenderer.setDice(dice);
 
             gameController.getInputController().setMapRenderer(mapRenderer);
 

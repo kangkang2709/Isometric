@@ -1,0 +1,177 @@
+package ctu.game.isometric.model.game;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.g2d.ParticleEffect;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Interpolation;
+import com.badlogic.gdx.math.MathUtils;
+import ctu.game.isometric.controller.GameController;
+import ctu.game.isometric.util.AnimationManager;
+
+public class Dice {
+    private final AnimationManager animationManager;
+    private final float diceX;
+    private final float diceY;
+    private ParticleEffect rollEffect;
+
+    private int currentFaceValue = 1;
+    private boolean isRolling = false;
+    private float diceRollingTime = 0f;
+    private float bounceTime = 0f;
+    private float scale = 1f;
+    private float rotation = 0f;
+
+    private static final float DICE_ROLL_DURATION = 1.5f;
+    private static final float BOUNCE_DURATION = 0.5f;
+    private static final int DICE_SIZE = 90;
+    private static final int MIN_DICE_VALUE = 1;
+    private static final int MAX_DICE_VALUE = 6;
+
+    private GameController gameController;
+    private int currentPathIndex = 0;
+
+    // Define board path coordinates in clockwise order based on logs
+    // Starting from position (10,0)
+    private final int[][] boardPath = {
+            {10, 0}, {11, 0},
+            {11, 1}, {11, 2}, {11, 3}, {11, 4}, {11, 5}, {11, 6}, {11, 7}, {11, 8}, {11, 9},
+            {12, 9}, {13, 9}, {14, 9}, {15, 9}, {16, 9}, {17, 9}, {18, 9}, {19, 9}, {20, 9},
+            {20, 10}, {20, 11},
+            {19, 11}, {18, 11}, {17, 11}, {16, 11}, {15, 11}, {14, 11}, {13, 11}, {12, 11}, {11, 11},
+            {11, 12}, {11, 13}, {11, 14}, {11, 15}, {11, 16}, {11, 17}, {11, 18}, {11, 19}, {11, 20},
+            {10, 20}, {9, 20},
+            {9, 19}, {9, 18}, {9, 17}, {9, 16}, {9, 15}, {9, 14}, {9, 13}, {9, 12}, {9, 11},
+            {8, 11}, {7, 11}, {6, 11}, {5, 11}, {4, 11}, {3, 11}, {2, 11}, {1, 11}, {0, 11},
+            {0, 10}, {0, 9},
+            {1, 9}, {2, 9}, {3, 9}, {4, 9}, {5, 9}, {6, 9}, {7, 9}, {8, 9}, {9, 9},
+            {9, 8}, {9, 7}, {9, 6}, {9, 5}, {9, 4}, {9, 3}, {9, 2}, {9, 1}, {9, 0}
+    };
+
+    public Dice(AnimationManager animationManager, float x, float y, GameController gameController) {
+        this.animationManager = animationManager;
+        this.diceX = x;
+        this.diceY = y;
+        this.gameController = gameController;
+
+        // Initialize particle effect
+        rollEffect = new ParticleEffect();
+        rollEffect.load(Gdx.files.internal("effects/dice_roll/dice_roll.p"), Gdx.files.internal("effects/dice_roll/"));
+        rollEffect.setPosition(diceX + DICE_SIZE/2, diceY + DICE_SIZE/2);
+    }
+
+    public int rollDice() {
+//        currentFaceValue = MathUtils.random(MIN_DICE_VALUE, MAX_DICE_VALUE);
+        currentFaceValue = 20;
+
+        isRolling = true;
+        diceRollingTime = 0f;
+        bounceTime = 0f;
+        rollEffect.start();
+        return currentFaceValue;
+    }
+
+    public void update(float delta) {
+        if (isRolling) {
+            diceRollingTime += delta;
+
+            // Update scale and rotation during rolling
+            scale = 1f + 0.3f * MathUtils.sin(diceRollingTime * 10);
+            rotation = diceRollingTime * 360 % 360;
+
+            // Check if rolling animation is complete
+            if (diceRollingTime >= DICE_ROLL_DURATION) {
+                isRolling = false;
+                bounceTime = 0f;
+                moveCharacterClockwise();
+            }
+        } else if (bounceTime < BOUNCE_DURATION) {
+            // Apply bounce effect when showing the result
+            bounceTime += delta;
+            float progress = Math.min(bounceTime / BOUNCE_DURATION, 1.0f);
+            scale = 1f + 0.5f * Interpolation.bounceOut.apply(1f - progress);
+            rotation = 0f;
+        }
+
+        rollEffect.update(delta);
+    }
+
+    private void moveCharacterClockwise() {
+        if (gameController == null) {
+            Gdx.app.error("Dice", "GameController is not initialized");
+            return;
+        }
+
+        // Calculate new position by moving clockwise around the board
+        int steps = currentFaceValue;
+        int newPathIndex = (currentPathIndex + steps) % boardPath.length;
+
+        // Get the target coordinates
+        int targetX = boardPath[newPathIndex][0];
+        int targetY = boardPath[newPathIndex][1];
+
+        // Use the game controller to move the character
+        gameController.moveCharacterAlongPath(targetX, targetY);
+
+        // Update the current position
+        currentPathIndex = newPathIndex;
+
+        Gdx.app.log("Dice", "Moved to position: " + targetX + "," + targetY);
+    }
+
+    public void render(SpriteBatch batch) {
+        // Draw particle effect
+        rollEffect.draw(batch);
+
+        TextureRegion frame = animationManager.getDiceFrame(isRolling, currentFaceValue, diceRollingTime);
+
+        // Draw dice with scale and rotation
+        batch.draw(
+                frame,
+                diceX - (DICE_SIZE * scale - DICE_SIZE) / 2,
+                diceY - (DICE_SIZE * scale - DICE_SIZE) / 2,
+                DICE_SIZE / 2,
+                DICE_SIZE / 2,
+                DICE_SIZE,
+                DICE_SIZE,
+                scale,
+                scale,
+                rotation
+        );
+    }
+
+    public boolean isAnimating() {
+        return isRolling || bounceTime < BOUNCE_DURATION;
+    }
+
+    public boolean handleClick(float screenX, float screenY) {
+        // Check if click is within dice bounds
+        return !isAnimating() &&
+                screenX >= diceX && screenX <= diceX + DICE_SIZE &&
+                screenY >= diceY && screenY <= diceY + DICE_SIZE;
+    }
+
+    public void setCurrentPathIndex(int index) {
+        if (index >= 0 && index < boardPath.length) {
+            currentPathIndex = index;
+        }
+    }
+
+    public int getCurrentFaceValue() {
+        return currentFaceValue;
+    }
+
+    public int getCurrentPathIndex() {
+        return currentPathIndex;
+    }
+
+    public int[][] getBoardPath() {
+        return boardPath;
+    }
+
+    public void dispose() {
+        if (rollEffect != null) {
+            rollEffect.dispose();
+        }
+    }
+}
