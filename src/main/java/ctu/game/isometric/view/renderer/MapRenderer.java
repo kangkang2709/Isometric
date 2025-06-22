@@ -98,10 +98,10 @@ public class MapRenderer {
 
         animationManager.loadDiceAnimations("textures/dice_static.png", "textures/dice_rolling.png");
 
-
+        this.diceRenderer = new DiceRenderer(animationManager, DICE_OFFSET_X-20, DICE_OFFSET_Y);
         setWeather("snow", 0.4f); // Set default weather to foggy with medium intensity
     }
-
+    private DiceRenderer diceRenderer;
     /**
      * Rolls a 20-sided die and returns the face value.
      *
@@ -112,41 +112,27 @@ public class MapRenderer {
     int currentFaceValue = 1; // Store the current face value
 
     public int rollingDice() {
-        currentFaceValue = random.nextInt(20) + 1; // Random value between 1 and 20
-        isRolling = true;
-        diceRollingTime = 0f; // Reset rolling time
-        return currentFaceValue;
+        return diceRenderer.rollDice();
     }
 
 
-    float[] dice = {640f, -10f};
 
-    public void renderDice(SpriteBatch batch, float delta) {
-        TextureRegion frame = getDiceFrame(delta);
-        batch.draw(frame, DICE_OFFSET_X, DICE_OFFSET_Y, DICE_SIZE, DICE_SIZE);
+    public void renderDice(SpriteBatch batch) {
+        diceRenderer.render(batch);
     }
 
     public boolean handleRollingClick(int screenX, int screenY) {
         Vector3 worldCoords = new Vector3(screenX, screenY, 0);
         camera.unproject(worldCoords);
-        int[] gridPos = toIsometricGrid(worldCoords.x, worldCoords.y);
-        int targetX = gridPos[0];
-        int targetY = gridPos[1] - 1;
 
-        System.out.println("Clicked on grid position: (" + targetX + ", " + targetY + ")");
-        if (targetX == 10 && targetY == 10) { // Assuming the dice is at grid position (10, 10)
+        if (diceRenderer.handleClick(worldCoords.x, worldCoords.y)) {
             rollingDice();
             return true;
         }
         return false;
     }
 
-    private int[] toIsometricGrid(float worldX, float worldY) {
 
-        float gridX = (worldX / (map.getTileWidth() / 2) - worldY / (map.getMapHeight() / 2)) / 2;
-        float gridY = (worldX / (map.getTileWidth() / 2) + worldY / (map.getMapHeight() / 2)) / 2;
-        return new int[]{Math.round(gridX), Math.round(gridY)};
-    }
 
     public void changeTiledMapRenderer(IsometricMap map) {
         if (this.tiledMapRenderer != null) {
@@ -263,7 +249,7 @@ public class MapRenderer {
 
             if (map.getMapName().equals("board")) {
                 renderBoard(batch);
-                renderDice(batch, Gdx.graphics.getDeltaTime());
+                renderDice(batch);
             }
 
             weatherRenderer.render(batch);
@@ -291,7 +277,7 @@ public class MapRenderer {
                     Texture texture = textures.get(itemName);
                     if (texture != null) {
                         float[] isoPos = toIsometric(event.getGridX(), event.getGridY());
-                        batch.draw(texture, isoPos[0], isoPos[1], 64, 32);
+                        batch.draw(texture, isoPos[0], isoPos[1], 32, 32);
                     }
                 }
             }
@@ -311,9 +297,8 @@ public class MapRenderer {
 
     private float diceRollingTime = 0f;
     private static final float DICE_ROLL_DURATION = 1.6f;
-    private static final int DICE_SIZE = 64; // Dice dimensions
     private static final float DICE_OFFSET_X = 640f; // Dice position X
-    private static final float DICE_OFFSET_Y = -10f; // Dice position Y
+    private static final float DICE_OFFSET_Y = -160f; // Dice position Y
 
     private void updateDiceRolling(float delta) {
         if (isRolling) {
@@ -327,16 +312,14 @@ public class MapRenderer {
 
     public void update(float delta) {
         weatherRenderer.update(delta);
-        updateDiceRolling(delta);
+        diceRenderer.update(delta);
     }
 
     public void setWeather(String type, float intensity) {
         weatherRenderer.setWeather(type, intensity);
     }
 
-    private TextureRegion getDiceFrame(float delta) {
-        return animationManager.getDiceFrame(isRolling, isRolling ? 0 : currentFaceValue, delta);
-    }
+
 
     private void renderObjectLayer(SpriteBatch batch, String layerName) {
         MapLayer objectLayer = map.getTiledMap().getLayers().get(layerName);
