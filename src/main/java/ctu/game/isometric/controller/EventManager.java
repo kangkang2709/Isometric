@@ -56,18 +56,18 @@ public class EventManager {
         }
 
     }
+
     // Reset all events and defeated enemies
     public void addEvent(MapEvent event) {
         if (event != null && !events.containsKey(event.getId())) {
             events.put(event.getId(), event);
         }
     }
-    public void addEnemyEvent(int x, int y, Enemy enemy) {
-        String eventId = "enemy_" + x + "_" + y + "_" + enemy.getEnemyID();
-        MapEvent event = new MapEvent(eventId, "battle", x, y, String.valueOf(enemy.getEnemyID()));
+
+    public void addEnemyEvent(String eventId, int x, int y, Enemy enemy) {
+        MapEvent event = new MapEvent(eventId, "battle", x, y,enemy.getEnemyName(), String.valueOf(enemy.getEnemyID()));
         addEvent(event);
     }
-
 
 
     public void resetEvents(IsometricMap map) {

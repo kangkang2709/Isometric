@@ -42,7 +42,6 @@ public class BoardEventManager {
     }
 
 
-
     public void randomBoardEveryRun() {
         resetBoard();
         placeRandomItems();
@@ -50,8 +49,6 @@ public class BoardEventManager {
         placeRandomPlates();
 
     }
-
-
 
 
     public void loadItems() {
@@ -96,11 +93,10 @@ public class BoardEventManager {
 
             Items randomItem = items.get(random.nextInt(items.size()));
 
-            String itemId = "item_" + x + "_" + y + "_" + randomItem.getItemID();
+            String itemId = "item_" + randomItem.getItemName() + "_" + x + "_" + y;
 
             listUsedId.add(String.valueOf(randomItem.getItemID()));
-            MapEvent itemEvent = new MapEvent(itemId, "treasure", x, y, String.valueOf(randomItem.getItemID()));
-
+            MapEvent itemEvent = new MapEvent(itemId, "treasure", x, y,randomItem.getItemName(),String.valueOf(randomItem.getItemID()));
             eventManager.addEvent(itemEvent);
         }
     }
@@ -117,9 +113,9 @@ public class BoardEventManager {
 
             Enemy randomEnemy = enemies.get(random.nextInt(enemies.size()));
             // Generate unique ID for enemy placement
-            String enemyId = "enemy_" + x + "_" + y + "_" + randomEnemy.getEnemyID();
+            String enemyId = "enemy_" + randomEnemy.getEnemyName() + "_" + x + "_" + y;
             listUsedId.add(enemyId);
-            eventManager.addEnemyEvent(x, y, randomEnemy);
+            eventManager.addEnemyEvent(enemyId,x, y, randomEnemy);
         }
     }
 

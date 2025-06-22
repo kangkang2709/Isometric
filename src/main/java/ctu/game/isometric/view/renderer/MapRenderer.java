@@ -120,7 +120,6 @@ public class MapRenderer {
 
 
     Map<String, TextureRegion> textureRegions = new HashMap<>();
-    Map<String, Texture> textures = new HashMap<>();
 
     public void loadTextures() {
 
@@ -211,7 +210,42 @@ public class MapRenderer {
         }
     }
 
+    Map<String, Texture> textures = new HashMap<>();
+
     public void renderBoard(SpriteBatch batch) {
+        if (!eventManager.getMapName().equals("board")) {
+            return;
+        }
+        for (MapEvent event : eventManager.getEvents().values()) {
+
+            if (event.getProperties().containsKey("id")) {
+                String eventId = eventManager.getStringProperty(event.getProperties(), "id", "");
+                if (event.isOneTime() && event.isCompleted()) {
+                    continue; // Skip rendering this object
+                }
+            }
+
+            if (event.getEventType().equals("treasure")) {
+                String itemName = event.getProperties().get("itemName", String.class);
+                if (textures.containsKey(itemName)) {
+                    Texture texture = textures.get(itemName);
+                    if (texture != null) {
+                        float[] isoPos = toIsometric(event.getGridX(), event.getGridY());
+                        batch.draw(texture, isoPos[0], isoPos[1], 64, 32);
+                    }
+                }
+            }
+            if (event.getEventType().equals("battle")) {
+                String itemName = event.getProperties().get("enemyName", String.class);
+                if (textures.containsKey(itemName)) {
+                    Texture texture = textures.get(itemName);
+                    if (texture != null) {
+                        float[] isoPos = toIsometric(event.getGridX(), event.getGridY());
+                        batch.draw(texture, isoPos[0], isoPos[1], 64, 32);
+                    }
+                }
+            }
+        }
 
     }
 

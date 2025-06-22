@@ -22,7 +22,7 @@ public class MapEvent {
 
     }
 
-    public MapEvent(String id, String eventType, int gridX, int gridY, String enemyIDOritemId) {
+    public MapEvent(String id, String eventType, int gridX, int gridY,String name, String enemyIDOritemId) {
         this.id = id;
         this.eventType = eventType;
         this.gridX = gridX;
@@ -35,16 +35,20 @@ public class MapEvent {
         switch (eventType) {
             case "battle":
                 properties.put("enemy", enemyIDOritemId);
+                properties.put("enemyName", name);
                 break;
             case "treasure":
-                properties.put("amount", (int) 1);
+                properties.put("amount", 1);
                 properties.put("item", enemyIDOritemId);
+                properties.put("itemName", name);
+
                 break;
             default:
                 properties.put("event", eventType);
                 break;
         }
 
+        this.properties = properties;
 
         this.completed = false;
         this.isOneTime = true;
@@ -90,5 +94,18 @@ public class MapEvent {
 
     public void setOneTime(boolean oneTime) {
         this.isOneTime = oneTime;
+    }
+
+    @Override
+    public String toString() {
+        return "MapEvent{" +
+                "id='" + id + '\'' +
+                ", eventType='" + eventType + '\'' +
+                ", gridX=" + gridX +
+                ", gridY=" + gridY +
+                ", properties=" + properties +
+                ", completed=" + completed +
+                ", isOneTime=" + isOneTime +
+                '}';
     }
 }
