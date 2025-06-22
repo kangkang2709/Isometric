@@ -10,6 +10,70 @@ import java.util.Map;
 public class AnimationManager {
     private Map<String, Animation<TextureRegion>> characterAnimations = new HashMap<>();
     private Map<String, Animation<TextureRegion>> npcAnimations = new HashMap<>();
+    private Map<String, Animation<TextureRegion>> diceAnimations = new HashMap<>();
+
+
+
+    public void loadDiceAnimations(String staticDicePath, String rollingDicePath) {
+        // Load texture sheets
+        Texture staticDiceSheet = new Texture(Gdx.files.internal(staticDicePath));
+        Texture rollingDiceSheet = new Texture(Gdx.files.internal(rollingDicePath));
+
+        staticDiceSheet.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        rollingDiceSheet.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+
+        // Calculate frame dimensions
+
+        int staticFrameWidth = 575 / 5;
+        int staticFrameHeight = 508 / 4;
+
+        int rollingFrameWidth = 596 / 4;  // 175px
+        int rollingFrameHeight = 276 / 2; // 138px
+
+        // Split static dice frames
+        TextureRegion[][] staticDiceTmp = TextureRegion.split(
+                staticDiceSheet, staticFrameWidth, staticFrameHeight);
+
+        // Create 20 individual animations for each dice face
+        int face = 1;
+        for (int row = 0; row < staticDiceTmp.length; row++) {
+            for (int col = 0; col < staticDiceTmp[row].length; col++) {
+                TextureRegion[] frame = { staticDiceTmp[row][col] };
+                diceAnimations.put("face_" + face, new Animation<>(0.1f, frame));
+                face++;
+                if (face > 20) break; // Ensure we don't exceed 20 faces
+            }
+            if (face > 20) break;
+        }
+
+        // Load rolling animation frames
+        TextureRegion[][] rollingDiceTmp = TextureRegion.split(
+                rollingDiceSheet, rollingFrameWidth, rollingFrameHeight);
+
+        // Flatten the 2D array to get all 8 frames
+        TextureRegion[] rollingFrames = new TextureRegion[8];
+        int index = 0;
+        for (int row = 0; row < 2; row++) {
+            for (int col = 0; col < 4; col++) {
+                rollingFrames[index++] = rollingDiceTmp[row][col];
+            }
+        }
+
+        // Add rolling animation
+        diceAnimations.put("rolling", new Animation<>(0.1f, rollingFrames));
+    }
+
+
+    public TextureRegion getDiceFrame(boolean isRolling, int faceValue, float stateTime) {
+        if (isRolling) {
+            return diceAnimations.get("rolling").getKeyFrame(stateTime, true);
+        } else {
+            // Clamp faceValue between 1 and 20
+            int face = Math.max(1, Math.min(20, faceValue));
+            Animation<TextureRegion> faceAnim = diceAnimations.get("face_" + face);
+            return faceAnim.getKeyFrame(0); // Static face - no animation needed
+        }
+    }
 
     public void loadCharacterAnimations(String idleSpritePath, String walkSpritePath) {
         // Load texture sheets
@@ -154,5 +218,14 @@ public class AnimationManager {
             }
         }
         npcAnimations.clear();
+
+        // Dispose dice animations
+        for (Animation<TextureRegion> animation : diceAnimations.values()) {
+            if (animation.getKeyFrames().length > 0) {
+                Texture texture = animation.getKeyFrames()[0].getTexture();
+                if (texture != null) texture.dispose();
+            }
+        }
+        diceAnimations.clear();
     }
 }

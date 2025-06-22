@@ -59,6 +59,11 @@ public class GameSaveController {
                 List<Integer> allDefeatedEnemies = new ArrayList<>();
 
                 for (EventManager manager : eventManager) {
+                    if (manager.getMapName().equals("board")) {
+                        // Skip board events
+                        continue;
+                    }
+
                     if (manager != null) {
                         if (manager.getListIdCompletedEvents() != null) {
                             allCompletedEvents.addAll(manager.getListIdCompletedEvents());

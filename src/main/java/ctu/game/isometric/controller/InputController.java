@@ -237,6 +237,11 @@ public class InputController extends InputAdapter {
      */
     private boolean handleExploringStateClick(int screenX, int screenY) {
         // Don't process clicks during dialog or movement cooldown
+
+        if (gameController.getEventManager().getMapName().equals("board")){
+            return mapRenderer.handleRollingClick(screenX, screenY);
+        }
+
         if (gameController.getDialogController().isDialogActive() || moveCooldown > 0) {
             return false;
         }
@@ -264,6 +269,8 @@ public class InputController extends InputAdapter {
     /**
      * Processes character movement based on click coordinates
      */
+
+
     private boolean handleCharacterMovement(int screenX, int screenY) {
         // Convert screen coordinates to world coordinates
         Vector3 worldCoords = new Vector3(screenX, screenY, 0);

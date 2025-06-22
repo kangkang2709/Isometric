@@ -8,13 +8,10 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
-import ctu.game.isometric.model.dictionary.Word;
 import ctu.game.isometric.model.game.GameSave;
 import ctu.game.isometric.model.game.GameState;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+
 import java.util.Set;
 
 import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
@@ -22,14 +19,14 @@ import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
 public class LoadGameController {
     private final GameController gameController;
     private final GameSaveController saveService;
-    private Texture backgroundImage;
-    private BitmapFont titleFont;
+    private final Texture backgroundImage;
+    private final BitmapFont titleFont;
     private BitmapFont font;
 
     // Button textures
-    private Texture buttonNormal;
-    private Texture buttonSelected;
-    private Texture backButtonTexture;
+    private final Texture buttonNormal;
+    private final Texture buttonSelected;
+    private final Texture backButtonTexture;
 
     // Screen dimensions
     private final int screenWidth = 1280;
@@ -41,28 +38,25 @@ public class LoadGameController {
 
 
     // Button rectangles
-    private Rectangle[] fileButtonRects;
-    private Rectangle backButtonRect;
+     Rectangle[] fileButtonRects;
+     Rectangle backButtonRect;
 
     // Button dimensions
-    private final int BUTTON_WIDTH = 600;
-    private final int BUTTON_HEIGHT = 60;
-    private final int BACK_BUTTON_WIDTH = 200;
-    private final int BACK_BUTTON_HEIGHT = 50;
+     final int BUTTON_WIDTH = 600;
+     final int BUTTON_HEIGHT = 60;
+     final int BACK_BUTTON_WIDTH = 200;
+     final int BACK_BUTTON_HEIGHT = 50;
 
-    // Input cooldown
-    private float inputCooldown = 0;
-    private final float INPUT_DELAY = 0.2f;
 
 
     // Add these fields at the top of the class
-    private Texture deleteButtonTexture;
-    private Rectangle[] deleteButtonRects;
+    private final Texture deleteButtonTexture;
+    private  Rectangle[] deleteButtonRects;
 
     private boolean isConfirmationDialogActive = false;
     private String fileToDelete = null;
-    private Rectangle confirmYesButtonRect;
-    private Rectangle confirmNoButtonRect;
+    private final Rectangle confirmYesButtonRect;
+    private final Rectangle confirmNoButtonRect;
     String title = "Chọn Tiến Trình";
 
     public LoadGameController(GameController gameController) {

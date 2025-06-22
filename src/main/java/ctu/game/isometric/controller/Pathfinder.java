@@ -65,9 +65,7 @@ public class Pathfinder {
         this.map = map;
     }
 
-    public int[][] getNpcPositions() {
-        return npcPositions;
-    }
+
 
     public void setNpcPositions(int[][] npcPositions) {
         this.npcPositions = npcPositions;

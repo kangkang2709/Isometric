@@ -132,7 +132,5 @@ public class MusicController {
         return volume;
     }
 
-    public String getCurrentTrackId() {
-        return currentTrackId;
-    }
+
 }

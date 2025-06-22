@@ -19,6 +19,7 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.maps.tiled.renderers.IsometricTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector3;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import ctu.game.isometric.controller.EventManager;
 import ctu.game.isometric.model.entity.Character;
@@ -33,6 +34,7 @@ import ctu.game.isometric.util.ItemLoader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 public class MapRenderer {
     private IsometricMap map;
@@ -94,9 +96,57 @@ public class MapRenderer {
 
         this.weatherRenderer = new WeatherRenderer(camera);
 
+        animationManager.loadDiceAnimations("textures/dice_static.png", "textures/dice_rolling.png");
+
+
         setWeather("snow", 0.4f); // Set default weather to foggy with medium intensity
     }
 
+    /**
+     * Rolls a 20-sided die and returns the face value.
+     *
+     * @return The face value of the rolled die (1-20).
+     */
+    Random random = new Random();
+    boolean isRolling = false;
+    int currentFaceValue = 1; // Store the current face value
+
+    public int rollingDice() {
+        currentFaceValue = random.nextInt(20) + 1; // Random value between 1 and 20
+        isRolling = true;
+        diceRollingTime = 0f; // Reset rolling time
+        return currentFaceValue;
+    }
+
+
+    float[] dice = {640f, -10f};
+
+    public void renderDice(SpriteBatch batch, float delta) {
+        TextureRegion frame = getDiceFrame(delta);
+        batch.draw(frame, DICE_OFFSET_X, DICE_OFFSET_Y, DICE_SIZE, DICE_SIZE);
+    }
+
+    public boolean handleRollingClick(int screenX, int screenY) {
+        Vector3 worldCoords = new Vector3(screenX, screenY, 0);
+        camera.unproject(worldCoords);
+        int[] gridPos = toIsometricGrid(worldCoords.x, worldCoords.y);
+        int targetX = gridPos[0];
+        int targetY = gridPos[1] - 1;
+
+        System.out.println("Clicked on grid position: (" + targetX + ", " + targetY + ")");
+        if (targetX == 10 && targetY == 10) { // Assuming the dice is at grid position (10, 10)
+            rollingDice();
+            return true;
+        }
+        return false;
+    }
+
+    private int[] toIsometricGrid(float worldX, float worldY) {
+
+        float gridX = (worldX / (map.getTileWidth() / 2) - worldY / (map.getMapHeight() / 2)) / 2;
+        float gridY = (worldX / (map.getTileWidth() / 2) + worldY / (map.getMapHeight() / 2)) / 2;
+        return new int[]{Math.round(gridX), Math.round(gridY)};
+    }
 
     public void changeTiledMapRenderer(IsometricMap map) {
         if (this.tiledMapRenderer != null) {
@@ -178,14 +228,20 @@ public class MapRenderer {
 
     public void render(SpriteBatch batch) {
         // Draw background for the entire screen
-        float bgX = camera.position.x - (Gdx.graphics.getWidth() / 2f);
-        float bgY = camera.position.y - (Gdx.graphics.getHeight() / 2f);
+//        float bgX = camera.position.x - (Gdx.graphics.getWidth() / 2f);
+//        float bgY = camera.position.y - (Gdx.graphics.getHeight() / 2f);
 //        batch.draw(backgroundTexture, bgX, bgY, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
         // Update camera position based on character position
         float[] isoPos = toIsometric(character.getGridX(), character.getGridY());
-        camera.position.set(isoPos[0], isoPos[1], 0);
+
+        camera.position.set(600, 0, 0);
         camera.update();
+        if (!map.getMapName().equals("board")) {
+            camera.position.set(isoPos[0], isoPos[1], 0);
+            camera.update();
+        }
+
 
         // End batch if currently drawing to use renderer
         boolean batchWasDrawing = batch.isDrawing();
@@ -205,7 +261,11 @@ public class MapRenderer {
             renderObjectLayer(batch, "object");
             renderPressurePlate(batch);
 
-            renderBoard(batch);
+            if (map.getMapName().equals("board")) {
+                renderBoard(batch);
+                renderDice(batch, Gdx.graphics.getDeltaTime());
+            }
+
             weatherRenderer.render(batch);
         }
     }
@@ -249,12 +309,33 @@ public class MapRenderer {
 
     }
 
+    private float diceRollingTime = 0f;
+    private static final float DICE_ROLL_DURATION = 1.6f;
+    private static final int DICE_SIZE = 64; // Dice dimensions
+    private static final float DICE_OFFSET_X = 640f; // Dice position X
+    private static final float DICE_OFFSET_Y = -10f; // Dice position Y
+
+    private void updateDiceRolling(float delta) {
+        if (isRolling) {
+            diceRollingTime += delta;
+            if (diceRollingTime >= DICE_ROLL_DURATION) {
+                isRolling = false;
+                diceRollingTime = 0f;
+            }
+        }
+    }
+
     public void update(float delta) {
         weatherRenderer.update(delta);
+        updateDiceRolling(delta);
     }
 
     public void setWeather(String type, float intensity) {
         weatherRenderer.setWeather(type, intensity);
+    }
+
+    private TextureRegion getDiceFrame(float delta) {
+        return animationManager.getDiceFrame(isRolling, isRolling ? 0 : currentFaceValue, delta);
     }
 
     private void renderObjectLayer(SpriteBatch batch, String layerName) {

@@ -5,7 +5,7 @@ import ctu.game.isometric.model.game.Tutorial;
 import java.util.*;
 
 public class TutorialManager {
-    private Map<String, List<Tutorial>> tutorials;
+    private final Map<String, List<Tutorial>> tutorials;
 
 
     public TutorialManager() {
@@ -38,12 +38,4 @@ public class TutorialManager {
         return tutorials.getOrDefault(type, List.of());
     }
 
-    public Map<String, List<Tutorial>> getAllTutorials() {
-        return tutorials;
-    }
-
-    public Tutorial getNextTutorial(String type, int currentTutorialIndex) {
-        // Placeholder implementation
-        return null;
-    }
 }
