@@ -35,6 +35,7 @@ public class AssetManager implements Disposable {
         loadTexture("characters/walk.png");
 
         loadTexture("ui/dialog_box.png");
+        loadTexture("new_run", "textures/new_run.png");
     }
 
     public Map<String, Texture> loadAllItems(List<Items> items) {
@@ -42,6 +43,7 @@ public class AssetManager implements Disposable {
             if (!textures.containsKey(item.getItemName())) {
                 if (item.getTexturePath() != null) { // Ensure texture path is not null
                     Texture texture = loadTexture(item.getItemName(), item.getTexturePath());
+                    texture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
                     textures.put(item.getItemName(), texture);
                 }
             }
@@ -62,16 +64,15 @@ public class AssetManager implements Disposable {
     }
 
 
-
-    private Texture loadTexture(String name,String path) {
+    private Texture loadTexture(String name, String path) {
         Texture texture = new Texture(Gdx.files.internal(path));
-        textures.put(name,texture);
+        textures.put(name, texture);
         return texture;
     }
 
     private void loadTexture(String path) {
         Texture texture = new Texture(Gdx.files.internal(path));
-        textures.put(path,texture);
+        textures.put(path, texture);
 
     }
 
@@ -89,7 +90,7 @@ public class AssetManager implements Disposable {
             texture.dispose();
         }
         textures.clear();
-        if(animationManager != null) {
+        if (animationManager != null) {
             animationManager.dispose();
         }
     }

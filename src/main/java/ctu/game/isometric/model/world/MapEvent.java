@@ -41,7 +41,6 @@ public class MapEvent {
                 properties.put("amount", 1);
                 properties.put("item", enemyIDOritemId);
                 properties.put("itemName", name);
-
                 break;
             default:
                 properties.put("event", eventType);

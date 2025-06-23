@@ -165,6 +165,8 @@ public class GameController {
     }
 
     public IsometricMap changeMap(String mapName) {
+        if (mapName.equals(getMap().getMapName()))
+            return null;
         IsometricMap newMap = this.mapList.get(mapName);
         if (newMap != null) {
             this.map = newMap;
@@ -173,6 +175,8 @@ public class GameController {
             this.pathfinder.setMap(newMap);
             this.eventManager = this.eventManagerMap.get(mapName);
             this.game.getGameScreen().getMapRenderer().setEventManager(this.eventManager);
+
+            isNewRun = false;
 
             return newMap;
         } else {
@@ -663,18 +667,18 @@ public class GameController {
                 .noneMatch(npcPos -> Math.abs(npcPos[0] - x) < 0.5f && Math.abs(npcPos[1] - y) < 0.5f);
     }
 
-    // Add a method to change maps safely
-    public void changeMap(IsometricMap newMap, int startX, int startY) {
-        this.map = newMap;
-
-        // Ensure character is placed at a valid position on the new map
-        if (isValidPosition(startX, startY)) {
-            character.setPosition(startX, startY);
-        } else {
-            // Find a valid starting position if the provided one is invalid
-            findValidStartPosition();
-        }
-    }
+//    // Add a method to change maps safely
+//    public void changeMap(IsometricMap newMap, int startX, int startY) {
+//        this.map = newMap;
+//
+//        // Ensure character is placed at a valid position on the new map
+//        if (isValidPosition(startX, startY)) {
+//            character.setPosition(startX, startY);
+//        } else {
+//            // Find a valid starting position if the provided one is invalid
+//            findValidStartPosition();
+//        }
+//    }
 
     private boolean isValidPosition(int x, int y) {
         if (map == null || map.getMapData() == null) return false;
@@ -856,7 +860,10 @@ public class GameController {
 
     public void handleEventProperties(MapProperties properties, String event) {
 
-        if (currentEventX != getCharacter().getGridX() || currentEventY != getCharacter().getGridY() || getCharacter().isMoving() == true) {
+        int gridX = (int) getCharacter().getGridX();
+        int gridY = (int) getCharacter().getGridY();
+
+        if (currentEventX != gridX || currentEventY != gridY || getCharacter().isMoving() == true) {
             return;
         }
         switch (event) {
@@ -925,6 +932,13 @@ public class GameController {
                     getCharacter().getAttempFlags().put("mulQuizAttempts", 1);
                 }
                 break;
+            case "new_run_event":
+                getCharacter().updateRun();
+                getCharacter().setTutorialCompleted("board");
+                changeMap("main");
+                isNewRun = true;
+                setEndEvent();
+                break;
             case "cutscene":
                 String cutsceneName = properties.get("cutscene", String.class);
                 if (cutsceneName != null) {
@@ -935,6 +949,15 @@ public class GameController {
 
     }
 
+    boolean isNewRun = false;
+
+    public boolean isNewRun() {
+        return isNewRun;
+    }
+
+    public void setNewRun(boolean newRun) {
+        isNewRun = newRun;
+    }
 
     private void openTreasureWithAnimation(Items item, int amount, int x, int y) {
         // Get character position for effect placement

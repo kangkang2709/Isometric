@@ -133,7 +133,6 @@ public class Character {
         this.isTutorials.put("npc & dialog", false);
 
 
-
         addItem(ItemLoader.getItemByName("CCCD"), 1);
 
     }
@@ -187,7 +186,7 @@ public class Character {
         initialTutorial();
     }
 
-    public int getRun(){
+    public int getRun() {
         return ettempFlags.getOrDefault("run", 0);
     }
 
@@ -495,12 +494,15 @@ public class Character {
     }
 
 
+
+    boolean needUpdate = false;
     // In Character class
     public void update(float delta) {
         animationTime += delta;
 
 
         if (!isMoving) return;
+
 
 
         float dx = targetX - gridX;
@@ -521,6 +523,8 @@ public class Character {
                 animationTime = 0;
                 currentPath.clear();
                 currentPathIndex = 0;
+
+
             }
         } else {
             // Rest of your existing update code
@@ -566,15 +570,12 @@ public class Character {
                     animationTime = 0;
                     currentPath.clear();
                     currentPathIndex = 0;
+
+
                 }
             }
         }
-        if (gameMap.getMapName().equals("board")){
-            if (gridX == 9 && gridY == 0) {
-                this.updateRun();
-                this.setTutorialCompleted("board");
-            }
-        }
+
     }
 
     // Optimized updateDirection method

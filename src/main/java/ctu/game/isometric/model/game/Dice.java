@@ -63,9 +63,20 @@ public class Dice {
     public int rollDice() {
 
 
-        if (gameController.getCharacter().isMoving())
+        if (gameController.getCharacter().isMoving()) {
             return 0;
-//        currentFaceValue = MathUtils.random(MIN_DICE_VALUE, MAX_DICE_VALUE);
+        }
+
+        int gridX = (int) gameController.getCharacter().getGridX();
+        int gridY = (int) gameController.getCharacter().getGridY();
+
+        if (gridX == 9 && gridY == 0 && !gameController.isNewRun()) {
+            gameController.getDialogController().showSimpleMessage("You cannot roll the dice yet. Please wait for your turn.");
+            return 0;
+        }
+
+//
+
         currentFaceValue = 18;
 
         isRolling = true;

@@ -59,7 +59,9 @@ public class CharacterCreation {
             // Load static avatars
             try {
                 maleAvatar = new Texture(Gdx.files.internal("characters/male_avatar.png"));
+                maleAvatar.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
                 femaleAvatar = new Texture(Gdx.files.internal("characters/female_avatar.png"));
+                femaleAvatar.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
                 currentAvatar = maleAvatar;
             } catch (Exception e) {
                 Gdx.app.error("CharacterCreation", "Failed to load avatars", e);

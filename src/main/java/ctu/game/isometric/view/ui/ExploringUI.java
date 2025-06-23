@@ -61,6 +61,8 @@ public class ExploringUI {
     // UI visibility control
     private boolean uiVisible = true;
 
+    private Label runLabel;
+    private Table topCenterTable;
 
     public ExploringUI(GameController gameController) {
         this.gameController = gameController;
@@ -169,12 +171,22 @@ public class ExploringUI {
         // Top right UI elements
         setupTopRight();
 
+        // Create top center table for run display
+        setupTopCenter();
+
         // Add the tables to the root table
         rootTable.top().pad(10);
         rootTable.add(topLeftTable).left().expandX();
+        rootTable.add(topCenterTable).center().expand(0, 0).padRight(400); // Centered with padding
         rootTable.add(topRightTable).right();
 
         stage.addActor(rootTable);
+    }
+
+    private void setupTopCenter() {
+        topCenterTable = new Table();
+        runLabel = new Label("Run: " + character.getRun(), skin, "title");
+        topCenterTable.add(runLabel).center().top().padTop(5);
     }
 
     private void setupTopLeft() {
@@ -298,6 +310,7 @@ public class ExploringUI {
             timeLabel.setText(charLevel);
 
             // Update player info
+            runLabel.setText("Run: " + character.getRun());
             playerNameLabel.setText(character.getName());
 
             // Update health and max health

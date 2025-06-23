@@ -277,6 +277,7 @@ public class GameScreen implements Screen {
     @Override
     public void show() {
         camera.update();
+        camera.zoom = 0.8f; // Reset zoom level
     }
 
     @Override

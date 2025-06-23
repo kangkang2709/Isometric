@@ -31,6 +31,7 @@ public class BoardEventManager {
         this.eventManager = gameController.getEventManagerMap().get("board");
         this.map = gameController.getMapList().get("board");
         this.isBoard = this.map.getWalkableCache();
+
         this.enemies = new ArrayList<>();
         this.items = new ArrayList<>();
 
@@ -46,7 +47,7 @@ public class BoardEventManager {
         placeRandomItems();
         placeRandomEnemies();
         placeRandomPlates();
-
+        placedDefaultEvent();
     }
 
 
@@ -71,12 +72,17 @@ public class BoardEventManager {
     }
 
     public void checkBoardPlayerPosition(int playerX, int playerY) {
-        if (playerX == 9 && playerY == 0) {
-            randomBoardEveryRun();
-            gameController.getCharacter().updateRun();
-            gameController.getCharacter().setTutorialCompleted("board");
-            isFirstPosition = true;
-        }
+
+    }
+
+    public int[][] defaultPositions = {{9, 0}, {10, 0}};
+
+    public void placedDefaultEvent() {
+        String eventId = "new_run_event";
+        MapEvent defaultEvent = new MapEvent(eventId, eventId, 9, 0, eventId, "0");
+
+        eventManager.addEvent(defaultEvent);
+
     }
 
     private void placeRandomItems() {

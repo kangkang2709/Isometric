@@ -276,7 +276,6 @@ public class MapRenderer {
         for (MapEvent event : eventManager.getEvents().values()) {
 
             if (event.getProperties().containsKey("id")) {
-                String eventId = eventManager.getStringProperty(event.getProperties(), "id", "");
                 if (event.isOneTime() && event.isCompleted()) {
                     continue; // Skip rendering this object
                 }
@@ -288,10 +287,21 @@ public class MapRenderer {
                     Texture texture = textures.get(itemName);
                     if (texture != null) {
                         float[] isoPos = toIsometric(event.getGridX(), event.getGridY());
-                        batch.draw(texture, isoPos[0], isoPos[1], 32, 32);
+                        batch.draw(texture, isoPos[0]+16, isoPos[1]+8, 32, 32);
                     }
                 }
             }
+
+            if (event.getEventType().equals("new_run_event")) {
+                if (textures.containsKey("new_run")) {
+                    Texture texture = textures.get("new_run");
+                    if (texture != null) {
+                        float[] isoPos = toIsometric(event.getGridX(), event.getGridY());
+                        batch.draw(texture, isoPos[0], isoPos[1], 64, 32);
+                    }
+                }
+            }
+
             if (event.getEventType().equals("battle")) {
                 String itemName = event.getProperties().get("enemyName", String.class);
                 if (textures.containsKey(itemName)) {
