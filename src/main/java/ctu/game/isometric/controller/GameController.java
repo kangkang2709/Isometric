@@ -889,6 +889,7 @@ public class GameController {
                     gameplayController.startCombat(enemy);
                     gameplayController.setCurrentEvent(currentEvent);
                 }
+                setEndEvent();
                 break;
             case "treasure":
                 if (currentEvent.isOneTime() && currentEvent.isCompleted()) {
@@ -912,6 +913,7 @@ public class GameController {
                     String arcId = properties.get("arc", String.class);
                     String sceneId = properties.get("scene", String.class);
                     this.dialogController.startDialog(arcId, sceneId);
+
                 }
                 break;
             case "quiz":
@@ -944,6 +946,8 @@ public class GameController {
                 if (cutsceneName != null) {
                     startCutscene(cutsceneName);
                 }
+                setEndEvent();
+
                 break;
         }
 
@@ -973,7 +977,7 @@ public class GameController {
         dialogController.setOnDialogFinishedAction(() -> {
             character.addItem(item, amount);
             eventManager.completeEvent(currentEvent.getId());
-
+            setEndEvent();
         });
     }
 

@@ -38,6 +38,8 @@ public class PressurePlatePuzzle {
             map.setTileWalkable(targetX, targetY, false);
     }
 
+
+
     public void update(Character character) {
 
         for (PressurePlate plate : plates) {
