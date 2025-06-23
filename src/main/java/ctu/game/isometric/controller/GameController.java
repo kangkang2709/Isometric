@@ -169,15 +169,18 @@ public class GameController {
             return null;
         IsometricMap newMap = this.mapList.get(mapName);
         if (newMap != null) {
-            this.map = newMap;
-            this.character.setGameMap(map);
-            this.game.getGameScreen().getMapRenderer().changeTiledMapRenderer(this.map);
-            this.pathfinder.setMap(newMap);
-            this.eventManager = this.eventManagerMap.get(mapName);
-            this.game.getGameScreen().getMapRenderer().setEventManager(this.eventManager);
+
+            transitionRenderer.startLoadingScreen(() -> {
+                this.map = newMap;
+                this.character.setGameMap(map);
+                this.game.getGameScreen().getMapRenderer().changeTiledMapRenderer(this.map);
+                this.pathfinder.setMap(newMap);
+                this.eventManager = this.eventManagerMap.get(mapName);
+                this.game.getGameScreen().getMapRenderer().setEventManager(this.eventManager);
+
+            });
 
             isNewRun = false;
-
             return newMap;
         } else {
             Gdx.app.error("GameController", "Map not found: " + mapName);

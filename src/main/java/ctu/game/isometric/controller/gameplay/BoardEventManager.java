@@ -173,6 +173,9 @@ public class BoardEventManager {
         if (x == 9 && y == 0) {
             return false;
         }
+        if (x == 10 && y == 0) {
+            return false;
+        }
 
         // Check if position is one of the default events for the current run
         if (defaultEventsForRun.containsKey(currentRun)) {

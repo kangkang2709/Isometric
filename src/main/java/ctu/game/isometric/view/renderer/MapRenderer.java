@@ -270,51 +270,51 @@ public class MapRenderer {
     Map<String, Texture> textures = new HashMap<>();
 
     public void renderBoard(SpriteBatch batch) {
-        if (!eventManager.getMapName().equals("board")) {
-            return;
-        }
+        if (!eventManager.getMapName().equals("board")) return;
+
         for (MapEvent event : eventManager.getEvents().values()) {
+            float[] isoPos = toIsometric(event.getGridX(), event.getGridY());
 
-            if (event.getProperties().containsKey("id")) {
-                if (event.isOneTime() && event.isCompleted()) {
-                    continue; // Skip rendering this object
-                }
-            }
+            // Draw highlight ground tile
 
-            if (event.getEventType().equals("treasure")) {
-                String itemName = event.getProperties().get("itemName", String.class);
-                if (textures.containsKey(itemName)) {
-                    Texture texture = textures.get(itemName);
-                    if (texture != null) {
-                        float[] isoPos = toIsometric(event.getGridX(), event.getGridY());
-                        batch.draw(texture, isoPos[0]+16, isoPos[1]+8, 32, 32);
-                    }
-                }
-            }
+            // Skip completed one-time events
+            if (event.isOneTime() && event.isCompleted()) continue;
 
-            if (event.getEventType().equals("new_run_event")) {
-                if (textures.containsKey("new_run")) {
-                    Texture texture = textures.get("new_run");
-                    if (texture != null) {
-                        float[] isoPos = toIsometric(event.getGridX(), event.getGridY());
-                        batch.draw(texture, isoPos[0], isoPos[1], 64, 32);
-                    }
-                }
-            }
+            String type = event.getEventType();
 
-            if (event.getEventType().equals("battle")) {
-                String itemName = event.getProperties().get("enemyName", String.class);
-                if (textures.containsKey(itemName)) {
-                    Texture texture = textures.get(itemName);
-                    if (texture != null) {
-                        float[] isoPos = toIsometric(event.getGridX(), event.getGridY());
-                        batch.draw(texture, isoPos[0], isoPos[1], 64, 32);
-                    }
-                }
+            switch (type) {
+                case "treasure":
+                    drawTexture(batch, "item_hightlight", isoPos[0], isoPos[1], 64, 32);
+                    drawItemTexture(batch, event.getProperties().get("itemName", String.class), isoPos[0] + 16, isoPos[1] + 8, 32, 32);
+                    break;
+                case "new_run_event":
+                    drawTexture(batch, "ground", isoPos[0], isoPos[1], 64, 32);
+                    drawTexture(batch, "new_run", isoPos[0], isoPos[1], 64, 32);
+                    break;
+                case "battle":
+                    drawTexture(batch, "enemy_hightlight", isoPos[0], isoPos[1], 64, 32);
+//                    drawItemTexture(batch, event.getProperties().get("enemyName", String.class), isoPos[0], isoPos[1], 64, 32);
+                    break;
             }
         }
-
     }
+
+    private void drawTexture(SpriteBatch batch, String key, float x, float y, float width, float height) {
+        Texture texture = textures.get(key);
+        if (texture != null) {
+            batch.draw(texture, x, y, width, height);
+        }
+    }
+
+    private void drawItemTexture(SpriteBatch batch, String itemKey, float x, float y, float width, float height) {
+        if (itemKey != null && textures.containsKey(itemKey)) {
+            Texture texture = textures.get(itemKey);
+            if (texture != null) {
+                batch.draw(texture, x, y, width, height);
+            }
+        }
+    }
+
 
     private float diceRollingTime = 0f;
     private static final float DICE_ROLL_DURATION = 1.6f;

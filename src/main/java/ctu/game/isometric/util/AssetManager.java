@@ -36,6 +36,8 @@ public class AssetManager implements Disposable {
 
         loadTexture("ui/dialog_box.png");
         loadTexture("new_run", "textures/new_run.png");
+        loadTexture("enemy_hightlight", "textures/enemy_hightlight.png");
+        loadTexture("item_hightlight", "textures/item_hightlight.png");
     }
 
     public Map<String, Texture> loadAllItems(List<Items> items) {

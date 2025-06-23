@@ -238,9 +238,7 @@ public class InputController extends InputAdapter {
     private boolean handleExploringStateClick(int screenX, int screenY) {
         // Don't process clicks during dialog or movement cooldown
 
-        if (gameController.getEventManager().getMapName().equals("board")){
-            return mapRenderer.handleRollingClick(screenX, screenY);
-        }
+
 
         if (gameController.getDialogController().isDialogActive() || moveCooldown > 0) {
             return false;
@@ -260,6 +258,10 @@ public class InputController extends InputAdapter {
         if (gameController.getAchievementUI().isActive()) {
             gameController.getAchievementUI().handleInput(screenX, screenY);
             return true;
+        }
+
+        if (gameController.getEventManager().getMapName().equals("board")){
+            return mapRenderer.handleRollingClick(screenX, screenY);
         }
 
         // Handle character movement
@@ -390,7 +392,7 @@ public class InputController extends InputAdapter {
 
             }
             case Keys.F8 -> {
-             gameController.changeMap("board");
+             gameController.changeMap("main");
             }
             case Keys.F5 -> {
                 gameController.getQuestTrackerView().toggleVisibility();
