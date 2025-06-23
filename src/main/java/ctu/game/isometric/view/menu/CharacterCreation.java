@@ -22,12 +22,13 @@ public class CharacterCreation {
     private boolean initialized = false;
 
     private BitmapFont font;
+    private BitmapFont subtitleFont;
     private ShapeRenderer shapeRenderer;
     private GlyphLayout layout;
 
     private String playerName = "";
     private String playerGender = "MALE"; // Default
-    private static final int MAX_NAME_LENGTH = 20;
+    private static final int MAX_NAME_LENGTH = 17;
 
     // Static textures
     private Texture maleAvatar;
@@ -52,7 +53,7 @@ public class CharacterCreation {
         // Initialize resources needed for rendering
         if (!initialized) {
             this.font = generateVietNameseFont("GrenzeGotisch.ttf", 30);
-
+            this.subtitleFont = generateVietNameseFont("GrenzeGotisch.ttf", 17);
             shapeRenderer = new ShapeRenderer();
             layout = new GlyphLayout();
 
@@ -129,42 +130,64 @@ public class CharacterCreation {
 //        handleTextInput();
     }
 
-    public boolean handleTextInput(int keycode) {
+
+    public boolean handleInput(int keycode) {
+        if (keycode == Input.Keys.ESCAPE) {
+            gameController.setState(GameState.MAIN_MENU);
+            return true;
+        }
+
+        // Handle name field activation
+        if (keycode == Input.Keys.ENTER) {
+            isNameFieldActive = !isNameFieldActive;
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean handleTextInput(char character) {
         if (!isNameFieldActive) {
-            if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
-                gameController.setState(GameState.MAIN_MENU);
-            }
-            return true;
+            return false;
         }
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
-            isNameFieldActive = false;
-            return true;
-        }
+        // Convert to int để kiểm tra chính xác
+        int charCode = (int) character;
 
-        // Handle backspace
-        if (Gdx.input.isKeyJustPressed(Input.Keys.BACKSPACE) && playerName.length() > 0) {
+        // Handle backspace (ASCII 8)
+        if (charCode == 8 && playerName.length() > 0) {
             playerName = playerName.substring(0, playerName.length() - 1);
             return true;
         }
 
-        // Handle enter to deactivate field
-        if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
+        // Handle enter (ASCII 10 hoặc 13)
+        if (charCode == 10 || charCode == 13) {
             isNameFieldActive = false;
             return true;
         }
 
-        // Handle typed characters
-        for (int key = Input.Keys.A; key <= Input.Keys.Z; key++) {
-            if (Gdx.input.isKeyJustPressed(key) && playerName.length() < MAX_NAME_LENGTH) {
-                char c = (char) (key - Input.Keys.A + 'A');
-                playerName += c;
+        // Chỉ chấp nhận ASCII từ 32-126 (printable characters)
+        // Và loại trừ các ký tự đặc biệt
+        if (isValidInputCharacter(charCode) && playerName.length() < MAX_NAME_LENGTH) {
+            // Đảm bảo chỉ thêm 1 ký tự
+            char upperChar = java.lang.Character.toUpperCase(character);
+
+            // Kiểm tra để tránh duplicate
+            if (playerName.length() == 0 || playerName.charAt(playerName.length() - 1) != upperChar) {
+                playerName += upperChar;
             }
+            return true;
         }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) && playerName.length() < MAX_NAME_LENGTH) {
-            playerName += ' ';
-        }
+
         return false;
+    }
+
+    private boolean isValidInputCharacter(int charCode) {
+        // A-Z: 65-90, a-z: 97-122, 0-9: 48-57, space: 32
+        return (charCode >= 65 && charCode <= 90) ||   // A-Z
+                (charCode >= 97 && charCode <= 122) ||  // a-z
+                (charCode >= 48 && charCode <= 57) ||   // 0-9
+                (charCode == 32);                       // space
     }
 
     public void render(SpriteBatch batch) {
@@ -205,9 +228,12 @@ public class CharacterCreation {
         float titleY = Gdx.graphics.getHeight() - 100;
         layout.setText(font, "Tạo nhân vật mới:");
         font.setColor(Color.WHITE);
-        font.draw(batch, "Khởi tạo", Gdx.graphics.getWidth() / 2 - layout.width / 2, titleY);
+        font.draw(batch, "Khởi tạo nhân vật", Gdx.graphics.getWidth() / 2 - layout.width / 2, titleY);
 
-        font.draw(batch, "Tên:", nameInputBox.x, nameInputBox.y + nameInputBox.height + 20);
+        font.draw(batch, "Tên: " + playerName.length() + "/" + MAX_NAME_LENGTH, nameInputBox.x, nameInputBox.y + nameInputBox.height + 20);
+        subtitleFont.draw(batch, " * QUY TẮC NHẬP TÊN NGƯỜI CHƠI: Chỉ cho phép chữ cái tiếng Anh (A-Z), số (0-9) và dấu cách.\n" +
+                " * Độ dài tối đa: 17 ký tự. Dấu tiếng Việt sẽ bị tự động loại bỏ nên vui lòng tắt UNIKEY hoặc bộ gõ Tiếng Việt.\n" +
+                " * Điều khiển: ENTER (bật/tắt nhập), BACKSPACE (xóa), ESC (thoát).", 10, 80);
 
         // Draw input text with cursor
         font.setColor(Color.BLACK);
@@ -233,7 +259,7 @@ public class CharacterCreation {
         if (currentAvatar != null) {
             float x = Gdx.graphics.getWidth() / 2f + 200;
             float y = Gdx.graphics.getHeight() / 2f;
-            batch.draw(currentAvatar, x, y-50, 150, 200);
+            batch.draw(currentAvatar, x, y - 50, 150, 200);
         }
 
         // If batch wasn't drawing originally, end it
@@ -247,7 +273,7 @@ public class CharacterCreation {
         Character character = gameController.getCharacter();
         character.setName(playerName);
 
-        character.setWordFilePath(playerName+"_dictionary");
+        character.setWordFilePath(playerName + "_dictionary");
 
         character.setGender(Gender.valueOf(playerGender));
         // Signal that character has been created

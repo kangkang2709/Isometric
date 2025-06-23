@@ -113,6 +113,8 @@ public class InputController extends InputAdapter {
             case EXPLORING:
                 if (gameController.getDialogController().isDialogActive())
                     return handleDialogInput(keycode);
+                else if (gameController.getBoardEventManager().getWordScrambleGame().isActive())
+                    return gameController.getBoardEventManager().getWordScrambleGame().handleInput(keycode);
                 else
                     return handleExploringInput(keycode);
             case LOAD_GAME:
@@ -132,7 +134,7 @@ public class InputController extends InputAdapter {
             case QUEST_TRACKER:
                 return handleQuestTrackerInput(keycode);
             case CHARACTER_CREATION:
-                return gameController.getCharacterCreationController().handleTextInput(keycode);
+                return gameController.getCharacterCreationController().handleInput(keycode);
             default:
                 return false; // Explicitly return false for unhandled states
         }
@@ -239,7 +241,6 @@ public class InputController extends InputAdapter {
         // Don't process clicks during dialog or movement cooldown
 
 
-
         if (gameController.getDialogController().isDialogActive() || moveCooldown > 0) {
             return false;
         }
@@ -260,7 +261,7 @@ public class InputController extends InputAdapter {
             return true;
         }
 
-        if (gameController.getEventManager().getMapName().equals("board")){
+        if (gameController.getEventManager().getMapName().equals("board")) {
             return mapRenderer.handleRollingClick(screenX, screenY);
         }
 
@@ -392,7 +393,7 @@ public class InputController extends InputAdapter {
 
             }
             case Keys.F8 -> {
-             gameController.changeMap("main");
+                gameController.changeMap("main");
             }
             case Keys.F5 -> {
                 gameController.getQuestTrackerView().toggleVisibility();
@@ -404,6 +405,8 @@ public class InputController extends InputAdapter {
             case Keys.G -> {
                 gameController.showNPCBackStory();
             }
+
+
             case Keys.V -> {
                 if (gameController.getInventoryUI().isVisible()) {
                     gameController.getInventoryUI().hide();
@@ -695,6 +698,10 @@ public class InputController extends InputAdapter {
             }
         } else if (gameController.getCurrentState() == GameState.DICTIONARY) {
             return gameController.getDictionaryView().handleKeyTyped(character);
+        } else if (gameController.getCurrentState() == GameState.CHARACTER_CREATION) {
+            return gameController.getCharacterCreationController().handleTextInput(character);
+        } else if (gameController.getCurrentState() == GameState.EXPLORING && gameController.getBoardEventManager().getWordScrambleGame().isActive()) {
+            gameController.getBoardEventManager().getWordScrambleGame().handleTyped(character);
         }
         return false;
     }

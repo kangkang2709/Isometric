@@ -263,6 +263,7 @@ public class MapRenderer {
                 renderDice(batch);
             }
 
+
             weatherRenderer.render(batch);
         }
     }
@@ -286,6 +287,9 @@ public class MapRenderer {
                 case "treasure":
                     drawTexture(batch, "item_hightlight", isoPos[0], isoPos[1], 64, 32);
                     drawItemTexture(batch, event.getProperties().get("itemName", String.class), isoPos[0] + 16, isoPos[1] + 8, 32, 32);
+                    break;
+                case "word_scramble":
+                    drawTexture(batch, "item_hightlight", isoPos[0], isoPos[1], 64, 32);
                     break;
                 case "new_run_event":
                     drawTexture(batch, "ground", isoPos[0], isoPos[1], 64, 32);

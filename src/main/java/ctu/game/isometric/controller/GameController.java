@@ -514,6 +514,8 @@ public class GameController {
                     npcRenderer.update(delta);
                 }
 
+                getBoardEventManager().getWordScrambleGame().update(delta);
+
                 levelUpNotification.update(delta);
                 map.getPuzzle().update(character);
                 break;
@@ -945,6 +947,9 @@ public class GameController {
                 isNewRun = true;
                 setEndEvent();
                 break;
+            case "word_scramble":
+                boardEventManager.getWordScrambleGame().startGame();
+                setEndEvent();
             case "cutscene":
                 String cutsceneName = properties.get("cutscene", String.class);
                 if (cutsceneName != null) {
@@ -983,6 +988,14 @@ public class GameController {
             eventManager.completeEvent(currentEvent.getId());
             setEndEvent();
         });
+    }
+
+    public BoardEventManager getBoardEventManager() {
+        return boardEventManager;
+    }
+
+    public void setBoardEventManager(BoardEventManager boardEventManager) {
+        this.boardEventManager = boardEventManager;
     }
 
     public AchievementManager getAchievementManager() {

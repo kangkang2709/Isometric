@@ -4,6 +4,7 @@ import ctu.game.isometric.controller.EventManager;
 import ctu.game.isometric.controller.GameController;
 import ctu.game.isometric.model.entity.Enemy;
 import ctu.game.isometric.model.game.Items;
+import ctu.game.isometric.model.game.WordScrambleGame;
 import ctu.game.isometric.model.world.IsometricMap;
 import ctu.game.isometric.model.world.MapEvent;
 import ctu.game.isometric.util.EnemyLoader;
@@ -26,6 +27,7 @@ public class BoardEventManager {
     private List<String> listUsedId = new ArrayList<>();
 
     int currentRun = 0;
+    private WordScrambleGame wordScrambleGame;
 
     public Map<Integer, int[][]> defaultEventsForRun = Map.of(
             0, new int[][]{{11, 4}, {11, 5}},
@@ -46,12 +48,28 @@ public class BoardEventManager {
         this.enemies = new ArrayList<>();
         this.items = new ArrayList<>();
 
+        this.wordScrambleGame = new WordScrambleGame(gameController);
+
         loadItems();
         loadEnemies();
         randomBoardEveryRun();
 
     }
+    private void placeWordScrambleEvents() {
+        int numWordEvents = random.nextInt(2) + 1; // 1-2 word events
+        for (int i = 0; i < numWordEvents; i++) {
+            int x, y;
+            do {
+                x = random.nextInt(21);
+                y = random.nextInt(21);
+            } while (!isValidPosition(x, y) || (x == START_X && y == START_Y));
 
+            String eventId = "word_scramble_" + x + "_" + y;
+            listUsedId.add(eventId);
+            MapEvent wordEvent = new MapEvent(eventId, "word_scramble", x, y, "Word Challenge", "0");
+            eventManager.addEvent(wordEvent);
+        }
+    }
 
     public void randomBoardEveryRun() {
         this.currentRun = gameController.getCharacter().getRun();
@@ -59,6 +77,9 @@ public class BoardEventManager {
         placeRandomItems();
         placeRandomEnemies();
         placeRandomPlates();
+
+        placeWordScrambleEvents();
+
         placedDefaultEvent();
     }
 
@@ -162,7 +183,9 @@ public class BoardEventManager {
         addPlates(11, 0, "trap", 11, 0); // Example plate at (11, 0) with door effect
     }
 
-
+    public WordScrambleGame getWordScrambleGame() {
+        return wordScrambleGame;
+    }
     private boolean isValidPosition(int x, int y) {
         // Check if position is within bounds and walkable
         if (!(x >= 0 && x < 21 && y >= 0 && y < 21 && isBoard[y][x])) {

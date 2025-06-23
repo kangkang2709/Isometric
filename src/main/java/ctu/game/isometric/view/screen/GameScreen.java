@@ -33,6 +33,7 @@ public class GameScreen implements Screen {
     private GameState currentState = GameState.MAIN_MENU;
     private Dice dice;
 
+
     public GameScreen(IsometricGame game, GameController gameController) {
         this.game = game;
         this.gameController = gameController;
@@ -72,7 +73,6 @@ public class GameScreen implements Screen {
         // Initialize gameController if created
         if (gameController.isCreated()) {
             cleanupForMainMenu();
-
 
 
             mapRenderer = new MapRenderer(
@@ -168,6 +168,7 @@ public class GameScreen implements Screen {
                     }
 
                     if (characterRenderer != null) characterRenderer.render(batch);
+                    gameController.getBoardEventManager().getWordScrambleGame().render(batch, 490, 435);
 
 
                     gameController.getInputController().renderTargetIndicator(batch);
