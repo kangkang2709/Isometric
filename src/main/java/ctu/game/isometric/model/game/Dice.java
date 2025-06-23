@@ -111,13 +111,7 @@ public class Dice {
             } else {
                 // Special handling for position (9,0) - last cell
                 // Find index of (9,0) in boardPath
-                int endBoardIndex = -1;
-                for (int i = 0; i < boardPath.length; i++) {
-                    if (boardPath[i][0] == 9 && boardPath[i][1] == 0) {
-                        endBoardIndex = i;
-                        break;
-                    }
-                }
+                int endBoardIndex = boardPath.length - 1;
 
                 // Find the next event position the character should reach
                 int targetBoardIndex = -1;

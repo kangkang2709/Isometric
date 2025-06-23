@@ -938,6 +938,7 @@ public class GameController {
                 getCharacter().updateRun();
                 getCharacter().setTutorialCompleted("board");
                 changeMap("main");
+                this.boardEventManager.randomBoardEveryRun();
                 isNewRun = true;
                 setEndEvent();
                 break;

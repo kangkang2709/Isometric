@@ -25,6 +25,17 @@ public class BoardEventManager {
     private Random random = new Random();
     private List<String> listUsedId = new ArrayList<>();
 
+    int currentRun = 0;
+
+    public Map<Integer, int[][]> defaultEventsForRun = Map.of(
+            0, new int[][]{{11, 4}, {11, 5}},
+            2, new int[][]{{11, 0}, {11, 1}},
+            4, new int[][]{{11, 1}, {11, 2}},
+            6, new int[][]{{11, 2}, {11, 3}},
+            8, new int[][]{{11, 3}, {11, 4}},
+            10, new int[][]{{11, 4}, {11, 5}}
+    );
+
 
     public BoardEventManager(GameController gameController) {
         this.gameController = gameController;
@@ -43,6 +54,7 @@ public class BoardEventManager {
 
 
     public void randomBoardEveryRun() {
+        this.currentRun = gameController.getCharacter().getRun();
         resetBoard();
         placeRandomItems();
         placeRandomEnemies();
@@ -75,7 +87,6 @@ public class BoardEventManager {
 
     }
 
-    public int[][] defaultPositions = {{9, 0}, {10, 0}};
 
     public void placedDefaultEvent() {
         String eventId = "new_run_event";
@@ -153,7 +164,35 @@ public class BoardEventManager {
 
 
     private boolean isValidPosition(int x, int y) {
-        // Check if the position is within bounds and walkable
-        return x >= 0 && x < 21 && y >= 0 && y < 21 && isBoard[y][x];
+        // Check if position is within bounds and walkable
+        if (!(x >= 0 && x < 21 && y >= 0 && y < 21 && isBoard[y][x])) {
+            return false;
+        }
+
+        // Check if position is (9,0) - the special default event position
+        if (x == 9 && y == 0) {
+            return false;
+        }
+
+        // Check if position is one of the default events for the current run
+        if (defaultEventsForRun.containsKey(currentRun)) {
+            int[][] positions = defaultEventsForRun.get(currentRun);
+            for (int[] position : positions) {
+                if (x == position[0] && y == position[1]) {
+                    return false;
+                }
+            }
+        }
+
+        // Also check all default event positions across all runs to be extra safe
+        for (int[][] positions : defaultEventsForRun.values()) {
+            for (int[] position : positions) {
+                if (x == position[0] && y == position[1]) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 }
