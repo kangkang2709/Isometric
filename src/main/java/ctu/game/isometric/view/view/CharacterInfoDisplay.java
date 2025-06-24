@@ -62,9 +62,9 @@ public class CharacterInfoDisplay {
         if (!initialized) {
             try {
                 // Initialize fonts with different sizes
-                this.titleFont = generateVietNameseFont("IMFellEnglishSC-Regular.ttf", TITLE_FONT_SIZE);
-                this.statFont = generateVietNameseFont("IMFellEnglishSC-Regular.ttf", STAT_FONT_SIZE);
-                this.scoreFont = generateVietNameseFont("IMFellEnglishSC-Regular.ttf", SCORE_FONT_SIZE);
+                this.titleFont = generateVietNameseFont("GrenzeGotisch.ttf", TITLE_FONT_SIZE);
+                this.statFont = generateVietNameseFont("GrenzeGotisch.ttf", STAT_FONT_SIZE);
+                this.scoreFont = generateVietNameseFont("GrenzeGotisch.ttf", SCORE_FONT_SIZE);
                 this.layout = new GlyphLayout();
                 this.shapeRenderer = new ShapeRenderer();
 

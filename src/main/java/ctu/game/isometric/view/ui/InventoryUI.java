@@ -18,6 +18,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
+
 public class InventoryUI {
     private GameController gameController;
     private BitmapFont font;
@@ -60,14 +62,14 @@ public class InventoryUI {
 
     public InventoryUI(GameController gameController) {
         this.gameController = gameController;
-        this.font = new BitmapFont();
+        this.font = generateVietNameseFont("GrenzeGotisch.ttf", 20);
         this.shapeRenderer = new ShapeRenderer();
 
         // Create projection matrix once
         uiMatrix = new Matrix4().setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
         // Load textures
-        backgroundTexture = new Texture(Gdx.files.internal("ui/inventory_bg.png"));
+//        backgroundTexture = new Texture(Gdx.files.internal("ui/inventory_bg.png"));
         itemSlotTexture = new Texture(Gdx.files.internal("ui/slot.png"));
         itemSlotSelected = new Texture(Gdx.files.internal("ui/slot_highlight.png"));
         buttonTexture = new Texture(Gdx.files.internal("ui/button.png"));
@@ -123,6 +125,7 @@ public class InventoryUI {
         // Preload common textures
         preloadCommonTextures();
     }
+
     /**
      * Renders the inventory UI.
      *
@@ -130,9 +133,8 @@ public class InventoryUI {
      */
 
 
-
-
     String errorMessage = "";
+
     public void render(SpriteBatch batch) {
         if (!visible) return;
 
@@ -196,11 +198,13 @@ public class InventoryUI {
             // Use button texture for all buttons with hover effects
             if (selectedItemIndex >= 0 && selectedItemIndex < itemList.size()) {
                 Items item = ItemLoader.getItemByName(itemList.get(selectedItemIndex));
-                if (item != null && !item.getItemEffect().equals("N/A")) {
+                if (item != null && !item.getItemEffect().equals("N/A") && !item.getItemEffect().equals("quest") && !item.getItemEffect().equals("debuff")) {
                     // Use button
                     batch.setColor(hoverUseButton ? buttonHoverColor : buttonColor);
                     batch.draw(buttonTexture, useButton.x, useButton.y, useButton.width, useButton.height);
+                }
 
+                if (item != null && !item.getItemEffect().equals("N/A") && !item.getItemEffect().equals("quest")) {
                     // Discard button
                     batch.setColor(hoverDiscardButton ? buttonHoverColor : buttonColor);
                     batch.draw(buttonTexture, discardButton.x, discardButton.y, discardButton.width, discardButton.height);
@@ -227,8 +231,8 @@ public class InventoryUI {
             if (item != null && item.getTexturePath() != null) {
                 Texture itemTexture = getItemTexture(item.getItemName(), item.getTexturePath());
                 float itemSize = SLOT_SIZE - 16;
-                float centerX = itemSlots[index].x + SLOT_SIZE/2f - itemSize/2f;
-                float centerY = itemSlots[index].y + SLOT_SIZE/2f - itemSize/2f;
+                float centerX = itemSlots[index].x + SLOT_SIZE / 2f - itemSize / 2f;
+                float centerY = itemSlots[index].y + SLOT_SIZE / 2f - itemSize / 2f;
 
                 batch.draw(itemTexture, centerX, centerY, itemSize, itemSize);
 
@@ -250,26 +254,50 @@ public class InventoryUI {
 
             if (item != null) {
                 font.draw(batch, item.getItemName(), detailsX, detailsY);
-                font.draw(batch, "Effect: " + item.getItemEffect(), detailsX, detailsY - 30);
-                font.draw(batch, "Value: " + item.getValue(), detailsX, detailsY - 60);
-                font.draw(batch, item.getItemDescription(), detailsX, detailsY - 90,
+                font.draw(batch, "Hiệu quả: " + item.getItemEffect(), detailsX, detailsY - 30);
+                font.draw(batch, "Trị số: " + item.getValue(), detailsX, detailsY - 60);
+                font.draw(batch, "Năng lượng tiêu hao: " + item.getManaCost(), detailsX, detailsY - 90);
+                font.draw(batch, item.getItemDescription(), detailsX, detailsY - 120,
                         detailsWidth, -1, true);
-                font.draw(batch, "Mana Cost: " + item.getManaCost(), detailsX, detailsY - 150);
-                font.draw(batch, errorMessage, detailsX, detailsY - 180);
+                font.draw(batch, errorMessage,inventoryBounds.x + 10, inventoryBounds.y + 80);
 
-                // Only show action buttons if the item has an effect
-                if (!item.getItemEffect().equals("N/A")) {
-                    font.draw(batch, "USE", useButton.x + useButton.width/2 - 15,
-                            useButton.y + useButton.height/2 + 7);
-                    font.draw(batch, "DISCARD", discardButton.x + discardButton.width/2 - 35,
-                            discardButton.y + discardButton.height/2 + 7);
+                switch (item.getItemEffect()) {
+                    case "heal":
+                        font.draw(batch, "*Dùng để hồi phục máu hoặc năng lượng.", inventoryBounds.x + 10, inventoryBounds.y + 40);
+                        break;
+                    case "buff":
+                        font.draw(batch, "*Dùng để tăng cường chỉ số nhân vật.", inventoryBounds.x + 10, inventoryBounds.y + 40);
+                        break;
+                    case "debuff":
+                        font.draw(batch, "*Gây hiệu ứng xấu cho kẻ địch \n Chỉ dùng trong chiến đấu.", inventoryBounds.x + 10, inventoryBounds.y + 50);
+                        break;
+                    case "quest":
+                        font.draw(batch, "*Vật phẩm dùng để hoàn thành nhiệm vụ.\n Thường không sử dụng được trực tiếp.", inventoryBounds.x + 10, inventoryBounds.y + 50);
+                        break;
+                    case "N/A":
+                        font.draw(batch, "*Vật phẩm cốt truyện.\n Không có hiệu ứng trực tiếp trong chiến đấu.", inventoryBounds.x + 10, inventoryBounds.y + 50);
+                        break;
+                    default:
+                        font.draw(batch, "*No specific effect.", inventoryBounds.x + 10, inventoryBounds.y + 40);
                 }
+
+                // Only show action buttons if the item has a valid effect
+                if (!item.getItemEffect().equals("N/A") && !item.getItemEffect().equals("quest") && !item.getItemEffect().equals("debuff")) {
+                    font.draw(batch, "DÙNG", useButton.x + useButton.width / 2 - 28,
+                            useButton.y + useButton.height / 2 + 7);
+                }
+
+                if (!item.getItemEffect().equals("N/A") && !item.getItemEffect().equals("quest")) {
+                    font.draw(batch, "VỨT", discardButton.x + discardButton.width / 2 - 22,
+                            discardButton.y + discardButton.height / 2 + 7);
+                }
+
             }
         }
 
         // Draw close button text centered
-        font.draw(batch, "X", closeButton.x + closeButton.width/2 - 5,
-                closeButton.y + closeButton.height/2 + 7);
+        font.draw(batch, "X", closeButton.x + closeButton.width / 2 - 5,
+                closeButton.y + closeButton.height / 2 + 7);
 
         batch.end();
 
@@ -299,7 +327,7 @@ public class InventoryUI {
         System.out.println("Preloaded " + itemTextures.size() + " item textures.");
     }
 
-    private Texture getItemTexture(String name,String texturePath) {
+    private Texture getItemTexture(String name, String texturePath) {
         if (!itemTextures.containsKey(name)) {
             System.out.println("Loading texture for item: " + name + " from path: " + texturePath);
             itemTextures.put(texturePath, new Texture(Gdx.files.internal(texturePath)));
@@ -369,6 +397,7 @@ public class InventoryUI {
     // Hover colors
     private final Color buttonHoverColor = new Color(0.5f, 0.5f, 0.5f, 1f);
     private final Color closeButtonHoverColor = new Color(0.8f, 0.4f, 0.4f, 1f);
+
     public boolean handleMouseMove(int screenX, int screenY) {
         if (!visible) return false;
 
@@ -418,10 +447,9 @@ public class InventoryUI {
                 // Mark inventory as dirty since items changed
                 inventoryDirty = true;
             } catch (IllegalStateException e) {
-                errorMessage =e.getMessage();
-            }
-            catch (IllegalArgumentException e) {
-               errorMessage = e.getMessage();
+                errorMessage = e.getMessage();
+            } catch (IllegalArgumentException e) {
+                errorMessage = e.getMessage();
             }
         }
     }
@@ -443,7 +471,7 @@ public class InventoryUI {
     public void show() {
         visible = true;
         selectedItemIndex = -1;
-        errorMessage="";
+        errorMessage = "";
         inventoryDirty = true;
     }
 

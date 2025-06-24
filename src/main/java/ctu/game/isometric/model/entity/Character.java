@@ -493,16 +493,27 @@ public class Character {
         }
     }
 
-
+    public void upDefend(float value) {
+        if (value < 0) {
+            throw new IllegalArgumentException("Defense value cannot be negative");
+        }
+        this.defend = Math.min(20, this.defend + value); // Cap defense at 100
+    }
+    public void upAttack(float value) {
+        if (value < 0) {
+            throw new IllegalArgumentException("Attack value cannot be negative");
+        }
+        this.damage = Math.min(10, this.damage + value); // Cap attack at 100
+    }
 
     boolean needUpdate = false;
+
     // In Character class
     public void update(float delta) {
         animationTime += delta;
 
 
         if (!isMoving) return;
-
 
 
         float dx = targetX - gridX;

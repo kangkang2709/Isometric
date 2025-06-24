@@ -35,7 +35,7 @@
     "itemDescription": "Tăng chỉ số phòng thủ thêm 1.",
     "texturePath": "game/items/aegis_brew.png",
     "itemEffect": "buff",
-    "value": 1.0,
+    "value": 2.0,
     "itemPrice": 300,
     "manaCost": 10.0
   },
