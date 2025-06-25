@@ -241,6 +241,10 @@ public class InputController extends InputAdapter {
         // Don't process clicks during dialog or movement cooldown
 
 
+        if (gameController.getBoardEventManager().getWordScrambleGame().isActive()) {
+            return gameController.getBoardEventManager().getWordScrambleGame().handleMouseInput(screenX, screenY);
+        }
+
         if (gameController.getDialogController().isDialogActive() || moveCooldown > 0) {
             return false;
         }

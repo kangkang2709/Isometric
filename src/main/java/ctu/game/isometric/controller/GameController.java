@@ -17,6 +17,7 @@ import ctu.game.isometric.model.dictionary.Word;
 import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.entity.Enemy;
 import ctu.game.isometric.model.entity.NPC;
+import ctu.game.isometric.model.game.Dice;
 import ctu.game.isometric.model.game.GameState;
 import ctu.game.isometric.model.game.Items;
 import ctu.game.isometric.model.world.IsometricMap;
@@ -99,6 +100,9 @@ public class GameController {
     private BoardEventManager boardEventManager;
 
     private TutorialUI tutorialUI;
+
+    private MapRenderer mapRenderer;
+
 
     public GameController(IsometricGame game) {
         this.game = game;
@@ -864,10 +868,13 @@ public class GameController {
         this.currentEvent = currentEvent;
     }
 
+
     public void handleEventProperties(MapProperties properties, String event) {
 
         int gridX = (int) getCharacter().getGridX();
         int gridY = (int) getCharacter().getGridY();
+
+        float score = getCharacter().getScore();
 
         if (currentEventX != gridX || currentEventY != gridY || getCharacter().isMoving() == true) {
             return;
@@ -923,23 +930,47 @@ public class GameController {
                 }
                 break;
             case "quiz":
-                getDialogController().showSimpleMessage("Bat dau mini-game quiz sau 1s!");
+                getDialogController().showSimpleMessage("Quiz mini-game will start soon!");
+
                 Timer.schedule(new Timer.Task() {
                     @Override
                     public void run() {
+
                         startQuiz(1);
+
                     }
                 }, 1f);
+
+                // Add listener for quiz completion
+                quizController.setQuizCompletionListener(success -> {
+                    if (success) {
+                        // Apply random movement effect after successful quiz
+                        applyQuizMovementEffect(getCharacter().getScore() - score);
+                    } else {
+                        applyQuizMovementEffect(getCharacter().getScore() - score);
+                    }
+                });
+
                 setEndEvent();
                 break;
             case "mulquiz":
-                getDialogController().showSimpleMessage("Bat dau mini-game multiqioz sau 1s!");
+                getDialogController().showSimpleMessage("Multi-Choice Quiz mini-game will start soon!");
+
                 Timer.schedule(new Timer.Task() {
                     @Override
                     public void run() {
                         startMulChoiceQuiz(1);
                     }
                 }, 1f);
+
+                mulChoiceQuizController.setQuizCompletionListener(success -> {
+                    if (success) {
+                        // Apply random movement effect after successful quiz
+                        applyQuizMovementEffect(getCharacter().getScore() - score);
+                    } else {
+                        applyQuizMovementEffect(getCharacter().getScore() - score);
+                    }
+                });
                 setEndEvent();
                 break;
             case "new_run_event":
@@ -952,6 +983,13 @@ public class GameController {
                 break;
             case "word_scramble":
                 boardEventManager.getWordScrambleGame().startGame();
+                boardEventManager.getWordScrambleGame().setQuizCompletionListener(success -> {
+                    if (success) {
+                        applyQuizMovementEffect(getCharacter().getScore() - score);
+                    } else {
+                        applyQuizMovementEffect(getCharacter().getScore() - score);
+                    }
+                });
                 setEndEvent();
             case "cutscene":
                 String cutsceneName = properties.get("cutscene", String.class);
@@ -964,6 +1002,60 @@ public class GameController {
         }
 
     }
+
+
+    private void applyQuizMovementEffect(float scoreDifference) {
+        if (scoreDifference == 0) {
+            getDialogController().showSimpleMessage("Bạn đã trả lời sai. Không có phần thưởng.");
+        } else {
+            getDialogController().showSimpleMessage("Bạn đã trả lời đúng. Nhận thêm 1 lượt tung xúc sắc!");
+            getDice().setBonusRoll(true);
+        }
+    }
+
+    private void moveToNextEvent() {
+        // Find next event on the board path
+        int currentPathIndex = getDice().getCurrentPathIndex();
+        int[][] boardPath = getDice().getBoardPath();
+        Map<String, MapEvent> events = eventManager.getEvents();
+
+        // Search forward on path for next event
+        for (int i = 1; i < boardPath.length; i++) {
+            int checkIndex = (currentPathIndex + i) % boardPath.length;
+            int[] position = boardPath[checkIndex];
+
+            // Check if this position has an event
+            for (MapEvent event : events.values()) {
+                if (event.getGridX() == position[0] &&
+                        event.getGridY() == position[1] &&
+                        !event.isCompleted()) {
+
+                    getDialogController().showSimpleMessage("Moving to next event!");
+                    Timer.schedule(new Timer.Task() {
+                        @Override
+                        public void run() {
+                            moveCharacterAlongPath(position[0], position[1]);
+                            getDice().setCurrentPathIndex(checkIndex);
+                        }
+                    }, 1.5f);
+                    return;
+                }
+            }
+        }
+
+        // If no event found, move forward 3 steps
+        getDialogController().showSimpleMessage("No events found ahead. Moving 3 steps forward.");
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                int newIndex = (currentPathIndex + 3) % boardPath.length;
+                int[] position = boardPath[newIndex];
+                moveCharacterAlongPath(position[0], position[1]);
+                getDice().setCurrentPathIndex(newIndex);
+            }
+        }, 1.5f);
+    }
+
 
     boolean isNewRun = false;
 
@@ -991,6 +1083,11 @@ public class GameController {
             eventManager.completeEvent(currentEvent.getId());
             setEndEvent();
         });
+    }
+
+
+    public Dice getDice() {
+        return getInputController().getMapRenderer().getDiceRenderer();
     }
 
     public BoardEventManager getBoardEventManager() {
@@ -1165,6 +1262,14 @@ public class GameController {
 
     public GameplayController getGameplayController() {
         return gameplayController;
+    }
+
+    public MapRenderer getMapRenderer() {
+        return mapRenderer;
+    }
+
+    public void setMapRenderer(MapRenderer mapRenderer) {
+        this.mapRenderer = mapRenderer;
     }
 
     public void setGameplayController(GameplayController gameplayController) {

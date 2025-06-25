@@ -36,6 +36,11 @@ public class MulChoiceQuizController {
     private Rectangle nextButton;
     private Rectangle exitButton;
     private Rectangle[] optionButtons;
+    private QuizCompletionListener quizCompletionListener;
+
+    public void setQuizCompletionListener(QuizCompletionListener listener) {
+        this.quizCompletionListener = listener;
+    }
 
     public MulChoiceQuizController(GameController gameController) {
         this.gameController = gameController;
@@ -374,8 +379,17 @@ public class MulChoiceQuizController {
         quizActive = false;
         gameController.getCharacter().setScore(totalScore);
         gameController.setState(GameState.EXPLORING);
+
+
+        if (this.totalScore > 0) {
+            quizCompletionListener.onQuizCompleted(true); // Notify completion
+        }
+        quizCompletionListener.onQuizCompleted(false);
+
         this.totalScore = 0;
         this.completedQuestions = 0;
+
+
     }
 
     @SuppressWarnings("unchecked")

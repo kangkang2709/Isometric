@@ -33,6 +33,14 @@ public class QuizController {
     private Rectangle nextButton;
     private Rectangle exitButton;
 
+
+    private QuizCompletionListener quizCompletionListener;
+
+    public void setQuizCompletionListener(QuizCompletionListener listener) {
+        this.quizCompletionListener = listener;
+    }
+
+
     public QuizController(GameController gameController) {
         this.gameController = gameController;
         // Initialize with current learned words
@@ -389,6 +397,13 @@ public class QuizController {
         quizActive = false;
         gameController.getCharacter().setScore(totalScore);
         gameController.setState(GameState.EXPLORING);
+
+
+        if (this.totalScore > 0) {
+            quizCompletionListener.onQuizCompleted(true); // Notify completion
+        }
+        quizCompletionListener.onQuizCompleted(false);
+
         this.totalScore = 0;
         this.completedQuestions = 0;
     }

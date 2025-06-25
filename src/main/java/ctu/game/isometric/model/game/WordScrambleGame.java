@@ -11,6 +11,7 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.MathUtils;
 import ctu.game.isometric.controller.GameController;
+import ctu.game.isometric.controller.quiz.QuizCompletionListener;
 
 import java.util.*;
 
@@ -75,24 +76,31 @@ public class WordScrambleGame {
     // Words to use if player hasn't learned many yet
     private final String[] DEFAULT_WORDS = {"HELLO", "WORLD", "GAME", "DICE", "BOARD", "PATH", "MAGIC", "QUEST", "SWORD", "SHIELD"};
 
+
+    private QuizCompletionListener quizCompletionListener;
+
+    public void setQuizCompletionListener(QuizCompletionListener listener) {
+        this.quizCompletionListener = listener;
+    }
+
     public WordScrambleGame(GameController gameController) {
         this.gameController = gameController;
         this.wordList = new ArrayList<>();
-        this.font = generateVietNameseFont("GrenzeGotisch.ttf", 22);
-        this.titleFont = generateVietNameseFont("GrenzeGotisch.ttf", 27);
+        this.font = generateVietNameseFont("GrenzeGotisch.ttf", 20);
+        this.titleFont = generateVietNameseFont("GrenzeGotisch.ttf", 25);
         this.subtitleFont = generateVietNameseFont("GrenzeGotisch.ttf", 18);
         this.buttonFont = generateVietNameseFont("GrenzeGotisch.ttf", 18);
+        this.shapeRenderer = new ShapeRenderer();
         this.shapeRenderer = new ShapeRenderer();
 
         // Configure fonts with better styling
         this.font.setColor(Color.WHITE);
-
         this.titleFont.setColor(ACCENT_COLOR);
-
         this.subtitleFont.setColor(new Color(0.8f, 0.8f, 0.9f, 1.0f));
-
-        this.buttonFont.getData().setScale(1.1f);
         this.buttonFont.setColor(Color.WHITE);
+
+
+        this.uiMatrix = new Matrix4().setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
     }
 
     public void startGame() {
@@ -103,7 +111,6 @@ public class WordScrambleGame {
         showingResult = false;
         resultTimer = 0;
         animationTimer = 0;
-
         // Position the UI in the center of the screen
         uiX = Gdx.graphics.getWidth() / 2 - width / 2;
         uiY = Gdx.graphics.getHeight() / 2 + height / 2;
@@ -155,16 +162,16 @@ public class WordScrambleGame {
         if (cleanGuess.equals(originalWord.toUpperCase())) {
             isSuccessful = true;
             isActive = false;
-            showResult("EXCELLENT! You earned 50 points!", SUCCESS_COLOR);
+            showResult("🎉 EXCELLENT! You earned 50 points!", SUCCESS_COLOR);
             giveReward();
             return true;
         } else {
             attemptsLeft--;
             if (attemptsLeft <= 0) {
                 isActive = false;
-                showResult("Game Over! The word was: " + originalWord, ERROR_COLOR);
+                showResult("💀 Game Over! The word was: " + originalWord, ERROR_COLOR);
             } else {
-                showResult("Try again! " + attemptsLeft + " attempts left", new Color(1.0f, 0.6f, 0.2f, 1.0f));
+                showResult("❌ Try again! " + attemptsLeft + " attempts left", new Color(1.0f, 0.6f, 0.2f, 1.0f));
             }
             return false;
         }
@@ -182,6 +189,8 @@ public class WordScrambleGame {
             gameController.getCharacter().addScore(50);
         }
     }
+
+
 
     public void update(float delta) {
         if (!isActive && !showingResult) return;
@@ -204,19 +213,20 @@ public class WordScrambleGame {
             resultTimer += delta;
             if (resultTimer >= RESULT_DURATION) {
                 showingResult = false;
-                if (!isActive) {
-                    // Game ended
-                }
+                if (!isActive && isSuccessful && attemptsLeft > 0)
+                    quizCompletionListener.onQuizCompleted(true); // Notify completion
+                else if (!isActive && !isSuccessful && attemptsLeft <= 0)
+                    quizCompletionListener.onQuizCompleted(false); // Notify completion
+
+
             }
         }
 
-        // Handle mouse input and hover detection
-        handleMouseInput();
     }
 
-    private void handleMouseInput() {
-        float mouseX = Gdx.input.getX();
-        float mouseY = Gdx.graphics.getHeight() - Gdx.input.getY();
+    public boolean handleMouseInput(int mouseX, int mouseY) {
+
+        mouseY = Gdx.graphics.getHeight() - Gdx.input.getY();
 
         // Check button hover states
         submitHovered = submitButton.contains(mouseX, mouseY);
@@ -232,6 +242,7 @@ public class WordScrambleGame {
                 giveUp();
             }
         }
+        return true;
     }
 
     private void giveUp() {
@@ -268,7 +279,6 @@ public class WordScrambleGame {
 
         // Switch to UI projection
         batch.end();
-        uiMatrix = new Matrix4().setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         batch.setProjectionMatrix(uiMatrix);
 
         // Draw shapes
@@ -283,12 +293,12 @@ public class WordScrambleGame {
             // Glow effect
             float glowIntensity = 0.3f + 0.2f * MathUtils.sin(pulseTimer * 3);
             shapeRenderer.setColor(PANEL_BORDER.r, PANEL_BORDER.g, PANEL_BORDER.b, glowIntensity * 0.5f);
-            shapeRenderer.rect(inputField.x - 4, inputField.y +26, inputField.width + 8, inputField.height + 8);
+            shapeRenderer.rect(inputField.x - 4, inputField.y - 4, inputField.width + 8, inputField.height + 8);
         }
 
         // Input field background
         shapeRenderer.setColor(INPUT_BG);
-        shapeRenderer.rect(inputField.x, inputField.y+30, inputField.width, inputField.height);
+        shapeRenderer.rect(inputField.x, inputField.y, inputField.width, inputField.height);
 
         // Draw buttons with hover effects
         Color submitColor = submitHovered ?
@@ -318,7 +328,7 @@ public class WordScrambleGame {
         // Input field border
         shapeRenderer.setColor(PANEL_BORDER);
         Gdx.gl.glLineWidth(2);
-        shapeRenderer.rect(inputField.x, inputField.y + 30, inputField.width, inputField.height);
+        shapeRenderer.rect(inputField.x, inputField.y, inputField.width, inputField.height);
 
         // Button borders
         shapeRenderer.setColor(Color.WHITE);
@@ -376,20 +386,30 @@ public class WordScrambleGame {
         // Draw attempt counter with visual indicators
         float heartX = panelX;
         font.setColor(Color.WHITE);
-        font.draw(batch, "Lives: " + attemptsLeft, heartX, panelY + height - 110);
+        font.draw(batch, "Lives:", heartX, panelY + height - 110);
+
+        for (int i = 0; i < 3; i++) {
+            if (i < attemptsLeft) {
+                font.setColor(ERROR_COLOR);
+                font.draw(batch, "♥", heartX + 60 + i * 25, panelY + height - 110);
+            } else {
+                font.setColor(Color.DARK_GRAY);
+                font.draw(batch, "♡", heartX + 60 + i * 25, panelY + height - 110);
+            }
+        }
 
         // Draw input field content
         subtitleFont.setColor(new Color(0.7f, 0.7f, 0.8f, 1.0f));
-        subtitleFont.draw(batch, "Your Answer:", panelX, inputField.y + inputField.height + 53);
+        subtitleFont.draw(batch, "Your Answer:", panelX + 5, inputField.y + inputField.height + 25);
 
         // Draw input text with cursor
         font.setColor(Color.WHITE);
         String displayGuess = currentGuess + (showCursor && isActive ? "|" : "");
-        font.draw(batch, displayGuess, inputField.x + 10, inputField.y + inputField.height / 2 + 35);
+        font.draw(batch, displayGuess, inputField.x + 10, inputField.y + inputField.height / 2 + 5);
 
         // Draw input hint
         subtitleFont.setColor(new Color(0.5f, 0.5f, 0.6f, 1.0f));
-        subtitleFont.draw(batch, "Type your answer and press ENTER or click SUBMIT", panelX + 20, panelY + 97);
+        subtitleFont.draw(batch, " Type your answer and press ENTER or click SUBMIT", panelX, panelY + 175);
 
         // Draw buttons with better text
         buttonFont.setColor(Color.WHITE);
@@ -433,7 +453,6 @@ public class WordScrambleGame {
                     gamePanel.x + (gamePanel.width - layout.width) / 2,
                     gamePanel.y + gamePanel.height / 2);
 
-            // Reset font scale
         }
 
         // Restore original state
@@ -476,7 +495,7 @@ public class WordScrambleGame {
     public boolean handleTyped(char c) {
         if (!isActive) return false;
 
-        if (currentGuess.length() < MAX_GUESS_LENGTH) {
+        if (Character.isLetter(c) && currentGuess.length() < MAX_GUESS_LENGTH) {
             currentGuess += Character.toUpperCase(c);
         }
         return true;

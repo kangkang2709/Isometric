@@ -73,12 +73,16 @@ public class Dice {
             10, new int[][]{{11, 4}, {11, 5}}
     );
 
+
+    boolean isBonusRoll = false;
+    int bonusCount = 0;
+
     public int rollDice() {
+
         if (gameController.getCharacter().isMoving()) {
             return 0;
         }
-        System.out.println(gameController.getCurrentEvent());
-        if (gameController.getCurrentEvent()!= null) {
+        if (gameController.getCurrentEvent() != null && isBonusRoll == false) {
             gameController.getDialogController().showSimpleMessage("You cannot roll the dice while an event is active.");
             return 0;
         }
@@ -92,18 +96,14 @@ public class Dice {
             return 0;
         }
 
+        this.currentPathIndex = getCurrentPathIndex(gridX, gridY);
+
         // Check if there are default events for current run
         if (defaultEventsForRun.containsKey(runIndex)) {
             int[][] eventPositions = defaultEventsForRun.get(runIndex);
 
             // Find current position in board path
-            int currentBoardIndex = -1;
-            for (int i = 0; i < boardPath.length; i++) {
-                if (boardPath[i][0] == gridX && boardPath[i][1] == gridY) {
-                    currentBoardIndex = i;
-                    break;
-                }
-            }
+            int currentBoardIndex = this.currentPathIndex;
 
             if (currentBoardIndex == -1) {
                 // Character position not found in board path, use random roll
@@ -171,6 +171,7 @@ public class Dice {
         bounceTime = 0f;
         rollEffect.start();
 
+        updateBonusRoll();
         return currentFaceValue;
     }
 
@@ -197,6 +198,34 @@ public class Dice {
         }
 
         rollEffect.update(delta);
+    }
+
+    public boolean isBonusRoll() {
+        return isBonusRoll;
+    }
+
+    public void setBonusRoll(boolean bonusRoll) {
+        isBonusRoll = bonusRoll;
+        bonusCount++;
+    }
+
+    public void updateBonusRoll() {
+        if (isBonusRoll) {
+            bonusCount = Math.max(0, bonusCount - 1);
+
+            if (bonusCount == 0) {
+                isBonusRoll = false;
+            }
+        }
+    }
+
+    public int getCurrentPathIndex(int gridX, int gridY) {
+        for (int i = 0; i < boardPath.length; i++) {
+            if (boardPath[i][0] == gridX && boardPath[i][1] == gridY) {
+                return i;
+            }
+        }
+        return -1; // Not found
     }
 
     private void moveCharacterClockwise() {
