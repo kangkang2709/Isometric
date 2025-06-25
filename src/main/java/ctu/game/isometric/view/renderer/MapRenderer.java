@@ -232,7 +232,7 @@ public class MapRenderer {
         // Update camera position based on character position
         float[] isoPos = toIsometric(character.getGridX(), character.getGridY());
 
-        camera.position.set(600, 0, 0);
+        camera.position.set(700, 0, 0);
         camera.update();
         if (!map.getMapName().equals("board")) {
             camera.position.set(isoPos[0], isoPos[1], 0);
@@ -292,8 +292,13 @@ public class MapRenderer {
                     drawTexture(batch, "item_hightlight", isoPos[0], isoPos[1], 64, 32);
                     break;
                 case "new_run_event":
-                    drawTexture(batch, "ground", isoPos[0], isoPos[1], 64, 32);
                     drawTexture(batch, "new_run", isoPos[0], isoPos[1], 64, 32);
+                    break;
+                case "quiz":
+                    drawTexture(batch, "quiz_hightlight", isoPos[0], isoPos[1], 64, 32);
+                    break;
+                case "mulquiz":
+                    drawTexture(batch, "quiz_hightlight", isoPos[0], isoPos[1], 64, 32);
                     break;
                 case "battle":
                     drawTexture(batch, "enemy_hightlight", isoPos[0], isoPos[1], 64, 32);
@@ -429,22 +434,25 @@ public class MapRenderer {
         // Set text based on event type
         switch (eventType) {
             case "battle":
-                buttonText = "Chiến đấu";
+                buttonText = "Battle";
                 break;
             case "dialog":
-                buttonText = "Nói chuyện";
+                buttonText = "Talk";
                 break;
             case "cutscene":
-                buttonText = "Xem Cắt Cảnh";
+                buttonText = "Cutscene";
                 break;
             case "quiz":
-                buttonText = "Nói chuyện";
+                buttonText = "Mini-game";
+                break;
+            case "mulquiz":
+                buttonText = "Mini-game";
                 break;
             case "teleport":
-                buttonText = "Dịch Chuyển";
+                buttonText = "Teleport";
                 break;
             case "treasure":
-                buttonText = "Mở rương";
+                buttonText = "Pick up";
                 break;
         }
 

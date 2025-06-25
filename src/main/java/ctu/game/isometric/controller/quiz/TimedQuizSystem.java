@@ -18,10 +18,11 @@ public class TimedQuizSystem extends SymbolicQuizSystem implements QuizTimer.Tim
     // Auto-submit flag
     private boolean pendingAutoSubmit = false;
 
-    public TimedQuizSystem(Set<String> learnedWords, WordNetValidator wordNetValidator) {
+    public TimedQuizSystem(Set<String> learnedWords, WordNetValidator wordNetValidator,int numberOfQuestions) {
         super(learnedWords, wordNetValidator);
         this.timer = new QuizTimer(defaultTimeLimit, this);
         this.timeExpired = false;
+        this.maxQuestionsPerSession = numberOfQuestions;
     }
 
 

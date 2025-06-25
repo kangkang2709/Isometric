@@ -41,9 +41,9 @@ public class MulChoiceQuizController {
         this.gameController = gameController;
         this.quizSystem = new TimedQuizSystem(
                 gameController.getCharacter().getLearnedWords(),
-                gameController.getWordNetValidator()
+                gameController.getWordNetValidator(),
+                5 // Default to 5 questions per session
         );
-
 
 
         this.font = generateVietNameseFont("GrenzeGotisch.ttf", 24);
@@ -65,18 +65,19 @@ public class MulChoiceQuizController {
 
             this.optionButtons[i] = new Rectangle(
                     width * (0.2f + col * 0.35f),        // X: Left or right column
-                    height * (0.6f - row * 0.15f) -110 ,       // Y: Top or bottom row
+                    height * (0.6f - row * 0.15f) - 110,       // Y: Top or bottom row
                     width * 0.26f,                        // Narrower width for 2 columns
                     height * 0.12f                        // Taller height for better readability
             );
         }
     }
 
-    public void startQuiz() {
+    public void startQuiz(int numberOfQuestions) {
         // Refresh quiz system with current learned words
         this.quizSystem = new TimedQuizSystem(
                 gameController.getCharacter().getLearnedWords(),
-                gameController.getWordNetValidator()
+                gameController.getWordNetValidator(),
+                numberOfQuestions
         );
 
         // Generate a multiple choice quiz instead of contextual sentence quiz
@@ -236,6 +237,17 @@ public class MulChoiceQuizController {
         font.draw(batch, "Submit",
                 submitButton.x + (submitButton.width - layout.width) / 2,
                 buttonTextY);
+
+        // Draw turn off unikey
+
+        font.setColor(Color.RED);
+        String unikeyText = "Turn off Unikey or other Vietnamese input methods to avoid issues.";
+        // draw it at the bottom of the screen
+        layout.setText(font, unikeyText);
+        font.draw(batch, unikeyText,
+                centerX - layout.width / 2,
+                height * 0.1f + layout.height / 2);
+
     }
 
     private void renderResults(SpriteBatch batch, int width, int height) {
@@ -310,9 +322,10 @@ public class MulChoiceQuizController {
 
         // Button text
         font.setColor(Color.WHITE);
-        layout.setText(font, "Next Quiz");
+        String buttonText = (total == 1) ? "Next Quiz" : "Complete Quiz";
+        layout.setText(font, buttonText);
         float nextButtonTextY = nextButton.y + (nextButton.height + layout.height) / 2;
-        font.draw(batch, "Next Quiz",
+        font.draw(batch, buttonText,
                 nextButton.x + (nextButton.width - layout.width) / 2,
                 nextButtonTextY);
 

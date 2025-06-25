@@ -476,7 +476,7 @@ public class WordScrambleGame {
     public boolean handleTyped(char c) {
         if (!isActive) return false;
 
-        if (Character.isLetter(c) && currentGuess.length() < MAX_GUESS_LENGTH) {
+        if (currentGuess.length() < MAX_GUESS_LENGTH) {
             currentGuess += Character.toUpperCase(c);
         }
         return true;

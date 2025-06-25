@@ -227,7 +227,7 @@ public class InputController extends InputAdapter {
                 return gameController.getQuestTrackerView().handleClick(screenX, screenY);
 
             case QUIZZES:
-                return true;
+                return gameController.getQuizController().handleClick(screenX, screenY);
 
             default:
                 return false;
@@ -500,9 +500,6 @@ public class InputController extends InputAdapter {
         } else if (keycode == Input.Keys.BACKSPACE) {
             quizController.backspace();
             return true;
-        } else if (keycode == Input.Keys.ESCAPE) {
-            quizController.exitQuiz();
-            return true;
         }
         return false;
     }
@@ -699,10 +696,11 @@ public class InputController extends InputAdapter {
         } else if (gameController.getCurrentState() == GameState.DICTIONARY) {
             return gameController.getDictionaryView().handleKeyTyped(character);
         } else if (gameController.getCurrentState() == GameState.CHARACTER_CREATION) {
-            return gameController.getCharacterCreationController().handleTextInput(character);
+            return gameController.getCharacterCreationController().handleTyped(character);
         } else if (gameController.getCurrentState() == GameState.EXPLORING && gameController.getBoardEventManager().getWordScrambleGame().isActive()) {
             gameController.getBoardEventManager().getWordScrambleGame().handleTyped(character);
         }
+
         return false;
     }
 

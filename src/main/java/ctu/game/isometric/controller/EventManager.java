@@ -115,7 +115,7 @@ public class EventManager {
     public MapEvent checkPositionEvents(float x, float y) {
         int gridX = (int) x;
         int gridY = (int) y;
-        System.out.println("Checking events at grid position: " + gridX + ", " + gridY);
+//        System.out.println("Checking events at grid position: " + gridX + ", " + gridY);
 
         for (MapEvent event : events.values()) {
             if (event.getGridX() == gridX && event.getGridY() == gridY) {

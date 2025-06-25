@@ -38,7 +38,8 @@ public class QuizController {
         // Initialize with current learned words
         this.quizSystem = new TimedQuizSystem(
                 gameController.getCharacter().getLearnedWords(),
-                gameController.getWordNetValidator()
+                gameController.getWordNetValidator(),
+                5 // Default to 5 questions per session
         );
 
         this.font = new BitmapFont();
@@ -52,11 +53,13 @@ public class QuizController {
         this.exitButton = new Rectangle(width * 0.55f, height * 0.25f, width * 0.2f, height * 0.08f);
     }
 
-    public void startQuiz() {
+
+    public void startQuiz(int numQuestions) {
         // Refresh quiz system with current learned word
         this.quizSystem = new TimedQuizSystem(
                 gameController.getCharacter().getLearnedWords(),
-                gameController.getWordNetValidator()
+                gameController.getWordNetValidator(),
+                numQuestions
         );
 
         // Generate a new quiz
@@ -215,6 +218,14 @@ public class QuizController {
         font.draw(batch, "Submit",
                 submitButton.x + (submitButton.width - layout.width) / 2,
                 buttonTextY);
+
+        font.setColor(Color.RED);
+        String unikeyText = "Turn off Unikey or other Vietnamese input methods to avoid issues.";
+        // draw it at the bottom of the screen
+        layout.setText(font, unikeyText);
+        font.draw(batch, unikeyText,
+                centerX - layout.width / 2,
+                height * 0.1f + layout.height / 2);
     }
 
     private void renderResults(SpriteBatch batch, int width, int height) {
@@ -297,9 +308,11 @@ public class QuizController {
 
         // Button text
         font.setColor(Color.WHITE);
-        layout.setText(font, "Next Quiz");
+
+        String buttonText = (total == 1) ? "Next Quiz" : "Complete Quiz";
+        layout.setText(font, buttonText);
         float nextButtonTextY = nextButton.y + (nextButton.height + layout.height) / 2;
-        font.draw(batch, "Next Quiz",
+        font.draw(batch, buttonText,
                 nextButton.x + (nextButton.width - layout.width) / 2,
                 nextButtonTextY);
 
@@ -308,6 +321,8 @@ public class QuizController {
         font.draw(batch, "Exit",
                 exitButton.x + (exitButton.width - layout.width) / 2,
                 exitButtonTextY);
+
+
     }
 
     public void submitAnswer() {
@@ -328,6 +343,30 @@ public class QuizController {
         completedQuestions++;
 
         showingResults = true;
+    }
+
+
+    public boolean handleClick(int x, int y) {
+        if (!quizActive) return false;
+        y = Gdx.graphics.getHeight() - y; // Invert Y coordinate for UI
+
+        if (!showingResults) {
+            // Check if submit button is clicked
+            if (submitButton.contains(x, y)) {
+                submitAnswer();
+                return true;
+            }
+        } else {
+            if (nextButton.contains(x, y)) {
+                handleNextQuiz();
+                return true;
+            } else if (exitButton.contains(x, y)) {
+                exitQuiz();
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public void handleNextQuiz() {

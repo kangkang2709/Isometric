@@ -311,7 +311,7 @@ public class ExploringUI {
 
             // Update player info
             runLabel.setText("Run: " + character.getRun());
-            playerNameLabel.setText(character.getName());
+            playerNameLabel.setText(character.getName().replaceAll("_", " "));
 
             // Update health and max health
             float health = character.getHealth();

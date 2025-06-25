@@ -5,30 +5,31 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Timer;
 import ctu.game.isometric.IsometricGame;
 import ctu.game.isometric.controller.gameplay.BoardEventManager;
+import ctu.game.isometric.controller.gameplay.GameplayController;
 import ctu.game.isometric.controller.quest.BountyBoardController;
 import ctu.game.isometric.controller.quiz.MulChoiceQuizController;
+import ctu.game.isometric.controller.quiz.QuizController;
 import ctu.game.isometric.model.dictionary.Dictionary;
 import ctu.game.isometric.model.dictionary.Word;
+import ctu.game.isometric.model.entity.Character;
+import ctu.game.isometric.model.entity.Enemy;
 import ctu.game.isometric.model.entity.NPC;
+import ctu.game.isometric.model.game.GameState;
 import ctu.game.isometric.model.game.Items;
+import ctu.game.isometric.model.world.IsometricMap;
 import ctu.game.isometric.model.world.MapEvent;
 import ctu.game.isometric.util.AssetManager;
+import ctu.game.isometric.util.EnemyLoader;
 import ctu.game.isometric.util.ItemLoader;
+import ctu.game.isometric.util.WordNetValidator;
 import ctu.game.isometric.view.menu.CharacterCreation;
 import ctu.game.isometric.view.menu.MainMenu;
 import ctu.game.isometric.view.menu.PauseMenu;
 import ctu.game.isometric.view.menu.SettingsMenu;
 import ctu.game.isometric.view.renderer.CutsceneRenderer;
-import ctu.game.isometric.controller.gameplay.GameplayController;
-import ctu.game.isometric.controller.quiz.QuizController;
-import ctu.game.isometric.model.entity.Character;
-import ctu.game.isometric.model.entity.Enemy;
-import ctu.game.isometric.model.game.GameState;
-import ctu.game.isometric.model.world.IsometricMap;
-import ctu.game.isometric.util.EnemyLoader;
-import ctu.game.isometric.util.WordNetValidator;
 import ctu.game.isometric.view.renderer.MapRenderer;
 import ctu.game.isometric.view.renderer.NPCRenderer;
 import ctu.game.isometric.view.renderer.TransitionRenderer;
@@ -218,7 +219,7 @@ public class GameController {
                         dialogController.showSimpleMessage("You have already attempted this quiz today. Come back tomorrow!");
                     } else {
                         dialogController.setOnDialogFinishedAction(() -> {
-                            startQuiz();
+                            startQuiz(5);
                             getCharacter().getAttempFlags().put("quizAttempts", 1);
                         });
                         dialogController.startDialog("chapter_quiz_intro", "scene_meet_npc");
@@ -230,7 +231,7 @@ public class GameController {
                         dialogController.showSimpleMessage("You have already attempted this quiz today. Come back tomorrow!");
                     } else {
                         dialogController.setOnDialogFinishedAction(() -> {
-                            startMulChoiceQuiz();
+                            startMulChoiceQuiz(5);
                             getCharacter().getAttempFlags().put("mulQuizAttempts", 1);
 
                         });
@@ -272,7 +273,7 @@ public class GameController {
                         dialogController.showSimpleMessage("You have already attempted this quiz today. Come back tomorrow!");
                     } else {
                         dialogController.setOnDialogFinishedAction(() -> {
-                            startQuiz();
+                            startQuiz(5);
                             getCharacter().getAttempFlags().put("quizAttempts", 1);
                         });
                         dialogController.startDialog(npc.getArcId(), npc.getSceneId());
@@ -284,7 +285,7 @@ public class GameController {
                         dialogController.showSimpleMessage("You have already attempted this quiz today. Come back tomorrow!");
                     } else {
                         dialogController.setOnDialogFinishedAction(() -> {
-                            startMulChoiceQuiz();
+                            startMulChoiceQuiz(5);
                             getCharacter().getAttempFlags().put("mulQuizAttempts", 1);
 
                         });
@@ -563,17 +564,17 @@ public class GameController {
 
     }
 
-    public void startMulChoiceQuiz() {
+    public void startMulChoiceQuiz(int numQuestions) {
         setPreviousState(currentState);
         setState(GameState.MULTIPLE_CHOICE_QUIZZES);
-        mulChoiceQuizController.startQuiz();
+        mulChoiceQuizController.startQuiz(numQuestions);
     }
 
 
-    public void startQuiz() {
+    public void startQuiz(int numQuestions) {
         setPreviousState(currentState);
         setState(GameState.QUIZZES);
-        quizController.startQuiz();
+        quizController.startQuiz(numQuestions);
     }
 
     public MulChoiceQuizController getMultipleChoiceQuizController() {
@@ -922,22 +923,24 @@ public class GameController {
                 }
                 break;
             case "quiz":
-                if (getCharacter().getAttempFlags().get("quizAttempts") >= 1) {
-                    dialogController.showSimpleMessage("You have already attempted this quiz today. Come back tomorrow!");
-                } else {
-                    dialogController.setOnDialogFinishedAction(() -> startQuiz());
-                    dialogController.startDialog("chapter_quiz_intro", "scene_meet_npc");
-                    getCharacter().getAttempFlags().put("quizAttempts", 1);
-                }
+                getDialogController().showSimpleMessage("Bat dau mini-game quiz sau 1s!");
+                Timer.schedule(new Timer.Task() {
+                    @Override
+                    public void run() {
+                        startQuiz(1);
+                    }
+                }, 1f);
+                setEndEvent();
                 break;
             case "mulquiz":
-                if (getCharacter().getAttempFlags().get("mulQuizAttempts") >= 1) {
-                    dialogController.showSimpleMessage("You have already attempted this quiz today. Come back tomorrow!");
-                } else {
-                    dialogController.setOnDialogFinishedAction(() -> startMulChoiceQuiz());
-                    dialogController.startDialog("chapter_quiz_intro", "scene_meet_npc");
-                    getCharacter().getAttempFlags().put("mulQuizAttempts", 1);
-                }
+                getDialogController().showSimpleMessage("Bat dau mini-game multiqioz sau 1s!");
+                Timer.schedule(new Timer.Task() {
+                    @Override
+                    public void run() {
+                        startMulChoiceQuiz(1);
+                    }
+                }, 1f);
+                setEndEvent();
                 break;
             case "new_run_event":
                 getCharacter().updateRun();
