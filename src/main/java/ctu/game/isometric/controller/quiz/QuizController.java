@@ -10,7 +10,9 @@ import com.badlogic.gdx.math.Rectangle;
 import ctu.game.isometric.controller.GameController;
 import ctu.game.isometric.model.game.GameState;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class QuizController {
     private GameController gameController;
@@ -33,23 +35,22 @@ public class QuizController {
     private Rectangle nextButton;
     private Rectangle exitButton;
 
-
     private QuizCompletionListener quizCompletionListener;
+
+    // Session tracking
+    private static Set<String> sessionUsedQuestions = new HashSet<>();
+    private static final int MAX_SESSION_QUESTIONS = 50;
+
+    // Statistics
+    private int commonQuizCount = 0;
+    private int learnedWordQuizCount = 0;
 
     public void setQuizCompletionListener(QuizCompletionListener listener) {
         this.quizCompletionListener = listener;
     }
 
-
     public QuizController(GameController gameController) {
         this.gameController = gameController;
-        // Initialize with current learned words
-        this.quizSystem = new TimedQuizSystem(
-                gameController.getCharacter().getLearnedWords(),
-                gameController.getWordNetValidator(),
-                5 // Default to 5 questions per session
-        );
-
         this.font = new BitmapFont();
         this.font.getData().setScale(1.5f);
         this.shapeRenderer = new ShapeRenderer();
@@ -61,22 +62,124 @@ public class QuizController {
         this.exitButton = new Rectangle(width * 0.55f, height * 0.25f, width * 0.2f, height * 0.08f);
     }
 
-
-    public void startQuiz(int numQuestions) {
-        // Refresh quiz system with current learned word
+    private void createNewQuizSystem(int numQuestions) {
         this.quizSystem = new TimedQuizSystem(
                 gameController.getCharacter().getLearnedWords(),
                 gameController.getWordNetValidator(),
                 numQuestions
         );
+    }
 
-        // Generate a new quiz
-        currentQuiz = quizSystem.generateContextualSentenceQuiz();
+    public void startQuiz(int numQuestions) {
+        createNewQuizSystem(numQuestions);
+        cleanupSessionUsedQuestions();
+
+        // Reset statistics
+        commonQuizCount = 0;
+        learnedWordQuizCount = 0;
+
+        currentQuiz = generateContextualQuizWithFallback();
+
+        if (currentQuiz == null) {
+            System.err.println("Failed to generate any contextual quiz, creating emergency quiz");
+            currentQuiz = createEmergencyContextualQuiz();
+        }
+
         quizSystem.startQuiz();
         quizActive = true;
         showingResults = false;
         currentAnswer = "";
         completedQuestions = 0;
+
+        updateQuizStats();
+
+        System.out.println("=== CONTEXTUAL QUIZ SESSION STARTED ===");
+        System.out.println("Session used questions: " + sessionUsedQuestions.size());
+        System.out.println("Global used questions: " + TimedQuizSystem.getUsedQuestionsCount());
+        System.out.println("Available common contextual quizzes: " + CommonQuizBank.getAvailableContextualQuizzesCount());
+    }
+
+    private Map<String, Object> generateContextualQuizWithFallback() {
+        Map<String, Object> quiz = quizSystem.generateContextualSentenceQuiz();
+
+        if (quiz != null && !quiz.containsKey("error") && !quiz.containsKey("sessionComplete")) {
+            String question = (String) quiz.get("question");
+
+            // Double check for session duplicates
+            if (sessionUsedQuestions.contains(question)) {
+                System.out.println("Session duplicate detected, trying contextual fallback...");
+
+                // Try common contextual quiz as fallback
+                try {
+                    CommonQuizBank.CommonQuiz commonQuiz = CommonQuizBank.getRandomContextualQuiz();
+                    Map<String, Object> fallbackQuiz = commonQuiz.toQuizMap();
+                    String fallbackQuestion = (String) fallbackQuiz.get("question");
+
+                    if (!sessionUsedQuestions.contains(fallbackQuestion)) {
+                        sessionUsedQuestions.add(fallbackQuestion);
+                        System.out.println("Using common contextual quiz as fallback");
+                        return fallbackQuiz;
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error getting common contextual quiz: " + e.getMessage());
+                }
+
+                // If even common quiz is duplicate, force clear session cache
+                sessionUsedQuestions.clear();
+                sessionUsedQuestions.add(question);
+                System.out.println("Cleared session cache due to duplicates");
+                return quiz;
+            } else {
+                sessionUsedQuestions.add(question);
+                return quiz;
+            }
+        }
+
+        return quiz; // Return whatever we got (might contain error or sessionComplete)
+    }
+
+    private Map<String, Object> createEmergencyContextualQuiz() {
+        long timestamp = System.currentTimeMillis();
+        Map<String, Object> emergency = new java.util.HashMap<>();
+        emergency.put("type", "contextual_sentence");
+        emergency.put("question", "Emergency Contextual Quiz " + timestamp + ": Fill in the blank: ____ is a common greeting.");
+        emergency.put("answer", "HELLO");
+        emergency.put("difficulty", 1);
+        emergency.put("points", 5);
+        emergency.put("timeLimit", 30f);
+        emergency.put("difficultyLevel", "Easy");
+        emergency.put("isEmergencyQuiz", true);
+
+        sessionUsedQuestions.add((String) emergency.get("question"));
+        System.out.println("Created emergency contextual quiz");
+        return emergency;
+    }
+
+    private void updateQuizStats() {
+        if (currentQuiz != null) {
+            if (currentQuiz.containsKey("isCommonQuiz")) {
+                commonQuizCount++;
+            } else {
+                learnedWordQuizCount++;
+            }
+        }
+    }
+
+    private void cleanupSessionUsedQuestions() {
+        if (sessionUsedQuestions.size() > MAX_SESSION_QUESTIONS) {
+            int keepSize = (int) (MAX_SESSION_QUESTIONS * 0.6);
+            Set<String> newSet = new HashSet<>();
+
+            int count = 0;
+            for (String question : sessionUsedQuestions) {
+                if (count >= keepSize) break;
+                newSet.add(question);
+                count++;
+            }
+
+            sessionUsedQuestions = newSet;
+            System.out.println("Cleaned contextual session cache. Remaining: " + sessionUsedQuestions.size());
+        }
     }
 
     public void update(float delta) {
@@ -141,10 +244,16 @@ public class QuizController {
         float centerX = width / 2;
         com.badlogic.gdx.graphics.g2d.GlyphLayout layout = new com.badlogic.gdx.graphics.g2d.GlyphLayout();
 
-        // Title
+        // Title with quiz type indicator
         font.setColor(Color.GOLD);
-        layout.setText(font, "FILL THE BLANK");
-        font.draw(batch, "FILL THE BLANK", centerX - layout.width / 2, height * 0.85f);
+        String title = "FILL THE BLANK";
+        if (currentQuiz.containsKey("isCommonQuiz")) {
+            title += " (Common)";
+        } else if (currentQuiz.containsKey("isEmergencyQuiz")) {
+            title += " (Emergency)";
+        }
+        layout.setText(font, title);
+        font.draw(batch, title, centerX - layout.width / 2, height * 0.85f);
 
         // Show total score
         String totalScoreText = "Total Score: " + totalScore;
@@ -152,7 +261,7 @@ public class QuizController {
         font.draw(batch, totalScoreText, 100, height * 0.85f);
 
         // Display difficulty level
-        String difficultyText = "Difficulty: " + currentQuiz.get("difficulty");
+        String difficultyText = "Difficulty: " + currentQuiz.get("difficultyLevel");
         font.setColor(Color.CYAN);
         layout.setText(font, difficultyText);
         font.draw(batch, difficultyText, 100, height * 0.78f);
@@ -164,10 +273,19 @@ public class QuizController {
         layout.setText(font, questionCountText);
         font.draw(batch, questionCountText, width - 100 - layout.width, height * 0.78f);
 
+        // Quiz statistics (reduced font size for this info)
+        font.getData().setScale(1.2f); // Smaller scale for stats
+        font.setColor(Color.GRAY);
+        String statsText = String.format("Stats: %d learned | %d common | Session: %d | Global: %d",
+                learnedWordQuizCount, commonQuizCount, sessionUsedQuestions.size(), TimedQuizSystem.getUsedQuestionsCount());
+        layout.setText(font, statsText);
+        font.draw(batch, statsText, 100, height * 0.72f);
+        font.getData().setScale(1.5f); // Reset to normal scale
+
         // Question
         String question = (String) currentQuiz.get("question");
         font.setColor(Color.WHITE);
-        font.draw(batch, question, width * 0.15f, height * 0.7f, width * 0.7f, 1, true);
+        font.draw(batch, question, width * 0.15f, height * 0.65f, width * 0.7f, 1, true);
 
         // Timer
         float timeRemaining = quizSystem.getTimer().getTimeRemaining();
@@ -206,12 +324,14 @@ public class QuizController {
         // If the answer field is empty, show underscores representing each character
         if (displayText.isEmpty() && currentQuiz != null) {
             String correctAnswer = (String) currentQuiz.get("answer");
-            StringBuilder underscores = new StringBuilder();
-            for (int i = 0; i < correctAnswer.length(); i++) {
-                underscores.append("_ ");
+            if (correctAnswer != null) {
+                StringBuilder underscores = new StringBuilder();
+                for (int i = 0; i < correctAnswer.length(); i++) {
+                    underscores.append("_ ");
+                }
+                displayText = underscores.toString().trim();
+                font.setColor(Color.GRAY); // Make underscores appear in gray
             }
-            displayText = underscores.toString().trim();
-            font.setColor(Color.GRAY); // Make underscores appear in gray
         }
 
         layout.setText(font, displayText);
@@ -227,9 +347,9 @@ public class QuizController {
                 submitButton.x + (submitButton.width - layout.width) / 2,
                 buttonTextY);
 
+        // Warning text
         font.setColor(Color.RED);
         String unikeyText = "Turn off Unikey or other Vietnamese input methods to avoid issues.";
-        // draw it at the bottom of the screen
         layout.setText(font, unikeyText);
         font.draw(batch, unikeyText,
                 centerX - layout.width / 2,
@@ -256,7 +376,15 @@ public class QuizController {
         String resultText = correct ? "Correct!" : "Incorrect";
         font.setColor(correct ? Color.GREEN : Color.RED);
         layout.setText(font, resultText);
-        font.draw(batch, resultText, centerX - layout.width / 2, height * 0.7f);
+        font.draw(batch, resultText, centerX - layout.width / 2, height * 0.75f);
+
+        // Quiz source indicator
+        if (lastResult.containsKey("isCommonQuiz") && (Boolean) lastResult.get("isCommonQuiz")) {
+            font.setColor(Color.ORANGE);
+            String sourceText = "(From Common Contextual Quiz Bank)";
+            layout.setText(font, sourceText);
+            font.draw(batch, sourceText, centerX - layout.width / 2, height * 0.70f);
+        }
 
         // Show correct answer (especially important if the user was incorrect)
         String correctAnswer = (String) currentQuiz.get("answer");
@@ -270,7 +398,7 @@ public class QuizController {
             font.setColor(Color.WHITE);
             String userAnswerText = "Your answer: " + (String) lastResult.get("userAnswer");
             layout.setText(font, userAnswerText);
-            font.draw(batch, userAnswerText, centerX - layout.width / 2, height * 0.6f);
+            font.draw(batch, userAnswerText, centerX - layout.width / 2, height * 0.60f);
         }
 
         // Score
@@ -282,20 +410,20 @@ public class QuizController {
         // Time
         String timeText = "Time: " + String.format("%.1f", timeTaken) + "s";
         layout.setText(font, timeText);
-        font.draw(batch, timeText, centerX - layout.width / 2, height * 0.5f);
+        font.draw(batch, timeText, centerX - layout.width / 2, height * 0.50f);
 
-        // Remaining question information - correctly display completed questions
+        // Progress information
         int total = quizSystem.getTotalQuestions();
-        String questionCountText = "Questions: " + completedQuestions + " completed / " + total + " total";
+        String questionCountText = "Progress: " + completedQuestions + " / " + total;
         font.setColor(Color.CYAN);
         layout.setText(font, questionCountText);
         font.draw(batch, questionCountText, centerX - layout.width / 2, height * 0.45f);
 
-        // Draw buttons - redefine with exact coordinates
+        // Draw buttons
         batch.end();
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
-        // Button positions adjusted to accommodate new text elements
+        // Button positions
         nextButton.x = width * 0.25f;
         nextButton.y = height * 0.2f;
         nextButton.width = width * 0.2f;
@@ -317,7 +445,7 @@ public class QuizController {
         // Button text
         font.setColor(Color.WHITE);
 
-        String buttonText = (total == 1) ? "Next Quiz" : "Complete Quiz";
+        String buttonText = (quizSystem.getRemainingQuestions() <= 0) ? "Complete Quiz" : "Next Question";
         layout.setText(font, buttonText);
         float nextButtonTextY = nextButton.y + (nextButton.height + layout.height) / 2;
         font.draw(batch, buttonText,
@@ -329,8 +457,6 @@ public class QuizController {
         font.draw(batch, "Exit",
                 exitButton.x + (exitButton.width - layout.width) / 2,
                 exitButtonTextY);
-
-
     }
 
     public void submitAnswer() {
@@ -352,7 +478,6 @@ public class QuizController {
 
         showingResults = true;
     }
-
 
     public boolean handleClick(int x, int y) {
         if (!quizActive) return false;
@@ -379,14 +504,15 @@ public class QuizController {
 
     public void handleNextQuiz() {
         if (showingResults) {
-            currentQuiz = quizSystem.generateContextualSentenceQuiz();
+            currentQuiz = generateContextualQuizWithFallback();
 
             // Check if session is complete
-            if (currentQuiz.containsKey("sessionComplete")) {
+            if (currentQuiz == null || currentQuiz.containsKey("sessionComplete")) {
                 exitQuiz();
                 return;
             }
 
+            updateQuizStats();
             quizSystem.startQuiz();
             showingResults = false;
             currentAnswer = "";
@@ -398,14 +524,21 @@ public class QuizController {
         gameController.getCharacter().setScore(totalScore);
         gameController.setState(GameState.EXPLORING);
 
-
-        if (this.totalScore > 0) {
-            quizCompletionListener.onQuizCompleted(true); // Notify completion
+        boolean quizCompleted = this.totalScore > 0;
+        if (quizCompletionListener != null) {
+            quizCompletionListener.onQuizCompleted(quizCompleted);
         }
-        quizCompletionListener.onQuizCompleted(false);
+
+        System.out.println("=== CONTEXTUAL QUIZ SESSION ENDED ===");
+        System.out.println("Final Score: " + totalScore);
+        System.out.println("Learned word quizzes: " + learnedWordQuizCount);
+        System.out.println("Common contextual quizzes used: " + commonQuizCount);
+        System.out.println("Session questions used: " + sessionUsedQuestions.size());
 
         this.totalScore = 0;
         this.completedQuestions = 0;
+        this.commonQuizCount = 0;
+        this.learnedWordQuizCount = 0;
     }
 
     public void processInput(char character) {
@@ -432,6 +565,21 @@ public class QuizController {
     }
 
     public QuizTimer getTimer() {
-        return quizSystem.getTimer();
+        return quizSystem != null ? quizSystem.getTimer() : null;
+    }
+
+    // Static utility methods
+    public static void clearSessionUsedQuestions() {
+        sessionUsedQuestions.clear();
+    }
+
+    public static void clearAllUsedQuestions() {
+        sessionUsedQuestions.clear();
+        TimedQuizSystem.clearGlobalUsedQuestions();
+        CommonQuizBank.resetAllUsedQuizzes();
+    }
+
+    public static int getSessionUsedQuestionsCount() {
+        return sessionUsedQuestions.size();
     }
 }

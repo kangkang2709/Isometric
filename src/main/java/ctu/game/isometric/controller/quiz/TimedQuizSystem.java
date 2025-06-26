@@ -5,135 +5,273 @@ import ctu.game.isometric.util.WordNetValidator;
 import java.util.*;
 
 public class TimedQuizSystem extends SymbolicQuizSystem implements QuizTimer.TimerCallback {
+    private static final float DEFAULT_TIME_LIMIT = 30f;
+    private static final int MAX_GENERATION_ATTEMPTS = 3;
+    private static final int MAX_FALLBACK_ATTEMPTS = 2;
+
     private QuizTimer timer;
     private boolean timeExpired;
-    private float defaultTimeLimit = 30f; // 30 seconds default
+    private float defaultTimeLimit = DEFAULT_TIME_LIMIT;
 
     // Track session questions
     private int maxQuestionsPerSession = 5;
     private int currentQuestionCount = 0;
-    private Set<String> usedQuestions = new HashSet<>();
     private Map<String, Object> currentQuiz;
 
     // Auto-submit flag
     private boolean pendingAutoSubmit = false;
 
-    public TimedQuizSystem(Set<String> learnedWords, WordNetValidator wordNetValidator,int numberOfQuestions) {
+    // Static để giữ usedQuestions giữa các instance
+    private static Set<String> globalUsedQuestions = new HashSet<>();
+    private static final int MAX_USED_QUESTIONS_CACHE = 100;
+
+    // Track common quiz usage
+    private int commonMultipleChoiceUsedCount = 0;
+    private int commonContextualUsedCount = 0;
+    private static final int MAX_COMMON_QUIZ_PER_SESSION = 3;
+
+    public TimedQuizSystem(Set<String> learnedWords, WordNetValidator wordNetValidator, int numberOfQuestions) {
         super(learnedWords, wordNetValidator);
         this.timer = new QuizTimer(defaultTimeLimit, this);
         this.timeExpired = false;
         this.maxQuestionsPerSession = numberOfQuestions;
+
+        // Cleanup cache nếu quá lớn
+        cleanupUsedQuestionsCache();
+
+        System.out.println("TimedQuizSystem created. Global used questions: " + globalUsedQuestions.size());
+        System.out.println("Available common multiple choice quizzes: " + CommonQuizBank.getAvailableMultipleChoiceQuizzesCount());
+        System.out.println("Available common contextual quizzes: " + CommonQuizBank.getAvailableContextualQuizzesCount());
     }
 
+    private void cleanupUsedQuestionsCache() {
+        if (globalUsedQuestions.size() > MAX_USED_QUESTIONS_CACHE) {
+            int keepSize = (int) (MAX_USED_QUESTIONS_CACHE * 0.6);
+            List<String> questionsList = new ArrayList<>(globalUsedQuestions);
+            globalUsedQuestions.clear();
+
+            if (questionsList.size() > keepSize) {
+                globalUsedQuestions.addAll(questionsList.subList(questionsList.size() - keepSize, questionsList.size()));
+            } else {
+                globalUsedQuestions.addAll(questionsList);
+            }
+            System.out.println("Cleaned up global used questions. Remaining: " + globalUsedQuestions.size());
+        }
+    }
 
     @Override
     public Map<String, Object> generateMultipleChoiceQuiz() {
         if (currentQuestionCount >= maxQuestionsPerSession) {
-            Map<String, Object> endData = new HashMap<>();
-            endData.put("sessionComplete", true);
-            endData.put("message", "Quiz session complete!");
-            return endData;
+            return createSessionCompleteResponse("Quiz session complete!");
         }
 
-        // Try to generate a non-repeating question (max 5 attempts)
-        Map<String, Object> quizData = null;
-        int attempts = 0;
+        // Thử generate từ learned words trước
+        Map<String, Object> quizData = generateUniqueQuizFromLearnedWords(true);
 
-        while (attempts < 1) {
-            quizData = super.generateMultipleChoiceQuiz();
-            if (quizData == null || quizData.containsKey("error")) {
-                break; // If there's an error or quizData is null, stop trying
-            }
-
-            String question = (String) quizData.get("question");
-            if (!usedQuestions.contains(question)) {
-                // Found a new question
-                usedQuestions.add(question);
-                break;
-            }
-            attempts++;
+        if (quizData != null && !quizData.containsKey("error")) {
+            setupQuizSession(quizData);
+            return quizData;
         }
 
-        // End session if we couldn't find a unique question or encountered errors
-        if (quizData == null || quizData.containsKey("error") || attempts >= 1) {
-            Map<String, Object> endData = new HashMap<>();
-            endData.put("sessionComplete", true);
-            endData.put("message", "No more unique questions available!");
-            return endData;
-        }
-
-        // Add time limit to the quiz data based on difficulty
-        int difficulty = (int) quizData.getOrDefault("difficulty", 3);
-        float timeLimit = getTimeLimitForDifficulty(difficulty);
-        quizData.put("timeLimit", timeLimit);
-        quizData.put("difficultyLevel", getDifficultyLabel(difficulty));
-
-        timer.reset();
-        timeExpired = false;
-        pendingAutoSubmit = false;
-
-        // Store the current quiz
-        currentQuiz = quizData;
-        currentQuestionCount++;
-
-        return quizData;
+        // Fallback to common multiple choice quiz
+        System.out.println("Falling back to common multiple choice quiz. Attempt: " + (commonMultipleChoiceUsedCount + 1));
+        return generateCommonMultipleChoiceQuiz();
     }
-
-
 
     @Override
     public Map<String, Object> generateContextualSentenceQuiz() {
-        // Check if we've reached the question limit
         if (currentQuestionCount >= maxQuestionsPerSession) {
-            Map<String, Object> endData = new HashMap<>();
-            endData.put("sessionComplete", true);
-            endData.put("message", "Quiz session complete!");
-            return endData;
+            return createSessionCompleteResponse("Quiz session complete!");
         }
 
-        // Try to generate a non-repeating question (max 5 attempts)
-        Map<String, Object> quizData = null;
-        int attempts = 0;
+        // Thử generate từ learned words trước
+        Map<String, Object> quizData = generateUniqueQuizFromLearnedWords(false);
 
-        while (attempts < 1) {
-            quizData = super.generateContextualSentenceQuiz();
+        if (quizData != null && !quizData.containsKey("error")) {
+            setupQuizSession(quizData);
+            return quizData;
+        }
 
-            if (quizData.containsKey("error")) {
-                break; // If there's an error, stop trying
+        // Fallback to common contextual quiz
+        System.out.println("Falling back to common contextual quiz. Attempt: " + (commonContextualUsedCount + 1));
+        return generateCommonContextualQuiz();
+    }
+
+    private Map<String, Object> generateUniqueQuizFromLearnedWords(boolean isMultipleChoice) {
+        for (int attempt = 0; attempt < MAX_GENERATION_ATTEMPTS; attempt++) {
+            try {
+                Map<String, Object> quizData;
+
+                if (isMultipleChoice) {
+                    quizData = super.generateMultipleChoiceQuiz();
+                } else {
+                    quizData = super.generateContextualSentenceQuiz();
+                }
+
+                if (quizData == null || quizData.containsKey("error")) {
+                    String quizType = isMultipleChoice ? "multiple choice" : "contextual";
+                    System.out.println(quizType + " generation attempt " + (attempt + 1) + " failed: " +
+                            (quizData != null ? quizData.get("message") : "null quiz"));
+                    continue;
+                }
+
+                String question = (String) quizData.get("question");
+                if (question == null || question.trim().isEmpty()) {
+                    System.out.println("Generated question is empty");
+                    continue;
+                }
+
+                if (!globalUsedQuestions.contains(question)) {
+                    globalUsedQuestions.add(question);
+                    String quizType = isMultipleChoice ? "multiple choice" : "contextual";
+                    System.out.println("Generated unique " + quizType + " question from learned words");
+                    return quizData;
+                } else {
+                    System.out.println("Question already used: " + question.substring(0, Math.min(50, question.length())) + "...");
+                }
+            } catch (Exception e) {
+                String quizType = isMultipleChoice ? "multiple choice" : "contextual";
+                System.err.println("Error generating " + quizType + " quiz attempt " + (attempt + 1) + ": " + e.getMessage());
             }
+        }
+
+        return null;
+    }
+
+    private Map<String, Object> generateCommonMultipleChoiceQuiz() {
+        try {
+            CommonQuizBank.CommonQuiz commonQuiz = CommonQuizBank.getRandomMultipleChoiceQuiz();
+            Map<String, Object> quizData = commonQuiz.toQuizMap();
 
             String question = (String) quizData.get("question");
-            if (!usedQuestions.contains(question)) {
-                // Found a new question
-                usedQuestions.add(question);
-                break;
+
+            // Kiểm tra xem common quiz này đã dùng chưa
+            for (int attempt = 0; attempt < MAX_FALLBACK_ATTEMPTS; attempt++) {
+                if (!globalUsedQuestions.contains(question)) {
+                    globalUsedQuestions.add(question);
+                    commonMultipleChoiceUsedCount++;
+                    setupQuizSession(quizData);
+                    System.out.println("Using common multiple choice quiz: " + question.substring(0, Math.min(50, question.length())) + "...");
+                    return quizData;
+                }
+
+                // Thử lấy common quiz khác
+                commonQuiz = CommonQuizBank.getRandomMultipleChoiceQuiz();
+                quizData = commonQuiz.toQuizMap();
+                question = (String) quizData.get("question");
             }
-            attempts++;
+
+            // Nếu vẫn trùng, force sử dụng
+            if (CommonQuizBank.getAvailableMultipleChoiceQuizzesCount() == 0) {
+                CommonQuizBank.resetUsedMultipleChoiceQuizzes();
+                commonQuiz = CommonQuizBank.getRandomMultipleChoiceQuiz();
+                quizData = commonQuiz.toQuizMap();
+            }
+
+            globalUsedQuestions.add((String) quizData.get("question"));
+            commonMultipleChoiceUsedCount++;
+            setupQuizSession(quizData);
+            System.out.println("Force using common multiple choice quiz (potential duplicate)");
+            return quizData;
+
+        } catch (Exception e) {
+            System.err.println("Error generating common multiple choice quiz: " + e.getMessage());
+            return createEmergencyQuiz(true);
+        }
+    }
+
+    private Map<String, Object> generateCommonContextualQuiz() {
+        try {
+            CommonQuizBank.CommonQuiz commonQuiz = CommonQuizBank.getRandomContextualQuiz();
+            Map<String, Object> quizData = commonQuiz.toQuizMap();
+
+            String question = (String) quizData.get("question");
+
+            // Kiểm tra xem common quiz này đã dùng chưa
+            for (int attempt = 0; attempt < MAX_FALLBACK_ATTEMPTS; attempt++) {
+                if (!globalUsedQuestions.contains(question)) {
+                    globalUsedQuestions.add(question);
+                    commonContextualUsedCount++;
+                    setupQuizSession(quizData);
+                    System.out.println("Using common contextual quiz: " + question.substring(0, Math.min(50, question.length())) + "...");
+                    return quizData;
+                }
+
+                // Thử lấy common quiz khác
+                commonQuiz = CommonQuizBank.getRandomContextualQuiz();
+                quizData = commonQuiz.toQuizMap();
+                question = (String) quizData.get("question");
+            }
+
+            // Nếu vẫn trùng, force sử dụng
+            if (CommonQuizBank.getAvailableContextualQuizzesCount() == 0) {
+                CommonQuizBank.resetUsedContextualQuizzes();
+                commonQuiz = CommonQuizBank.getRandomContextualQuiz();
+                quizData = commonQuiz.toQuizMap();
+            }
+
+            globalUsedQuestions.add((String) quizData.get("question"));
+            commonContextualUsedCount++;
+            setupQuizSession(quizData);
+            System.out.println("Force using common contextual quiz (potential duplicate)");
+            return quizData;
+
+        } catch (Exception e) {
+            System.err.println("Error generating common contextual quiz: " + e.getMessage());
+            return createEmergencyQuiz(false);
+        }
+    }
+
+    private Map<String, Object> createEmergencyQuiz(boolean isMultipleChoice) {
+        Map<String, Object> quizData = new HashMap<>();
+        long timestamp = System.currentTimeMillis();
+
+        if (isMultipleChoice) {
+            quizData.put("type", "multiple_choice");
+            quizData.put("question", "Emergency Multiple Choice Quiz: Which word means 'greeting'? (ID: " + timestamp + ")");
+            quizData.put("answer", "HELLO");
+            quizData.put("options", Arrays.asList("HELLO", "GOODBYE", "THANKS", "SORRY"));
+        } else {
+            quizData.put("type", "contextual_sentence");
+            quizData.put("question", "Emergency Contextual Quiz: Fill in the blank: ____ is a common greeting. (ID: " + timestamp + ")");
+            quizData.put("answer", "HELLO");
         }
 
-        // End session if we couldn't find a unique question or encountered errors
-        if (quizData == null || quizData.containsKey("error") || attempts >= 2) {
-            Map<String, Object> endData = new HashMap<>();
-            endData.put("sessionComplete", true);
-            endData.put("message", "No more unique questions available!");
-            return endData;
-        }
+        quizData.put("difficulty", 1);
+        quizData.put("points", 5);
+        quizData.put("timeLimit", defaultTimeLimit);
+        quizData.put("difficultyLevel", "Easy");
+        quizData.put("isEmergencyQuiz", true);
 
-        // Add time limit to the quiz data based on difficulty
+        setupQuizSession(quizData);
+        System.out.println("Created emergency " + (isMultipleChoice ? "multiple choice" : "contextual") + " quiz");
+        return quizData;
+    }
+
+    private void setupQuizSession(Map<String, Object> quizData) {
         int difficulty = (int) quizData.getOrDefault("difficulty", 3);
         float timeLimit = getTimeLimitForDifficulty(difficulty);
-        quizData.put("timeLimit", timeLimit);
-        quizData.put("difficultyLevel", getDifficultyLabel(difficulty));
+
+        if (!quizData.containsKey("timeLimit")) {
+            quizData.put("timeLimit", timeLimit);
+        }
+        if (!quizData.containsKey("difficultyLevel")) {
+            quizData.put("difficultyLevel", getDifficultyLabel(difficulty));
+        }
 
         timer.reset();
         timeExpired = false;
         pendingAutoSubmit = false;
 
-        // Store the current quiz
         currentQuiz = quizData;
         currentQuestionCount++;
+    }
 
-        return quizData;
+    private Map<String, Object> createSessionCompleteResponse(String message) {
+        Map<String, Object> endData = new HashMap<>();
+        endData.put("sessionComplete", true);
+        endData.put("message", message);
+        return endData;
     }
 
     private String getDifficultyLabel(int difficulty) {
@@ -147,14 +285,9 @@ public class TimedQuizSystem extends SymbolicQuizSystem implements QuizTimer.Tim
         }
     }
 
-    private Map<String, Object> createDefaultQuiz() {
-        Map<String, Object> quizData = new HashMap<>();
-        quizData.put("type", "contextual_sentence");
-        quizData.put("question", "Fill in the blank: The ____ is a common English greeting.");
-        quizData.put("answer", "HELLO");
-        quizData.put("difficulty", 1);
-        quizData.put("points", 5);
-        return quizData;
+    // Backward compatibility method
+    public Map<String, Object> createCommonQuiz() {
+        return generateCommonMultipleChoiceQuiz();
     }
 
     public void startQuiz() {
@@ -178,7 +311,6 @@ public class TimedQuizSystem extends SymbolicQuizSystem implements QuizTimer.Tim
         timer.pause();
 
         if (currentQuiz == null) {
-            // Return error if trying to submit answer without an active quiz
             Map<String, Object> errorResult = new HashMap<>();
             errorResult.put("error", "No active quiz");
             errorResult.put("correct", false);
@@ -188,24 +320,17 @@ public class TimedQuizSystem extends SymbolicQuizSystem implements QuizTimer.Tim
         }
 
         String correctAnswer = (String) currentQuiz.get("answer");
-
-        // Thorough normalization: trim spaces and convert to uppercase for consistent comparison
         String normalizedCorrectAnswer = correctAnswer.trim().toUpperCase();
         String normalizedUserAnswer = answer.trim().toUpperCase();
-
-        // Exact match after normalization
         boolean isCorrect = normalizedUserAnswer.equals(normalizedCorrectAnswer);
 
-        // No points for wrong answers
         int score = 0;
-
         if (isCorrect) {
             int difficulty = (int) currentQuiz.getOrDefault("difficulty", 3);
             score = calculateScore(difficulty, timeTaken);
 
-            // Apply time penalty if time expired
             if (timeExpired) {
-                score = 0; // No points if time expired
+                score = 0;
             }
         }
 
@@ -217,38 +342,32 @@ public class TimedQuizSystem extends SymbolicQuizSystem implements QuizTimer.Tim
         result.put("correctAnswer", correctAnswer);
         result.put("userAnswer", answer);
         result.put("questionsRemaining", maxQuestionsPerSession - currentQuestionCount);
+        result.put("isCommonQuiz", currentQuiz.containsKey("isCommonQuiz"));
 
         return result;
     }
 
     private int calculateScore(int difficulty, float timeTaken) {
-        // Base score based on difficulty
-        int baseScore = (int) Math.round(difficulty * 5); // Base score is 1.5 times the difficulty level
-
-        // Time bonus - faster answers get more points
+        int baseScore = (int) Math.round(difficulty * 5);
         float timeLimit = getTimeLimitForDifficulty(difficulty);
         float timeRatio = Math.min(1.0f, timeTaken / timeLimit);
-        float timeBonus = 1.0f - (timeRatio * 0.5f); // Up to 50% bonus for fast answers
-
+        float timeBonus = 1.0f - (timeRatio * 0.5f);
         return Math.round(baseScore * timeBonus);
     }
 
     private float getTimeLimitForDifficulty(int difficulty) {
-        // Harder questions get more time (opposite of previous implementation)
-        // Base time is defaultTimeLimit, add 5 seconds for each difficulty level
         return defaultTimeLimit + ((difficulty - 1) * 5);
     }
 
     @Override
     public void onTimerTick(float timeRemaining) {
-        // Update UI with remaining time - handled by renderer
+        // Update UI with remaining time
     }
 
     @Override
     public void onTimerComplete() {
         timeExpired = true;
         pendingAutoSubmit = true;
-        // Auto-submit with empty answer will be handled in the controller
     }
 
     public boolean isPendingAutoSubmit() {
@@ -269,7 +388,8 @@ public class TimedQuizSystem extends SymbolicQuizSystem implements QuizTimer.Tim
 
     public void resetSession() {
         currentQuestionCount = 0;
-        usedQuestions.clear();
+        commonMultipleChoiceUsedCount = 0;
+        commonContextualUsedCount = 0;
     }
 
     public QuizTimer getTimer() {
@@ -282,5 +402,34 @@ public class TimedQuizSystem extends SymbolicQuizSystem implements QuizTimer.Tim
 
     public int getTotalQuestions() {
         return maxQuestionsPerSession;
+    }
+
+    // Static methods to manage global state
+    public static void clearGlobalUsedQuestions() {
+        globalUsedQuestions.clear();
+        CommonQuizBank.resetAllUsedQuizzes();
+        System.out.println("Cleared all used questions (global + all common types)");
+    }
+
+    public static int getUsedQuestionsCount() {
+        return globalUsedQuestions.size();
+    }
+
+    public static Set<String> getGlobalUsedQuestions() {
+        return new HashSet<>(globalUsedQuestions);
+    }
+
+    public int getCommonMultipleChoiceUsedCount() {
+        return commonMultipleChoiceUsedCount;
+    }
+
+    public int getCommonContextualUsedCount() {
+        return commonContextualUsedCount;
+    }
+
+    public static void resetAllCaches() {
+        globalUsedQuestions.clear();
+        CommonQuizBank.resetAllUsedQuizzes();
+        System.out.println("Reset all quiz caches (including contextual)");
     }
 }
