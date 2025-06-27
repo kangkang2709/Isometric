@@ -232,7 +232,7 @@ public class MapRenderer {
         // Update camera position based on character position
         float[] isoPos = toIsometric(character.getGridX(), character.getGridY());
 
-        camera.position.set(700, 0, 0);
+        camera.position.set(600, 0, 0);
         camera.update();
         if (!map.getMapName().equals("board")) {
             camera.position.set(isoPos[0], isoPos[1], 0);
@@ -270,11 +270,14 @@ public class MapRenderer {
 
     Map<String, Texture> textures = new HashMap<>();
 
+    float boardOffsetY = 24f; // Offset for board Y position
+
     public void renderBoard(SpriteBatch batch) {
         if (!eventManager.getMapName().equals("board")) return;
 
         for (MapEvent event : eventManager.getEvents().values()) {
             float[] isoPos = toIsometric(event.getGridX(), event.getGridY());
+            isoPos[1] = isoPos[1] + boardOffsetY; // Adjust Y position for board offset
 
             // Draw highlight ground tile
 

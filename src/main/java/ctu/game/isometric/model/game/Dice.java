@@ -1,6 +1,7 @@
 package ctu.game.isometric.model.game;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -32,7 +33,7 @@ public class Dice {
 
     private GameController gameController;
     private int currentPathIndex = 0;
-
+    BitmapFont font = new BitmapFont();
     // Define board path coordinates in clockwise order based on logs
     // Starting from position (10,0)
     private final int[][] boardPath = {
@@ -53,7 +54,7 @@ public class Dice {
 
     public Dice(AnimationManager animationManager, float x, float y, GameController gameController) {
         this.animationManager = animationManager;
-        this.diceX = x;
+        this.diceX = x + 4;
         this.diceY = y;
         this.gameController = gameController;
 
@@ -303,6 +304,9 @@ public class Dice {
                 scale,
                 rotation
         );
+
+        font.draw(batch, "Face: " + currentFaceValue, diceX + 14, diceY - 20);
+        font.draw(batch, "Bonus Roll: " + bonusCount , diceX +2, diceY - 40);
     }
 
     public boolean isAnimating() {

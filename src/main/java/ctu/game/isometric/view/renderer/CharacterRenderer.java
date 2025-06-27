@@ -31,6 +31,9 @@ public class CharacterRenderer {
             this.animationManager.loadCharacterAnimations("characters/female_idle.png", "characters/female_walk.png");
     }
 
+
+    float offsetY = 18.5f;
+
     public void render(SpriteBatch batch) {
         float gridX = character.getGridX();
         float gridY = character.getGridY();
@@ -38,9 +41,14 @@ public class CharacterRenderer {
 
         float[] screenPos = mapRenderer.toIsometric(gridX, gridY);
 
+
         float isoX = screenPos[0];
         float isoY = screenPos[1];
 
+
+        if(mapRenderer.getMap().getMapName().equals("board")){
+            isoY += offsetY;
+        }
         // Get animation frame with translated direction
         String direction = translateDirection(character.getDirection());
         TextureRegion currentFrame = animationManager.getCharacterFrame(
@@ -49,7 +57,7 @@ public class CharacterRenderer {
                 character.getAnimationTime()
         );
         // Position character at the center of the tile
-        float offsetPlayerX = 11; // Half of sprite width (48/2)
+        float offsetPlayerX = 10; // Half of sprite width (48/2)
         float offsetPlayerY = -5; // Position the feet at tile base (character sprite height - tile height)
 
         batch.draw(currentFrame, isoX + offsetPlayerX, isoY + offsetPlayerY);
