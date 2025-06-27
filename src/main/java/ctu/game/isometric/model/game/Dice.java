@@ -76,6 +76,8 @@ public class Dice {
 
 
     boolean isBonusRoll = false;
+    boolean eventIsBypassed = false;
+
     int bonusCount = 0;
 
     public int rollDice() {
@@ -86,6 +88,9 @@ public class Dice {
         if (gameController.getCurrentEvent() != null && isBonusRoll == false) {
             gameController.getDialogController().showSimpleMessage("You cannot roll the dice while an event is active.");
             return 0;
+        }
+        if (gameController.getCurrentEvent() != null && isBonusRoll) {
+            updateBonusRoll();
         }
 
         int runIndex = gameController.getCharacter().getRun();
@@ -172,7 +177,7 @@ public class Dice {
         bounceTime = 0f;
         rollEffect.start();
 
-        updateBonusRoll();
+//        updateBonusRoll();
         return currentFaceValue;
     }
 
@@ -306,7 +311,8 @@ public class Dice {
         );
 
         font.draw(batch, "Face: " + currentFaceValue, diceX + 14, diceY - 20);
-        font.draw(batch, "Bonus Roll: " + bonusCount , diceX, diceY - 40);
+        String bonusText = isBonusRoll ? "Bonus Roll Active" : "No Bonus Roll";
+        font.draw(batch, "Bonus Roll: " + bonusCount, diceX, diceY - 40);
     }
 
     public boolean isAnimating() {

@@ -427,7 +427,6 @@ public class GameController {
 
     public void loadEffects() {
         effectManager.loadEffect("Starlight", "effects/Starlight/");
-        effectManager.loadEffect("Leaf_fall", "effects/Leaf_fall/");
         effectManager.loadEffect("Star_Trail", "effects/Star_Trail/");
     }
 

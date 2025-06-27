@@ -53,7 +53,7 @@ public class BoardEventManager {
     private WordScrambleGame wordScrambleGame;
 
     public Map<Integer, int[][]> defaultEventsForRun = Map.of(
-            0, new int[][]{{11, 4}, {11, 5}},
+            0, new int[][]{{11, 4}},
             2, new int[][]{{11, 0}, {11, 1}},
             4, new int[][]{{11, 1}, {11, 2}},
             6, new int[][]{{11, 2}, {11, 3}},
