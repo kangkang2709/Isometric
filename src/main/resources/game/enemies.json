@@ -74,7 +74,7 @@
   {
     "enemyID": 9,
     "enemyName": "Crab Lord Abyssal",
-    "enemyDescription": "Final Boss – vô hiệu hóa sát thương dưới 15",
+    "enemyDescription": "Final Boss – vô hiệu hóa sát thương dưới 15.",
     "texturePath": "enemies/crab_lord_abyssal.png",
     "health": 200,
     "attackPower": 10,

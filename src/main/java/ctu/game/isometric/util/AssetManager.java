@@ -48,13 +48,16 @@ public class AssetManager implements Disposable {
         loadTexture("card_bg_heal", "textures/card_bg_heal.png");
         loadTexture("card_bg_mana", "textures/card_bg_mana.png");
         loadTexture("card_bg_special", "textures/card_bg_special.png");
-
+        loadTexture("glass", "textures/glass.png");
+        loadTexture("glass_shard", "textures/glass_shard.png");
 
         AttackCard.setTextures(
                 textures.get("card_bg_attack"),
                 textures.get("card_bg_heal"),
                 textures.get("card_bg_mana"),
-                textures.get("card_bg_special")
+                textures.get("card_bg_special"),
+                textures.get("glass"),
+                textures.get("glass_shard")
         );
     }
 

@@ -32,7 +32,7 @@ import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
 
 public class GameplayController {
     // Core constants
-    private static final float ENEMY_TURN_DELAY = 1.7f;
+    private static final float ENEMY_TURN_DELAY = 1.2f;
     private static final float COMBAT_TIME_LIMIT = 300f;
     private static final String VOWELS = "AEIOU";
     private static final int MAX_COMBAT_LOG_LINES = 20;
@@ -120,18 +120,87 @@ public class GameplayController {
     }
 
     // Gọi khi có hành động (ví dụ: player tấn công)
-    public void playerAttack(String word, int dmg) {
+
+    public void playerAttack(String word, int dmg, Runnable onComplete) {
         AttackCard card = new AttackCard(
                 AttackCard.CardType.ATTACK,
                 word,
                 dmg,
-                0, 0, 100, 580
+                600, 280, 600, 380, 600, 550
         );
-        card.setOnExplode(() -> {
-            // Spawn explosion effect tại điểm endX, endY
-            if (effectManager != null) effectManager.spawnEffect("Starlight", 100, 580);
-        });
 
+        card.setSFXCallback(() -> effectManager.playClickSound());
+        card.setOnComplete(onComplete);
+        cardAnimationManager.addCard(card);
+    }
+
+    public void playerHealing(int heal, Runnable onComplete){
+        AttackCard card = new AttackCard(
+                AttackCard.CardType.HEALING,
+                "HEAL",
+                heal,
+                620, 550, 620, 550, 620, 550
+        );
+        card.setSFXCallback(() -> effectManager.playClickSound());
+        card.setOnComplete(onComplete);
+        cardAnimationManager.addCard(card);
+    }
+    public void playerHealingMana(int mana, Runnable onComplete) {
+        AttackCard card = new AttackCard(
+                AttackCard.CardType.HEALING,
+                "MANA",
+                mana,
+                620, 550, 620, 550, 620, 550
+        );
+        card.setSFXCallback(() -> effectManager.playClickSound());
+        card.setOnComplete(onComplete);
+        cardAnimationManager.addCard(card);
+    }
+
+    public void playerDefend(int defend, Runnable onComplete) {
+        AttackCard card = new AttackCard(
+                AttackCard.CardType.SHIELD,
+                "SHIELD",
+                defend,
+                600, 580, 400, 450, 90, 270
+        );
+        card.setSFXCallback(() -> effectManager.playClickSound());
+        card.setOnComplete(onComplete);
+        cardAnimationManager.addCard(card);
+    }
+
+    public void playerBuff(int buff, Runnable onComplete) {
+        AttackCard card = new AttackCard(
+                AttackCard.CardType.SPECIAL,
+                "BUFF",
+                buff,
+                600, 580, 400, 450, 90, 270
+        );
+        card.setSFXCallback(() -> effectManager.playClickSound());
+        card.setOnComplete(onComplete);
+        cardAnimationManager.addCard(card);
+    }
+
+    public void enemyAttack(int dmg, Runnable onComplete) {
+        AttackCard card;
+        if (dmg == 0) {
+            card = new AttackCard(
+                    AttackCard.CardType.HEALING,
+                    "",
+                    dmg,
+                    620, 550, 620, 550, 620, 550
+            );
+
+        } else {
+            card = new AttackCard(
+                    AttackCard.CardType.ATTACK,
+                    "",
+                    dmg,
+                    600, 580, 400, 450, 90, 270
+            );
+            card.setSFXCallback(() -> effectManager.playClickSound());
+        }
+        card.setOnComplete(onComplete);
         cardAnimationManager.addCard(card);
     }
 
@@ -188,7 +257,6 @@ public class GameplayController {
 
     public void update(float delta) {
         if (!active) return;
-        effectManager.update(delta);
         cardAnimationManager.update(delta);
         if (isCombatMode) updateCombat(delta);
     }
@@ -386,7 +454,6 @@ public class GameplayController {
         } else {
             renderGameOver(batch);
         }
-        effectManager.render(batch);
         cardAnimationManager.render(batch);
 
     }
@@ -488,12 +555,13 @@ public class GameplayController {
         if (isEnemyBoss()) titleText += " (BOSS)";
         else if (isEnemyLord()) titleText += " (LORD)";
 
-        drawCenteredText(batch, titleFont, titleText, x + width / 2, y + height - 20, Color.RED);
+        drawCenteredText(batch, titleFont, titleText, x + 156, y + height - 20, Color.RED);
 
         Texture enemyTexture = getTexture(this.enemy.getTexturePath());
         if (enemyTexture != null) {
             batch.setColor(Color.WHITE);
-            batch.draw(enemyTexture, x + 20, y + 20, 80, 80);
+//            x +20
+            batch.draw(enemyTexture, 600, y + 20, 80, 80);
         }
 
         regularFont.setColor(Color.WHITE);
@@ -506,6 +574,16 @@ public class GameplayController {
         batch.draw(whiteTexture, x + 220, y + height - 85, 200, 15);
         batch.setColor(getHealthColor(healthPercentage));
         batch.draw(whiteTexture, x + 220, y + height - 85, 200 * healthPercentage, 15);
+
+        //draw description
+        String description = "Mô tả:\n" + this.enemy.getEnemyDescription();
+        drawWrappedText(batch, regularFont, description, 830, y + height - 30, 400);
+
+    }
+
+    private void drawWrappedText(SpriteBatch batch, BitmapFont font, String text, float x, float y, float width) {
+        layout.setText(font, text, Color.WHITE, width, 1, true);
+        font.draw(batch, layout, x, y);
     }
 
     private Color getHealthColor(float percentage) {
@@ -529,7 +607,7 @@ public class GameplayController {
         // Timer and turn indicator
         float timeLeft = COMBAT_TIME_LIMIT - combatTimer;
         String timeText = String.format("⏰ %02d:%02d", (int) (timeLeft / 60), (int) (timeLeft % 60));
-        drawCenteredText(batch, regularFont, timeText, x + width - 110, y + height - 25, timeLeft < 60 ? Color.RED : Color.WHITE);
+        drawCenteredText(batch, regularFont, timeText, x + width / 2  + 20, y + height - 25, timeLeft < 60 ? Color.RED : Color.WHITE);
 
         String turnText = "Lượt: " + (isPlayerTurn ? "Người Chơi" : enemyName);
         regularFont.setColor(isPlayerTurn ? Color.GREEN : Color.RED);
@@ -694,6 +772,9 @@ public class GameplayController {
             String meaning = wordValidator.getWordMeaning(lastSubmittedWord);
             if (meaning != null && !meaning.isEmpty()) {
                 regularFont.setColor(Color.CYAN);
+                if (meaning.length() > 50) {
+                    meaning = meaning.substring(0, 50) + "...";
+                }
                 regularFont.draw(batch, "Meaning: " + meaning, x + 20, y + height - 30);
             }
         }
@@ -802,27 +883,26 @@ public class GameplayController {
             damage = Math.max(10, damage - gameController.getCharacter().getDefend());
             addCombatLog(enemyName + " tấn công mạnh gây " + (int) damage + " sát thương!");
         } else if (action == 8) {
-            float heal = enemyHealth * 0.2f;
+            float heal = enemyMaxHealth * 0.2f;
             enemyHealth = Math.min(enemyMaxHealth, enemyHealth + heal);
             addCombatLog(enemyName + " hồi phục " + (int) heal + " máu!");
         } else {
             addCombatLog(enemyName + " đã trượt đòn tấn công!");
         }
-
         playerHealth = Math.max(0, playerHealth - damage);
+        isPlayerTurn = true;
 
-        Timer.schedule(new Timer.Task() {
-            @Override
-            public void run() {
-                checkCombatEnd();
-                if (isCombatMode) {
-                    isPlayerTurn = true;
-                    letterGrid.regenerateGrid();
-                    addCombatLog("---Đến lượt của bạn!---");
-                    if (isEnemyBoss()) applyBossEffects();
-                }
+        enemyAttack((int) damage, () -> {
+            checkCombatEnd();
+            if (isCombatMode) {
+                letterGrid.regenerateGrid();
+                addCombatLog("---Đến lượt của bạn!---");
+                if (isEnemyBoss()) applyBossEffects();
             }
-        }, 0.8f);
+        });
+
+
+
     }
 
     public boolean submitWord() {
@@ -858,20 +938,15 @@ public class GameplayController {
 
                 addCombatLog("+" + points + " điểm!");
 
-                playerAttack("ss", 10);
-
-                achievementManager.updateProgress(Achievement.AchievementType.WORD_COUNT, 1);
-                Timer.schedule(new Timer.Task() {
-                    @Override
-                    public void run() {
-                        checkCombatEnd();
-                        if (isCombatMode && enemyHealth > 0) {
-                            isPlayerTurn = false;
-                            addCombatLog("---Đến lượt của " + enemyName + "!---");
-                        }
+                playerAttack(word, 10, () -> {
+                    checkCombatEnd();
+                    if (isCombatMode && enemyHealth > 0) {
+                        isPlayerTurn = false;
+                        addCombatLog("---Đến lượt của " + enemyName + "!---");
                     }
-                }, 1.3f);
+                });
             }
+            achievementManager.updateProgress(Achievement.AchievementType.WORD_COUNT, 1);
 
             letterGrid.regenerateGrid();
 
