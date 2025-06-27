@@ -3,6 +3,7 @@ package ctu.game.isometric.util;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.utils.Disposable;
+import ctu.game.isometric.animation.AttackCard;
 import ctu.game.isometric.model.entity.Enemy;
 import ctu.game.isometric.model.game.Items;
 import edu.mit.jwi.item.IItem;
@@ -41,7 +42,22 @@ public class AssetManager implements Disposable {
         loadTexture("item_hightlight", "textures/item_hightlight.png");
         loadTexture("enemy_card", "textures/enemy_card.png");
         loadTexture("enemy_card_back", "textures/enemy_card_back.png");
+
+
+        loadTexture("card_bg_attack", "textures/card_bg_attack.png");
+        loadTexture("card_bg_heal", "textures/card_bg_heal.png");
+        loadTexture("card_bg_mana", "textures/card_bg_mana.png");
+        loadTexture("card_bg_special", "textures/card_bg_special.png");
+
+
+        AttackCard.setTextures(
+                textures.get("card_bg_attack"),
+                textures.get("card_bg_heal"),
+                textures.get("card_bg_mana"),
+                textures.get("card_bg_special")
+        );
     }
+
 
     public Map<String, Texture> loadAllItems(List<Items> items) {
         for (Items item : items) {
@@ -55,6 +71,7 @@ public class AssetManager implements Disposable {
         }
         return textures; // Return all loaded item textures
     }
+
 
     public Map<String, Texture> loadAllEnemy(List<Enemy> enemies) {
         for (Enemy enemy : enemies) {

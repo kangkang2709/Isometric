@@ -10,6 +10,8 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import ctu.game.isometric.animation.AttackCard;
+import ctu.game.isometric.animation.CardAnimationManager;
 import ctu.game.isometric.controller.AchievementManager;
 import ctu.game.isometric.controller.EffectManager;
 import ctu.game.isometric.controller.GameController;
@@ -92,6 +94,7 @@ public class GameplayController {
 
     // Grid constants
     private float gridX, gridY, gridSize, cellSize;
+    private CardAnimationManager cardAnimationManager;
 
     public GameplayController(GameController gameController) {
         this.gameController = gameController;
@@ -99,7 +102,10 @@ public class GameplayController {
         this.effectManager = gameController.getEffectManager();
         this.wordValidator = gameController.getWordNetValidator();
         this.achievementManager = gameController.getAchievementManager();
+
+        cardAnimationManager = new CardAnimationManager();
         initializeUI();
+
         initializeGridConstants();
     }
 
@@ -111,6 +117,22 @@ public class GameplayController {
         createWhiteTexture();
         loadUITextures();
         createSpecialCellTextures();
+    }
+
+    // Gọi khi có hành động (ví dụ: player tấn công)
+    public void playerAttack(String word, int dmg) {
+        AttackCard card = new AttackCard(
+                AttackCard.CardType.ATTACK,
+                word,
+                dmg,
+                0, 0, 100, 580
+        );
+        card.setOnExplode(() -> {
+            // Spawn explosion effect tại điểm endX, endY
+            if (effectManager != null) effectManager.spawnEffect("Starlight", 100, 580);
+        });
+
+        cardAnimationManager.addCard(card);
     }
 
     private void createWhiteTexture() {
@@ -167,6 +189,7 @@ public class GameplayController {
     public void update(float delta) {
         if (!active) return;
         effectManager.update(delta);
+        cardAnimationManager.update(delta);
         if (isCombatMode) updateCombat(delta);
     }
 
@@ -345,6 +368,7 @@ public class GameplayController {
         }
     }
 
+
     public void render(SpriteBatch batch) {
         if (!active) return;
 
@@ -362,8 +386,9 @@ public class GameplayController {
         } else {
             renderGameOver(batch);
         }
-
         effectManager.render(batch);
+        cardAnimationManager.render(batch);
+
     }
 
     public void renderGameOver(SpriteBatch batch) {
@@ -785,7 +810,6 @@ public class GameplayController {
         }
 
         playerHealth = Math.max(0, playerHealth - damage);
-        effectManager.spawnEffect("Starlight", 180, 470);
 
         Timer.schedule(new Timer.Task() {
             @Override
@@ -833,7 +857,8 @@ public class GameplayController {
                 }
 
                 addCombatLog("+" + points + " điểm!");
-                effectManager.spawnEffect("Starlight", viewport.getWorldWidth() - 180, 440);
+
+                playerAttack("ss", 10);
 
                 achievementManager.updateProgress(Achievement.AchievementType.WORD_COUNT, 1);
                 Timer.schedule(new Timer.Task() {

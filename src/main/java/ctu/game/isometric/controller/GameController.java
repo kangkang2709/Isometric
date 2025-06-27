@@ -531,6 +531,7 @@ public class GameController {
                 characterCreationController.update(delta);
                 break;
             case GAMEPLAY:
+
                 gameplayController.update(delta);
                 break;
             case MENU:
