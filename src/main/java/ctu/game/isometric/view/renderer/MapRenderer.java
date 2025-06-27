@@ -99,6 +99,9 @@ public class MapRenderer {
 
         animationManager.loadDiceAnimations("textures/dice_static.png", "textures/dice_rolling.png");
 
+        setSlowMotion(true);
+        setSpeedMultiplier(0.01f);
+        smoothSlowMotion(true);
         setWeather("snow", 0.4f); // Set default weather to foggy with medium intensity
     }
 
@@ -305,11 +308,93 @@ public class MapRenderer {
                     break;
                 case "battle":
                     drawTexture(batch, "enemy_hightlight", isoPos[0], isoPos[1], 64, 32);
-//                    drawItemTexture(batch, event.getProperties().get("enemyName", String.class), isoPos[0], isoPos[1], 64, 32);
+                    drawEnemySpinCard(batch, isoPos[0] + 14, isoPos[1] + 12, 32, 46);
                     break;
             }
         }
     }
+
+    private float cardRotation = 0f;
+    private static final float SPIN_SPEED = 90f; // degrees per second
+    private float speedMultiplier = 1.0f; // Default normal speed
+    private static final float SLOW_MOTION_FACTOR = 0.2f; // 30% of normal speed
+
+    private void drawEnemySpinCard(SpriteBatch batch, float x, float y, float width, float height) {
+        Texture cardTexture = null;
+        Texture cardBackTexture = null;
+
+        // Get the front texture
+        if (textures.containsKey("enemy_card")) {
+            cardTexture = textures.get("enemy_card");
+        }
+
+        // Get the back texture (optional)
+        if (textures.containsKey("enemy_card_back")) {
+            cardBackTexture = textures.get("enemy_card_back");
+        } else {
+            cardBackTexture = cardTexture; // Use same texture if back not available
+        }
+
+        if (cardTexture != null) {
+            // Update rotation with speed multiplier for slow motion effect
+            cardRotation = (cardRotation + SPIN_SPEED * speedMultiplier * Gdx.graphics.getDeltaTime()) % 360;
+
+            // Calculate center points
+            float centerX = x + width / 2;
+
+            // Calculate scale factor based on rotation to simulate X-axis rotation
+            float scaleX = (float) Math.abs(Math.cos(Math.toRadians(cardRotation)));
+
+            // Choose texture based on rotation angle (front or back)
+            Texture currentTexture = (cardRotation > 90 && cardRotation < 270) ?
+                    cardBackTexture : cardTexture;
+
+            // Draw with rotation effect (removed the floating effect)
+            batch.draw(
+                    currentTexture,
+                    centerX - (width * scaleX) / 2, // X position adjusted for scale
+                    y, // Fixed Y position without floating effect
+                    width * scaleX, // Width scaled to simulate perspective
+                    height, // Height
+                    0, // Source X
+                    0, // Source Y
+                    currentTexture.getWidth(), // Source width
+                    currentTexture.getHeight(), // Source height
+                    (cardRotation > 90 && cardRotation < 270), // Flip horizontally when showing back
+                    false // Don't flip vertically
+            );
+
+        }
+    }
+
+    // Methods to control animation speed
+    public void setSlowMotion(boolean enabled) {
+        this.speedMultiplier = enabled ? SLOW_MOTION_FACTOR : 1.0f;
+    }
+
+    public void setSpeedMultiplier(float multiplier) {
+        this.speedMultiplier = Math.max(0.01f, multiplier); // Prevent extremely slow or negative speeds
+    }
+
+    // Optional: Smooth transition to slow motion
+    private float targetSpeedMultiplier = 0.5f;
+    private static final float SPEED_TRANSITION_RATE = 1.0f; // Units per second
+
+    public void smoothSlowMotion(boolean enabled) {
+        this.targetSpeedMultiplier = enabled ? SLOW_MOTION_FACTOR : 1.0f;
+    }
+
+    public void updateCardAnimation(float deltaTime) {
+        // Gradually change speed toward target
+        if (speedMultiplier != targetSpeedMultiplier) {
+            if (speedMultiplier < targetSpeedMultiplier) {
+                speedMultiplier = Math.min(speedMultiplier + SPEED_TRANSITION_RATE * deltaTime, targetSpeedMultiplier);
+            } else {
+                speedMultiplier = Math.max(speedMultiplier - SPEED_TRANSITION_RATE * deltaTime, targetSpeedMultiplier);
+            }
+        }
+    }
+
 
     private void drawTexture(SpriteBatch batch, String key, float x, float y, float width, float height) {
         Texture texture = textures.get(key);
@@ -346,6 +431,7 @@ public class MapRenderer {
     public void update(float delta) {
         weatherRenderer.update(delta);
         diceRenderer.update(delta);
+        updateCardAnimation(delta);
     }
 
     public void setWeather(String type, float intensity) {
@@ -438,6 +524,7 @@ public class MapRenderer {
         switch (eventType) {
             case "battle":
                 buttonText = "Battle";
+                drawEnemyInfoCard(batch, event);
                 break;
             case "dialog":
                 buttonText = "Talk";
@@ -459,7 +546,7 @@ public class MapRenderer {
                 break;
         }
 
-        if (buttonTexture != null) {
+        if (buttonTexture != null && !eventType.equals("battle")) {
             // Convert grid coordinates to isometric screen coordinates
             float[] isoPos = toIsometric(x, y);
             // Position the button above the tile
@@ -479,8 +566,74 @@ public class MapRenderer {
                         buttonY + buttonTexture.getHeight() + offsetY - 5); // Adjusted Y position
             }
         }
+
+
     }
 
+
+    int centerX = 660;
+    int centerY = 0;
+    private void drawEnemyInfoCard(SpriteBatch batch, MapEvent event) {
+        // Get enemy information from event properties
+        String enemyName = event.getProperties().get("enemyName", String.class);
+        if (enemyName == null) enemyName = "Unknown Enemy";
+
+        // Get difficulty level if available
+        String difficulty = event.getProperties().get("difficulty", String.class);
+        if (difficulty == null) difficulty = "Normal";
+
+        // Get card texture
+        Texture cardTexture = textures.get("enemy_card_large");
+        if (cardTexture == null) {
+            // Fallback to regular enemy card
+            cardTexture = textures.get("enemy_card");
+        }
+
+        if (cardTexture != null) {
+            // Calculate card position at camera center
+            float cardWidth = 200;
+            float cardHeight = 300;
+
+;
+
+            // Draw card centered on camera
+            batch.draw(
+                    cardTexture,
+                    centerX - cardWidth / 2,
+                    centerY - cardHeight / 2,
+                    cardWidth,
+                    cardHeight
+            );
+
+            // Draw enemy information
+            if (font != null) {
+                // Store original font properties
+                Color originalColor = font.getColor();
+                float originalScale = font.getData().scaleX;
+
+                // Set larger scale for the card text
+                font.getData().setScale(1.5f);
+                font.setColor(Color.WHITE);
+
+                // Draw enemy name
+                GlyphLayout nameLayout = new GlyphLayout(font, enemyName);
+                font.draw(batch, enemyName,
+                        centerX - nameLayout.width / 2,
+                        centerY + cardHeight / 4);
+
+                // Draw difficulty
+                font.getData().setScale(1.2f);
+                GlyphLayout diffLayout = new GlyphLayout(font, "Difficulty: " + difficulty);
+                font.draw(batch, "Difficulty: " + difficulty,
+                        centerX - diffLayout.width / 2,
+                        centerY - cardHeight / 8);
+
+                // Restore original font properties
+                font.setColor(originalColor);
+                font.getData().setScale(originalScale);
+            }
+        }
+    }
 
     public float getOffsetX() {
         return offsetX;

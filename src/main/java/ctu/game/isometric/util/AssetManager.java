@@ -39,6 +39,8 @@ public class AssetManager implements Disposable {
         loadTexture("enemy_hightlight", "textures/enemy_hightlight.png");
         loadTexture("quiz_hightlight", "textures/quiz_hightlight.png");
         loadTexture("item_hightlight", "textures/item_hightlight.png");
+        loadTexture("enemy_card", "textures/enemy_card.png");
+        loadTexture("enemy_card_back", "textures/enemy_card_back.png");
     }
 
     public Map<String, Texture> loadAllItems(List<Items> items) {

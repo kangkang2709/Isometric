@@ -306,7 +306,7 @@ public class Dice {
         );
 
         font.draw(batch, "Face: " + currentFaceValue, diceX + 14, diceY - 20);
-        font.draw(batch, "Bonus Roll: " + bonusCount , diceX +2, diceY - 40);
+        font.draw(batch, "Bonus Roll: " + bonusCount , diceX, diceY - 40);
     }
 
     public boolean isAnimating() {
