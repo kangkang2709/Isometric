@@ -39,9 +39,9 @@ public class AttackCard {
     private boolean isComplete;
     
     // Animation phases
-    private static final float SLIDE_IN_DURATION = 0.3f;
-    private static final float DISPLAY_DURATION = 1.5f;
-    private static final float FADE_OUT_DURATION = 0.5f;
+    private static final float SLIDE_IN_DURATION = 0.4f;
+    private static final float DISPLAY_DURATION = 2.0f;
+    private static final float FADE_OUT_DURATION = 0.6f;
     private static final float TOTAL_DURATION = SLIDE_IN_DURATION + DISPLAY_DURATION + FADE_OUT_DURATION;
     
     // Visual properties
@@ -54,6 +54,7 @@ public class AttackCard {
     private BitmapFont font;
     private BitmapFont damageFont;
     private GlyphLayout layout;
+    private float typewriterProgress = 0f;
     
     public AttackCard(String word, String damageText, CardType cardType, float targetX, float targetY, BitmapFont font, BitmapFont damageFont) {
         this.word = word;
@@ -94,12 +95,14 @@ public class AttackCard {
             x = Interpolation.pow2Out.apply(startX, targetX, slideProgress);
             scale = Interpolation.elasticOut.apply(0.3f, 1f, slideProgress);
             alpha = slideProgress;
+            typewriterProgress = slideProgress; // Start typewriter effect during slide-in
         } else if (animationTime <= SLIDE_IN_DURATION + DISPLAY_DURATION) {
             // Display phase
             x = targetX;
             y = targetY;
             scale = 1f;
             alpha = 1f;
+            typewriterProgress = 1f; // Show full text
         } else {
             // Fade out phase
             float fadeProgress = (animationTime - SLIDE_IN_DURATION - DISPLAY_DURATION) / FADE_OUT_DURATION;
@@ -107,6 +110,7 @@ public class AttackCard {
             y = targetY;
             scale = Interpolation.pow2In.apply(1f, 1.2f, fadeProgress);
             alpha = 1f - fadeProgress;
+            typewriterProgress = 1f;
         }
     }
     
@@ -128,22 +132,43 @@ public class AttackCard {
         // Draw card background (using white texture tinted with color)
         batch.draw(cardTexture, cardX, cardY, cardWidth, cardHeight);
         
-        // Draw word text
+        // Draw word text with typewriter effect
         if (font != null) {
             font.setColor(1f, 1f, 1f, alpha);
-            layout.setText(font, word);
+            // Calculate how much of the word to show based on typewriter progress
+            int charsToShow = Math.min(word.length(), (int) Math.ceil(word.length() * typewriterProgress));
+            String displayWord = word.substring(0, charsToShow);
+            
+            layout.setText(font, displayWord);
             float wordX = x - layout.width / 2f;
             float wordY = y + layout.height / 4f;
-            font.draw(batch, word, wordX, wordY);
+            font.draw(batch, displayWord, wordX, wordY);
         }
         
-        // Draw damage/effect text
+        // Draw damage/effect text with impact animation
         if (damageFont != null && damageText != null && !damageText.isEmpty()) {
+            // Add a subtle bounce effect to damage numbers
+            float damageScale = 1f;
+            if (animationTime <= SLIDE_IN_DURATION + 0.3f) {
+                float bounceProgress = Math.min(1f, (animationTime - SLIDE_IN_DURATION * 0.7f) / 0.3f);
+                if (bounceProgress > 0) {
+                    damageScale = 1f + Interpolation.elasticOut.apply(0f, 0.3f, bounceProgress);
+                }
+            }
+            
             damageFont.setColor(1f, 1f, 0f, alpha); // Yellow damage numbers
             layout.setText(damageFont, damageText);
             float damageX = x - layout.width / 2f;
             float damageY = y - layout.height / 2f - 10f;
-            damageFont.draw(batch, damageText, damageX, damageY);
+            
+            // Apply scale transformation for impact effect
+            if (damageScale != 1f) {
+                damageFont.getData().setScale(damageScale);
+                damageFont.draw(batch, damageText, damageX, damageY);
+                damageFont.getData().setScale(1f); // Reset scale
+            } else {
+                damageFont.draw(batch, damageText, damageX, damageY);
+            }
         }
         
         batch.setColor(originalColor);

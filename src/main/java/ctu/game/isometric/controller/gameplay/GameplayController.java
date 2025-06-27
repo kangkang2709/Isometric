@@ -173,7 +173,11 @@ public class GameplayController {
     public void update(float delta) {
         if (!active) return;
         effectManager.update(delta);
+        
+        // Sync SFX settings between managers
+        cardAnimationManager.setSFXEnabled(effectManager.isSFXEnabled());
         cardAnimationManager.update(delta);
+        
         if (isCombatMode) updateCombat(delta);
     }
 
