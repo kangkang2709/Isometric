@@ -11,6 +11,7 @@ import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import ctu.game.isometric.controller.AchievementManager;
+import ctu.game.isometric.controller.CardAnimationManager;
 import ctu.game.isometric.controller.EffectManager;
 import ctu.game.isometric.controller.GameController;
 import ctu.game.isometric.model.entity.Enemy;
@@ -40,6 +41,7 @@ public class GameplayController {
     private final LetterGrid letterGrid;
     private final Random random = new Random();
     private EffectManager effectManager;
+    private CardAnimationManager cardAnimationManager;
     private WordNetValidator wordValidator;
     private AchievementManager achievementManager;
 
@@ -97,6 +99,7 @@ public class GameplayController {
         this.gameController = gameController;
         this.letterGrid = new LetterGrid();
         this.effectManager = gameController.getEffectManager();
+        this.cardAnimationManager = new CardAnimationManager();
         this.wordValidator = gameController.getWordNetValidator();
         this.achievementManager = gameController.getAchievementManager();
         initializeUI();
@@ -111,6 +114,9 @@ public class GameplayController {
         createWhiteTexture();
         loadUITextures();
         createSpecialCellTextures();
+        
+        // Set fonts for card animation manager
+        cardAnimationManager.setFonts(titleFont, regularFont);
     }
 
     private void createWhiteTexture() {
@@ -167,6 +173,7 @@ public class GameplayController {
     public void update(float delta) {
         if (!active) return;
         effectManager.update(delta);
+        cardAnimationManager.update(delta);
         if (isCombatMode) updateCombat(delta);
     }
 
@@ -364,6 +371,7 @@ public class GameplayController {
         }
 
         effectManager.render(batch);
+        cardAnimationManager.render(batch);
     }
 
     public void renderGameOver(SpriteBatch batch) {
@@ -780,12 +788,25 @@ public class GameplayController {
             float heal = enemyHealth * 0.2f;
             enemyHealth = Math.min(enemyMaxHealth, enemyHealth + heal);
             addCombatLog(enemyName + " hồi phục " + (int) heal + " máu!");
+            damage = 0; // No damage dealt to player when enemy heals
         } else {
             addCombatLog(enemyName + " đã trượt đòn tấn công!");
+            damage = 0; // No damage dealt when enemy misses
         }
 
         playerHealth = Math.max(0, playerHealth - damage);
-        effectManager.spawnEffect("Starlight", 180, 470);
+        
+        // Show appropriate card based on enemy action
+        if (action == 8) {
+            // Enemy healing
+            cardAnimationManager.spawnHealingCard("HEAL", (int) (enemyHealth * 0.2f), 180, 470);
+        } else if (damage > 0) {
+            // Enemy attack
+            cardAnimationManager.spawnAttackCard("ATTACK", (int) damage, 180, 470);
+        } else {
+            // Enemy missed - show special card
+            cardAnimationManager.spawnSpecialCard("MISS", "No Effect", 180, 470);
+        }
 
         Timer.schedule(new Timer.Task() {
             @Override
@@ -833,7 +854,8 @@ public class GameplayController {
                 }
 
                 addCombatLog("+" + points + " điểm!");
-                effectManager.spawnEffect("Starlight", viewport.getWorldWidth() - 180, 440);
+                // Show player attack card with the submitted word
+                cardAnimationManager.spawnAttackCard(word, (int) damage, viewport.getWorldWidth() - 180, 440);
 
                 achievementManager.updateProgress(Achievement.AchievementType.WORD_COUNT, 1);
                 Timer.schedule(new Timer.Task() {
@@ -989,6 +1011,8 @@ public class GameplayController {
         if (cellTexture != null) cellTexture.dispose();
         if (vowelCellTexture != null) vowelCellTexture.dispose();
         if (disabledCellTexture != null) disabledCellTexture.dispose();
+        
+        if (cardAnimationManager != null) cardAnimationManager.dispose();
     }
 
     private Texture getTexture(String path) {
