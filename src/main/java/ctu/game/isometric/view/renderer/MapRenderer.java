@@ -26,16 +26,14 @@ import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.game.Dice;
 import ctu.game.isometric.model.game.Items;
 import ctu.game.isometric.model.puzzle.PressurePlatePuzzle;
+import ctu.game.isometric.model.typing.Dungeon;
 import ctu.game.isometric.model.world.IsometricMap;
 import ctu.game.isometric.model.world.MapEvent;
 import ctu.game.isometric.util.AnimationManager;
 import ctu.game.isometric.util.AssetManager;
 import ctu.game.isometric.util.ItemLoader;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class MapRenderer {
     private IsometricMap map;
@@ -103,7 +101,24 @@ public class MapRenderer {
         setSpeedMultiplier(0.01f);
         smoothSlowMotion(true);
         setWeather("snow", 0.4f); // Set default weather to foggy with medium intensity
+
+
     }
+
+    public Map<String, Dungeon> getDungeons() {
+        return dungeons;
+    }
+
+    private Dungeon currentDungeon;
+
+    public void setDungeons(Map<String, Dungeon> dungeons) {
+        this.dungeons = dungeons;
+        for (Dungeon dungeon : dungeons.values()) {
+                    dungeon.setEnemyTexture(assetManager.getTexture("enemy_card"));
+        }
+    }
+
+    Map<String, Dungeon> dungeons = new HashMap<>();
 
 
     private Dice diceRenderer;
@@ -154,6 +169,10 @@ public class MapRenderer {
         }
         this.tiledMapRenderer = new IsometricTiledMapRenderer(map.getTiledMap());
         this.map = map;
+        if (map.getMapName().contains("dungeon"))
+            this.currentDungeon = dungeons.get(map.getMapName());
+        else
+            this.currentDungeon = null;
 
     }
 
@@ -266,6 +285,10 @@ public class MapRenderer {
                 renderDice(batch);
             }
 
+            if (currentDungeon != null && currentDungeon.isActive()) {
+                currentDungeon.render(batch);
+            }
+
 
             weatherRenderer.render(batch);
         }
@@ -273,7 +296,7 @@ public class MapRenderer {
 
     Map<String, Texture> textures = new HashMap<>();
 
-    float boardOffsetY = 24f; // Offset for board Y position
+    float boardOffsetY = 21f; // Offset for board Y position
 
     public void renderBoard(SpriteBatch batch) {
         if (!eventManager.getMapName().equals("board")) return;
@@ -291,24 +314,24 @@ public class MapRenderer {
 
             switch (type) {
                 case "treasure":
-                    drawTexture(batch, "item_hightlight", isoPos[0], isoPos[1], 64, 32);
+                    drawTexture(batch, "item_hightlight", isoPos[0], isoPos[1], 64, 34);
                     drawItemTexture(batch, event.getProperties().get("itemName", String.class), isoPos[0] + 16, isoPos[1] + 8, 32, 32);
                     break;
                 case "word_scramble":
-                    drawTexture(batch, "item_hightlight", isoPos[0], isoPos[1], 64, 32);
+                    drawTexture(batch, "item_hightlight", isoPos[0], isoPos[1], 64, 34);
                     break;
                 case "new_run_event":
-                    drawTexture(batch, "new_run", isoPos[0], isoPos[1], 64, 32);
+                    drawTexture(batch, "new_run", isoPos[0], isoPos[1], 64, 34);
                     break;
                 case "quiz":
-                    drawTexture(batch, "quiz_hightlight", isoPos[0], isoPos[1], 64, 32);
+                    drawTexture(batch, "quiz_hightlight", isoPos[0], isoPos[1], 64, 34);
                     break;
                 case "mulquiz":
-                    drawTexture(batch, "quiz_hightlight", isoPos[0], isoPos[1], 64, 32);
+                    drawTexture(batch, "quiz_hightlight", isoPos[0], isoPos[1], 64, 34);
                     break;
                 case "battle":
-                    drawTexture(batch, "enemy_hightlight", isoPos[0], isoPos[1], 64, 32);
-                    drawEnemySpinCard(batch, isoPos[0] + 14, isoPos[1] + 12, 32, 46);
+                    drawTexture(batch, "enemy_hightlight", isoPos[0], isoPos[1], 64, 34);
+                    drawEnemySpinCard(batch, isoPos[0] + 14, isoPos[1] + 12, 30, 40);
                     break;
             }
         }
@@ -432,6 +455,9 @@ public class MapRenderer {
         weatherRenderer.update(delta);
         diceRenderer.update(delta);
         updateCardAnimation(delta);
+        if (currentDungeon != null && currentDungeon.isActive()) {
+            currentDungeon.update(delta, character);
+        }
     }
 
     public void setWeather(String type, float intensity) {
@@ -573,6 +599,7 @@ public class MapRenderer {
 
     int centerX = 660;
     int centerY = 0;
+
     private void drawEnemyInfoCard(SpriteBatch batch, MapEvent event) {
         // Get enemy information from event properties
         String enemyName = event.getProperties().get("enemyName", String.class);
@@ -594,7 +621,7 @@ public class MapRenderer {
             float cardWidth = 200;
             float cardHeight = 300;
 
-;
+            ;
 
             // Draw card centered on camera
             batch.draw(
@@ -663,4 +690,14 @@ public class MapRenderer {
             font.dispose();
         }
     }
+
+    public AssetManager getAssetManager() {
+        return assetManager;
+    }
+
+    public void setAssetManager(AssetManager assetManager) {
+        this.assetManager = assetManager;
+    }
+
+
 }

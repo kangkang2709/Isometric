@@ -14,6 +14,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
+
 public class QuizController {
     private GameController gameController;
     private TimedQuizSystem quizSystem;
@@ -51,8 +53,8 @@ public class QuizController {
 
     public QuizController(GameController gameController) {
         this.gameController = gameController;
-        this.font = new BitmapFont();
-        this.font.getData().setScale(1.5f);
+        this.font = generateVietNameseFont("Roboto-Black.ttf", 18);
+//        this.font.getData().setScale(1.5f);
         this.shapeRenderer = new ShapeRenderer();
 
         int width = Gdx.graphics.getWidth();
@@ -274,13 +276,13 @@ public class QuizController {
         font.draw(batch, questionCountText, width - 100 - layout.width, height * 0.78f);
 
         // Quiz statistics (reduced font size for this info)
-        font.getData().setScale(1.2f); // Smaller scale for stats
+//        font.getData().setScale(1.2f); // Smaller scale for stats
         font.setColor(Color.GRAY);
         String statsText = String.format("Stats: %d learned | %d common | Session: %d | Global: %d",
                 learnedWordQuizCount, commonQuizCount, sessionUsedQuestions.size(), TimedQuizSystem.getUsedQuestionsCount());
         layout.setText(font, statsText);
         font.draw(batch, statsText, 100, height * 0.72f);
-        font.getData().setScale(1.5f); // Reset to normal scale
+//        font.getData().setScale(1.5f); // Reset to normal scale
 
         // Question
         String question = (String) currentQuiz.get("question");

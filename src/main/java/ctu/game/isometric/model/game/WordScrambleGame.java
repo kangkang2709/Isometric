@@ -86,10 +86,10 @@ public class WordScrambleGame {
     public WordScrambleGame(GameController gameController) {
         this.gameController = gameController;
         this.wordList = new ArrayList<>();
-        this.font = generateVietNameseFont("GrenzeGotisch.ttf", 20);
-        this.titleFont = generateVietNameseFont("GrenzeGotisch.ttf", 25);
-        this.subtitleFont = generateVietNameseFont("GrenzeGotisch.ttf", 18);
-        this.buttonFont = generateVietNameseFont("GrenzeGotisch.ttf", 18);
+        this.font = generateVietNameseFont("Roboto-Black.ttf", 18);
+        this.titleFont = generateVietNameseFont("Roboto-Black.ttf", 20);
+        this.subtitleFont = generateVietNameseFont("Roboto-Black.ttf", 14);
+        this.buttonFont = generateVietNameseFont("Roboto-Black.ttf", 14);
         this.shapeRenderer = new ShapeRenderer();
         this.shapeRenderer = new ShapeRenderer();
 

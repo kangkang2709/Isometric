@@ -82,6 +82,7 @@ public class GameScreen implements Screen {
                     gameController.getCharacter(),
                     camera
             );
+            mapRenderer.setDungeons(gameController.getDungeons());
 
             this.dice = new Dice(
                     game.getAssetManager().getAnimationManager(),

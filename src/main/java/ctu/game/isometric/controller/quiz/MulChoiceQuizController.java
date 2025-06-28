@@ -54,7 +54,7 @@ public class MulChoiceQuizController {
 
     public MulChoiceQuizController(GameController gameController) {
         this.gameController = gameController;
-        this.font = generateVietNameseFont("GrenzeGotisch.ttf", 24);
+        this.font = generateVietNameseFont("Roboto-Black.ttf", 18);
         this.shapeRenderer = new ShapeRenderer();
         initializeUIComponents();
     }

@@ -607,7 +607,7 @@ public class GameplayController {
         // Timer and turn indicator
         float timeLeft = COMBAT_TIME_LIMIT - combatTimer;
         String timeText = String.format("⏰ %02d:%02d", (int) (timeLeft / 60), (int) (timeLeft % 60));
-        drawCenteredText(batch, regularFont, timeText, x + width / 2  + 20, y + height - 25, timeLeft < 60 ? Color.RED : Color.WHITE);
+        drawCenteredText(batch, regularFont, timeText, x + width / 2  + 140, y + height - 20, timeLeft < 60 ? Color.RED : Color.WHITE);
 
         String turnText = "Lượt: " + (isPlayerTurn ? "Người Chơi" : enemyName);
         regularFont.setColor(isPlayerTurn ? Color.GREEN : Color.RED);

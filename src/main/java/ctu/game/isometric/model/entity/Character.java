@@ -80,6 +80,16 @@ public class Character {
     }
 
 
+    public void decreaseHealth(float amount) {
+        if (amount < 0) {
+            throw new IllegalArgumentException("Amount cannot be negative");
+        }
+        this.health = Math.max(0, this.health - amount);
+        if (this.health <= 0) {
+            gameOver(); // Check for game over condition
+        }
+    }
+
     private Date lastSaveTime;
 
     private Set<Achievement> achievements;
