@@ -18,6 +18,8 @@ import ctu.game.isometric.view.ui.*;
 import ctu.game.isometric.view.renderer.MapRenderer;
 import ctu.game.isometric.view.view.DictionaryView;
 
+import static ctu.game.isometric.model.typing.Dungeon.setAnimationManager;
+
 public class GameScreen implements Screen {
     private final IsometricGame game;
     private GameController gameController;
@@ -32,6 +34,7 @@ public class GameScreen implements Screen {
     private boolean isCharacterCreated = false;
     private GameState currentState = GameState.MAIN_MENU;
     private Dice dice;
+
 
 
     public GameScreen(IsometricGame game, GameController gameController) {
@@ -83,6 +86,8 @@ public class GameScreen implements Screen {
                     camera
             );
             mapRenderer.setDungeons(gameController.getDungeons());
+
+            setAnimationManager(game.getAssetManager().getAnimationManager());
 
             this.dice = new Dice(
                     game.getAssetManager().getAnimationManager(),

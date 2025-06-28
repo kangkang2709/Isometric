@@ -1,4 +1,5 @@
-package ctu.game.isometric.model.typing;
+
+        package ctu.game.isometric.model.typing;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -21,7 +22,12 @@ public class Dungeon {
     IsometricMap map;
     List<Items> items;
     List<EnemyDungeon> enemies;
-    AnimationManager animationManager;
+
+    static AnimationManager animationManager;
+
+    public static void setAnimationManager(AnimationManager animationManager) {
+        Dungeon.animationManager = animationManager;
+    }
 
     final int maxEnemies = 10;
     final int maxItems = 10;
@@ -85,20 +91,32 @@ public class Dungeon {
         return new float[]{isoX, isoY};
     }
 
+    // In Dungeon.java, update the render method:
     public void render(SpriteBatch batch) {
-        // Render only the current enemy (even if not active, for spawn effect)
         if (currentEnemyIndex < enemies.size()) {
             EnemyDungeon enemy = enemies.get(currentEnemyIndex);
-            float[] isoCoords = toIsometric(enemy.x, enemy.y);
+            // Use smooth position for isometric conversion
+            float[] isoCoords = toIsometric(enemy.getRenderX(), enemy.getRenderY());
             float drawX = isoCoords[0];
             float drawY = isoCoords[1];
-            batch.draw(enemyTexture, drawX, drawY, 32, 32);
+            if (animationManager != null && enemy.getDirection() != null) {
+                com.badlogic.gdx.graphics.g2d.Animation<com.badlogic.gdx.graphics.g2d.TextureRegion> anim = animationManager.getDungeonEnemyAnimation(enemy.getDirection());
+                if (anim != null) {
+                    com.badlogic.gdx.graphics.g2d.TextureRegion frame = anim.getKeyFrame(enemy.stateTime, true);
+                    batch.draw(frame, drawX, drawY, 32, 32);
+                } else {
+                    batch.draw(enemyTexture, drawX, drawY, 32, 32);
+                }
+            } else {
+                batch.draw(enemyTexture, drawX, drawY, 32, 32);
+            }
         }
     }
 
     public void update(float delta, Character character) {
         if (isActive && currentEnemyIndex < enemies.size()) {
             EnemyDungeon enemy = enemies.get(currentEnemyIndex);
+            enemy.stateTime += delta; // Update animation time
             if (!enemy.isActive) {
                 spawnTimer += delta;
                 if (spawnTimer >= spawnDelay) {
@@ -107,7 +125,7 @@ public class Dungeon {
                 return;
             }
             boolean[][] walkableTiles = map.getWalkableCache();
-            enemy.moveToCharacterAI(character, walkableTiles,delta);
+            enemy.moveToCharacterAI(character, walkableTiles, delta);
             if (enemy.isTouchCharacter(character)) {
                 enemy.isActive = false;
                 character.decreaseHealth(1);
@@ -153,6 +171,7 @@ public class Dungeon {
 
             enemy.setWord(!wordsList.isEmpty() ? wordsList.get(rand.nextInt(wordsList.size())) : "default");
             enemy.isActive = false; // Not active yet, wait for delay
+            enemy.stateTime = 0f;   // Reset animation time
             spawnTimer = 0f; // Reset timer for delay
         }
     }
@@ -170,6 +189,7 @@ public class Dungeon {
             isFinished = false;
             for (EnemyDungeon enemy : enemies) {
                 enemy.isActive = false;
+                enemy.stateTime = 0f;
             }
             currentEnemyIndex = 0;
             spawnEnemy(character);

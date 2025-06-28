@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,8 +12,30 @@ public class AnimationManager {
     private Map<String, Animation<TextureRegion>> characterAnimations = new HashMap<>();
     private Map<String, Animation<TextureRegion>> npcAnimations = new HashMap<>();
     private Map<String, Animation<TextureRegion>> diceAnimations = new HashMap<>();
+    private Map<String, Animation<TextureRegion>> dungeonEnemyAnimations = new HashMap<>();
 
 
+
+    public void loadDungeonEnemyAnimations(String enemySpritePath,String direction) {
+        Texture enemySpriteSheet = new Texture(Gdx.files.internal(enemySpritePath));
+        enemySpriteSheet.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+
+        int frameCount = 6;
+        // Create animation frames
+        TextureRegion[] frames = new TextureRegion[frameCount];
+        for (int i = 0; i < frameCount; i++) {
+            frames[i] = new TextureRegion(enemySpriteSheet, i * 80, 0, 80, 80);
+        }
+
+        // Add animation to map with unique key
+        dungeonEnemyAnimations.put("enemy_"+direction, new Animation<>(0.1f, frames));
+    }
+
+
+    public Animation<TextureRegion> getDungeonEnemyAnimation(String direction) {
+        String animKey = "enemy_" + direction;
+        return dungeonEnemyAnimations.getOrDefault(animKey, null);
+    }
 
     public void loadDiceAnimations(String staticDicePath, String rollingDicePath) {
         // Load texture sheets
@@ -38,7 +61,7 @@ public class AnimationManager {
         int face = 1;
         for (int row = 0; row < staticDiceTmp.length; row++) {
             for (int col = 0; col < staticDiceTmp[row].length; col++) {
-                TextureRegion[] frame = { staticDiceTmp[row][col] };
+                TextureRegion[] frame = {staticDiceTmp[row][col]};
                 diceAnimations.put("face_" + face, new Animation<>(0.1f, frame));
                 face++;
                 if (face > 20) break; // Ensure we don't exceed 20 faces
@@ -175,7 +198,6 @@ public class AnimationManager {
     }
 
 
-
     public TextureRegion getNpcFrame(String npcId, String behaviorState, float stateTime) {
         String animKey = npcId + "_" + behaviorState.toLowerCase();
 
@@ -200,6 +222,7 @@ public class AnimationManager {
     public void setCharacterAnimations(Map<String, Animation<TextureRegion>> characterAnimations) {
         this.characterAnimations = characterAnimations;
     }
+
     public void dispose() {
         // Dispose character animations
         for (Animation<TextureRegion> animation : characterAnimations.values()) {

@@ -97,6 +97,12 @@ public class MapRenderer {
 
         animationManager.loadDiceAnimations("textures/dice_static.png", "textures/dice_rolling.png");
 
+        animationManager.loadDungeonEnemyAnimations("enemies/dungeons/up.png", "up");
+        animationManager.loadDungeonEnemyAnimations("enemies/dungeons/down.png", "down");
+        animationManager.loadDungeonEnemyAnimations("enemies/dungeons/left.png", "left");
+        animationManager.loadDungeonEnemyAnimations("enemies/dungeons/right.png", "right");
+
+
         setSlowMotion(true);
         setSpeedMultiplier(0.01f);
         smoothSlowMotion(true);
@@ -114,7 +120,7 @@ public class MapRenderer {
     public void setDungeons(Map<String, Dungeon> dungeons) {
         this.dungeons = dungeons;
         for (Dungeon dungeon : dungeons.values()) {
-                    dungeon.setEnemyTexture(assetManager.getTexture("enemy_card"));
+            dungeon.setEnemyTexture(assetManager.getTexture("enemy_card"));
         }
     }
 
