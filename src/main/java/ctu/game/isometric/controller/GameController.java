@@ -20,7 +20,6 @@ import ctu.game.isometric.model.entity.NPC;
 import ctu.game.isometric.model.game.Dice;
 import ctu.game.isometric.model.game.GameState;
 import ctu.game.isometric.model.game.Items;
-import ctu.game.isometric.model.typing.Dungeon;
 import ctu.game.isometric.model.world.IsometricMap;
 import ctu.game.isometric.model.world.MapEvent;
 import ctu.game.isometric.util.AssetManager;
@@ -164,28 +163,17 @@ public class GameController {
         questTrackerView = new QuestTrackerView(this);
 
         tutorialUI = new TutorialUI(this);
-        createDungeons();
+
     }
 
 
-    Map<String, Dungeon> dungeons = new HashMap<>();
-
-    public void createDungeons() {
-        dungeons.put("dungeon1", new Dungeon("dungeon1", "dungeon1",mapList.get("dungeon1")));
-    }
 
     public void createBoard() {
         boardEventManager = new BoardEventManager(this);
 
     }
 
-    public Map<String, Dungeon> getDungeons() {
-        return dungeons;
-    }
 
-    public void setDungeons(Map<String, Dungeon> dungeons) {
-        this.dungeons = dungeons;
-    }
 
     public IsometricMap changeMap(String mapName) {
         if (mapName.equals(getMap().getMapName()))
@@ -204,15 +192,6 @@ public class GameController {
 
             });
 
-            if (newMap.getMapName().equals("dungeon1")) {
-                dungeons.get("dungeon1").setActive(true);
-                Timer.schedule(new Timer.Task() {
-                    @Override
-                    public void run() {
-                        dungeons.get("dungeon1").start(getCharacter());
-                    }
-                }, 3f);
-            }
 
 
 

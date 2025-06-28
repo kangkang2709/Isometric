@@ -3,6 +3,7 @@ package ctu.game.isometric.view.renderer;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
@@ -26,7 +27,6 @@ import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.game.Dice;
 import ctu.game.isometric.model.game.Items;
 import ctu.game.isometric.model.puzzle.PressurePlatePuzzle;
-import ctu.game.isometric.model.typing.Dungeon;
 import ctu.game.isometric.model.world.IsometricMap;
 import ctu.game.isometric.model.world.MapEvent;
 import ctu.game.isometric.util.AnimationManager;
@@ -111,20 +111,6 @@ public class MapRenderer {
 
     }
 
-    public Map<String, Dungeon> getDungeons() {
-        return dungeons;
-    }
-
-    private Dungeon currentDungeon;
-
-    public void setDungeons(Map<String, Dungeon> dungeons) {
-        this.dungeons = dungeons;
-        for (Dungeon dungeon : dungeons.values()) {
-            dungeon.setEnemyTexture(assetManager.getTexture("enemy_card"));
-        }
-    }
-
-    Map<String, Dungeon> dungeons = new HashMap<>();
 
 
     private Dice diceRenderer;
@@ -175,10 +161,6 @@ public class MapRenderer {
         }
         this.tiledMapRenderer = new IsometricTiledMapRenderer(map.getTiledMap());
         this.map = map;
-        if (map.getMapName().contains("dungeon"))
-            this.currentDungeon = dungeons.get(map.getMapName());
-        else
-            this.currentDungeon = null;
 
     }
 
@@ -251,6 +233,9 @@ public class MapRenderer {
         this.camera = camera;
     }
 
+
+    PerspectiveCamera camera_3d = new PerspectiveCamera();
+
     public void render(SpriteBatch batch) {
         // Draw background for the entire screen
 //        float bgX = camera.position.x - (Gdx.graphics.getWidth() / 2f);
@@ -277,7 +262,7 @@ public class MapRenderer {
 
         // Render tile map
         tiledMapRenderer.setView(camera);
-        tiledMapRenderer.render();
+//        tiledMapRenderer.render();
 
         // Resume batch if it was drawing before
         if (batchWasDrawing) {
@@ -289,10 +274,6 @@ public class MapRenderer {
             if (map.getMapName().equals("board")) {
                 renderBoard(batch);
                 renderDice(batch);
-            }
-
-            if (currentDungeon != null && currentDungeon.isActive()) {
-                currentDungeon.render(batch);
             }
 
 
@@ -461,9 +442,7 @@ public class MapRenderer {
         weatherRenderer.update(delta);
         diceRenderer.update(delta);
         updateCardAnimation(delta);
-        if (currentDungeon != null && currentDungeon.isActive()) {
-            currentDungeon.update(delta, character);
-        }
+
     }
 
     public void setWeather(String type, float intensity) {
