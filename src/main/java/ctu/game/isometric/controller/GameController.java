@@ -45,6 +45,11 @@ public class GameController {
     private IsometricGame game;
     private Character character;
 
+    public IsometricGame getGame() {
+        return game;
+    }
+
+
     private AssetManager assetManager;
 
     private IsometricMap map;

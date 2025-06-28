@@ -10,6 +10,9 @@ import com.badlogic.gdx.graphics.g3d.loader.ObjLoader;
 import com.badlogic.gdx.graphics.g3d.utils.*;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.utils.*;
+import ctu.game.isometric.IsometricGame;
+import ctu.game.isometric.controller.GameController;
+import ctu.game.isometric.controller.dungeon.DungeonInputController;
 
 public class LinearCaveScreen implements Screen {
     private PerspectiveCamera camera;
@@ -41,8 +44,22 @@ public class LinearCaveScreen implements Screen {
     private Vector3 moveStart = new Vector3();
     private Vector3 moveEnd = new Vector3();
 
+
+    GameController gameController;
+    IsometricGame game;
+    DungeonInputController dugeonInputController;
+
+    public LinearCaveScreen(IsometricGame game, GameController gameController) {
+        this.gameController = gameController;
+        this.game = game;
+        this.dugeonInputController = new DungeonInputController(this);
+
+    }
+
     @Override
     public void show() {
+        Gdx.input.setInputProcessor(this.dugeonInputController);
+
         camera = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.near = 0.1f;
         camera.far = 100f;
@@ -169,6 +186,11 @@ public class LinearCaveScreen implements Screen {
     }
 
     private void handleGridMovement(float delta) {
+//        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+//            game.changeScreen("GAME");
+//            return;
+//        }
+
         if (!isMoving) {
             if (Gdx.input.isKeyJustPressed(Input.Keys.W)) {
                 moveDirection = new Vector2Int((int) playerDirection.x, (int) playerDirection.z);
@@ -266,12 +288,10 @@ public class LinearCaveScreen implements Screen {
 
         // Player
         if (playerDirection.equals(vector1)) {
-            playerInstance.transform.setToTranslation(playerPosition.x-0.31f, playerPosition.y - 0.05f, playerPosition.z + 0.2f);
-        }
-        else  if (playerDirection.equals(vector2)) {
+            playerInstance.transform.setToTranslation(playerPosition.x - 0.31f, playerPosition.y - 0.05f, playerPosition.z + 0.2f);
+        } else if (playerDirection.equals(vector2)) {
             playerInstance.transform.setToTranslation(playerPosition.x - 0.5f, playerPosition.y - 0.05f, playerPosition.z - 0.3f);
-        }
-        else playerInstance.transform.setToTranslation(playerPosition.x, playerPosition.y - 0.05f, playerPosition.z);
+        } else playerInstance.transform.setToTranslation(playerPosition.x, playerPosition.y - 0.05f, playerPosition.z);
 
         float angle = (float) Math.atan2(playerDirection.x, playerDirection.z) * MathUtils.radiansToDegrees;
         playerInstance.transform.rotate(Vector3.Y, angle);
@@ -327,5 +347,14 @@ public class LinearCaveScreen implements Screen {
         public int hashCode() {
             return x * 31 + y;
         }
+
+    }
+
+    public IsometricGame getGame() {
+        return game;
+    }
+
+    public void setGame(IsometricGame game) {
+        this.game = game;
     }
 }

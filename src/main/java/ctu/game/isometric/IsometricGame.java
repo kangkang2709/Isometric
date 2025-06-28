@@ -11,14 +11,22 @@ public class IsometricGame extends Game {
     private AssetManager assetManager;
     private GameController gameController;
     private GameScreen gameScreen;
+
+    private SplashScreen splashScreen;
+    private LinearCaveScreen dungeonScreen;
+
     @Override
     public void create() {
         assetManager = new AssetManager();
         assetManager.loadAssets();
         Gdx.graphics.setVSync(true);
         gameController = new GameController(this);
-//        setScreen(new SplashScreen(this, gameController));
-        setScreen(new LinearCaveScreen());
+
+        splashScreen = new SplashScreen(this, gameController);
+        gameScreen = new GameScreen(this, gameController);
+        dungeonScreen = new LinearCaveScreen(this, gameController);
+
+        setScreen(splashScreen);
     }
 
     @Override
@@ -32,7 +40,21 @@ public class IsometricGame extends Game {
         return assetManager;
     }
 
-
+    public void changeScreen(String name) {
+        switch (name) {
+            case "SPLASH":
+                setScreen(splashScreen);
+                break;
+            case "GAME":
+                setScreen(gameScreen);
+                break;
+            case "DUNGEON":
+                setScreen(dungeonScreen);
+                break;
+            default:
+                break;
+        }
+    }
 
     @Override
     public void dispose() {

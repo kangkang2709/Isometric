@@ -24,6 +24,8 @@ public class SplashScreen implements Screen {
         splashTexture = new Texture(Gdx.files.internal("backgrounds/main_menu_bg.png")); // Add a splash.png to your assets folder
     }
 
+
+
     @Override
     public void render(float delta) {
         // Clear screen

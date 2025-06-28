@@ -262,7 +262,7 @@ public class MapRenderer {
 
         // Render tile map
         tiledMapRenderer.setView(camera);
-//        tiledMapRenderer.render();
+        tiledMapRenderer.render();
 
         // Resume batch if it was drawing before
         if (batchWasDrawing) {
