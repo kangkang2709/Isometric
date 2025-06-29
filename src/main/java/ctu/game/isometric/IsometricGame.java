@@ -26,7 +26,7 @@ public class IsometricGame extends Game {
         gameScreen = new GameScreen(this, gameController);
         dungeonScreen = new LinearCaveScreen(this, gameController);
 
-        setScreen(splashScreen);
+        setScreen(dungeonScreen);
     }
 
     @Override

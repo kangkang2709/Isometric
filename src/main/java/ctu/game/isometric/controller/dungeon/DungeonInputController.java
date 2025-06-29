@@ -43,7 +43,6 @@ public class DungeonInputController extends InputAdapter {
 
     @Override
     public boolean keyDown(int keycode) {
-        System.out.println("Escape key pressed, changing screen to GAME");
         if (keycode == com.badlogic.gdx.Input.Keys.ESCAPE) {
             linearCaveScreen.getGame().changeScreen("GAME");
             System.out.println("Escape key pressed, changing screen to GAME");

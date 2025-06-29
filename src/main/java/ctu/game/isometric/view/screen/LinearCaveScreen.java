@@ -6,13 +6,22 @@ import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g3d.*;
 import com.badlogic.gdx.graphics.g3d.attributes.*;
 import com.badlogic.gdx.graphics.g3d.environment.*;
-import com.badlogic.gdx.graphics.g3d.loader.ObjLoader;
+import com.badlogic.gdx.graphics.g3d.model.Animation;
 import com.badlogic.gdx.graphics.g3d.utils.*;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.utils.*;
 import ctu.game.isometric.IsometricGame;
 import ctu.game.isometric.controller.GameController;
 import ctu.game.isometric.controller.dungeon.DungeonInputController;
+import net.mgsx.gltf.loaders.gltf.GLTFLoader;
+import net.mgsx.gltf.scene3d.attributes.PBRColorAttribute;
+import net.mgsx.gltf.scene3d.attributes.PBRTextureAttribute;
+import net.mgsx.gltf.scene3d.scene.Scene;
+import net.mgsx.gltf.scene3d.scene.SceneAsset;
+import net.mgsx.gltf.scene3d.scene.SceneManager;
+import net.mgsx.gltf.scene3d.shaders.PBRShaderConfig;
+import net.mgsx.gltf.scene3d.shaders.PBRShaderProvider;
 
 public class LinearCaveScreen implements Screen {
     private PerspectiveCamera camera;
@@ -21,8 +30,7 @@ public class LinearCaveScreen implements Screen {
     private Array<ModelInstance> instances = new Array<>();
     private Model boxModel;
     private Model ceilingModel;
-    private Model playerModel;
-    private ModelInstance playerInstance;
+
 
     private final int MAP_WIDTH = 20;
     private final int MAP_HEIGHT = 20;
@@ -44,21 +52,29 @@ public class LinearCaveScreen implements Screen {
     private Vector3 moveStart = new Vector3();
     private Vector3 moveEnd = new Vector3();
 
-
     GameController gameController;
     IsometricGame game;
-    DungeonInputController dugeonInputController;
+    DungeonInputController dungeonInputController;
 
     public LinearCaveScreen(IsometricGame game, GameController gameController) {
         this.gameController = gameController;
         this.game = game;
-        this.dugeonInputController = new DungeonInputController(this);
-
+        this.dungeonInputController = new DungeonInputController(this);
     }
+
+    private OrthographicCamera uiCamera;
+    private ShapeRenderer shapeRenderer;
+    private final int MINIMAP_SIZE = 160;
+    private final int MINIMAP_PADDING = 24;
 
     @Override
     public void show() {
-        Gdx.input.setInputProcessor(this.dugeonInputController);
+        Gdx.input.setInputProcessor(this.dungeonInputController);
+        uiCamera = new OrthographicCamera();
+        uiCamera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        uiCamera.update();
+
+        shapeRenderer = new ShapeRenderer();
 
         camera = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.near = 0.1f;
@@ -91,44 +107,75 @@ public class LinearCaveScreen implements Screen {
         camera.update();
     }
 
-    private void createModels() {
+    public void createModels() {
         ModelBuilder modelBuilder = new ModelBuilder();
+
+        // Tạo box model (để so sánh)
         boxModel = modelBuilder.createBox(1f, 1f, 1f,
                 new Material(ColorAttribute.createDiffuse(Color.GRAY)),
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
 
+        // Tạo trần nhà
         ceilingModel = modelBuilder.createBox(1f, 0.1f, 1f,
                 new Material(ColorAttribute.createDiffuse(new Color(0.2f, 0.2f, 0.25f, 1f))),
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
 
+        // Load mô hình GLTF
+        SceneAsset sceneAsset = new GLTFLoader().load(Gdx.files.internal("3d/Untitled7.gltf"));
 
-        // Player: half sized box, blue
+        // Log ra các animation nếu có
+        for (Animation entry : sceneAsset.animations) {
+            System.out.println("Animation: " + entry.id);
+        }
 
-        ObjLoader objLoader = new ObjLoader();
-        FileHandle fileHandle = Gdx.files.internal("3d/book3.obj");
+        // Gán màu xám nhạt cho vật liệu và loại bỏ texture (nếu muốn debug BaseColorFactor)
+//        for (Material mat : sceneAsset.scene.model.materials) {
+//            // In ra các thuộc tính vật liệu để kiểm tra
+//            for (Attribute attr : mat) {
+//                System.out.println(attr);
+//            }
+//        }
 
-        playerModel = objLoader.loadModel(fileHandle);
-        playerInstance = new ModelInstance(playerModel);
+        // Khởi tạo Scene từ GLTF
+        scene = new Scene(sceneAsset.scene);
+        scene.modelInstance.transform.setToTranslation(0, 0, 0);
 
+        // Tạo SceneManager và gán camera
+        sceneManager = new SceneManager();
+        sceneManager.setCamera(camera);
+        sceneManager.addScene(scene);
 
+        // Cài đặt animation nếu có
+        if (!sceneAsset.animations.isEmpty()) {
+            scene.animationController.setAnimation(sceneAsset.animations.first().id, -1);
+        }
+
+        // Tạo shader config PBR
+        PBRShaderConfig config = PBRShaderProvider.createDefaultConfig();
+        config.numBones = 60; // cần nếu có skeleton
+        sceneManager.setShaderProvider(new PBRShaderProvider(config));
+
+        // Ánh sáng môi trường và directional light
+        sceneManager.environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.3f, 0.3f, 0.3f, 1f));
+        sceneManager.environment.add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, -1f, -0.8f, -0.2f));
     }
+
+
+
+    Scene scene;
+    SceneManager sceneManager;
 
     private void buildMap() {
         instances.clear();
         for (int x = 0; x < MAP_WIDTH; x++) {
             for (int y = 0; y < MAP_HEIGHT; y++) {
                 if (map[x][y] == 0) {
-                    // Tường
+                    // Wall
                     ModelInstance wall = new ModelInstance(boxModel);
                     wall.transform.setToTranslation(x, 0.5f, y);
                     instances.add(wall);
-
-                    // Trần nhà phía trên tường
-//                    ModelInstance ceiling = new ModelInstance(ceilingModel);
-//                    ceiling.transform.setToTranslation(x, 1.05f, y);
-//                    instances.add(ceiling);
                 } else {
-                    // Trần nhà phía trên sàn trống
+                    // Ceiling over floor
                     ModelInstance ceiling = new ModelInstance(ceilingModel);
                     ceiling.transform.setToTranslation(x, 1.05f, y);
                     instances.add(ceiling);
@@ -185,12 +232,50 @@ public class LinearCaveScreen implements Screen {
         return map;
     }
 
-    private void handleGridMovement(float delta) {
-//        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
-//            game.changeScreen("GAME");
-//            return;
-//        }
+    private void drawMiniMap() {
+        shapeRenderer.setProjectionMatrix(uiCamera.combined);
 
+        int mapSize = Math.max(MAP_WIDTH, MAP_HEIGHT);
+        float cellSize = (float) MINIMAP_SIZE / mapSize;
+        float originX = 1280 - MINIMAP_SIZE - MINIMAP_PADDING; // Right side of the screen
+        float originY = MINIMAP_PADDING;
+
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+
+        // Minimap background
+        shapeRenderer.setColor(0, 0, 0, 0.5f);
+        shapeRenderer.rect(originX - 4, originY - 4, MINIMAP_SIZE + 8, MINIMAP_SIZE + 8);
+
+        // Map cells
+        for (int x = 0; x < MAP_WIDTH; x++) {
+            for (int y = 0; y < MAP_HEIGHT; y++) {
+                if (map[x][y] == 0) {
+                    shapeRenderer.setColor(Color.DARK_GRAY);
+                } else {
+                    shapeRenderer.setColor(Color.LIGHT_GRAY);
+                }
+                shapeRenderer.rect(
+                        originX + x * cellSize,
+                        originY + y * cellSize,
+                        cellSize,
+                        cellSize
+                );
+            }
+        }
+
+        // Player
+        shapeRenderer.setColor(Color.BLUE);
+        shapeRenderer.ellipse(
+                originX + gridPosition.x * cellSize + cellSize / 4,
+                originY + gridPosition.y * cellSize + cellSize / 4,
+                cellSize / 2,
+                cellSize / 2
+        );
+
+        shapeRenderer.end();
+    }
+
+    private void handleGridMovement(float delta) {
         if (!isMoving) {
             if (Gdx.input.isKeyJustPressed(Input.Keys.W)) {
                 moveDirection = new Vector2Int((int) playerDirection.x, (int) playerDirection.z);
@@ -253,21 +338,20 @@ public class LinearCaveScreen implements Screen {
 
     private void updateCameraFromPlayer(float delta) {
         Vector3 basePos = new Vector3(playerPosition);
-        // Vị trí camera đúng ngay vị trí player, cao hơn một chút (tầm mắt)
-        float eyeHeight = 0.2f; // hoặc 0.25f, điều chỉnh cho vừa ý
+        // Camera position is at player location, slightly higher (eye level)
+        float eyeHeight = 0.2f;
 
         camera.position.set(basePos.x - 0.2f, basePos.y + eyeHeight, basePos.z - 0.15f);
 
-        // Camera nhìn thẳng theo hướng di chuyển của player
+        // Camera looks straight in the player's movement direction
         camera.lookAt(
-                basePos.x + playerDirection.x - 0.2f, // Một chút lệch để nhìn rõ hơn
+                basePos.x + playerDirection.x - 0.2f,
                 basePos.y + eyeHeight,
                 basePos.z + playerDirection.z
         );
         camera.up.set(Vector3.Y);
         camera.update();
     }
-
 
     Vector3 vector1 = new Vector3(-1, 0, 0);
     Vector3 vector2 = new Vector3(0, 0, -1);
@@ -280,24 +364,28 @@ public class LinearCaveScreen implements Screen {
 
         Gdx.gl.glClearColor(0.05f, 0.05f, 0.1f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
-
+        sceneManager.update(delta);
+        sceneManager.render();
         modelBatch.begin(camera);
+
         for (ModelInstance instance : instances) {
             modelBatch.render(instance, environment);
         }
 
-        // Player
+        // Player model transform/rotation
         if (playerDirection.equals(vector1)) {
-            playerInstance.transform.setToTranslation(playerPosition.x - 0.31f, playerPosition.y - 0.05f, playerPosition.z + 0.2f);
+            scene.modelInstance.transform.setToTranslation(playerPosition.x - 0.31f, playerPosition.y - 0.05f, playerPosition.z + 0.2f);
         } else if (playerDirection.equals(vector2)) {
-            playerInstance.transform.setToTranslation(playerPosition.x - 0.5f, playerPosition.y - 0.05f, playerPosition.z - 0.3f);
-        } else playerInstance.transform.setToTranslation(playerPosition.x, playerPosition.y - 0.05f, playerPosition.z);
+            scene.modelInstance.transform.setToTranslation(playerPosition.x - 0.5f, playerPosition.y - 0.05f, playerPosition.z - 0.3f);
+        } else {
+            scene.modelInstance.transform.setToTranslation(playerPosition.x, playerPosition.y - 0.05f, playerPosition.z);
+        }
 
         float angle = (float) Math.atan2(playerDirection.x, playerDirection.z) * MathUtils.radiansToDegrees;
-        playerInstance.transform.rotate(Vector3.Y, angle);
-        modelBatch.render(playerInstance, environment);
+        scene.modelInstance.transform.rotate(Vector3.Y, angle);
 
         modelBatch.end();
+        drawMiniMap();
     }
 
     @Override
@@ -320,8 +408,8 @@ public class LinearCaveScreen implements Screen {
     public void dispose() {
         modelBatch.dispose();
         boxModel.dispose();
-        playerModel.dispose();
         ceilingModel.dispose();
+        shapeRenderer.dispose();
     }
 
     static class Vector2Int {
@@ -347,7 +435,6 @@ public class LinearCaveScreen implements Screen {
         public int hashCode() {
             return x * 31 + y;
         }
-
     }
 
     public IsometricGame getGame() {

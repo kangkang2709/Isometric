@@ -71,11 +71,19 @@
             <artifactId>lucene-analyzers-common</artifactId>
             <version>8.11.4</version>
         </dependency>
-
+        <dependency>
+            <groupId>com.github.mgsx-dev.gdx-gltf</groupId>
+            <artifactId>gltf</artifactId>
+            <version>2.2.1</version>
+        </dependency>
 
     </dependencies>
-
-
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
     <build>
         <plugins>
             <!-- Plugin để biên dịch mã nguồn -->
