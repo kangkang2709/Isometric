@@ -257,8 +257,8 @@ public class WordNetValidator {
         LETTER_BONUS.put('Z', 2);
         LETTER_BONUS.put('X', 2);
         LETTER_BONUS.put('J', 2);
-        LETTER_BONUS.put('V', 1);
-        LETTER_BONUS.put('W', 1);
+        LETTER_BONUS.put('V', 2);
+        LETTER_BONUS.put('W', 2);
 
         //vowels
         LETTER_BONUS.put('A', 2);
@@ -285,17 +285,15 @@ public class WordNetValidator {
 
         int length = word.length();
 
-        if (length <= 7) {
+        if (length <= 5) {
             return switch (length) {
-                case 3 -> 1;
-                case 4 -> 2;
-                case 5 -> 4;
-                case 6 -> 5;
-                case 7 -> 6;
+                case 3 -> 3;
+                case 4 -> 4;
+                case 5 -> 5;
                 default -> 0;
             };
         }
-        return length + 1;
+        return length + 2;
     }
 
     //ki tu hiem

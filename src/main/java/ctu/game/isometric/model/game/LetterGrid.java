@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Random;
 
 public class LetterGrid {
-    private static final int GRID_SIZE = 5;
+    private int GRID_SIZE = 5;
     private char[][] grid;
     private boolean[][] selectedCells;
     private List<int[]> currentSelection;
@@ -15,6 +15,7 @@ public class LetterGrid {
     // Letter frequencies based on English language
     private static final String LETTERS = "EEEEEEEEEEAAAAAARRRRRRIIIIIIOOOOOOTTTTTTNNNNNNSSSSSSLLLLUUUUUDDDGGBBCCMMPPFFHHVVWWYYKJXQZ";
     private Random random;
+
 
     public LetterGrid() {
         grid = new char[GRID_SIZE][GRID_SIZE];
@@ -24,7 +25,26 @@ public class LetterGrid {
         regenerateGrid();
     }
 
+    public void setGridSize(int size) {
+        if (size >= 3 && size <= 10) { // Limit grid size to a reasonable range
+            GRID_SIZE = size;
+            grid = new char[GRID_SIZE][GRID_SIZE];
+            selectedCells = new boolean[GRID_SIZE][GRID_SIZE];
+            currentSelection.clear();
+            regenerateGrid();
+        } else {
+            throw new IllegalArgumentException("Grid size must be between 1 and 10.");
+        }
+    }
 
+    public int getGridSize() {
+        return GRID_SIZE;
+    }
+
+
+
+    int vovelCount = 0;
+    int vovelLimit = 4;
     public void regenerateGrid() {
         for (int y = 0; y < GRID_SIZE; y++) {
             for (int x = 0; x < GRID_SIZE; x++) {
@@ -103,7 +123,15 @@ public class LetterGrid {
     }
 
     // Getters
-    public char[][] getGrid() { return grid; }
-    public boolean[][] getSelectedCells() { return selectedCells; }
-    public List<int[]> getCurrentSelection() { return currentSelection; }
+    public char[][] getGrid() {
+        return grid;
+    }
+
+    public boolean[][] getSelectedCells() {
+        return selectedCells;
+    }
+
+    public List<int[]> getCurrentSelection() {
+        return currentSelection;
+    }
 }

@@ -65,6 +65,7 @@ public class GameplayController {
 
     // UI components
     private BitmapFont titleFont, regularFont;
+
     private GlyphLayout layout;
     private Viewport viewport;
     private Texture whiteTexture;
@@ -120,8 +121,6 @@ public class GameplayController {
     }
 
 
-
-
     // Gọi khi có hành động (ví dụ: player tấn công)
 
     public void playerAttack(String word, int dmg, Runnable onComplete) {
@@ -137,7 +136,7 @@ public class GameplayController {
         cardAnimationManager.addCard(card);
     }
 
-    public void playerHealing(int heal, Runnable onComplete){
+    public void playerHealing(int heal, Runnable onComplete) {
         AttackCard card = new AttackCard(
                 AttackCard.CardType.HEALING,
                 "HEAL",
@@ -148,6 +147,7 @@ public class GameplayController {
         card.setOnComplete(onComplete);
         cardAnimationManager.addCard(card);
     }
+
     public void playerHealingMana(int mana, Runnable onComplete) {
         AttackCard card = new AttackCard(
                 AttackCard.CardType.HEALING,
@@ -307,8 +307,15 @@ public class GameplayController {
         return enemyName.toLowerCase().contains("lord");
     }
 
+    public void setGridSize(int size) {
+        letterGrid.setGridSize(size);
+        cellSize = gridSize / letterGrid.getGridSize();
+    }
+
     private void applyBossEffects() {
         if (isEnemyBoss()) {
+
+            setGridSize(3);
             disabledCells.clear();
             int cellsToDisable = random.nextInt(2) + 1;
             for (int i = 0; i < cellsToDisable; i++) {
@@ -423,22 +430,24 @@ public class GameplayController {
         final float GRID_COLUMN_X = MARGIN + PLAYER_COLUMN_WIDTH + MARGIN;
 
         // Center grid trong grid column
-        gridX = GRID_COLUMN_X + (GRID_COLUMN_WIDTH - gridSize) / 2;
+        gridX = GRID_COLUMN_X + (GRID_COLUMN_WIDTH - gridSize) / 2 - 150;
         gridY = 80; // Margin bottom + button height + spacing
-        cellSize = gridSize / 5;
+        cellSize = gridSize / letterGrid.getGridSize();
     }
+
+
 
     private void checkGridClick(float x, float y) {
         if (x < gridX || x >= gridX + gridSize || y < gridY || y >= gridY + gridSize) return;
 
+        int gridSizeValue = letterGrid.getGridSize();
         int cellX = (int) ((x - gridX) / cellSize);
-        int cellY = 4 - (int) ((y - gridY) / cellSize);
+        int cellY = gridSizeValue - 1 - (int) ((y - gridY) / cellSize);
 
-        if (cellX >= 0 && cellX < 5 && cellY >= 0 && cellY < 5 && !isCellDisabled(cellX, cellY)) {
+        if (cellX >= 0 && cellX < gridSizeValue && cellY >= 0 && cellY < gridSizeValue && !isCellDisabled(cellX, cellY)) {
             selectCell(cellX, cellY);
         }
     }
-
 
     public void render(SpriteBatch batch) {
         if (!active) return;
@@ -550,13 +559,17 @@ public class GameplayController {
         drawItemColumn(batch, ITEM_COLUMN_X, BOTTOM_SECTION_Y, ITEM_COLUMN_WIDTH, BOTTOM_SECTION_HEIGHT);
     }
 
+    String difficultyText = "";
+
     private void drawEnemyStatusSection(SpriteBatch batch, float x, float y, float width, float height) {
         batch.setColor(0.2f, 0.2f, 0.4f, 0.9f);
         batch.draw(whiteTexture, x, y, width, height);
 
+
         String titleText = "KẺ ĐỊCH";
         if (isEnemyBoss()) titleText += " (BOSS)";
         else if (isEnemyLord()) titleText += " (LORD)";
+
 
         drawCenteredText(batch, titleFont, titleText, x + 156, y + height - 20, Color.RED);
 
@@ -570,6 +583,7 @@ public class GameplayController {
         regularFont.setColor(Color.WHITE);
         regularFont.draw(batch, "Tên: " + enemyName, x + 120, y + height - 50);
         regularFont.draw(batch, "HP: " + (int) enemyHealth + "/" + (int) enemyMaxHealth, x + 120, y + height - 75);
+        regularFont.draw(batch, "Base Attack: " + enemy.getAttackPower(), x + 120, y + height - 100);
 
         // Health bar
         float healthPercentage = enemyHealth / enemyMaxHealth;
@@ -610,7 +624,9 @@ public class GameplayController {
         // Timer and turn indicator
         float timeLeft = COMBAT_TIME_LIMIT - combatTimer;
         String timeText = String.format("⏰ %02d:%02d", (int) (timeLeft / 60), (int) (timeLeft % 60));
-        drawCenteredText(batch, regularFont, timeText, x + width / 2  + 140, y + height - 20, timeLeft < 60 ? Color.RED : Color.WHITE);
+        drawCenteredText(batch, regularFont, timeText, x + width / 2 + 140, y + height - 20, timeLeft < 60 ? Color.RED : Color.WHITE);
+        regularFont.draw(batch, "Độ khó: " + difficultyText, x + width - 220, y + height - 15);
+
 
         String turnText = "Lượt: " + (isPlayerTurn ? "Người Chơi" : enemyName);
         regularFont.setColor(isPlayerTurn ? Color.GREEN : Color.RED);
@@ -701,6 +717,14 @@ public class GameplayController {
         // Health and mana bars
         drawHealthBar(batch, playerHealth, playerMaxHealth, x + 15, y + height - 245, width - 50, 12);
         drawManaBar(batch, playerMana, playerMaxMana, x + 15, y + height - 265, width - 50, 12);
+
+        regularFont.draw(batch, "ATK: " + (int) wordDamageMultiplier, x + 15, y + height - 285);
+        regularFont.draw(batch, "DEF: " + (int) gameController.getCharacter().getDefend(), x + 15, y + height - 305);
+
+        regularFont.setColor(Color.GRAY);
+        regularFont.draw(batch, "ATK sẽ được cộng vào tổng điểm!", x + 15, y + height - 345);
+        regularFont.draw(batch, "DEF sẽ giảm sát thương nhận vào! ", x + 15, y + height - 365);
+        regularFont.setColor(Color.WHITE);
     }
 
     private void drawHealthBar(SpriteBatch batch, float current, float max, float x, float y, float width, float height) {
@@ -781,12 +805,25 @@ public class GameplayController {
                 regularFont.draw(batch, "Meaning: " + meaning, x + 20, y + height - 30);
             }
         }
+        regularFont.setColor(Color.WHITE);
+        regularFont.draw(batch,
+                "           Cách tính điểm từ vựng:\n"
+                        + "- Mỗi ký tự: +1 điểm\n"
+                        + "- Mỗi Nguyên âm A,I,U,E,O: +2 điểm \n"
+                        + "- Nếu từ dài hơn 5 ký tự: +2 điểm\n"
+                        + "- Ký tự hiếm Z,Q,X,J,K: +2 điểm mỗi ký tự\n"
+                        + "- Nếu từ là danh từ: +1 điểm\n"
+                        + "- Nếu từ là động từ: +2 điểm\n"
+                        + "- Nếu từ là tính từ: +2 điểm\n"
+                        + "- Nếu từ là trạng từ từ: +3 điểm\n",
+                gridX + 330, gridY + gridSize - 30);
+
 
         drawLetterGrid(batch, gridX, gridY, gridSize);
 
         // Buttons
-        submitButtonRect = new Rectangle(x + 220, y + 16, 120, 40);
-        clearButtonRect = new Rectangle(x + 360, y + 16, 120, 40);
+        submitButtonRect = new Rectangle(x + 70, y + 16, 120, 40);
+        clearButtonRect = new Rectangle(x + 210, y + 16, 120, 40);
 
         if (isPlayerTurn && !combatTimeUp) {
             drawButton(batch, submitButtonRect, "CAST SPELL");
@@ -794,15 +831,17 @@ public class GameplayController {
         }
     }
 
+
     private void drawLetterGrid(SpriteBatch batch, float gridX, float gridY, float gridSize) {
-        float cellSize = gridSize / 5;
+        int gridSizeValue = letterGrid.getGridSize();
+        float cellSize = gridSize / gridSizeValue;
         char[][] grid = letterGrid.getGrid();
         boolean[][] selected = letterGrid.getSelectedCells();
 
-        for (int y = 0; y < 5; y++) {
-            for (int x = 0; x < 5; x++) {
+        for (int y = 0; y < gridSizeValue; y++) {
+            for (int x = 0; x < gridSizeValue; x++) {
                 float screenX = gridX + x * cellSize;
-                float screenY = gridY + (4 - y) * cellSize;
+                float screenY = gridY + (gridSizeValue - 1 - y) * cellSize;
 
                 char letter = grid[y][x];
                 boolean isSelected = selected[y][x];
@@ -903,7 +942,6 @@ public class GameplayController {
                 if (isEnemyBoss()) applyBossEffects();
             }
         });
-
 
 
     }
@@ -1027,11 +1065,29 @@ public class GameplayController {
         this.playerName = gameController.getCharacter().getName();
         this.currentLevel = gameController.getCharacter().getLevel();
         this.achievementManager = gameController.getAchievementManager();
-        this.enemyMaxHealth = enemy.getHealth() + currentLevel * 2;
-        this.enemyHealth = enemy.getHealth() + currentLevel * 2;
+        this.enemyMaxHealth = enemy.getHealth() + currentLevel * 5;
+        this.enemyHealth = enemy.getHealth() + currentLevel * 5;
 
         addCombatLog("Bắt đầu chiến đấu với " + enemyName + "!");
         letterGrid.regenerateGrid();
+
+        float difficultyScore = (enemyHealth * 0.5f + enemy.getAttackPower() * 1.5f) / (currentLevel + 1);
+
+        if (enemyName.contains("Lord")) {
+            difficultyScore *= 1.5f;
+        } else if (enemyName.contains("Boss")) {
+            difficultyScore *= 2.0f;
+        }
+        if (difficultyScore < 10) {
+            difficultyText = "Dễ";
+        } else if (difficultyScore < 20) {
+            difficultyText = "Vừa";
+        } else if (difficultyScore < 35) {
+            difficultyText = "Khó";
+        } else {
+            difficultyText = "Rất Khó";
+        }
+
 
         if (isEnemyBoss()) applyBossEffects();
     }
