@@ -3,20 +3,22 @@ package ctu.game.isometric.view.screen;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.*;
 import com.badlogic.gdx.graphics.g3d.attributes.*;
 import com.badlogic.gdx.graphics.g3d.environment.*;
 import com.badlogic.gdx.graphics.g3d.model.Animation;
 import com.badlogic.gdx.graphics.g3d.utils.*;
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.utils.*;
 import ctu.game.isometric.IsometricGame;
 import ctu.game.isometric.controller.GameController;
 import ctu.game.isometric.controller.dungeon.DungeonInputController;
+import net.mgsx.gltf.loaders.glb.GLBLoader;
 import net.mgsx.gltf.loaders.gltf.GLTFLoader;
-import net.mgsx.gltf.scene3d.attributes.PBRColorAttribute;
-import net.mgsx.gltf.scene3d.attributes.PBRTextureAttribute;
 import net.mgsx.gltf.scene3d.scene.Scene;
 import net.mgsx.gltf.scene3d.scene.SceneAsset;
 import net.mgsx.gltf.scene3d.scene.SceneManager;
@@ -31,9 +33,8 @@ public class LinearCaveScreen implements Screen {
     private Model boxModel;
     private Model ceilingModel;
 
-
-    private final int MAP_WIDTH = 20;
-    private final int MAP_HEIGHT = 20;
+    private final int MAP_WIDTH = 15;
+    private final int MAP_HEIGHT = 15;
     private int[][] map;
 
     // Player: half box
@@ -66,6 +67,30 @@ public class LinearCaveScreen implements Screen {
     private ShapeRenderer shapeRenderer;
     private final int MINIMAP_SIZE = 160;
     private final int MINIMAP_PADDING = 24;
+
+    private SpriteBatch hudBatch;
+    private Texture whiteTexture;
+    private BitmapFont regularFont;
+    private String playerName = "Hero";
+    private float playerHealth = 75, playerMaxHealth = 100;
+    private float playerMana = 40, playerMaxMana = 60;
+
+    // Flow effect
+    private ModelInstance flowInstance;
+    private Model flowCylinder;
+    private boolean showFlowInstance = true; // Toggle for displaying flow
+
+    public void startDugeon() {
+        this.playerMaxHealth = gameController.getCharacter().getMaxHealth();
+        this.playerMaxMana = gameController.getCharacter().getMaxMana();
+        this.playerHealth = gameController.getCharacter().getHealth();
+        this.playerMana = gameController.getCharacter().getMana();
+    }
+
+    public void endDungeon() {
+        gameController.getCharacter().setHealth(playerHealth);
+        gameController.getCharacter().setMana(playerMana);
+    }
 
     @Override
     public void show() {
@@ -105,13 +130,88 @@ public class LinearCaveScreen implements Screen {
         updatePlayerPositionFromGrid();
         updateCameraFromPlayer(0f);
         camera.update();
+
+        // Create flow cylinder model/instance (invisible at first, position will be updated to follow player)
+        createFlowCylinder();
+
+        // Tạo camera cho UI
+        hudBatch = new SpriteBatch();
+        // Tạo texture trắng 1x1
+        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(1, 1, 1, 1);
+        pixmap.fill();
+        whiteTexture = new Texture(pixmap);
+        pixmap.dispose();
+
+        regularFont = new BitmapFont(); // Có thể thay font khác nếu muốn
+
+    }
+
+    private void createFlowCylinder() {
+        // Tạo cylinder trong suốt phát sáng
+        ModelBuilder modelBuilder = new ModelBuilder();
+        Material glowMaterial = new Material(
+                ColorAttribute.createDiffuse(new Color(0.4f, 0.8f, 1f, 0.5f)), // Màu xanh, alpha 0.5
+                ColorAttribute.createEmissive(new Color(0.2f, 0.7f, 1f, 1f)), // Phát sáng nhẹ
+                new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA, 0.5f)
+        );
+        flowCylinder = modelBuilder.createCylinder(
+                0.2f,   // đường kính đáy < 1 để không trùng hoàn toàn box
+                0.2f,     // cao hơn box
+                0.2f,   // đường kính đỉnh
+                32,
+                glowMaterial,
+                VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal
+        );
+// Offset vị trí lên trên box một chút
+
+        // Sẽ được đặt vị trí tại render để luôn đi theo nhân vật
+    }
+
+    private void drawPlayerHUD(SpriteBatch batch) {
+        float x = 20, y = 600, width = 220, height = 100;
+        batch.begin();
+        drawPlayerStatusColumn(batch, x, y, width, height);
+        batch.end();
+    }
+
+    private void drawPlayerStatusColumn(SpriteBatch batch, float x, float y, float width, float height) {
+        batch.setColor(0.2f, 0.4f, 0.2f, 0.9f);
+        batch.draw(whiteTexture, x, y, width, height);
+
+        drawHealthBar(batch, playerHealth, playerMaxHealth, x + 15, y + height - 20, width - 30, 12);
+        drawManaBar(batch, playerMana, playerMaxMana, x + 15, y + height - 40, width - 30, 12);
+
+        regularFont.setColor(Color.WHITE);
+        regularFont.draw(batch, "HP: " + (int) playerHealth + "/" + (int) playerMaxHealth, x + 15, y + height - 50);
+        regularFont.draw(batch, "MP: " + (int) playerMana + "/" + (int) playerMaxMana, x + 15, y + height - 70);
+    }
+
+    private void drawHealthBar(SpriteBatch batch, float current, float max, float x, float y, float width, float height) {
+        batch.setColor(0.3f, 0.3f, 0.3f, 1);
+        batch.draw(whiteTexture, x, y, width, height);
+        batch.setColor(getHealthColor(current / max));
+        batch.draw(whiteTexture, x, y, width * (current / max), height);
+    }
+
+    private void drawManaBar(SpriteBatch batch, float current, float max, float x, float y, float width, float height) {
+        batch.setColor(0.3f, 0.3f, 0.3f, 1);
+        batch.draw(whiteTexture, x, y, width, height);
+        batch.setColor(0.2f, 0.4f, 0.9f, 1);
+        batch.draw(whiteTexture, x, y, width * (current / max), height);
+    }
+
+    private Color getHealthColor(float percent) {
+        if (percent > 0.6f) return Color.GREEN;
+        if (percent > 0.3f) return Color.ORANGE;
+        return Color.RED;
     }
 
     public void createModels() {
         ModelBuilder modelBuilder = new ModelBuilder();
 
         // Tạo box model (để so sánh)
-        boxModel = modelBuilder.createBox(1f, 1f, 1f,
+        boxModel = modelBuilder.createBox(1f, 1.4f, 1f,
                 new Material(ColorAttribute.createDiffuse(Color.GRAY)),
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
 
@@ -128,14 +228,6 @@ public class LinearCaveScreen implements Screen {
             System.out.println("Animation: " + entry.id);
         }
 
-        // Gán màu xám nhạt cho vật liệu và loại bỏ texture (nếu muốn debug BaseColorFactor)
-//        for (Material mat : sceneAsset.scene.model.materials) {
-//            // In ra các thuộc tính vật liệu để kiểm tra
-//            for (Attribute attr : mat) {
-//                System.out.println(attr);
-//            }
-//        }
-
         // Khởi tạo Scene từ GLTF
         scene = new Scene(sceneAsset.scene);
         scene.modelInstance.transform.setToTranslation(0, 0, 0);
@@ -145,9 +237,24 @@ public class LinearCaveScreen implements Screen {
         sceneManager.setCamera(camera);
         sceneManager.addScene(scene);
 
+
         // Cài đặt animation nếu có
         if (!sceneAsset.animations.isEmpty()) {
             scene.animationController.setAnimation(sceneAsset.animations.first().id, -1);
+        }
+
+
+        sceneAsset = null;
+        sceneAsset = new GLBLoader().load(Gdx.files.internal("3d/slime.glb"));
+        enemyScene = new Scene(sceneAsset.scene);
+        enemyScene.modelInstance.transform.setToTranslation(1f, 0.25f, 2f);
+        enemySceneManager = new SceneManager();
+        enemySceneManager.setCamera(camera);
+        enemySceneManager.addScene(enemyScene);
+
+        // Cài đặt animation nếu có
+        if (!sceneAsset.animations.isEmpty()) {
+            enemyScene.animationController.setAnimation(sceneAsset.animations.first().id, -1);
         }
 
         // Tạo shader config PBR
@@ -160,28 +267,41 @@ public class LinearCaveScreen implements Screen {
         sceneManager.environment.add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, -1f, -0.8f, -0.2f));
     }
 
-
-
     Scene scene;
     SceneManager sceneManager;
+
+    Scene enemyScene;
+    SceneManager enemySceneManager;
 
     private void buildMap() {
         instances.clear();
         for (int x = 0; x < MAP_WIDTH; x++) {
             for (int y = 0; y < MAP_HEIGHT; y++) {
                 if (map[x][y] == 0) {
-                    // Wall
+                    boolean adjacentToFloor = false;
+                    for (int dx = -1; dx <= 1 && !adjacentToFloor; dx++) {
+                        for (int dy = -1; dy <= 1 && !adjacentToFloor; dy++) {
+                            if (Math.abs(dx) + Math.abs(dy) != 1) continue; // Chỉ xét 4 hướng
+                            int nx = x + dx;
+                            int ny = y + dy;
+                            if (nx >= 0 && ny >= 0 && nx < MAP_WIDTH && ny < MAP_HEIGHT && map[nx][ny] == 1) {
+                                adjacentToFloor = true;
+                            }
+                        }
+                    }
+                    if (!adjacentToFloor) continue; // Bỏ qua nếu không liền kề floor
+
                     ModelInstance wall = new ModelInstance(boxModel);
                     wall.transform.setToTranslation(x, 0.5f, y);
                     instances.add(wall);
                 } else {
-                    // Ceiling over floor
-                    ModelInstance ceiling = new ModelInstance(ceilingModel);
-                    ceiling.transform.setToTranslation(x, 1.05f, y);
-                    instances.add(ceiling);
+                    // ModelInstance ceiling = new ModelInstance(ceilingModel);
+                    // ceiling.transform.setToTranslation(x, 1.05f, y);
+                    // instances.add(ceiling);
                 }
             }
         }
+        System.out.println("Map built with " + instances.size + " instances.");
     }
 
     private int[][] generateLinearMaze(int width, int height) {
@@ -317,6 +437,7 @@ public class LinearCaveScreen implements Screen {
         }
     }
 
+
     private boolean isWalkable(Vector2Int pos) {
         return pos.x >= 0 && pos.y >= 0 && pos.x < MAP_WIDTH && pos.y < MAP_HEIGHT && map[pos.x][pos.y] == 1;
     }
@@ -349,13 +470,13 @@ public class LinearCaveScreen implements Screen {
                 basePos.y + eyeHeight,
                 basePos.z + playerDirection.z
         );
+
         camera.up.set(Vector3.Y);
         camera.update();
     }
 
     Vector3 vector1 = new Vector3(-1, 0, 0);
     Vector3 vector2 = new Vector3(0, 0, -1);
-    Vector3 vector3 = new Vector3(1, 0, 0);
 
     @Override
     public void render(float delta) {
@@ -364,13 +485,13 @@ public class LinearCaveScreen implements Screen {
 
         Gdx.gl.glClearColor(0.05f, 0.05f, 0.1f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
-        sceneManager.update(delta);
-        sceneManager.render();
         modelBatch.begin(camera);
+        sceneManager.update(delta);
+//        for (ModelInstance instance : instances) {
+//            modelBatch.render(instance, environment);
+//        }
 
-        for (ModelInstance instance : instances) {
-            modelBatch.render(instance, environment);
-        }
+        enemySceneManager.update(delta);
 
         // Player model transform/rotation
         if (playerDirection.equals(vector1)) {
@@ -384,8 +505,12 @@ public class LinearCaveScreen implements Screen {
         float angle = (float) Math.atan2(playerDirection.x, playerDirection.z) * MathUtils.radiansToDegrees;
         scene.modelInstance.transform.rotate(Vector3.Y, angle);
 
+        modelBatch.render(scene.modelInstance, environment);
+        modelBatch.render(enemyScene.modelInstance, environment);
+
         modelBatch.end();
         drawMiniMap();
+        drawPlayerHUD(hudBatch);
     }
 
     @Override
@@ -410,6 +535,16 @@ public class LinearCaveScreen implements Screen {
         boxModel.dispose();
         ceilingModel.dispose();
         shapeRenderer.dispose();
+        if (flowCylinder != null) flowCylinder.dispose();
+        if (sceneManager != null) {
+            sceneManager.dispose();
+        }
+        if (gameController != null) {
+            gameController.dispose();
+        }
+        if (game != null) {
+            game.dispose();
+        }
     }
 
     static class Vector2Int {
@@ -443,5 +578,21 @@ public class LinearCaveScreen implements Screen {
 
     public void setGame(IsometricGame game) {
         this.game = game;
+    }
+
+    public float getPlayerHealth() {
+        return playerHealth;
+    }
+
+    public void setPlayerHealth(float playerHealth) {
+        this.playerHealth = playerHealth;
+    }
+
+    public float getPlayerMana() {
+        return playerMana;
+    }
+
+    public void setPlayerMana(float playerMana) {
+        this.playerMana = playerMana;
     }
 }

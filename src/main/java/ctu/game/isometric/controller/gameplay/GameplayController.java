@@ -119,6 +119,9 @@ public class GameplayController {
         createSpecialCellTextures();
     }
 
+
+
+
     // Gọi khi có hành động (ví dụ: player tấn công)
 
     public void playerAttack(String word, int dmg, Runnable onComplete) {

@@ -22,8 +22,8 @@ public class IsometricGame extends Game {
         Gdx.graphics.setVSync(true);
         gameController = new GameController(this);
 
-        splashScreen = new SplashScreen(this, gameController);
-        gameScreen = new GameScreen(this, gameController);
+//        splashScreen = new SplashScreen(this, gameController);
+//        gameScreen = new GameScreen(this, gameController);
         dungeonScreen = new LinearCaveScreen(this, gameController);
 
         setScreen(dungeonScreen);

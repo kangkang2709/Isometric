@@ -48,6 +48,21 @@ public class DungeonInputController extends InputAdapter {
             System.out.println("Escape key pressed, changing screen to GAME");
             return true;
         }
+        if (keycode == com.badlogic.gdx.Input.Keys.F1) {
+            linearCaveScreen.setPlayerHealth(100);
+            System.out.println("Back key pressed, changing screen to GAME");
+            return true;
+        }
+        if (keycode == com.badlogic.gdx.Input.Keys.F2) {
+            linearCaveScreen.setPlayerHealth(0);
+            System.out.println("Back key pressed, changing screen to GAME");
+            return true;
+        }
+        if (keycode == com.badlogic.gdx.Input.Keys.F3) {
+            linearCaveScreen.setPlayerMana(50);
+            System.out.println("Back key pressed, changing screen to GAME");
+            return true;
+        }
         return false;
     }
 
