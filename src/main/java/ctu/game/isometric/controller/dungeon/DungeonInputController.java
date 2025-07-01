@@ -1,5 +1,6 @@
 package ctu.game.isometric.controller.dungeon;
 
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.Screen;
 import ctu.game.isometric.view.screen.LinearCaveScreen;
@@ -43,8 +44,10 @@ public class DungeonInputController extends InputAdapter {
 
     @Override
     public boolean keyDown(int keycode) {
+
+
+
         if (keycode == com.badlogic.gdx.Input.Keys.ESCAPE) {
-            linearCaveScreen.getGame().changeScreen("GAME");
             System.out.println("Escape key pressed, changing screen to GAME");
             return true;
         }
@@ -63,7 +66,14 @@ public class DungeonInputController extends InputAdapter {
             System.out.println("Back key pressed, changing screen to GAME");
             return true;
         }
-        return false;
+
+        if (keycode == com.badlogic.gdx.Input.Keys.F4) {
+            linearCaveScreen.activateCurrentEnemy();
+            return true;
+        }
+
+        return  linearCaveScreen.keyPressed(keycode);
+
     }
 
     @Override
