@@ -4,6 +4,7 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import ctu.game.isometric.controller.GameController;
+import ctu.game.isometric.model.game.GameState;
 import ctu.game.isometric.util.AssetManager;
 import ctu.game.isometric.view.screen.*;
 
@@ -14,6 +15,7 @@ public class IsometricGame extends Game {
 
     private SplashScreen splashScreen;
     private LinearCaveScreen dungeonScreen;
+    private EndScreen gameOverScreen;
 
     @Override
     public void create() {
@@ -22,11 +24,16 @@ public class IsometricGame extends Game {
         Gdx.graphics.setVSync(true);
         gameController = new GameController(this);
 
-//        splashScreen = new SplashScreen(this, gameController);
-//        gameScreen = new GameScreen(this, gameController);
+
+        // Initialize screens
+        splashScreen = new SplashScreen(this, gameController);
+        gameScreen = new GameScreen(this, gameController);
+        gameOverScreen = new EndScreen(() -> {
+            changeScreen("GAME");
+        });
         dungeonScreen = new LinearCaveScreen(this, gameController);
 
-        setScreen(dungeonScreen);
+        setScreen(gameScreen);
     }
 
     @Override
@@ -49,7 +56,11 @@ public class IsometricGame extends Game {
                 setScreen(gameScreen);
                 break;
             case "DUNGEON":
+                dungeonScreen.setGameStarted(false);
                 setScreen(dungeonScreen);
+                break;
+            case "GAME_OVER":
+                setScreen(gameOverScreen);
                 break;
             default:
                 break;

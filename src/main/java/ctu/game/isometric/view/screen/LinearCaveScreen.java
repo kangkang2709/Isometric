@@ -2,138 +2,242 @@ package ctu.game.isometric.view.screen;
 
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.*;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.graphics.g3d.*;
 import com.badlogic.gdx.graphics.g3d.attributes.*;
-import com.badlogic.gdx.graphics.g3d.decals.CameraGroupStrategy;
-import com.badlogic.gdx.graphics.g3d.decals.Decal;
-import com.badlogic.gdx.graphics.g3d.decals.DecalBatch;
+import com.badlogic.gdx.graphics.g3d.decals.*;
 import com.badlogic.gdx.graphics.g3d.environment.*;
 import com.badlogic.gdx.graphics.g3d.utils.*;
-import com.badlogic.gdx.graphics.glutils.FrameBuffer;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.glutils.*;
 import com.badlogic.gdx.math.*;
-import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.utils.*;
 import com.badlogic.gdx.utils.StringBuilder;
 import ctu.game.isometric.IsometricGame;
 import ctu.game.isometric.controller.GameController;
-import ctu.game.isometric.controller.dungeon.DungeonInputController;
-
+import ctu.game.isometric.model.game.GameState;
 import net.mgsx.gltf.loaders.glb.GLBLoader;
 import net.mgsx.gltf.loaders.gltf.GLTFLoader;
-import net.mgsx.gltf.scene3d.scene.Scene;
-import net.mgsx.gltf.scene3d.scene.SceneAsset;
-import net.mgsx.gltf.scene3d.scene.SceneManager;
-import net.mgsx.gltf.scene3d.shaders.PBRShaderConfig;
-import net.mgsx.gltf.scene3d.shaders.PBRShaderProvider;
+import net.mgsx.gltf.scene3d.scene.*;
+import net.mgsx.gltf.scene3d.shaders.*;
 
 import java.util.*;
 import java.util.Queue;
 
 public class LinearCaveScreen implements Screen {
+
+    // Constants
+    private static final int MAP_WIDTH = 15;
+    private static final int MAP_HEIGHT = 15;
+    private static final float PLAYER_SCALE = 0.5f;
+    private static final float MOVE_DURATION = 0.20f;
+    private static final float ENEMY_TIME_LIMIT = 5f;
+    private static final float ALERT_DURATION = 2.0f;
+    private static final int MINIMAP_SIZE = 160;
+    private static final int MINIMAP_PADDING = 24;
+    private static final int MAX_ENEMIES = 7;
+
+    private static final String[] ENGLISH_WORDS = {
+            "hero", "dungeon", "isometric", "screen", "linear", "cave",
+            "enemy", "magic", "light", "battle", "game", "floor", "ceiling"
+    };
+
+    // Core game objects
+    private final IsometricGame game;
+    private final GameController gameController;
+
+    // Rendering components
     private PerspectiveCamera camera;
+    private OrthographicCamera uiCamera;
     private ModelBatch modelBatch;
     private Environment environment;
-    private Array<ModelInstance> instances = new Array<>();
+    private ShapeRenderer shapeRenderer;
+    private SpriteBatch hudBatch;
+    private SpriteBatch tempBatch;
+    private DecalBatch decalBatch;
+    private FrameBuffer frameBuffer;
+
+    // Models and scenes
     private Model boxModel;
     private Model ceilingModel;
-    private final int MAP_WIDTH = 15;
-    private final int MAP_HEIGHT = 15;
+    private Model enemyModel;
+    private Scene scene;
+    private SceneManager sceneManager;
+    private SceneAsset enemySceneAsset;
+    private Array<ModelInstance> instances = new Array<>();
+
+    // Map and pathfinding
     private int[][] map;
-    private final float PLAYER_SCALE = 0.5f;
+    private Array<Vector2Int> pathCells = new Array<>();
+    private final Vector2Int startCell = new Vector2Int(1, 1);
+    private Vector2Int finalCell;
+
+    // Player state
     private Vector3 playerPosition = new Vector3();
     private Vector3 playerDirection = new Vector3(1, 0, 0);
     private Vector2Int gridPosition = new Vector2Int(1, 1);
     private Vector2Int moveDirection = null;
     private boolean isMoving = false;
     private float moveTimer = 0f;
-    private final float MOVE_DURATION = 0.20f;
     private float shakeTime = 0f;
     private Vector3 moveStart = new Vector3();
     private Vector3 moveEnd = new Vector3();
-    GameController gameController;
-    IsometricGame game;
-    DungeonInputController dungeonInputController;
-    private OrthographicCamera uiCamera;
-    private ShapeRenderer shapeRenderer;
-    private final int MINIMAP_SIZE = 160;
-    private final int MINIMAP_PADDING = 24;
-    private SpriteBatch hudBatch;
+
+    // Player stats
+    private String playerName = "Hero";
+    private float playerHealth = 75f;
+    private float playerMaxHealth = 100f;
+    private float playerMana = 40f;
+    private float playerMaxMana = 60f;
+
+    // UI components
     private Texture whiteTexture;
     private BitmapFont regularFont;
-    private String playerName = "Hero";
-    private float playerHealth = 75, playerMaxHealth = 100;
-    private float playerMana = 40, playerMaxMana = 60;
-    private Scene scene;
-    private SceneManager sceneManager;
-    private Array<Vector2Int> pathCells = new Array<>();
-    private final Vector2Int startCell = new Vector2Int(1, 1);
-    private Vector2Int finalCell;
+    private BitmapFont wordFont;
+    private TextureRegion[] wordTextures;
 
-    // For typing UI
+    // Typing system
     private StringBuilder currentTypedWord = new StringBuilder();
+    private boolean isTyped = false;
+
+    // Alert system
     private float alertTimer = 0f;
     private String alertText = null;
     private Color alertColor = Color.WHITE;
-    private final float ALERT_DURATION = 2.0f;
 
     // Enemy system
-    private static class Enemy {
-        Vector2Int position;
-        int id;
-        String word;
-        boolean destroyed = false;
-        float timer = 0;
-        boolean active = false;
-        ModelInstance modelInstance;
-        boolean timerStarted = false;
-    }
-
-    private DecalBatch decalBatch;
-    private TextureRegion[] wordTextures;
-    private BitmapFont wordFont;
-    private SpriteBatch tempBatch;
-    private FrameBuffer frameBuffer;
-
     private Array<Enemy> enemies = new Array<>();
     private int currentEnemyIdx = 0;
-    private final float ENEMY_TIME_LIMIT = 5f;
-    private SceneAsset enemySceneAsset;
-    private Model enemyModel;
-    private Random random = new Random();
-    private Set<String> usedWords = new HashSet<>();
-    private static final String[] ENGLISH_WORDS = {
-            "hero", "dungeon", "isometric", "screen", "linear", "cave", "enemy", "magic", "light", "battle", "game", "floor", "ceiling"
-    };
+    private final Random random = new Random();
+    private final Set<String> usedWords = new HashSet<>();
 
+    // Game state
+    private boolean gameStarted = false;
+    private boolean gameEnded = false;
 
     public LinearCaveScreen(IsometricGame game, GameController gameController) {
-        this.gameController = gameController;
         this.game = game;
-        this.dungeonInputController = new DungeonInputController(this);
+        this.gameController = gameController;
     }
 
-    boolean isTyped = false;
+    /**
+     * Starts or restarts the dungeon with a new map layout
+     */
+    public void startNewDungeon() {
+        startNewDungeon(System.currentTimeMillis());
+    }
 
+    /**
+     * Starts or restarts the dungeon with a specific seed for reproducible maps
+     */
+    public void startNewDungeon(long seed) {
+        gameStarted = true;
+        gameEnded = false;
+        random.setSeed(seed);
 
-    public void setTyped() {
-        isTyped = true;
+        // Reset player state
+        resetPlayerState();
+
+        // Generate new map and enemies
+        generateNewMap();
+
+        // Reset UI state
+        resetUIState();
+
+        showAlert("New dungeon generated! Good luck!", Color.CYAN);
+    }
+
+    private void resetPlayerState() {
+        playerMaxHealth = gameController.getCharacter().getMaxHealth();
+        playerHealth = gameController.getCharacter().getHealth();
+        playerMaxMana = gameController.getCharacter().getMaxMana();
+        playerMana = gameController.getCharacter().getMana();
+
+        gridPosition.set(startCell.x, startCell.y);
+        playerDirection.set(1, 0, 0);
+        isMoving = false;
+        isTyped = false;
+        updatePlayerPositionFromGrid();
+        updateCameraFromPlayer(0f);
+    }
+
+    public void setGameStarted(boolean gameStarted) {
+        this.gameStarted = gameStarted;
+    }
+
+    public void finishDungeon() {
+        gameStarted = false;
+        gameEnded = false;
+
+        if (isComplete) {
+            gameController.getCharacter().setHealth(playerHealth);
+            gameController.getCharacter().setMana(playerMana);
+            game.changeScreen("GAME");
+        } else {
+            gameController.setState(GameState.MAIN_MENU);
+            game.changeScreen("GAME_OVER");
+        }
+    }
+
+    private void generateNewMap() {
+        // Clear previous data
+        enemies.clear();
+        usedWords.clear();
+        instances.clear();
+        currentEnemyIdx = 0;
+
+        // Generate new map
+        map = generateLinearMaze(MAP_WIDTH, MAP_HEIGHT);
+        buildMap();
+
+        // Find path and spawn enemies
+        findPathBFS(startCell, finalCell);
+        spawnEnemiesOnPath(Math.min(MAX_ENEMIES, pathCells.size - 2));
+
+        // Recreate word textures for new enemies
+        if (wordTextures != null) {
+            for (TextureRegion texture : wordTextures) {
+                if (texture != null && texture.getTexture() != null) {
+                    texture.getTexture().dispose();
+                }
+            }
+        }
+        createWordTextures();
+    }
+
+    private void resetUIState() {
+        currentTypedWord.setLength(0);
+        alertTimer = 0f;
+        alertText = null;
     }
 
     @Override
     public void show() {
-        Gdx.input.setInputProcessor(new InputMultiplexer(this.dungeonInputController, new InputAdapter() {
+        initializeInput();
+        initializeRendering();
+        initializeAssets();
+
+        // Don't start the game automatically - wait for startNewDungeon() call
+        if (!gameStarted) {
+            showAlert("Press SPACE to start a new dungeon!", Color.YELLOW);
+        }
+    }
+
+    private void initializeInput() {
+        Gdx.input.setInputProcessor(new InputMultiplexer(
+                createTypingInputProcessor(),
+                createGameControlInputProcessor()
+        ));
+    }
+
+
+    private InputProcessor createTypingInputProcessor() {
+        return new InputAdapter() {
             @Override
             public boolean keyTyped(char character) {
-                if (!isTyped)
-                    return false;
-
+                if (!isTyped || !gameStarted || gameEnded) return false;
                 if (currentEnemyIdx < enemies.size && enemies.get(currentEnemyIdx).active &&
                         !enemies.get(currentEnemyIdx).destroyed) {
+
                     if (character == '\b' && currentTypedWord.length() > 0) {
                         currentTypedWord.deleteCharAt(currentTypedWord.length() - 1);
                     } else if (Character.isLetter(character)) {
@@ -143,245 +247,95 @@ public class LinearCaveScreen implements Screen {
                         currentTypedWord.setLength(0);
                     }
                 }
+                return true;
+            }
+
+            @Override
+            public boolean keyDown(int keycode) {
+                return keyPressed(keycode);
+            }
+        };
+    }
+
+    private InputProcessor createGameControlInputProcessor() {
+        return new InputAdapter() {
+            @Override
+            public boolean keyDown(int keycode) {
+                if (keycode == Input.Keys.SPACE && !gameStarted) {
+                    startNewDungeon();
+                    return true;
+                } else if (keycode == Input.Keys.R && (gameEnded || !gameStarted)) {
+                    finishDungeon();
+                    return true;
+                }
+
                 return false;
             }
-        }));
-        uiCamera = new OrthographicCamera();
-        uiCamera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        uiCamera.update();
-        shapeRenderer = new ShapeRenderer();
+        };
+    }
+
+
+    private void initializeRendering() {
+        // Initialize cameras
         camera = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.near = 0.01f;
         camera.far = 100f;
 
+        uiCamera = new OrthographicCamera();
+        uiCamera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        uiCamera.update();
+
+        // Initialize rendering components
         modelBatch = new ModelBatch();
+        shapeRenderer = new ShapeRenderer();
+        hudBatch = new SpriteBatch();
+        tempBatch = new SpriteBatch();
+        decalBatch = new DecalBatch(new CameraGroupStrategy(camera));
+        frameBuffer = new FrameBuffer(Pixmap.Format.RGBA8888, 256, 64, false);
+
+        // Initialize environment
         environment = new Environment();
         environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.8f, 0.8f, 0.8f, 1f));
         environment.add(new DirectionalLight().set(1f, 1f, 1f, -1f, -0.8f, -0.2f));
+    }
+
+    private void initializeAssets() {
         createModels();
-        map = generateLinearMaze(MAP_WIDTH, MAP_HEIGHT);
-        buildMap();
-        findPathBFS(startCell, finalCell);
-        spawnEnemiesOnPath(Math.min(7, pathCells.size - 2));
-        gridPosition.set(startCell.x, startCell.y);
-        updatePlayerPositionFromGrid();
-        updateCameraFromPlayer(0f);
-        camera.update();
-        hudBatch = new SpriteBatch();
-        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        pixmap.setColor(1, 1, 1, 1);
-        pixmap.fill();
-        whiteTexture = new Texture(pixmap);
-        pixmap.dispose();
-        regularFont = new BitmapFont();
-        wordFont = new BitmapFont();
-        wordFont.getData().setScale(1.2f);
-
-
-        decalBatch = new DecalBatch(new CameraGroupStrategy(camera));
-        tempBatch = new SpriteBatch();
-        frameBuffer = new FrameBuffer(Pixmap.Format.RGBA8888, 256, 64, false);
-        wordTextures = new TextureRegion[enemies.size];
-        createWordTextures();
+        createTextures();
+        createFonts();
     }
-
-
-    private void createWordTextures() {
-        System.out.println("Creating word textures for " + enemies.size + " enemies");
-
-        for (int i = 0; i < enemies.size; i++) {
-            Enemy enemy = enemies.get(i);
-            System.out.println("Creating texture for word: " + enemy.word);
-
-            FrameBuffer wordBuffer = new FrameBuffer(Pixmap.Format.RGBA8888, 256, 64, false);
-
-            wordBuffer.begin();
-            Gdx.gl.glClearColor(0, 0, 0, 0);
-            Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-            tempBatch.getProjectionMatrix().setToOrtho2D(0, 0, 256, 64);
-            tempBatch.begin();
-
-            GlyphLayout layout = new GlyphLayout(wordFont, enemy.word);
-            float textX = (256 - layout.width) / 2;
-            float textY = (64 + layout.height) / 2;
-
-            wordFont.setColor(1, 1, 1, 1); // Use full white (1,1,1,1)
-            wordFont.draw(tempBatch, enemy.word, textX, textY);
-            tempBatch.end();
-            wordBuffer.end();
-
-            // Simpler approach - use the framebuffer texture directly
-            Texture texture = wordBuffer.getColorBufferTexture();
-            wordTextures[i] = new TextureRegion(texture);
-            wordTextures[i].flip(false, true);
-
-            System.out.println("Created texture: " + (wordTextures[i] != null));
-
-        }
-    }
-
-    private void renderEnemyWords(Camera camera) {
-        if (decalBatch == null) return;
-
-        for (int i = 0; i < enemies.size; i++) {
-            Enemy enemy = enemies.get(i);
-            if (!enemy.destroyed && enemy.active) {
-                TextureRegion region = wordTextures[i];
-                if (region != null) {
-                    Decal decal = Decal.newDecal(
-                            2.0f, 0.5f,
-                            region,
-                            true
-                    );
-                    decal.setPosition(enemy.position.x, 0.25f, enemy.position.y);
-                    decal.lookAt(camera.position, camera.up);
-                    decalBatch.add(decal);
-
-                    // Draw progress bar if timer started
-                    if (enemy.timerStarted) {
-                        float progress = 1f - (enemy.timer / ENEMY_TIME_LIMIT);
-
-//                         Draw progress background
-//                        Decal progressBg = Decal.newDecal(
-//                                0.5f, 0.03f,
-//                                new TextureRegion(whiteTexture),
-//                                true
-//                        );
-//                        progressBg.setColor(0.2f, 0.2f, 0.2f, 0.8f);
-//                        progressBg.setPosition(enemy.position.x, 0.9f, enemy.position.y);
-//                        progressBg.lookAt(camera.position, camera.up);
-
-                        // Draw progress fill
-                        Decal progressFill = Decal.newDecal(
-                                0.5f * progress, 0.03f,
-                                new TextureRegion(whiteTexture),
-                                true
-                        );
-                        progressFill.setColor(1f, 0.3f, 0.3f, 0.8f);
-                        progressFill.setPosition(enemy.position.x - 0.25f * (1 - progress), 0.5f, enemy.position.y);
-                        progressFill.lookAt(camera.position, camera.up);
-
-                        decalBatch.add(progressFill);
-                    }
-                }
-            }
-        }
-
-        decalBatch.flush();
-    }
-
-    private void drawTextInputUI(SpriteBatch batch) {
-        if (currentEnemyIdx < enemies.size && enemies.get(currentEnemyIdx).active &&
-                enemies.get(currentEnemyIdx).timerStarted) {
-
-            batch.begin();
-
-            // Draw typing box
-            float boxWidth = 400;
-            float boxHeight = 50;
-            float x = (Gdx.graphics.getWidth() - boxWidth) / 2;
-            float y = 50;
-
-            // Background
-            batch.setColor(0.2f, 0.2f, 0.3f, 0.9f);
-            batch.draw(whiteTexture, x, y, boxWidth, boxHeight);
-
-            // Border
-            batch.setColor(0.5f, 0.5f, 0.6f, 1f);
-            float borderThickness = 2;
-            batch.draw(whiteTexture, x, y, boxWidth, borderThickness); // Bottom
-            batch.draw(whiteTexture, x, y + boxHeight - borderThickness, boxWidth, borderThickness); // Top
-            batch.draw(whiteTexture, x, y, borderThickness, boxHeight); // Left
-            batch.draw(whiteTexture, x + boxWidth - borderThickness, y, borderThickness, boxHeight); // Right
-
-            // Text
-            regularFont.setColor(Color.WHITE);
-
-            Enemy currentEnemy = enemies.get(currentEnemyIdx);
-            String targetWord = currentEnemy.word;
-            String typedText = currentTypedWord.toString();
-
-            // Draw target word above the input box
-            regularFont.draw(batch, "Type: " + targetWord, x + 10, y + boxHeight + 20);
-
-            // Draw typed text
-            GlyphLayout layout = new GlyphLayout(regularFont, typedText);
-            regularFont.draw(batch, typedText, x + 10, y + boxHeight / 2 + layout.height / 2);
-
-            batch.end();
-        }
-    }
-
-    private void drawAlertUI(SpriteBatch batch) {
-        if (alertText != null && alertTimer > 0) {
-            batch.begin();
-
-            float boxWidth = 400;
-            float boxHeight = 60;
-            float x = (Gdx.graphics.getWidth() - boxWidth) / 2;
-            float y = 150;
-
-            // Background with fade effect
-            float alpha = Math.min(1.0f, alertTimer / (ALERT_DURATION * 0.5f));
-            if (alertTimer < ALERT_DURATION * 0.5f) {
-                alpha = alertTimer / (ALERT_DURATION * 0.5f);
-            }
-
-            batch.setColor(0.2f, 0.2f, 0.3f, 0.8f * alpha);
-            batch.draw(whiteTexture, x, y, boxWidth, boxHeight);
-
-            // Text with fade effect
-            Color textColor = new Color(alertColor);
-            textColor.a = alpha;
-            regularFont.setColor(textColor);
-
-            GlyphLayout layout = new GlyphLayout(regularFont, alertText);
-            regularFont.draw(batch, alertText,
-                    x + (boxWidth - layout.width) / 2,
-                    y + (boxHeight + layout.height) / 2);
-
-            batch.end();
-        }
-    }
-
-    private void updateAlerts(float delta) {
-        if (alertTimer > 0) {
-            alertTimer -= delta;
-            if (alertTimer <= 0) {
-                alertText = null;
-            }
-        }
-    }
-
-    private void showAlert(String text, Color color) {
-        alertText = text;
-        alertColor = color;
-        alertTimer = ALERT_DURATION;
-    }
-
 
     private void createModels() {
         ModelBuilder modelBuilder = new ModelBuilder();
+
+        // Create basic models
         boxModel = modelBuilder.createBox(1f, 1.4f, 1f,
                 new Material(ColorAttribute.createDiffuse(Color.GRAY)),
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
+
         ceilingModel = modelBuilder.createBox(1f, 0.1f, 1f,
                 new Material(ColorAttribute.createDiffuse(new Color(0.2f, 0.2f, 0.25f, 1f))),
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
+
+        // Load player scene
         SceneAsset sceneAsset = new GLTFLoader().load(Gdx.files.internal("3d/Untitled7.gltf"));
         scene = new Scene(sceneAsset.scene);
         scene.modelInstance.transform.setToTranslation(0, 0, 0);
+
+        // Initialize scene manager
         sceneManager = new SceneManager();
         sceneManager.setCamera(camera);
         sceneManager.addScene(scene);
+
         if (!sceneAsset.animations.isEmpty()) {
             scene.animationController.setAnimation(sceneAsset.animations.first().id, -1);
         }
+
+        // Load enemy assets
         enemySceneAsset = new GLBLoader().load(Gdx.files.internal("3d/slime.glb"));
-        Scene enemyScene = new Scene(enemySceneAsset.scene);
-        sceneManager.addScene(enemyScene);
         enemyModel = enemySceneAsset.scene.model;
+
+        // Configure PBR shader
         PBRShaderConfig config = PBRShaderProvider.createDefaultConfig();
         config.numBones = 60;
         sceneManager.setShaderProvider(new PBRShaderProvider(config));
@@ -389,10 +343,42 @@ public class LinearCaveScreen implements Screen {
         sceneManager.environment.add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, -1f, -0.8f, -0.2f));
     }
 
+    private void createTextures() {
+        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(1, 1, 1, 1);
+        pixmap.fill();
+        whiteTexture = new Texture(pixmap);
+        pixmap.dispose();
+    }
+
+    private void createFonts() {
+        regularFont = new BitmapFont();
+        wordFont = new BitmapFont();
+        wordFont.getData().setScale(1.2f);
+    }
+
+    // Enemy class moved to inner class for better encapsulation
+    private static class Enemy {
+        Vector2Int position;
+        int id;
+        String word;
+        boolean destroyed = false;
+        float timer = 0;
+        boolean active = false;
+        ModelInstance modelInstance;
+        boolean timerStarted = false;
+
+        Enemy(Vector2Int position, int id, String word) {
+            this.position = position;
+            this.id = id;
+            this.word = word;
+        }
+    }
+
     private int[][] generateLinearMaze(int width, int height) {
-        int[][] map = new int[width][height];
+        int[][] newMap = new int[width][height];
         int x = 1, y = 1;
-        map[x][y] = 1;
+        newMap[x][y] = 1;
 
         Array<int[]> directions = new Array<>(new int[][]{
                 {1, 0}, {-1, 0}, {0, 1}, {0, -1}
@@ -400,30 +386,24 @@ public class LinearCaveScreen implements Screen {
 
         int steps = 0;
         int maxSteps = width * height;
-
         finalCell = new Vector2Int(x, y);
 
         while (steps < maxSteps - 1) {
             directions.shuffle();
             boolean moved = false;
+
+            // FIX: Use index-based iteration instead of enhanced for-loop
             for (int i = 0; i < directions.size; i++) {
                 int[] dir = directions.get(i);
                 int nx = x + dir[0];
                 int ny = y + dir[1];
-                if (nx >= 1 && ny >= 1 && nx < width - 1 && ny < height - 1 && map[nx][ny] == 0) {
-                    int neighbors = 0;
-                    for (int j = 0; j < directions.size; j++) {
-                        int[] d = directions.get(j);
-                        int ax = nx + d[0];
-                        int ay = ny + d[1];
-                        if (ax >= 0 && ay >= 0 && ax < width && ay < height) {
-                            neighbors += map[ax][ay];
-                        }
-                    }
+
+                if (isValidMazeCell(nx, ny, width, height) && newMap[nx][ny] == 0) {
+                    int neighbors = countNeighbors(newMap, nx, ny, directions, width, height);
                     if (neighbors <= 1) {
                         x = nx;
                         y = ny;
-                        map[x][y] = 1;
+                        newMap[x][y] = 1;
                         steps++;
                         moved = true;
                         finalCell = new Vector2Int(x, y);
@@ -433,24 +413,32 @@ public class LinearCaveScreen implements Screen {
             }
             if (!moved) break;
         }
-        return map;
+        return newMap;
+    }
+
+    private boolean isValidMazeCell(int x, int y, int width, int height) {
+        return x >= 1 && y >= 1 && x < width - 1 && y < height - 1;
+    }
+
+    private int countNeighbors(int[][] map, int x, int y, Array<int[]> directions, int width, int height) {
+        int neighbors = 0;
+        // FIX: Use index-based iteration here too
+        for (int i = 0; i < directions.size; i++) {
+            int[] d = directions.get(i);
+            int ax = x + d[0];
+            int ay = y + d[1];
+            if (ax >= 0 && ay >= 0 && ax < width && ay < height) {
+                neighbors += map[ax][ay];
+            }
+        }
+        return neighbors;
     }
 
     private void buildMap() {
         instances.clear();
         for (int x = 0; x < MAP_WIDTH; x++) {
             for (int y = 0; y < MAP_HEIGHT; y++) {
-                if (map[x][y] == 0) {
-                    boolean adjacentToFloor = false;
-                    for (int[] dir : new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
-                        int nx = x + dir[0];
-                        int ny = y + dir[1];
-                        if (nx >= 0 && ny >= 0 && nx < MAP_WIDTH && ny < MAP_HEIGHT && map[nx][ny] == 1) {
-                            adjacentToFloor = true;
-                            break;
-                        }
-                    }
-                    if (!adjacentToFloor) continue;
+                if (map[x][y] == 0 && isAdjacentToFloor(x, y)) {
                     ModelInstance wall = new ModelInstance(boxModel);
                     wall.transform.setToTranslation(x, 0.5f, y);
                     instances.add(wall);
@@ -459,28 +447,54 @@ public class LinearCaveScreen implements Screen {
         }
     }
 
+    private boolean isAdjacentToFloor(int x, int y) {
+        int[][] directions = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+        for (int[] dir : directions) {
+            int nx = x + dir[0];
+            int ny = y + dir[1];
+            if (nx >= 0 && ny >= 0 && nx < MAP_WIDTH && ny < MAP_HEIGHT && map[nx][ny] == 1) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void findPathBFS(Vector2Int start, Vector2Int end) {
         boolean[][] visited = new boolean[MAP_WIDTH][MAP_HEIGHT];
         Vector2Int[][] prev = new Vector2Int[MAP_WIDTH][MAP_HEIGHT];
         Queue<Vector2Int> queue = new LinkedList<>();
+
         queue.add(start);
         visited[start.x][start.y] = true;
         boolean found = false;
-        while (!queue.isEmpty()) {
+
+        while (!queue.isEmpty() && !found) {
             Vector2Int curr = queue.poll();
             if (curr.equals(end)) {
                 found = true;
                 break;
             }
-            for (int[] dir : new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
-                int nx = curr.x + dir[0], ny = curr.y + dir[1];
-                if (nx >= 0 && ny >= 0 && nx < MAP_WIDTH && ny < MAP_HEIGHT && map[nx][ny] == 1 && !visited[nx][ny]) {
+
+            int[][] directions = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+            for (int[] dir : directions) {
+                int nx = curr.x + dir[0];
+                int ny = curr.y + dir[1];
+                if (isValidPathCell(nx, ny) && !visited[nx][ny]) {
                     visited[nx][ny] = true;
                     prev[nx][ny] = curr;
                     queue.add(new Vector2Int(nx, ny));
                 }
             }
         }
+
+        reconstructPath(prev, end, found);
+    }
+
+    private boolean isValidPathCell(int x, int y) {
+        return x >= 0 && y >= 0 && x < MAP_WIDTH && y < MAP_HEIGHT && map[x][y] == 1;
+    }
+
+    private void reconstructPath(Vector2Int[][] prev, Vector2Int end, boolean found) {
         pathCells.clear();
         if (found) {
             Vector2Int curr = end;
@@ -489,29 +503,46 @@ public class LinearCaveScreen implements Screen {
                 curr = prev[curr.x][curr.y];
             }
             pathCells.reverse();
-            finalCell = pathCells.peek();
+            if (pathCells.size > 0) {
+                finalCell = pathCells.peek();
+            }
         }
     }
 
     private void spawnEnemiesOnPath(int count) {
         enemies.clear();
         usedWords.clear();
-        int n = Math.min(count, Math.min(7, pathCells.size - 2));
-        if (n <= 0) return;
-        int available = pathCells.size - 4;
-        n = Math.min(n, available);
-        int distance = available / n;
-        for (int i = 0; i < n; i++) {
-            int idx = 3 + i * distance;
-            if (idx >= pathCells.size - 1) idx = pathCells.size - 2;
-            Enemy enemy = new Enemy();
-            enemy.position = pathCells.get(idx);
-            enemy.id = i + 1;
-            enemy.word = getRandomEnglishWord();
-            enemy.modelInstance = new ModelInstance(enemyModel);
-            enemy.modelInstance.transform.setToTranslation(enemy.position.x, -0.25f, enemy.position.y);
+
+        int availableSpots = Math.max(0, pathCells.size - 4);
+        int enemyCount = Math.min(count, Math.min(MAX_ENEMIES, availableSpots));
+
+        if (enemyCount <= 0) return;
+
+        int spacing = availableSpots / enemyCount;
+        for (int i = 0; i < enemyCount; i++) {
+            int pathIndex = 3 + i * spacing;
+            if (pathIndex >= pathCells.size - 1) {
+                pathIndex = pathCells.size - 2;
+            }
+
+            Vector2Int enemyPos = pathCells.get(pathIndex);
+            String word = getRandomEnglishWord();
+            Enemy enemy = new Enemy(enemyPos, i + 1, word);
+
+            // Create enemy scene
+            Scene enemyScene = new Scene(enemySceneAsset.scene);
+            enemyScene.modelInstance.transform.setToTranslation(enemyPos.x, -0.25f, enemyPos.y);
+
+            if (enemySceneAsset.animations.size > 1) {
+                enemyScene.animationController.setAnimation(enemySceneAsset.animations.get(1).id, -1);
+            }
+
+            sceneManager.addScene(enemyScene);
+            enemy.modelInstance = enemyScene.modelInstance;
             enemies.add(enemy);
         }
+
+        // Activate first enemy
         if (enemies.size > 0) {
             enemies.get(0).active = true;
             enemies.get(0).timer = 0;
@@ -521,78 +552,171 @@ public class LinearCaveScreen implements Screen {
 
     private String getRandomEnglishWord() {
         String word;
+        int attempts = 0;
         do {
             word = ENGLISH_WORDS[random.nextInt(ENGLISH_WORDS.length)];
-        } while (usedWords.contains(word));
+            attempts++;
+        } while (usedWords.contains(word) && attempts < ENGLISH_WORDS.length * 2);
+
         usedWords.add(word);
         return word;
     }
 
+    private void createWordTextures() {
+        if (enemies.size == 0) return;
+
+        wordTextures = new TextureRegion[enemies.size];
+
+        for (int i = 0; i < enemies.size; i++) {
+            Enemy enemy = enemies.get(i);
+            wordTextures[i] = createWordTexture(enemy.word);
+        }
+    }
+
+    private TextureRegion createWordTexture(String word) {
+        FrameBuffer wordBuffer = new FrameBuffer(Pixmap.Format.RGBA8888, 256, 64, false);
+
+        wordBuffer.begin();
+        Gdx.gl.glClearColor(0, 0, 0, 0);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        tempBatch.getProjectionMatrix().setToOrtho2D(0, 0, 256, 64);
+        tempBatch.begin();
+
+        GlyphLayout layout = new GlyphLayout(wordFont, word);
+        float textX = (256 - layout.width) / 2;
+        float textY = (64 + layout.height) / 2;
+
+        wordFont.setColor(1, 1, 1, 1);
+        wordFont.draw(tempBatch, word, textX, textY);
+        tempBatch.end();
+        wordBuffer.end();
+
+        Texture texture = wordBuffer.getColorBufferTexture();
+        TextureRegion region = new TextureRegion(texture);
+        region.flip(false, true);
+
+        return region;
+    }
+
     private void checkWordInput(String input) {
-        if (currentEnemyIdx < enemies.size) {
-            Enemy enemy = enemies.get(currentEnemyIdx);
-            if (enemy.active && !enemy.destroyed) {
-                if (input.equalsIgnoreCase(enemy.word)) {
-                    enemy.destroyed = true;
-                    enemy.active = false;
-                    showAlert("Correct! Enemy defeated!", Color.GREEN);
-                    currentEnemyIdx++;
-                    if (currentEnemyIdx < enemies.size) {
-                        enemies.get(currentEnemyIdx).active = true;
-                        enemies.get(currentEnemyIdx).timerStarted = false;
-                        enemies.get(currentEnemyIdx).timer = 0f;
-                        isTyped = false; // Reset typing state
-                    } else {
-                        showAlert("All enemies defeated!", Color.GOLD);
-                    }
-                } else {
-                    showAlert("Wrong word! Try again!", Color.RED);
-                }
+        if (currentEnemyIdx >= enemies.size || !gameStarted || gameEnded) return;
+
+        Enemy enemy = enemies.get(currentEnemyIdx);
+        if (enemy.active && !enemy.destroyed) {
+            if (input.equalsIgnoreCase(enemy.word)) {
+                handleCorrectWord(enemy);
+            } else {
+                showAlert("Wrong word! Try again!", Color.RED);
             }
+        }
+    }
+
+    private void handleCorrectWord(Enemy enemy) {
+        enemy.destroyed = true;
+        enemy.active = false;
+        showAlert("Correct! Enemy defeated!", Color.GREEN);
+
+        currentEnemyIdx++;
+        if (currentEnemyIdx < enemies.size) {
+            activateNextEnemy();
+        } else {
+            showAlert("All enemies defeated!", Color.GOLD);
+            isTyped = false;
+        }
+    }
+
+    private void activateNextEnemy() {
+        if (currentEnemyIdx < enemies.size) {
+            Enemy nextEnemy = enemies.get(currentEnemyIdx);
+            nextEnemy.active = true;
+            nextEnemy.timerStarted = false;
+            nextEnemy.timer = 0f;
+            isTyped = false;
+        }
+    }
+
+    boolean isComplete = false;
+
+    public void checkEnd() {
+        if (gameEnded) return;
+
+        if (playerHealth <= 0) {
+            gameEnded = true;
+            isComplete = false;
+            showAlert("You died! Press R to come back Main Menu!", Color.RED);
+        } else if (currentEnemyIdx >= enemies.size && gridPosition.equals(finalCell)) {
+            gameEnded = true;
+            isComplete = true;
+            showAlert("Victory!\n You receive 200 SCORE!\n Press R return main game!", Color.GREEN);
         }
     }
 
     private void updateEnemyTimers(float delta) {
-        if (currentEnemyIdx < enemies.size) {
-            Enemy enemy = enemies.get(currentEnemyIdx);
-            if (!enemy.destroyed) {
-                // Check if player is adjacent to enemy (one cell away)
-                int playerIdx = -1, enemyIdx = -1;
-                for (int i = 0; i < pathCells.size; i++) {
-                    if (pathCells.get(i).equals(gridPosition)) playerIdx = i;
-                    if (pathCells.get(i).equals(enemy.position)) enemyIdx = i;
-                }
-                if (playerIdx != -1 && enemyIdx != -1 && Math.abs(playerIdx - enemyIdx) <= 1 && isEnemyVisibleToCamera(enemy)) {
-                    if (!enemy.timerStarted) {
-                        enemy.timerStarted = true;
-                        enemy.timer = 0f;
-                        setTyped();
-                        showAlert("Start typing \"" + enemy.word + "\"!", Color.CYAN);
-                    }
-                }
+        if (!gameStarted || gameEnded || currentEnemyIdx >= enemies.size) return;
 
-                // Handle timer and completion logic
-                if (enemy.timerStarted && !enemy.destroyed) {
-                    enemy.timer += delta;
-                    if (enemy.timer >= ENEMY_TIME_LIMIT) {
-                        enemy.destroyed = true;
-                        enemy.active = false;
-                        playerHealth -= 15;
-                        showAlert("Time's up! Enemy exploded! -15 HP", Color.ORANGE);
-                        currentTypedWord.setLength(0); // Clear the input
-                        currentEnemyIdx++;
-                        if (currentEnemyIdx < enemies.size) {
-                            enemies.get(currentEnemyIdx).active = true;
-                            enemies.get(currentEnemyIdx).timerStarted = false;
-                            enemies.get(currentEnemyIdx).timer = 0;
-                            isTyped = false; // Reset typing state
-                        }
-                    }
-                }
+        Enemy enemy = enemies.get(currentEnemyIdx);
+        if (enemy.destroyed) return;
+
+        // Check if player is near enemy and enemy is visible
+        if (isPlayerNearEnemy(enemy) && isEnemyVisibleToCamera(enemy)) {
+            if (!enemy.timerStarted) {
+                startEnemyTimer(enemy);
+            }
+        }
+
+        // Update timer
+        if (enemy.timerStarted && !enemy.destroyed) {
+            enemy.timer += delta;
+            if (enemy.timer >= ENEMY_TIME_LIMIT) {
+                handleEnemyTimeout(enemy);
             }
         }
     }
 
+    private boolean isPlayerNearEnemy(Enemy enemy) {
+        int playerIdx = findPlayerPositionOnPath();
+        int enemyIdx = findEnemyPositionOnPath(enemy);
+        return playerIdx != -1 && enemyIdx != -1 && Math.abs(playerIdx - enemyIdx) <= 1;
+    }
+
+    private int findPlayerPositionOnPath() {
+        for (int i = 0; i < pathCells.size; i++) {
+            if (pathCells.get(i).equals(gridPosition)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private int findEnemyPositionOnPath(Enemy enemy) {
+        for (int i = 0; i < pathCells.size; i++) {
+            if (pathCells.get(i).equals(enemy.position)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private void startEnemyTimer(Enemy enemy) {
+        enemy.timerStarted = true;
+        enemy.timer = 0f;
+        setTyped();
+        showAlert("Start typing \"" + enemy.word + "\"!", Color.CYAN);
+    }
+
+    private void handleEnemyTimeout(Enemy enemy) {
+        enemy.destroyed = true;
+        enemy.active = false;
+        playerHealth = Math.max(0, playerHealth - 20);
+        showAlert("Time's up! Enemy exploded! -20 HP", Color.ORANGE);
+        currentTypedWord.setLength(0);
+
+        currentEnemyIdx++;
+        if (currentEnemyIdx < enemies.size) {
+            activateNextEnemy();
+        }
+    }
 
     private boolean isEnemyVisibleToCamera(Enemy enemy) {
         // Define the size of the word decal
@@ -666,16 +790,167 @@ public class LinearCaveScreen implements Screen {
         return false;
     }
 
-    public void activateCurrentEnemy() {
-        if (currentEnemyIdx < enemies.size && !enemies.get(currentEnemyIdx).destroyed) {
-            Enemy enemy = enemies.get(currentEnemyIdx);
-            enemy.timerStarted = true;
-            enemy.timer = 0f;
-            setTyped();
-            showAlert("Start typing \"" + enemy.word + "\"!", Color.CYAN);
+    // Movement and input handling
+    public boolean keyPressed(int keycode) {
+        if (!gameStarted || gameEnded || isMoving || isTyped) return false;
+
+        switch (keycode) {
+            case Input.Keys.F5:
+                activateCurrentEnemy();
+                break;
+
+            case Input.Keys.W:
+                moveDirection = new Vector2Int((int) playerDirection.x, (int) playerDirection.z);
+                break;
+            case Input.Keys.S:
+                moveDirection = new Vector2Int(-(int) playerDirection.x, -(int) playerDirection.z);
+                break;
+            case Input.Keys.A:
+                playerDirection.rotate(Vector3.Y, 90);
+                snapPlayerDirection();
+                break;
+            case Input.Keys.D:
+                playerDirection.rotate(Vector3.Y, -90);
+                snapPlayerDirection();
+                break;
+        }
+        return true;
+    }
+
+    private void handleGridMovement(float delta) {
+        if (!gameStarted || gameEnded) return;
+
+        if (!isMoving && !isTyped && moveDirection != null) {
+            tryMove();
+        } else if (isMoving) {
+            updateMovement(delta);
         }
     }
 
+    private void tryMove() {
+        Vector2Int target = new Vector2Int(
+                gridPosition.x + moveDirection.x,
+                gridPosition.y + moveDirection.y
+        );
+
+        if (isWalkable(target) && !isEnemyAt(target)) {
+            startMovement(target);
+        }
+        moveDirection = null;
+    }
+
+    private boolean isEnemyAt(Vector2Int position) {
+        for (Enemy enemy : enemies) {
+            if (!enemy.destroyed && enemy.position.equals(position)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void startMovement(Vector2Int target) {
+        moveStart.set(gridToWorld(gridPosition));
+        moveEnd.set(gridToWorld(target));
+        gridPosition = target;
+        isMoving = true;
+        moveTimer = 0f;
+        shakeTime = 0f;
+    }
+
+    private void updateMovement(float delta) {
+        moveTimer += delta;
+        shakeTime += delta;
+
+        float alpha = Math.min(moveTimer / MOVE_DURATION, 1f);
+        float interp = Interpolation.smooth.apply(0f, 1f, alpha);
+        playerPosition.set(moveStart).lerp(moveEnd, interp);
+
+        if (alpha >= 1f) {
+            isMoving = false;
+            updatePlayerPositionFromGrid();
+        }
+    }
+
+    private boolean isWalkable(Vector2Int pos) {
+        return pos.x >= 0 && pos.y >= 0 && pos.x < MAP_WIDTH && pos.y < MAP_HEIGHT && map[pos.x][pos.y] == 1;
+    }
+
+    private void updatePlayerPositionFromGrid() {
+        playerPosition.set(gridToWorld(gridPosition));
+    }
+
+    private Vector3 gridToWorld(Vector2Int grid) {
+        return new Vector3(grid.x, PLAYER_SCALE / 2f, grid.y);
+    }
+
+    private void snapPlayerDirection() {
+        float x = Math.round(playerDirection.x);
+        float z = Math.round(playerDirection.z);
+        playerDirection.set(x, 0, z).nor();
+    }
+
+    private void updateCameraFromPlayer(float delta) {
+        Vector3 basePos = new Vector3(playerPosition);
+        float eyeHeight = 0.2f;
+        camera.position.set(basePos.x - 0.2f, basePos.y + eyeHeight, basePos.z);
+        camera.lookAt(
+                basePos.x + playerDirection.x - 0.2f,
+                basePos.y,
+                basePos.z + playerDirection.z
+        );
+        camera.up.set(Vector3.Y);
+        camera.update();
+    }
+
+    // Rendering methods
+    @Override
+    public void render(float delta) {
+        if (gameStarted) {
+            handleGridMovement(delta);
+            updateEnemyTimers(delta);
+            updateCameraFromPlayer(delta);
+            checkEnd();
+        }
+        updateAlerts(delta);
+
+        renderWorld();
+        renderUI();
+    }
+
+    private void renderWorld() {
+        Gdx.gl.glClearColor(0.05f, 0.05f, 0.1f, 1f);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+
+        if (!gameStarted) return;
+
+        modelBatch.begin(camera);
+        sceneManager.update(Gdx.graphics.getDeltaTime());
+
+        // Render walls
+        for (ModelInstance instance : instances) {
+            modelBatch.render(instance, environment);
+        }
+
+        // Render player
+        scene.modelInstance.transform.setToTranslation(playerPosition.x, playerPosition.y - 0.05f, playerPosition.z);
+        float angle = (float) Math.atan2(playerDirection.x, playerDirection.z) * MathUtils.radiansToDegrees;
+        scene.modelInstance.transform.rotate(Vector3.Y, angle);
+
+        // Render enemies
+        renderEnemies(modelBatch, environment);
+        modelBatch.end();
+
+        renderEnemyWords(camera);
+    }
+
+    private void renderUI() {
+        if (gameStarted) {
+            drawMiniMap();
+            drawPlayerHUD(hudBatch);
+            drawTextInputUI(hudBatch);
+        }
+        drawAlertUI(hudBatch);
+    }
 
     private void renderEnemies(ModelBatch batch, Environment env) {
         for (Enemy enemy : enemies) {
@@ -683,6 +958,139 @@ public class LinearCaveScreen implements Screen {
                 batch.render(enemy.modelInstance, env);
             }
         }
+    }
+
+    private void renderEnemyWords(Camera camera) {
+        if (decalBatch == null || wordTextures == null) return;
+
+        for (int i = 0; i < Math.min(enemies.size, wordTextures.length); i++) {
+            Enemy enemy = enemies.get(i);
+            if (!enemy.destroyed && enemy.active && wordTextures[i] != null) {
+                renderEnemyWord(enemy, wordTextures[i], camera);
+                if (enemy.timerStarted) {
+                    renderEnemyProgressBar(enemy, camera);
+                }
+            }
+        }
+
+        decalBatch.flush();
+    }
+
+    private void renderEnemyWord(Enemy enemy, TextureRegion texture, Camera camera) {
+        Decal decal = Decal.newDecal(2.0f, 0.5f, texture, true);
+        decal.setPosition(enemy.position.x, 0.25f, enemy.position.y);
+        decal.lookAt(camera.position, camera.up);
+        decalBatch.add(decal);
+    }
+
+    private void renderEnemyProgressBar(Enemy enemy, Camera camera) {
+        float progress = 1f - (enemy.timer / ENEMY_TIME_LIMIT);
+        Decal progressFill = Decal.newDecal(
+                0.5f * progress, 0.03f,
+                new TextureRegion(whiteTexture),
+                true
+        );
+        progressFill.setColor(1f, 0.3f, 0.3f, 0.8f);
+        progressFill.setPosition(enemy.position.x - 0.25f * (1 - progress), 0.5f, enemy.position.y);
+        progressFill.lookAt(camera.position, camera.up);
+        decalBatch.add(progressFill);
+    }
+
+    // UI Drawing methods
+    private void drawTextInputUI(SpriteBatch batch) {
+        if (!isTypingActive()) return;
+
+        batch.begin();
+
+        float boxWidth = 400;
+        float boxHeight = 50;
+        float x = (Gdx.graphics.getWidth() - boxWidth) / 2;
+        float y = 50;
+
+        // Draw background and border
+        drawUIBox(batch, x, y, boxWidth, boxHeight);
+
+        // Draw text content
+        Enemy currentEnemy = enemies.get(currentEnemyIdx);
+        String targetWord = currentEnemy.word;
+        String typedText = currentTypedWord.toString();
+
+        regularFont.setColor(Color.WHITE);
+        regularFont.draw(batch, "Type: " + targetWord, x + 10, y + boxHeight + 20);
+
+        GlyphLayout layout = new GlyphLayout(regularFont, typedText);
+        regularFont.draw(batch, typedText, x + 10, y + boxHeight / 2 + layout.height / 2);
+
+        batch.end();
+    }
+
+    private boolean isTypingActive() {
+        return currentEnemyIdx < enemies.size &&
+                enemies.get(currentEnemyIdx).active &&
+                enemies.get(currentEnemyIdx).timerStarted &&
+                gameStarted && !gameEnded;
+    }
+
+    private void drawUIBox(SpriteBatch batch, float x, float y, float width, float height) {
+        // Background
+        batch.setColor(0.2f, 0.2f, 0.3f, 0.9f);
+        batch.draw(whiteTexture, x, y, width, height);
+
+        // Border
+        batch.setColor(0.5f, 0.5f, 0.6f, 1f);
+        float borderThickness = 2;
+        batch.draw(whiteTexture, x, y, width, borderThickness); // Bottom
+        batch.draw(whiteTexture, x, y + height - borderThickness, width, borderThickness); // Top
+        batch.draw(whiteTexture, x, y, borderThickness, height); // Left
+        batch.draw(whiteTexture, x + width - borderThickness, y, borderThickness, height); // Right
+    }
+
+    private void drawAlertUI(SpriteBatch batch) {
+        if (alertText == null || alertTimer <= 0) return;
+
+        batch.begin();
+
+        float boxWidth = 400;
+        float boxHeight = 60;
+        float x = (Gdx.graphics.getWidth() - boxWidth) / 2;
+        float y = 150;
+
+        // Calculate fade effect
+        float alpha = Math.min(1.0f, alertTimer / (ALERT_DURATION * 0.5f));
+        if (alertTimer < ALERT_DURATION * 0.5f) {
+            alpha = alertTimer / (ALERT_DURATION * 0.5f);
+        }
+
+        // Background with fade
+        batch.setColor(0.2f, 0.2f, 0.3f, 0.8f * alpha);
+        batch.draw(whiteTexture, x, y, boxWidth, boxHeight);
+
+        // Text with fade
+        Color textColor = new Color(alertColor);
+        textColor.a = alpha;
+        regularFont.setColor(textColor);
+
+        GlyphLayout layout = new GlyphLayout(regularFont, alertText);
+        regularFont.draw(batch, alertText,
+                x + (boxWidth - layout.width) / 2,
+                y + (boxHeight + layout.height) / 2);
+
+        batch.end();
+    }
+
+    private void updateAlerts(float delta) {
+        if (alertTimer > 0) {
+            alertTimer -= delta;
+            if (alertTimer <= 0) {
+                alertText = null;
+            }
+        }
+    }
+
+    private void showAlert(String text, Color color) {
+        alertText = text;
+        alertColor = color;
+        alertTimer = ALERT_DURATION;
     }
 
     private void drawPlayerHUD(SpriteBatch batch) {
@@ -695,8 +1103,10 @@ public class LinearCaveScreen implements Screen {
     private void drawPlayerStatusColumn(SpriteBatch batch, float x, float y, float width, float height) {
         batch.setColor(0.2f, 0.4f, 0.2f, 0.9f);
         batch.draw(whiteTexture, x, y, width, height);
+
         drawHealthBar(batch, playerHealth, playerMaxHealth, x + 15, y + height - 20, width - 30, 12);
         drawManaBar(batch, playerMana, playerMaxMana, x + 15, y + height - 40, width - 30, 12);
+
         regularFont.setColor(Color.WHITE);
         regularFont.draw(batch, "HP: " + (int) playerHealth + "/" + (int) playerMaxHealth, x + 15, y + height - 50);
         regularFont.draw(batch, "MP: " + (int) playerMana + "/" + (int) playerMaxMana, x + 15, y + height - 70);
@@ -728,156 +1138,93 @@ public class LinearCaveScreen implements Screen {
         float cellSize = (float) MINIMAP_SIZE / mapSize;
         float originX = 1280 - MINIMAP_SIZE - MINIMAP_PADDING;
         float originY = MINIMAP_PADDING;
+
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+
+        // Background
         shapeRenderer.setColor(0, 0, 0, 0.5f);
         shapeRenderer.rect(originX - 4, originY - 4, MINIMAP_SIZE + 8, MINIMAP_SIZE + 8);
+
+        // Map cells
         for (int x = 0; x < MAP_WIDTH; x++) {
             for (int y = 0; y < MAP_HEIGHT; y++) {
-                if (map[x][y] == 0) {
-                    shapeRenderer.setColor(Color.DARK_GRAY);
-                } else {
-                    shapeRenderer.setColor(Color.LIGHT_GRAY);
-                }
+                shapeRenderer.setColor(map[x][y] == 0 ? Color.DARK_GRAY : Color.LIGHT_GRAY);
                 shapeRenderer.rect(originX + x * cellSize, originY + y * cellSize, cellSize, cellSize);
             }
         }
+
+        // Enemies
         for (Enemy enemy : enemies) {
             if (!enemy.destroyed) {
                 shapeRenderer.setColor(Color.RED);
                 shapeRenderer.ellipse(
                         originX + enemy.position.x * cellSize + cellSize / 4,
                         originY + enemy.position.y * cellSize + cellSize / 4,
-                        cellSize / 2,
-                        cellSize / 2
+                        cellSize / 2, cellSize / 2
                 );
             }
         }
+
+        // Player
         shapeRenderer.setColor(Color.BLUE);
         shapeRenderer.ellipse(
                 originX + gridPosition.x * cellSize + cellSize / 4,
                 originY + gridPosition.y * cellSize + cellSize / 4,
-                cellSize / 2,
-                cellSize / 2
+                cellSize / 2, cellSize / 2
         );
+
         shapeRenderer.end();
     }
 
-    private int stepCounter = 0;
-
-
-    public boolean keyPressed(int keycode) {
-        if (!isMoving && !isTyped) {
-            if (Gdx.input.isKeyJustPressed(Input.Keys.W)) {
-                moveDirection = new Vector2Int((int) playerDirection.x, (int) playerDirection.z);
-            } else if (Gdx.input.isKeyJustPressed(Input.Keys.S)) {
-                moveDirection = new Vector2Int(-(int) playerDirection.x, -(int) playerDirection.z);
-            } else if (Gdx.input.isKeyJustPressed(Input.Keys.A)) {
-                playerDirection.rotate(Vector3.Y, 90);
-                snapPlayerDirection();
-            } else if (Gdx.input.isKeyJustPressed(Input.Keys.D)) {
-                playerDirection.rotate(Vector3.Y, -90);
-                snapPlayerDirection();
-            }
-        }
-        return true;
+    // Public setters and getters for external access
+    public void setTyped() {
+        isTyped = true;
     }
 
-    private void handleGridMovement(float delta) {
-        if (!isMoving && !isTyped) {
-            if (moveDirection != null) {
-                Vector2Int target = new Vector2Int(gridPosition.x + moveDirection.x, gridPosition.y + moveDirection.y);
-                boolean blocked = false;
-                for (Enemy enemy : enemies) {
-                    if (!enemy.destroyed && enemy.position.equals(target)) {
-                        blocked = true;
-                        break;
-                    }
-                }
-                if (isWalkable(target) && !blocked) {
-                    moveStart.set(gridToWorld(gridPosition));
-                    moveEnd.set(gridToWorld(target));
-                    gridPosition = target;
-                    isMoving = true;
-                    moveTimer = 0f;
-                    shakeTime = 0f;
-                    stepCounter++;
-                }
-                moveDirection = null;
-            }
-        } else {
-            moveTimer += delta;
-            shakeTime += delta;
-            float alpha = Math.min(moveTimer / MOVE_DURATION, 1f);
-            float interp = Interpolation.smooth.apply(0f, 1f, alpha);
-            playerPosition.set(moveStart).lerp(moveEnd, interp);
-            if (alpha >= 1f) {
-                isMoving = false;
-                updatePlayerPositionFromGrid();
-            }
+    public void activateCurrentEnemy() {
+        if (currentEnemyIdx < enemies.size && !enemies.get(currentEnemyIdx).destroyed) {
+            Enemy enemy = enemies.get(currentEnemyIdx);
+            startEnemyTimer(enemy);
         }
     }
 
-    private boolean isWalkable(Vector2Int pos) {
-        return pos.x >= 0 && pos.y >= 0 && pos.x < MAP_WIDTH && pos.y < MAP_HEIGHT && map[pos.x][pos.y] == 1;
+    public IsometricGame getGame() {
+        return game;
     }
 
-    private void updatePlayerPositionFromGrid() {
-        playerPosition.set(gridToWorld(gridPosition));
+    public void setGame(IsometricGame game) { /* readonly */ }
+
+    public float getPlayerHealth() {
+        return playerHealth;
     }
 
-    private Vector3 gridToWorld(Vector2Int grid) {
-        return new Vector3(grid.x, PLAYER_SCALE / 2f, grid.y);
+    public void setPlayerHealth(float playerHealth) {
+        this.playerHealth = MathUtils.clamp(playerHealth, 0, playerMaxHealth);
     }
 
-    private void snapPlayerDirection() {
-        float x = Math.round(playerDirection.x);
-        float z = Math.round(playerDirection.z);
-        playerDirection.set(x, 0, z).nor();
+    public float getPlayerMana() {
+        return playerMana;
     }
 
-    private void updateCameraFromPlayer(float delta) {
-        Vector3 basePos = new Vector3(playerPosition);
-        float eyeHeight = 0.2f;
-        camera.position.set(basePos.x , basePos.y + eyeHeight, basePos.z);
-        camera.lookAt(
-                basePos.x + playerDirection.x - 0.2f,
-                basePos.y + eyeHeight -0.1f,
-                basePos.z + playerDirection.z
-        );
-        camera.up.set(Vector3.Y);
-        camera.update();
+    public void setPlayerMana(float playerMana) {
+        this.playerMana = MathUtils.clamp(playerMana, 0, playerMaxMana);
     }
 
-    @Override
-    public void render(float delta) {
-        handleGridMovement(delta);
-        updateEnemyTimers(delta);
-        updateCameraFromPlayer(delta);
-        updateAlerts(delta);
-
-        Gdx.gl.glClearColor(0.05f, 0.05f, 0.1f, 1f);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
-        modelBatch.begin(camera);
-        sceneManager.update(delta);
-        for (ModelInstance instance : instances) {
-            modelBatch.render(instance, environment);
-        }
-        scene.modelInstance.transform.setToTranslation(playerPosition.x, playerPosition.y - 0.05f, playerPosition.z);
-        float angle = (float) Math.atan2(playerDirection.x, playerDirection.z) * MathUtils.radiansToDegrees;
-        scene.modelInstance.transform.rotate(Vector3.Y, angle);
-//        modelBatch.render(scene.modelInstance, environment);
-        renderEnemies(modelBatch, environment);
-        modelBatch.end();
-        renderEnemyWords(camera);
-
-        drawMiniMap();
-        drawPlayerHUD(hudBatch);
-        drawTextInputUI(hudBatch);
-        drawAlertUI(hudBatch);
+    public boolean isGameStarted() {
+        return gameStarted;
     }
 
+    public boolean isGameEnded() {
+        return gameEnded;
+    }
+
+    // Screen lifecycle methods
     @Override
     public void resize(int width, int height) {
+        if (uiCamera != null) {
+            uiCamera.setToOrtho(false, width, height);
+            uiCamera.update();
+        }
     }
 
     @Override
@@ -890,26 +1237,37 @@ public class LinearCaveScreen implements Screen {
 
     @Override
     public void hide() {
+
     }
 
     @Override
     public void dispose() {
-        modelBatch.dispose();
-        boxModel.dispose();
-        ceilingModel.dispose();
-        shapeRenderer.dispose();
+        // Dispose all resources
+        if (modelBatch != null) modelBatch.dispose();
+        if (boxModel != null) boxModel.dispose();
+        if (ceilingModel != null) ceilingModel.dispose();
+        if (shapeRenderer != null) shapeRenderer.dispose();
         if (sceneManager != null) sceneManager.dispose();
-        if (gameController != null) gameController.dispose();
-        if (game != null) game.dispose();
         if (enemyModel != null) enemyModel.dispose();
         if (hudBatch != null) hudBatch.dispose();
         if (whiteTexture != null) whiteTexture.dispose();
-
         if (decalBatch != null) decalBatch.dispose();
         if (tempBatch != null) tempBatch.dispose();
         if (frameBuffer != null) frameBuffer.dispose();
+        if (regularFont != null) regularFont.dispose();
+        if (wordFont != null) wordFont.dispose();
+
+        // Dispose word textures
+        if (wordTextures != null) {
+            for (TextureRegion texture : wordTextures) {
+                if (texture != null && texture.getTexture() != null) {
+                    texture.getTexture().dispose();
+                }
+            }
+        }
     }
 
+    // Utility class for 2D integer vectors
     public static class Vector2Int {
         int x, y;
 
@@ -918,9 +1276,9 @@ public class LinearCaveScreen implements Screen {
             this.y = y;
         }
 
-        public void set(int xx, int yy) {
-            x = xx;
-            y = yy;
+        public void set(int x, int y) {
+            this.x = x;
+            this.y = y;
         }
 
         public Vector2Int cpy() {
@@ -938,29 +1296,10 @@ public class LinearCaveScreen implements Screen {
         public int hashCode() {
             return x * 31 + y;
         }
-    }
 
-    public IsometricGame getGame() {
-        return game;
-    }
-
-    public void setGame(IsometricGame game) {
-        this.game = game;
-    }
-
-    public float getPlayerHealth() {
-        return playerHealth;
-    }
-
-    public void setPlayerHealth(float playerHealth) {
-        this.playerHealth = playerHealth;
-    }
-
-    public float getPlayerMana() {
-        return playerMana;
-    }
-
-    public void setPlayerMana(float playerMana) {
-        this.playerMana = playerMana;
+        @Override
+        public String toString() {
+            return "Vector2Int(" + x + ", " + y + ")";
+        }
     }
 }

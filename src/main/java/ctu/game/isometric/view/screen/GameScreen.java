@@ -55,7 +55,6 @@ public class GameScreen implements Screen {
         dialogUI = new DialogUI(gameController.getDialogController());
         gameController.getInputController().setDialogUI(dialogUI);
         // Set input processor
-        Gdx.input.setInputProcessor(gameController.getInputController());
 
     }
 
@@ -282,6 +281,7 @@ public class GameScreen implements Screen {
     public void show() {
         camera.update();
         camera.zoom = 0.8f; // Reset zoom level
+        Gdx.input.setInputProcessor(gameController.getInputController());
     }
 
     @Override
