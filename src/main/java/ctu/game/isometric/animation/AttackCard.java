@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AttackCard {
-    public enum CardType {ATTACK, HEALING, MANA, SPECIAL,STRONG,SHIELD,}
+    public enum CardType {ATTACK, HEALING, MANA, SPECIAL, STRONG, SHIELD,}
 
     private CardType type;
     private String word;
@@ -34,7 +34,6 @@ public class AttackCard {
     private int cardHeight = 120;
 
 
-
     // Textures cho từng loại card
     private static Texture texAttack;
     private static Texture texHeal;
@@ -42,23 +41,27 @@ public class AttackCard {
     private static Texture texSpecial;
     private static Texture glassCrackTexture; // Big crack texture
     private static Texture glassShardTexture; // Small shard texture
+    private static Texture glowTexture;
 
     private List<ImpactEffect> impactEffects = new ArrayList<>();
 
-    public static void setTextures(Texture attack, Texture heal, Texture mana, Texture special, Texture crack, Texture shard) {
+    public static void setTextures(Texture attack, Texture heal, Texture mana, Texture special, Texture crack, Texture shard,Texture glow) {
         texAttack = attack;
         texHeal = heal;
         texMana = mana;
         texSpecial = special;
         glassCrackTexture = crack;
         glassShardTexture = shard;
+        glowTexture = glow;
     }
 
 
     Runnable sfxCallback;
+
     public void setSFXCallback(Runnable callback) {
         this.sfxCallback = callback;
     }
+
     // Constructor: Truyền vào 3 điểm (A, B, C)
     public AttackCard(CardType type, String word, int value, float startX, float startY, float midX, float midY, float endX, float endY) {
         this.type = type;
@@ -87,6 +90,7 @@ public class AttackCard {
 
 
     private float rotation = 0f;
+
     public void update(float delta) {
         animTime += delta;
         float phase1 = toMidDuration;
@@ -105,14 +109,14 @@ public class AttackCard {
 
             float dx = midX - startX;
             float dy = midY - startY;
-            rotation = (float)Math.toDegrees(Math.atan2(dy, dx));
+            rotation = (float) Math.toDegrees(Math.atan2(dy, dx));
         }
         // Hiệu ứng va chạm tại B (rung, pop, flash)
         else if (animTime <= phase2) {
 
             float dx = midX - startX;
             float dy = midY - startY;
-            rotation = (float)Math.toDegrees(Math.atan2(dy, dx));
+            rotation = (float) Math.toDegrees(Math.atan2(dy, dx));
 
             float t = (animTime - phase1) / impactDuration;
             x = midX;
@@ -129,7 +133,7 @@ public class AttackCard {
 
             float dx = endX - midX;
             float dy = endY - midY;
-            rotation = (float)Math.toDegrees(Math.atan2(dy, dx));
+            rotation = (float) Math.toDegrees(Math.atan2(dy, dx));
 
             float t = (animTime - phase2) / toEndDuration;
             float interp = Interpolation.exp10In.apply(t);
@@ -177,11 +181,23 @@ public class AttackCard {
         playSFX();
         // Nếu là ATTACK thì thêm máu
         if (type == CardType.ATTACK) {
-            impactEffects.add(new BloodSplatterEffect(endX + cardWidth * scale / 2, endY + cardHeight * scale / 2, getBloodPixel()));
-            // Hiệu ứng vết nứt kính lớn
-            impactEffects.add(new GlassCrackEffect(endX, endY, cardWidth * scale, cardHeight * scale, glassCrackTexture,rotation));
+            impactEffects.add(new BloodSplatterEffect(endX + cardWidth * scale / 2, endY + cardHeight * scale / 2, getBloodPixel()));// Hiệu ứng vết nứt kính lớn
+            impactEffects.add(new GlassCrackEffect(endX, endY, cardWidth * scale, cardHeight * scale, glassCrackTexture, rotation));
         }
-        // Có thể play SFX va chạm tại đây
+        if (type == CardType.STRONG) {
+            impactEffects.add(new BloodSplatterEffect(endX + cardWidth * scale / 2, endY + cardHeight * scale / 2, getBloodPixel()));// Hiệu ứng vết nứt kính lớn
+            impactEffects.add(new GlassCrackEffect(endX, endY, cardWidth * scale, cardHeight * scale, glassCrackTexture, rotation));
+            impactEffects.add(new HealGlowEffect(endX, endY, cardWidth * scale, cardHeight * scale, glassShardTexture));// Hiệu ứng vết nứt kính lớn
+        }
+        if (type == CardType.HEALING) {
+            impactEffects.add(new HealGlowEffect(endX, endY, cardWidth * scale, cardHeight * scale, glowTexture));// Hiệu ứng vết nứt kính lớn
+        }
+        if (type == CardType.MANA) {
+            impactEffects.add(new HealGlowEffect(endX, endY, cardWidth * scale, cardHeight * scale, glowTexture));// Hiệu ứng vết nứt kính lớn
+        }
+        if (type == CardType.SPECIAL) {
+            impactEffects.add(new HealGlowEffect(endX, endY, cardWidth * scale, cardHeight * scale, glowTexture));// Hiệu ứng vết nứt kính lớn
+        }
     }
 
     public void render(SpriteBatch batch) {
@@ -197,8 +213,8 @@ public class AttackCard {
             batch.setColor(1, 1, 1, opacity);
             batch.draw(
                     tex,
-                    drawX + w/2, drawY + h/2, // center position
-                    w/2, h/2,                 // origin
+                    drawX + w / 2, drawY + h / 2, // center position
+                    w / 2, h / 2,                 // origin
                     w, h,
                     1, 1,
                     rotation,
@@ -215,16 +231,17 @@ public class AttackCard {
         for (ImpactEffect effect : impactEffects)
             effect.render(batch);
         // No batch transform, just draw text
-        FONT.getData().setScale(scale+0.3f);
+        FONT.getData().setScale(scale + 0.3f);
         String shown = word.substring(0, Math.max(0, charsToShow));
         float textX = drawX + 68 * scale;
         float textY = drawY + h + 20 * scale;
         // Glow effect
-        for (int dx = -2; dx <= 2; dx++) for (int dy = -2; dy <= 2; dy++)
-            if (dx*dx+dy*dy != 0 && Math.abs(dx) + Math.abs(dy) <= 2) {
-                FONT.setColor(0.08f, 0.85f, 1f, 0.28f * opacity);
-                FONT.draw(batch, shown, textX + dx, textY + dy);
-            }
+        for (int dx = -2; dx <= 2; dx++)
+            for (int dy = -2; dy <= 2; dy++)
+                if (dx * dx + dy * dy != 0 && Math.abs(dx) + Math.abs(dy) <= 2) {
+                    FONT.setColor(0.08f, 0.85f, 1f, 0.28f * opacity);
+                    FONT.draw(batch, shown, textX + dx, textY + dy);
+                }
         // Main text
         FONT.setColor(0.5f, 1f, 1f, opacity);
         FONT.draw(batch, shown, textX, textY);
@@ -241,11 +258,12 @@ public class AttackCard {
             FONT.getData().setScale(scale * 1.25f);
 
             // Glow around value
-            for (int dx = -2; dx <= 2; dx++) for (int dy = -2; dy <= 2; dy++)
-                if (dx*dx+dy*dy != 0 && Math.abs(dx) + Math.abs(dy) <= 2) {
-                    FONT.setColor(color.r, color.g, color.b, 0.25f * glowAlpha);
-                    FONT.draw(batch, (value > 0 ? "+" : "") + value, valX + dx, valY + dy);
-                }
+            for (int dx = -2; dx <= 2; dx++)
+                for (int dy = -2; dy <= 2; dy++)
+                    if (dx * dx + dy * dy != 0 && Math.abs(dx) + Math.abs(dy) <= 2) {
+                        FONT.setColor(color.r, color.g, color.b, 0.25f * glowAlpha);
+                        FONT.draw(batch, (value > 0 ? "+" : "") + value, valX + dx, valY + dy);
+                    }
             // Main value
             FONT.setColor(color);
             FONT.draw(batch, (value > 0 ? "+" : "") + value, valX, valY);
@@ -260,8 +278,8 @@ public class AttackCard {
         double angleRad = Math.toRadians(angleDeg);
         float dx = px - cx;
         float dy = py - cy;
-        float rx = (float)(dx * Math.cos(angleRad) - dy * Math.sin(angleRad)) + cx;
-        float ry = (float)(dx * Math.sin(angleRad) + dy * Math.cos(angleRad)) + cy;
+        float rx = (float) (dx * Math.cos(angleRad) - dy * Math.sin(angleRad)) + cx;
+        float ry = (float) (dx * Math.sin(angleRad) + dy * Math.cos(angleRad)) + cy;
         return new float[]{rx, ry};
     }
 
@@ -296,7 +314,7 @@ public class AttackCard {
 
     private Texture getTextureForType() {
         switch (type) {
-            case ATTACK:
+            case ATTACK, STRONG, SHIELD:
                 return texAttack;
             case HEALING:
                 return texHeal;
@@ -336,5 +354,6 @@ public class AttackCard {
         }
         return bloodPix;
     }
+
 
 }

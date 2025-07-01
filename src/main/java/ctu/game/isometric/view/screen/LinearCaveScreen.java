@@ -143,7 +143,7 @@ public class LinearCaveScreen implements Screen {
         // Reset UI state
         resetUIState();
 
-        showAlert("New dungeon generated! Good luck!", Color.CYAN);
+        showAlert("New dungeon generated! Good luck!", Color.CYAN,2);
     }
 
     private void resetPlayerState() {
@@ -218,7 +218,7 @@ public class LinearCaveScreen implements Screen {
 
         // Don't start the game automatically - wait for startNewDungeon() call
         if (!gameStarted) {
-            showAlert("Press SPACE to start a new dungeon!", Color.YELLOW);
+            showAlert("Press SPACE to start a new dungeon!", Color.YELLOW,1);
         }
     }
 
@@ -308,15 +308,16 @@ public class LinearCaveScreen implements Screen {
     private void createModels() {
         ModelBuilder modelBuilder = new ModelBuilder();
 
+        Texture boxTexture = new Texture(Gdx.files.internal("textures/wall.png"));
+
         // Create basic models
-        boxModel = modelBuilder.createBox(1f, 1.4f, 1f,
-                new Material(ColorAttribute.createDiffuse(Color.GRAY)),
-                VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
+        Material boxMaterial = new Material(TextureAttribute.createDiffuse(boxTexture));
+        Material ceilingMaterial = new Material(TextureAttribute.createDiffuse(boxTexture));
 
-        ceilingModel = modelBuilder.createBox(1f, 0.1f, 1f,
-                new Material(ColorAttribute.createDiffuse(new Color(0.2f, 0.2f, 0.25f, 1f))),
-                VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
+        long vertexAttributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal | VertexAttributes.Usage.TextureCoordinates;
 
+        boxModel = modelBuilder.createBox(1f, 1.4f, 1f, boxMaterial, vertexAttributes);
+        ceilingModel = modelBuilder.createBox(1f, 0.1f, 1f, ceilingMaterial, vertexAttributes);
         // Load player scene
         SceneAsset sceneAsset = new GLTFLoader().load(Gdx.files.internal("3d/Untitled7.gltf"));
         scene = new Scene(sceneAsset.scene);
@@ -436,15 +437,51 @@ public class LinearCaveScreen implements Screen {
 
     private void buildMap() {
         instances.clear();
+
         for (int x = 0; x < MAP_WIDTH; x++) {
             for (int y = 0; y < MAP_HEIGHT; y++) {
-                if (map[x][y] == 0 && isAdjacentToFloor(x, y)) {
+                // Only render walls that are adjacent to floor and visible
+                if (map[x][y] == 0 && isAdjacentToFloor(x, y) && isWallVisible(x, y)) {
                     ModelInstance wall = new ModelInstance(boxModel);
                     wall.transform.setToTranslation(x, 0.5f, y);
                     instances.add(wall);
                 }
+
+                // Render ceiling only for floor tiles
+                if (map[x][y] == 1) {
+                    ModelInstance ceiling = new ModelInstance(ceilingModel);
+                    ceiling.transform.setToTranslation(x, 1.25f, y);
+                    instances.add(ceiling);
+                }
             }
         }
+        System.out.println("Map built with " + instances.size + " instances.");
+    }
+
+    private boolean isWallVisible(int x, int y) {
+        // A wall is visible if it's on the border or has at least one adjacent floor cell
+        // that could potentially be seen by the player
+
+        // Border walls are always visible
+        if (x == 0 || x == MAP_WIDTH - 1 || y == 0 || y == MAP_HEIGHT - 1) {
+            return true;
+        }
+
+        // Check if wall has exposed faces (not completely surrounded by other walls)
+        int[][] directions = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+        for (int[] dir : directions) {
+            int nx = x + dir[0];
+            int ny = y + dir[1];
+
+            if (nx >= 0 && ny >= 0 && nx < MAP_WIDTH && ny < MAP_HEIGHT) {
+                // If adjacent cell is floor, this wall face is exposed
+                if (map[nx][ny] == 1) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private boolean isAdjacentToFloor(int x, int y) {
@@ -607,7 +644,7 @@ public class LinearCaveScreen implements Screen {
             if (input.equalsIgnoreCase(enemy.word)) {
                 handleCorrectWord(enemy);
             } else {
-                showAlert("Wrong word! Try again!", Color.RED);
+                showAlert("Wrong word! Try again!", Color.RED,1);
             }
         }
     }
@@ -615,13 +652,13 @@ public class LinearCaveScreen implements Screen {
     private void handleCorrectWord(Enemy enemy) {
         enemy.destroyed = true;
         enemy.active = false;
-        showAlert("Correct! Enemy defeated!", Color.GREEN);
+        showAlert("Correct! Enemy defeated!", Color.GREEN,1);
 
         currentEnemyIdx++;
         if (currentEnemyIdx < enemies.size) {
             activateNextEnemy();
         } else {
-            showAlert("All enemies defeated!", Color.GOLD);
+            showAlert("All enemies defeated!", Color.GOLD,3);
             isTyped = false;
         }
     }
@@ -644,11 +681,11 @@ public class LinearCaveScreen implements Screen {
         if (playerHealth <= 0) {
             gameEnded = true;
             isComplete = false;
-            showAlert("You died! Press R to come back Main Menu!", Color.RED);
+            showAlert("You died! Press R to come back Main Menu!", Color.RED,5);
         } else if (currentEnemyIdx >= enemies.size && gridPosition.equals(finalCell)) {
             gameEnded = true;
             isComplete = true;
-            showAlert("Victory!\n You receive 200 SCORE!\n Press R return main game!", Color.GREEN);
+            showAlert("Victory!\n You receive 200 SCORE!\n Press R return main game!", Color.GREEN,5);
         }
     }
 
@@ -702,14 +739,14 @@ public class LinearCaveScreen implements Screen {
         enemy.timerStarted = true;
         enemy.timer = 0f;
         setTyped();
-        showAlert("Start typing \"" + enemy.word + "\"!", Color.CYAN);
+        showAlert("Start typing \"" + enemy.word + "\"!", Color.CYAN,1);
     }
 
     private void handleEnemyTimeout(Enemy enemy) {
         enemy.destroyed = true;
         enemy.active = false;
         playerHealth = Math.max(0, playerHealth - 20);
-        showAlert("Time's up! Enemy exploded! -20 HP", Color.ORANGE);
+        showAlert("Time's up! Enemy exploded! -20 HP", Color.ORANGE,1);
         currentTypedWord.setLength(0);
 
         currentEnemyIdx++;
@@ -1087,10 +1124,10 @@ public class LinearCaveScreen implements Screen {
         }
     }
 
-    private void showAlert(String text, Color color) {
+    private void showAlert(String text, Color color, float duration) {
         alertText = text;
         alertColor = color;
-        alertTimer = ALERT_DURATION;
+        alertTimer = ALERT_DURATION * duration; // Use a fraction of the total duration
     }
 
     private void drawPlayerHUD(SpriteBatch batch) {

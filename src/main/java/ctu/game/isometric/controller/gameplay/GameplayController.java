@@ -139,9 +139,9 @@ public class GameplayController {
     public void playerHealing(int heal, Runnable onComplete) {
         AttackCard card = new AttackCard(
                 AttackCard.CardType.HEALING,
-                "HEAL",
+                "",
                 heal,
-                620, 550, 620, 550, 620, 550
+                90, 280, 90, 280, 90, 280
         );
         card.setSFXCallback(() -> effectManager.playClickSound());
         card.setOnComplete(onComplete);
@@ -150,57 +150,62 @@ public class GameplayController {
 
     public void playerHealingMana(int mana, Runnable onComplete) {
         AttackCard card = new AttackCard(
-                AttackCard.CardType.HEALING,
-                "MANA",
+                AttackCard.CardType.MANA,
+                "",
                 mana,
-                620, 550, 620, 550, 620, 550
+                90, 280, 90, 280, 90, 280
         );
         card.setSFXCallback(() -> effectManager.playClickSound());
         card.setOnComplete(onComplete);
         cardAnimationManager.addCard(card);
     }
 
-    public void playerDefend(int defend, Runnable onComplete) {
-        AttackCard card = new AttackCard(
-                AttackCard.CardType.SHIELD,
-                "SHIELD",
-                defend,
-                600, 580, 400, 450, 90, 270
-        );
-        card.setSFXCallback(() -> effectManager.playClickSound());
-        card.setOnComplete(onComplete);
-        cardAnimationManager.addCard(card);
-    }
 
     public void playerBuff(int buff, Runnable onComplete) {
         AttackCard card = new AttackCard(
                 AttackCard.CardType.SPECIAL,
                 "BUFF",
                 buff,
-                600, 580, 400, 450, 90, 270
+                90, 280, 90, 280, 90, 280
         );
         card.setSFXCallback(() -> effectManager.playClickSound());
         card.setOnComplete(onComplete);
         cardAnimationManager.addCard(card);
     }
 
-    public void enemyAttack(int dmg, Runnable onComplete) {
+    public void enemyAttack(int dmg, int action, int heal, Runnable onComplete) {
         AttackCard card;
         if (dmg == 0) {
             card = new AttackCard(
                     AttackCard.CardType.HEALING,
                     "",
-                    dmg,
+                    heal,
                     620, 550, 620, 550, 620, 550
             );
-
-        } else {
+            card.setSFXCallback(() -> effectManager.playClickSound());
+        } else if (dmg < 0) {
             card = new AttackCard(
                     AttackCard.CardType.ATTACK,
-                    "",
-                    dmg,
-                    600, 580, 400, 450, 90, 270
+                    "MISS",
+                    0,
+                    600, 580, 250, 450, 250, -400
             );
+            card.setSFXCallback(() -> effectManager.playClickSound());
+        } else {
+            if (action < 8 && action > 4)
+                card = new AttackCard(
+                        AttackCard.CardType.STRONG,
+                        "",
+                        dmg,
+                        600, 580, 400, 450, 90, 270
+                );
+            else
+                card = new AttackCard(
+                        AttackCard.CardType.ATTACK,
+                        "",
+                        dmg,
+                        600, 580, 400, 450, 90, 270
+                );
             card.setSFXCallback(() -> effectManager.playClickSound());
         }
         card.setOnComplete(onComplete);
@@ -389,21 +394,29 @@ public class GameplayController {
         if (items.containsKey(item.getItemName()) && items.get(item.getItemName()) > 0) {
             switch (item.getItemName()) {
                 case "Elixir":
-                    playerHealth = Math.min(playerMaxHealth, playerHealth + item.getValue());
-                    addCombatLog("Đã hồi " + item.getValue() + " Sinh Lực!");
+                    playerHealing((int) item.getValue(), () -> {
+                        playerHealth = Math.min(playerMaxHealth, playerHealth + item.getValue());
+                        addCombatLog("Đã hồi " + item.getValue() + " Sinh Lực!");
+                    });
                     break;
                 case "Arcane Essence":
-                    playerMana = Math.min(playerMaxMana, playerMana + item.getValue());
-                    addCombatLog("Đã hồi " + item.getValue() + " Năng lượng!");
+                    playerHealingMana((int) item.getValue(), () -> {
+                        playerMana = Math.min(playerMaxMana, playerMana + item.getValue());
+                        addCombatLog("Đã hồi " + item.getValue() + " Năng lượng!");
+                    });
                     break;
                 case "Draught of Fury":
-                    wordDamageMultiplier += item.getValue();
-                    gameController.getCharacter().upAttack(item.getValue());
-                    addCombatLog("Đã tăng 1 sức mạnh!");
+                    playerBuff(1, () -> {
+                        wordDamageMultiplier += item.getValue();
+                        gameController.getCharacter().upAttack(item.getValue());
+                        addCombatLog("Đã tăng 1 sức mạnh!");
+                    });
                     break;
                 case "Aegis Brew":
-                    gameController.getCharacter().upDefend(item.getValue());
-                    addCombatLog("Đã tăng 2 phòng thủ!");
+                    playerBuff(1, () -> {
+                        gameController.getCharacter().upDefend(item.getValue());
+                        addCombatLog("Đã tăng 2 phòng thủ!");
+                    });
                     break;
                 case "Toxic Poiton":
                     enemyHealth = Math.max(0, enemyHealth - item.getValue());
@@ -434,7 +447,6 @@ public class GameplayController {
         gridY = 80; // Margin bottom + button height + spacing
         cellSize = gridSize / letterGrid.getGridSize();
     }
-
 
 
     private void checkGridClick(float x, float y) {
@@ -815,7 +827,8 @@ public class GameplayController {
                         + "- Nếu từ là danh từ: +1 điểm\n"
                         + "- Nếu từ là động từ: +2 điểm\n"
                         + "- Nếu từ là tính từ: +2 điểm\n"
-                        + "- Nếu từ là trạng từ từ: +3 điểm\n",
+                        + "- Nếu từ là trạng từ từ: +3 điểm\n"
+                        + "--> Tổng điểm là sát thương\n",
                 gridX + 330, gridY + gridSize - 30);
 
 
@@ -915,6 +928,7 @@ public class GameplayController {
     private void performEnemyAction() {
         int action = random.nextInt(10);
         float damage = 0;
+        float heal = 0;
 
         if (action < 4) {
             damage = (random.nextInt(10) + 1) + currentLevel + enemy.getAttackPower();
@@ -925,16 +939,20 @@ public class GameplayController {
             damage = Math.max(10, damage - gameController.getCharacter().getDefend());
             addCombatLog(enemyName + " tấn công mạnh gây " + (int) damage + " sát thương!");
         } else if (action == 8) {
-            float heal = enemyMaxHealth * 0.2f;
+            heal = enemyMaxHealth * 0.2f;
             enemyHealth = Math.min(enemyMaxHealth, enemyHealth + heal);
             addCombatLog(enemyName + " hồi phục " + (int) heal + " máu!");
         } else {
+            damage = -1;
             addCombatLog(enemyName + " đã trượt đòn tấn công!");
         }
-        playerHealth = Math.max(0, playerHealth - damage);
+        if (damage >= 0) {
+            playerHealth = Math.max(0, playerHealth - damage);
+        }
         isPlayerTurn = true;
 
-        enemyAttack((int) damage, () -> {
+        damage = -1;
+        enemyAttack((int) damage, action, (int) heal, () -> {
             checkCombatEnd();
             if (isCombatMode) {
                 letterGrid.regenerateGrid();
