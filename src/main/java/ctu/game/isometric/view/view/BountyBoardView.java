@@ -30,7 +30,7 @@ public class BountyBoardView {
     private GlyphLayout layout;
 
     // New fields for scroll functionality
-    private int maxVisibleQuests = 6;
+    private int maxVisibleQuests = 4;
     private int scrollOffset = 0;
     private Rectangle scrollUpButton;
     private Rectangle scrollDownButton;
@@ -64,7 +64,7 @@ public class BountyBoardView {
         this.questSlots = new ArrayList<>();
 
         // Load textures
-        backgroundTexture = new Texture(Gdx.files.internal("ui/bounty_board.png"));
+        backgroundTexture = new Texture(Gdx.files.internal("ui/quest_tracker.png"));
         questSlotTexture = new Texture(Gdx.files.internal("ui/quest_slot.png"));
         buttonTexture = new Texture(Gdx.files.internal("ui/button.png"));
         tabTexture = new Texture(Gdx.files.internal("ui/tab.png"));
@@ -91,20 +91,20 @@ public class BountyBoardView {
         // Create tab areas
         float tabWidth = 120;
         float tabHeight = 40;
-        float tabY = boardY + boardHeight;
-        tabBounds.put(QuestTab.AVAILABLE, new Rectangle(boardX + 20, tabY, tabWidth, tabHeight));
+        float tabY = boardY + boardHeight - 95;
+        tabBounds.put(QuestTab.AVAILABLE, new Rectangle(boardX + 20, tabY, tabWidth+20, tabHeight));
         tabBounds.put(QuestTab.ACTIVE, new Rectangle(boardX + 20 + tabWidth + 10, tabY, tabWidth, tabHeight));
-        tabBounds.put(QuestTab.COMPLETED, new Rectangle(boardX + 20 + (tabWidth + 10) * 2, tabY, tabWidth, tabHeight));
+        tabBounds.put(QuestTab.COMPLETED, new Rectangle(boardX + 20 + (tabWidth + 10) * 2, tabY, tabWidth+20, tabHeight));
 
         // Create buttons
-        acceptButton = new Rectangle(boardX + 500, boardY + 50, 150, 50);
+        acceptButton = new Rectangle(boardX + 500, boardY + 110, 150, 50);
         submitButton = new Rectangle(boardX + 500, boardY + 110, 150, 50);
 
         // Initialize scroll buttons
         float scrollButtonSize = 40;
-        float scrollButtonX = boardX + 380;
-        scrollUpButton = new Rectangle(scrollButtonX, boardY + boardHeight - 100, scrollButtonSize, scrollButtonSize);
-        scrollDownButton = new Rectangle(scrollButtonX, boardY + boardHeight - 400, scrollButtonSize, scrollButtonSize);
+        float scrollButtonX = boardX - scrollButtonSize;
+        scrollUpButton = new Rectangle(scrollButtonX, boardY + boardHeight - 155, scrollButtonSize, scrollButtonSize);
+        scrollDownButton = new Rectangle(scrollButtonX, boardY + boardHeight - 455, scrollButtonSize, scrollButtonSize);
 
         uiMatrix = new Matrix4().setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
@@ -118,7 +118,7 @@ public class BountyBoardView {
 
         batch.setProjectionMatrix(uiMatrix);
         // Draw background
-        batch.draw(backgroundTexture, boardX, boardY, boardWidth, boardHeight);
+        batch.draw(backgroundTexture, boardX - 20, boardY +20, boardWidth+40, boardHeight +40);
 
         // Draw title
         String title = "BOUNTY BOARD";
@@ -183,13 +183,13 @@ public class BountyBoardView {
         if (canScrollUp) {
             batch.draw(scrollButtonTexture, scrollUpButton.x, scrollUpButton.y,
                     scrollUpButton.width, scrollUpButton.height);
-            normalFont.draw(batch, "▲", scrollUpButton.x + 15, scrollUpButton.y + 25);
+            normalFont.draw(batch, "<", scrollUpButton.x + 15, scrollUpButton.y + 25);
         }
 
         if (canScrollDown) {
             batch.draw(scrollButtonTexture, scrollDownButton.x, scrollDownButton.y,
                     scrollDownButton.width, scrollDownButton.height);
-            normalFont.draw(batch, "▼", scrollDownButton.x + 15, scrollDownButton.y + 25);
+            normalFont.draw(batch, ">", scrollDownButton.x + 15, scrollDownButton.y + 25);
         }
 
         // Draw selected quest details
@@ -297,7 +297,7 @@ public class BountyBoardView {
         int end = Math.min(scrollOffset + maxVisibleQuests, currentQuestList.size());
         for (int i = scrollOffset; i < end; i++) {
             int displayIndex = i - scrollOffset;
-            float yOffset = slotY - (displayIndex * (slotHeight + 10));
+            float yOffset = slotY - (displayIndex * (slotHeight + 10)) - 95;
             questSlots.add(new QuestSlot(currentQuestList.get(i), new Rectangle(slotX, yOffset, slotWidth, slotHeight)));
         }
     }

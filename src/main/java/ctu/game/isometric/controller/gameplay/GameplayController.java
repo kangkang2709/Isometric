@@ -141,7 +141,7 @@ public class GameplayController {
                 AttackCard.CardType.HEALING,
                 "",
                 heal,
-                90, 280, 90, 280, 90, 280
+                90, 230, 90, 230, 90, 230
         );
         card.setSFXCallback(() -> effectManager.playClickSound());
         card.setOnComplete(onComplete);
@@ -153,7 +153,7 @@ public class GameplayController {
                 AttackCard.CardType.MANA,
                 "",
                 mana,
-                90, 280, 90, 280, 90, 280
+                90, 230, 90, 230, 90, 230
         );
         card.setSFXCallback(() -> effectManager.playClickSound());
         card.setOnComplete(onComplete);
@@ -166,7 +166,7 @@ public class GameplayController {
                 AttackCard.CardType.SPECIAL,
                 "BUFF",
                 buff,
-                90, 280, 90, 280, 90, 280
+                90, 230, 90, 230, 90, 230
         );
         card.setSFXCallback(() -> effectManager.playClickSound());
         card.setOnComplete(onComplete);
@@ -575,7 +575,6 @@ public class GameplayController {
 
     private void drawEnemyStatusSection(SpriteBatch batch, float x, float y, float width, float height) {
         batch.setColor(0.2f, 0.2f, 0.4f, 0.9f);
-        batch.draw(whiteTexture, x, y, width, height);
 
 
         String titleText = "KẺ ĐỊCH";
@@ -585,10 +584,10 @@ public class GameplayController {
 
         drawCenteredText(batch, titleFont, titleText, x + 156, y + height - 20, Color.RED);
 
+
         Texture enemyTexture = getTexture(this.enemy.getTexturePath());
         if (enemyTexture != null) {
             batch.setColor(Color.WHITE);
-//            x +20
             batch.draw(enemyTexture, 600, y + 20, 80, 80);
         }
 
@@ -710,33 +709,38 @@ public class GameplayController {
     }
 
     private void drawPlayerStatusColumn(SpriteBatch batch, float x, float y, float width, float height) {
-        batch.setColor(0.2f, 0.4f, 0.2f, 0.9f);
-        batch.draw(whiteTexture, x, y, width, height);
+//        batch.setColor(0.2f, 0.4f, 0.2f, 0.9f);
 
-        drawCenteredText(batch, regularFont, "NGƯỜI CHƠI", x + width / 2, y + height - 15, Color.GREEN);
+        Texture bgTexture = getTexture("ui/enemy_card.png");
+        if (bgTexture != null) {
+            batch.setColor(Color.WHITE);
+            batch.draw(bgTexture, x, y, width, height);
+        }
+
+        drawCenteredText(batch, titleFont, playerName, x + width / 2, y + height - 40, Color.BLACK);
 
         Texture playerTexture = getTexture("characters/player.png");
         if (playerTexture != null) {
             batch.setColor(Color.WHITE);
-            batch.draw(playerTexture, x + (width - 100) / 2, y + height - 160, 100, 100);
+            batch.draw(playerTexture, x + (width - 100) / 2, y + height - 190, 100, 100);
         }
 
-        regularFont.setColor(Color.WHITE);
-        regularFont.draw(batch, "Tên: " + playerName, x + 15, y + height - 180);
-        regularFont.draw(batch, "HP: " + (int) playerHealth + "/" + (int) playerMaxHealth, x + 15, y + height - 200);
-        regularFont.draw(batch, "MP: " + (int) playerMana + "/" + (int) playerMaxMana, x + 15, y + height - 220);
+        regularFont.setColor(Color.BLACK);
+//        regularFont.draw(batch, "Tên: " + playerName, x + 15, y + height - 180);
+        regularFont.draw(batch, "HP: " + (int) playerHealth + "/" + (int) playerMaxHealth, x + 50, y + height - 375);
+        regularFont.draw(batch, "MP: " + (int) playerMana + "/" + (int) playerMaxMana, x + 170, y + height - 375);
 
         // Health and mana bars
-        drawHealthBar(batch, playerHealth, playerMaxHealth, x + 15, y + height - 245, width - 50, 12);
-        drawManaBar(batch, playerMana, playerMaxMana, x + 15, y + height - 265, width - 50, 12);
+        drawHealthBar(batch, playerHealth, playerMaxHealth, x + 30, y + height - 245, width - 70, 12);
+        drawManaBar(batch, playerMana, playerMaxMana, x + 30, y + height - 265, width - 70, 12);
 
-        regularFont.draw(batch, "ATK: " + (int) wordDamageMultiplier, x + 15, y + height - 285);
-        regularFont.draw(batch, "DEF: " + (int) gameController.getCharacter().getDefend(), x + 15, y + height - 305);
+        regularFont.draw(batch, "ATK: " + (int) wordDamageMultiplier, x + 55, y + height - 343);
+        regularFont.draw(batch, "DEF: " + (int) gameController.getCharacter().getDefend(), x + 177, y + height - 343);
 
-        regularFont.setColor(Color.GRAY);
-        regularFont.draw(batch, "ATK sẽ được cộng vào tổng điểm!", x + 15, y + height - 345);
-        regularFont.draw(batch, "DEF sẽ giảm sát thương nhận vào! ", x + 15, y + height - 365);
-        regularFont.setColor(Color.WHITE);
+//        regularFont.setColor(Color.GRAY);
+//        regularFont.draw(batch, "ATK sẽ được cộng vào tổng điểm!", x + 15, y + height - 345);
+//        regularFont.draw(batch, "DEF sẽ giảm sát thương nhận vào! ", x + 15, y + height - 365);
+//        regularFont.setColor(Color.WHITE);
     }
 
     private void drawHealthBar(SpriteBatch batch, float current, float max, float x, float y, float width, float height) {
@@ -755,7 +759,12 @@ public class GameplayController {
 
     private void drawItemColumn(SpriteBatch batch, float x, float y, float width, float height) {
         batch.setColor(0.3f, 0.2f, 0.4f, 0.9f);
-        batch.draw(whiteTexture, x, y, width, height);
+
+        Texture bgTexture = getTexture("ui/item_bg_2.png");
+        if (bgTexture != null) {
+            batch.setColor(Color.WHITE);
+            batch.draw(bgTexture, x-15, y, width+15, height);
+        }
 
         drawCenteredText(batch, regularFont, "🎒 ITEM", x + width / 2, y + height - 15, Color.MAGENTA);
 
@@ -771,7 +780,7 @@ public class GameplayController {
         Vector3 mousePos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
         viewport.unproject(mousePos);
 
-        float itemY = y + height - 50;
+        float itemY = y + height - 55;
         for (Map.Entry<String, Integer> entry : characterItems.entrySet()) {
             Items item = ItemLoader.getItemByName(entry.getKey());
             if (item == null) continue;
@@ -840,7 +849,7 @@ public class GameplayController {
 
         if (isPlayerTurn && !combatTimeUp) {
             drawButton(batch, submitButtonRect, "CAST SPELL");
-            drawButton(batch, clearButtonRect, "CLEAR");
+            drawButton(batch, clearButtonRect, "BỎ CHỌN");
         }
     }
 
@@ -950,8 +959,6 @@ public class GameplayController {
             playerHealth = Math.max(0, playerHealth - damage);
         }
         isPlayerTurn = true;
-
-        damage = -1;
         enemyAttack((int) damage, action, (int) heal, () -> {
             checkCombatEnd();
             if (isCombatMode) {

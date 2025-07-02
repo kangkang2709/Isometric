@@ -67,9 +67,6 @@ public class MerchantUI {
 
     // Enhanced UI colors
     private final Color bgColor = new Color(0.12f, 0.12f, 0.18f, 0.95f);
-    private final Color panelColor = new Color(0.16f, 0.16f, 0.22f, 1f);
-    private final Color slotColor = new Color(0.22f, 0.22f, 0.28f, 1f);
-    private final Color selectedColor = new Color(0.3f, 0.4f, 0.8f, 1f);
     private final Color buttonColor = new Color(0.25f, 0.25f, 0.35f, 1f);
     private final Color buttonHoverColor = new Color(0.3f, 0.3f, 0.4f, 1f);
     private final Color activeTabColor = new Color(0.3f, 0.4f, 0.8f, 1f);
@@ -93,7 +90,7 @@ public class MerchantUI {
 
         // Load textures
         try {
-            backgroundTexture = new Texture(Gdx.files.internal("ui/panel_background.png"));
+            backgroundTexture = new Texture(Gdx.files.internal("ui/merchant.png"));
             buttonTexture = new Texture(Gdx.files.internal("ui/button.png"));
             slotTexture = new Texture(Gdx.files.internal("ui/slot.png"));
             highlightTexture = new Texture(Gdx.files.internal("ui/slot_highlight.png"));
@@ -124,13 +121,13 @@ public class MerchantUI {
         float tabWidth = 130;
         float tabHeight = 36;
         tabMerchantButton = new Rectangle(
-                merchantBounds.x + PADDING,
+                merchantBounds.x + PADDING + 60,
                 merchantBounds.y + merchantBounds.height - 36,
                 tabWidth,
                 tabHeight
         );
         tabPlayerButton = new Rectangle(
-                merchantBounds.x + tabWidth + PADDING * 2,
+                merchantBounds.x + tabWidth + PADDING * 2 + 60,
                 merchantBounds.y + merchantBounds.height - 36,
                 tabWidth,
                 tabHeight
@@ -157,9 +154,9 @@ public class MerchantUI {
 
     private void initFonts() {
         try {
-            this.font = generateVietNameseFont("IMFellEnglishSC-Regular.ttf", 14);
-            this.titleFont = generateVietNameseFont("IMFellEnglishSC-Regular.ttf", 18);
-            this.smallFont = generateVietNameseFont("IMFellEnglishSC-Regular.ttf", 12);
+            this.font = generateVietNameseFont("Roboto-Black.ttf", 16);
+            this.titleFont = generateVietNameseFont("Roboto-Black.ttf", 16);
+            this.smallFont = generateVietNameseFont("Roboto-Black.ttf", 12);
         } catch (Exception e) {
             Gdx.app.error("MerchantUI", "Failed to load custom fonts, using default", e);
             titleFont = new BitmapFont();
@@ -178,7 +175,7 @@ public class MerchantUI {
 
             itemSlots[i] = new Rectangle(
                     merchantBounds.x + PADDING * 2 + (col * (SLOT_SIZE + PADDING)) + 50,
-                    merchantBounds.y + merchantBounds.height - PADDING * 2  - 30 - SLOT_SIZE - (row * (SLOT_SIZE + PADDING + 16)),
+                    merchantBounds.y + merchantBounds.height - PADDING * 2 - 30 - SLOT_SIZE - (row * (SLOT_SIZE + PADDING + 16)),
                     SLOT_SIZE,
                     SLOT_SIZE
             );
@@ -211,7 +208,7 @@ public class MerchantUI {
         shapeRenderer.setProjectionMatrix(uiMatrix);
 
         // Draw main panel
-        drawPanel(batch,merchantBounds, bgColor);
+        drawPanel(batch, merchantBounds, bgColor);
 
         // Draw tabs
         drawTab(tabMerchantButton, showingMerchantItems);
@@ -228,7 +225,7 @@ public class MerchantUI {
         shapeRenderer.setColor(dividerColor);
 
         // Horizontal divider below items
-        float dividerY = merchantBounds.y + merchantBounds.height - 70 - (MAX_SLOTS/SLOTS_PER_ROW) * (SLOT_SIZE + PADDING) - PADDING * 2;
+        float dividerY = merchantBounds.y + merchantBounds.height - 70 - (MAX_SLOTS / SLOTS_PER_ROW) * (SLOT_SIZE + PADDING) - PADDING * 2;
         shapeRenderer.rectLine(
                 merchantBounds.x + PADDING,
                 dividerY,
@@ -264,7 +261,7 @@ public class MerchantUI {
         if (backgroundTexture != null) {
             batch.begin();
             batch.setProjectionMatrix(uiMatrix);
-            batch.draw(backgroundTexture, bounds.x, bounds.y, bounds.width, bounds.height);
+            batch.draw(backgroundTexture, bounds.x - 50, bounds.y + 30, bounds.width + 50, bounds.height);
             batch.setColor(Color.WHITE); // Reset color
             batch.end();
         } else {
@@ -312,7 +309,7 @@ public class MerchantUI {
         shapeRenderer.arc(tabBounds.x + tabBounds.width - CORNER_RADIUS, tabBounds.y + tabBounds.height - CORNER_RADIUS,
                 CORNER_RADIUS, 0, 90);
         shapeRenderer.rect(tabBounds.x + CORNER_RADIUS, tabBounds.y + tabBounds.height - CORNER_RADIUS,
-                tabBounds.width - 2*CORNER_RADIUS, CORNER_RADIUS);
+                tabBounds.width - 2 * CORNER_RADIUS, CORNER_RADIUS);
 
         shapeRenderer.end();
     }
@@ -422,8 +419,8 @@ public class MerchantUI {
                 String buttonText = showingMerchantItems ? "BUY" : "SELL";
                 layout.setText(font, buttonText);
                 font.draw(batch, buttonText,
-                        actionButton.x + (actionButton.width - layout.width)/2,
-                        actionButton.y + (actionButton.height + layout.height)/2);
+                        actionButton.x + (actionButton.width - layout.width) / 2,
+                        actionButton.y + (actionButton.height + layout.height) / 2);
             } else {
                 if (shapeRenderer != null) {
                     if (batchWasDrawing) batch.end();
@@ -452,8 +449,8 @@ public class MerchantUI {
 
             // Draw X on top of texture
             font.draw(batch, "X",
-                    closeButton.x + closeButton.width/2 - 6,
-                    closeButton.y + closeButton.height/2 + 8);
+                    closeButton.x + closeButton.width / 2 - 6,
+                    closeButton.y + closeButton.height / 2 + 8);
         } else {
             if (shapeRenderer != null) {
                 if (batchWasDrawing) batch.end();
@@ -482,26 +479,26 @@ public class MerchantUI {
         titleFont.setColor(Color.WHITE);
         layout.setText(titleFont, "Merchant");
         titleFont.draw(batch, "Merchant",
-                tabMerchantButton.x + (tabMerchantButton.width - layout.width)/2,
-                tabMerchantButton.y + tabMerchantButton.height - (tabMerchantButton.height - layout.height)/2);
+                tabMerchantButton.x + (tabMerchantButton.width - layout.width) / 2,
+                tabMerchantButton.y + tabMerchantButton.height - (tabMerchantButton.height - layout.height) / 2);
 
         layout.setText(titleFont, "Your Items");
         titleFont.draw(batch, "Your Items",
-                tabPlayerButton.x + (tabPlayerButton.width - layout.width)/2,
-                tabPlayerButton.y + tabPlayerButton.height - (tabPlayerButton.height - layout.height)/2);
+                tabPlayerButton.x + (tabPlayerButton.width - layout.width) / 2,
+                tabPlayerButton.y + tabPlayerButton.height - (tabPlayerButton.height - layout.height) / 2);
 
         // Draw character score
         Character character = gameController.getCharacter();
         titleFont.setColor(priceColor);
-        String scoreText = "Your Score: " + (int)character.getScore();
+        String scoreText = "Your Score: " + (int) character.getScore();
         layout.setText(titleFont, scoreText);
         titleFont.draw(batch, scoreText,
-                merchantBounds.x + merchantBounds.width - layout.width - PADDING * 2,
+                merchantBounds.x + merchantBounds.width - layout.width - 340,
                 merchantBounds.y + merchantBounds.height - PADDING * 1.5f);
 
         // Draw close button text
         font.setColor(Color.WHITE);
-        font.draw(batch, "X", closeButton.x + (closeButton.width - 12)/2, closeButton.y + (closeButton.height + 12)/2);
+        font.draw(batch, "X", closeButton.x + (closeButton.width - 12) / 2, closeButton.y + (closeButton.height + 12) / 2);
     }
 
     private void drawItems(SpriteBatch batch, float pulse) {
@@ -519,8 +516,8 @@ public class MerchantUI {
                 // Apply subtle pulse animation to selected item
                 float scale = (i == selectedItemIndex) ? pulse : 1.0f;
                 float itemSize = 37;
-                float centerX = currentSlots[i].x + SLOT_SIZE/2f - itemSize*scale/2f;
-                float centerY = currentSlots[i].y + SLOT_SIZE/2f - itemSize*scale/2f;
+                float centerX = currentSlots[i].x + SLOT_SIZE / 2f - itemSize * scale / 2f;
+                float centerY = currentSlots[i].y + SLOT_SIZE / 2f - itemSize * scale / 2f;
 
                 batch.draw(itemTexture, centerX, centerY, itemSize * scale, itemSize);
 
@@ -550,7 +547,7 @@ public class MerchantUI {
                 }
                 layout.setText(smallFont, itemName);
                 smallFont.draw(batch, itemName,
-                        currentSlots[i].x + (SLOT_SIZE - layout.width)/2,
+                        currentSlots[i].x + (SLOT_SIZE - layout.width) / 2,
                         currentSlots[i].y - 5);
             }
         }
@@ -564,7 +561,7 @@ public class MerchantUI {
         if (selectedItemIndex >= 0 && selectedItemIndex < currentItems.size()) {
             Items item = currentItems.get(selectedItemIndex);
 
-            float detailsX = merchantBounds.x + PADDING * 2 +40;
+            float detailsX = merchantBounds.x + PADDING * 2 + 40;
             float detailsY = merchantBounds.y + 250;
 
             // Draw item name
@@ -591,18 +588,18 @@ public class MerchantUI {
                 font.setColor(Color.WHITE);
                 layout.setText(font, "BUY");
                 font.draw(batch, "BUY",
-                        buyButton.x + (buyButton.width - layout.width)/2,
-                        buyButton.y + (buyButton.height + layout.height)/2);
+                        buyButton.x + (buyButton.width - layout.width) / 2,
+                        buyButton.y + (buyButton.height + layout.height) / 2);
             } else {
                 font.setColor(priceColor);
-                font.draw(batch, "Sell Price: " + (price/2), detailsX, detailsY - 50);
+                font.draw(batch, "Sell Price: " + (price / 2), detailsX, detailsY - 50);
 
                 // Draw sell button
                 font.setColor(Color.WHITE);
                 layout.setText(font, "SELL");
                 font.draw(batch, "SELL",
-                        sellButton.x + (sellButton.width - layout.width)/2,
-                        sellButton.y + (sellButton.height + layout.height)/2);
+                        sellButton.x + (sellButton.width - layout.width) / 2,
+                        sellButton.y + (sellButton.height + layout.height) / 2);
             }
 
             // Draw item description with word wrapping

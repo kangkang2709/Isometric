@@ -112,7 +112,6 @@ public class MapRenderer {
     }
 
 
-
     private Dice diceRenderer;
 
     public Dice getDiceRenderer() {
@@ -587,6 +586,8 @@ public class MapRenderer {
 
     private void drawEnemyInfoCard(SpriteBatch batch, MapEvent event) {
         // Get enemy information from event properties
+        if (!map.getMapName().equals("board")) return;
+
         String enemyName = event.getProperties().get("enemyName", String.class);
         if (enemyName == null) enemyName = "Unknown Enemy";
 

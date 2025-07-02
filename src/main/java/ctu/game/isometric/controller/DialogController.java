@@ -34,7 +34,7 @@ public class DialogController {
     }
 
     public boolean shouldRenderBackground() {
-        return currentArcId != null && (currentArcId.contains("_backstory") || currentArcId.contains("_background"));
+        return currentArcId != null && currentArcId.contains("_background");
     }
 
     private void loadStoryData() {

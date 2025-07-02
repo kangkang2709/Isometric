@@ -6,7 +6,7 @@
     "status": "AVAILABLE",
     "visible": true,
     "requirements": {
-      "Wolf Pelt": 3
+      "Elixir": 1
     },
     "reward": {
       "experience": 100,

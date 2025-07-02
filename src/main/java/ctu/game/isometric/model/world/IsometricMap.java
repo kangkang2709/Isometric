@@ -57,8 +57,8 @@ public class IsometricMap {
                 this.startY = 0;
                 break;
             case "main":
-                this.startX = 10;
-                this.startY = 0;
+                this.startX = 12;
+                this.startY = 12;
                 break;
             default:
                 // Keep the original name
