@@ -32,8 +32,8 @@ public class CharacterRenderer {
     }
 
 
-    float offsetY = 18.5f;
-
+    float offsetY = 17.5f;
+    float offsetX = -3f;
     public void render(SpriteBatch batch) {
         float gridX = character.getGridX();
         float gridY = character.getGridY();
@@ -48,6 +48,7 @@ public class CharacterRenderer {
 
         if(mapRenderer.getMap().getMapName().equals("board")){
             isoY += offsetY;
+            isoX += offsetX;
         }
         // Get animation frame with translated direction
         String direction = translateDirection(character.getDirection());

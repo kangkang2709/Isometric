@@ -156,6 +156,11 @@ public class MapRenderer {
 
     boolean isAcceptingRoll = false;
 
+    public  void setShouldRenderCharacter(boolean shouldRenderCharacter) {
+        this.isAcceptingRoll = shouldRenderCharacter;
+        getGameController().setRenderCharacter(true);
+    }
+
     public void rollingDice(int targetValue) {
         previousFaceValue = diceRenderer.getCurrentFaceValue();
 
@@ -164,12 +169,12 @@ public class MapRenderer {
 
             if (success) {
                 dialogController.showMessageWithChoices(
-                        "You want to skip this event", "YES", "No",
+                        "You want to skip this event", "YES", "NO",
                         () -> {
-                            isAcceptingRoll = false;
+                            setShouldRenderCharacter(false);
                             getGameController().setEndEvent();
                         }, () -> {
-                            isAcceptingRoll = false;
+                            setShouldRenderCharacter(false);
                         }
                 );
             } else {
@@ -178,18 +183,18 @@ public class MapRenderer {
                     public void run() {
                         if (diceRenderer.getBonusCount() > 0) {
                             dialogController.showMessageWithChoices(
-                                    "You rolled a " + currentFaceValue + ", which is not enough to succeed.\n You can retry with bonus roll!!!", "YES", "No",
+                                    "You rolled a " + currentFaceValue + ", which is not enough to succeed.\n You can retry with bonus roll!!!", "YES", "NO",
                                     () -> {
                                         isAcceptingRoll = true;
                                         diceRenderer.activeBonusRoll();
                                     },
                                     () -> {
-                                        isAcceptingRoll = false;
+                                        setShouldRenderCharacter(false);
                                     }
                             );
                         } else {
                             dialogController.showSimpleMessage("You rolled a " + currentFaceValue + ", which is not enough to succeed.\n You can not retry!!!");
-                            isAcceptingRoll = false;
+                            setShouldRenderCharacter(false);
                         }
                     }
                 }, 1.0f);
@@ -261,14 +266,21 @@ public class MapRenderer {
     }
 
     Texture fogTexture;
-
-
+    Texture cardBlockTexture;
+    Texture cardBlockTextureBack;
+    Texture cardBackTexture;
     Map<String, TextureRegion> textureRegions = new HashMap<>();
 
     public void loadTextures() {
         this.textures.clear();
         this.textures.putAll(assetManager.getTextures());
+
         this.cardTexture = textures.get("enemy_card_large");
+        this.cardBackTexture = textures.get("enemy_card_back");
+
+        this.cardBlockTexture = textures.get("block_card");
+        this.cardBlockTextureBack = textures.get("block_card_back");
+
         this.cardBackgroundTexture = textures.get("card-frame");
         Texture inactiveTexture = new Texture(Gdx.files.internal("textures/trap_inactive.png"));
         Texture activeTexture = new Texture(Gdx.files.internal("textures/trap_active.png"));
@@ -332,7 +344,7 @@ public class MapRenderer {
         // Update camera position based on character position
         float[] isoPos = toIsometric(character.getGridX(), character.getGridY());
 
-        camera.position.set(600, 0, 0);
+        camera.position.set(645, 25, 0);
         camera.update();
         if (!map.getMapName().equals("board")) {
             camera.position.set(isoPos[0], isoPos[1], 0);
@@ -400,6 +412,9 @@ public class MapRenderer {
                 case "battle":
                     drawEnemySpinCard(batch, isoPos[0] + 14, isoPos[1] + 12, 30, 40);
                     break;
+                case "word_scramble", "mulquiz", "quiz":
+                    drawMiniGameSpinCard(batch, isoPos[0] + 14, isoPos[1] + 12, 30, 40);
+                    break;
             }
         }
     }
@@ -439,12 +454,11 @@ public class MapRenderer {
     }
 
     private float cardRotation = 0f;
-    private static final float SPIN_SPEED = 90f; // degrees per second
+    private static final float SPIN_SPEED = 50f; // degrees per second
     private float speedMultiplier = 1.0f; // Default normal speed
-    private static final float SLOW_MOTION_FACTOR = 0.2f; // 30% of normal speed
+    private static final float SLOW_MOTION_FACTOR = 0.1f; // 30% of normal speed
 
     private void drawEnemySpinCard(SpriteBatch batch, float x, float y, float width, float height) {
-        Texture cardBackTexture = null;
 
         // Get the front texture
         if (textures.containsKey("enemy_card")) {
@@ -471,6 +485,51 @@ public class MapRenderer {
             // Choose texture based on rotation angle (front or back)
             Texture currentTexture = (cardRotation > 90 && cardRotation < 270) ?
                     cardBackTexture : cardTexture;
+
+            // Draw with rotation effect (removed the floating effect)
+            batch.draw(
+                    currentTexture,
+                    centerX - (width * scaleX) / 2, // X position adjusted for scale
+                    y, // Fixed Y position without floating effect
+                    width * scaleX, // Width scaled to simulate perspective
+                    height, // Height
+                    0, // Source X
+                    0, // Source Y
+                    currentTexture.getWidth(), // Source width
+                    currentTexture.getHeight(), // Source height
+                    (cardRotation > 90 && cardRotation < 270), // Flip horizontally when showing back
+                    false // Don't flip vertically
+            );
+
+        }
+    }
+
+    private void drawMiniGameSpinCard(SpriteBatch batch, float x, float y, float width, float height) {
+
+        // Get the front texture
+            cardBlockTexture = textures.get("block_card");
+
+
+        // Get the back texture (optional)
+        if (textures.containsKey("block_card_back")) {
+            cardBlockTextureBack = textures.get("block_card_back");
+        } else {
+            cardBlockTextureBack = cardBlockTexture; // Use same texture if back not available
+        }
+
+        if (cardBlockTexture != null) {
+            // Update rotation with speed multiplier for slow motion effect
+            cardRotation = (cardRotation + SPIN_SPEED * speedMultiplier * Gdx.graphics.getDeltaTime()) % 360;
+
+            // Calculate center points
+            float centerX = x + width / 2;
+
+            // Calculate scale factor based on rotation to simulate X-axis rotation
+            float scaleX = (float) Math.abs(Math.cos(Math.toRadians(cardRotation)));
+
+            // Choose texture based on rotation angle (front or back)
+            Texture currentTexture = (cardRotation > 90 && cardRotation < 270) ?
+                    cardBlockTexture : cardBlockTextureBack;
 
             // Draw with rotation effect (removed the floating effect)
             batch.draw(
@@ -536,20 +595,6 @@ public class MapRenderer {
     }
 
 
-    private float diceRollingTime = 0f;
-    private static final float DICE_ROLL_DURATION = 1.6f;
-    private static final float DICE_OFFSET_X = 640f; // Dice position X
-    private static final float DICE_OFFSET_Y = -160f; // Dice position Y
-
-    private void updateDiceRolling(float delta) {
-        if (isRolling) {
-            diceRollingTime += delta;
-            if (diceRollingTime >= DICE_ROLL_DURATION) {
-                isRolling = false;
-                diceRollingTime = 0f;
-            }
-        }
-    }
 
     public void update(float delta) {
         weatherRenderer.update(delta);
@@ -710,10 +755,13 @@ public class MapRenderer {
 
     Map<String, Enemy> enemies = new HashMap<>();
 
+
     private void drawEnemyInfoCard(SpriteBatch batch, MapEvent event) {
         if (!map.getMapName().equals("board")) return;
 
-        if (!isAcceptingRoll) centerX = 640;
+        if (!isAcceptingRoll) {
+            centerX = 640;
+        }
         else centerX = 460;
 
         String enemyName = event.getProperties().get("enemyName", String.class);

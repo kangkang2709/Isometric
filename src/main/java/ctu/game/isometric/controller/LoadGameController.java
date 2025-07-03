@@ -72,7 +72,7 @@ public class LoadGameController {
         font.getData().setScale(1.5f);
 
         // Load textures
-        backgroundImage = new Texture(Gdx.files.internal("backgrounds/main_menu_bg.png"));
+        backgroundImage = new Texture(Gdx.files.internal("backgrounds/black.png"));
         buttonNormal = new Texture(Gdx.files.internal("ui/button.png"));
         buttonSelected = new Texture(Gdx.files.internal("ui/button_selected.png"));
         backButtonTexture = new Texture(Gdx.files.internal("ui/button.png"));

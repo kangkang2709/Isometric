@@ -400,7 +400,7 @@ public class InputController extends InputAdapter {
 //                gameController.getGame().changeScreen("DUNGEON");
                 gameController.changeMap("main");
             }
-            case Keys.F5 -> {
+            case Keys.Q -> {
                 gameController.getQuestTrackerView().toggleVisibility();
                 gameController.setState(GameState.QUEST_TRACKER);
             }

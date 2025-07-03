@@ -353,16 +353,6 @@ public class DialogController {
         }
 
 
-        Scene scene1 = findScene(arc, "scene_not_enough_item");
-        if (scene1 == null) {
-            scene1 = new Scene();
-            scene1.setId("scene_not_enough_item");
-            if (arc.getScenes() == null) {
-                arc.setScenes(new ArrayList<>());
-            }
-            arc.getScenes().add(scene1);
-        }
-
         Scene scene2 = findScene(arc, "scene_end");
         if (scene2 == null) {
             scene2 = new Scene();
@@ -391,7 +381,7 @@ public class DialogController {
 
 
         Dialog tempDialog2 = new Dialog();
-        tempDialog2.setText("See you next time!");
+        tempDialog2.setText("");
         List<Dialog> dialogues_end = new ArrayList<>();
         dialogues_end.add(tempDialog2);
         scene2.setDialogues(dialogues_end);

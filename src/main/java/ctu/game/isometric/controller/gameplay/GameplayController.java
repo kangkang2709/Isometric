@@ -392,44 +392,82 @@ public class GameplayController {
 
         Map<String, Integer> items = gameController.getCharacter().getItems();
         if (items.containsKey(item.getItemName()) && items.get(item.getItemName()) > 0) {
-            switch (item.getItemName()) {
-                case "Elixir":
-                    playerHealing((int) item.getValue(), () -> {
-                        playerHealth = Math.min(playerMaxHealth, playerHealth + item.getValue());
-                        addCombatLog("Đã hồi " + item.getValue() + " Sinh Lực!");
-                    });
-                    break;
-                case "Arcane Essence":
-                    playerHealingMana((int) item.getValue(), () -> {
-                        playerMana = Math.min(playerMaxMana, playerMana + item.getValue());
-                        addCombatLog("Đã hồi " + item.getValue() + " Năng lượng!");
-                    });
-                    break;
-                case "Draught of Fury":
-                    playerBuff(1, () -> {
-                        wordDamageMultiplier += item.getValue();
-                        gameController.getCharacter().upAttack(item.getValue());
-                        addCombatLog("Đã tăng 1 sức mạnh!");
-                    });
-                    break;
-                case "Aegis Brew":
-                    playerBuff(1, () -> {
-                        gameController.getCharacter().upDefend(item.getValue());
-                        addCombatLog("Đã tăng 2 phòng thủ!");
-                    });
-                    break;
-                case "Toxic Poiton":
-                    enemyHealth = Math.max(0, enemyHealth - item.getValue());
-                    addCombatLog("Kẻ địch đã bị trúng độc, mất " + item.getValue() + " máu!");
-                    break;
-            }
 
             playerMana = Math.max(0, playerMana - item.getManaCost());
             int newCount = items.get(item.getItemName()) - 1;
             if (newCount <= 0) items.remove(item.getItemName());
             else items.put(item.getItemName(), newCount);
 
-            isPlayerTurn = false;
+            switch (item.getItemName()) {
+                case "Elixir":
+                    playerHealing((int) item.getValue(), () -> {
+                        addCombatLog("Đã hồi " + item.getValue() + " Sinh Lực!");
+
+                        playerHealth = Math.min(playerMaxHealth, playerHealth + item.getValue());
+
+                        checkCombatEnd();
+                        if (isCombatMode && enemyHealth > 0) {
+                            isPlayerTurn = false;
+                            addCombatLog("---Đến lượt của " + enemyName + "!---");
+                        }
+                    });
+                    break;
+                case "Arcane Essence":
+                    playerHealingMana((int) item.getValue(), () -> {
+                        addCombatLog("Đã hồi " + item.getValue() + " Năng lượng!");
+
+                        playerMana = Math.min(playerMaxMana, playerMana + item.getValue());
+
+
+                        checkCombatEnd();
+                        if (isCombatMode && enemyHealth > 0) {
+                            isPlayerTurn = false;
+                            addCombatLog("---Đến lượt của " + enemyName + "!---");
+                        }
+                    });
+                    break;
+                case "Draught of Fury":
+                    playerBuff(1, () -> {
+                        addCombatLog("Đã tăng 1 sức mạnh!");
+                        wordDamageMultiplier += item.getValue();
+                        gameController.getCharacter().upAttack(item.getValue());
+
+
+                        checkCombatEnd();
+                        if (isCombatMode && enemyHealth > 0) {
+                            isPlayerTurn = false;
+                            addCombatLog("---Đến lượt của " + enemyName + "!---");
+                        }
+                    });
+                    break;
+                case "Aegis Brew":
+                    playerBuff(1, () -> {
+                        addCombatLog("Đã tăng 2 phòng thủ!");
+                        gameController.getCharacter().upDefend(item.getValue());
+
+
+                        checkCombatEnd();
+                        if (isCombatMode && enemyHealth > 0) {
+                            isPlayerTurn = false;
+                            addCombatLog("---Đến lượt của " + enemyName + "!---");
+                        }
+                    });
+                    break;
+                case "Toxic Poiton":
+                    playerAttack("Toxic", (int) item.getValue(), () -> {
+                        addCombatLog("Kẻ địch đã bị trúng độc, mất " + item.getValue() + " máu!");
+                        enemyHealth = Math.max(0, enemyHealth - item.getValue());
+
+                        checkCombatEnd();
+                        if (isCombatMode && enemyHealth > 0) {
+                            isPlayerTurn = false;
+                            addCombatLog("---Đến lượt của " + enemyName + "!---");
+                        }
+                    });
+                    break;
+            }
+
+
         }
     }
 
@@ -784,7 +822,7 @@ public class GameplayController {
 
         if (characterItems == null || characterItems.isEmpty()) {
             regularFont.setColor(Color.GRAY);
-            regularFont.draw(batch, "Không có vật phẩm!", x + 10, y + height - 30);
+            regularFont.draw(batch, "Không có vật phẩm!", x + 10, y + height - 60);
             return;
         }
 
@@ -1016,7 +1054,7 @@ public class GameplayController {
                     damage = 0;
                     addCombatLog("Lord " + enemyName + " chống chọi được đòn tấn công yếu!");
                 } else {
-                    damage = Math.min(enemyHealth, damage -(enemy.getDefensePower() * 0.7f));
+                    damage = Math.min(enemyHealth, damage - (enemy.getDefensePower() * 0.7f));
                     enemyHealth -= damage;
                     addCombatLog("Từ '" + word + "' gây " + (int) damage + " sát thương!");
                 }

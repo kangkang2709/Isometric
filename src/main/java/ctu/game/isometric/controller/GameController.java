@@ -848,6 +848,9 @@ public class GameController {
         return isRenderCharacter;
     }
 
+    public void setRenderCharacter(boolean renderCharacter) {
+        isRenderCharacter = renderCharacter;
+    }
 
     private void checkPositionEvents(float x, float y) {
         currentEvent = eventManager.checkPositionEvents(x, y);
@@ -875,6 +878,15 @@ public class GameController {
         currentEvent = null;
         properties = null;
     }
+
+    public void setCompletedEvent() {
+        eventManager.completeEvent(currentEvent.getId());
+        currentEventType = null;
+        hasActiveEvent = false;
+        currentEvent = null;
+        properties = null;
+    }
+
 
     public MapProperties getProperties() {
         return properties;
@@ -973,7 +985,7 @@ public class GameController {
                     }
                 });
 
-                setEndEvent();
+                setCompletedEvent();
                 break;
             case "mulquiz":
                 getDialogController().showSimpleMessage("Multi-Choice Quiz mini-game will start soon!");
@@ -993,7 +1005,7 @@ public class GameController {
                         applyQuizMovementEffect(getCharacter().getScore() - score);
                     }
                 });
-                setEndEvent();
+                setCompletedEvent();
                 break;
             case "new_run_event":
                 getCharacter().updateRun();
@@ -1012,14 +1024,13 @@ public class GameController {
                         applyQuizMovementEffect(getCharacter().getScore() - score);
                     }
                 });
-                setEndEvent();
+                setCompletedEvent();
             case "cutscene":
                 String cutsceneName = properties.get("cutscene", String.class);
                 if (cutsceneName != null) {
                     startCutscene(cutsceneName);
                 }
-                setEndEvent();
-
+                setCompletedEvent();
                 break;
         }
 
