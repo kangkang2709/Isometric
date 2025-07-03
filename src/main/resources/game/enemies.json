@@ -6,6 +6,7 @@
     "texturePath": "enemies/crystal_serpent.png",
     "health": 10,
     "attackPower": 5,
+    "defensePower": 2,
     "rewardId": 7
   },
   {
@@ -15,6 +16,7 @@
     "texturePath": "enemies/frost_revenant.png",
     "health": 10,
     "attackPower": 5,
+    "defensePower": 2,
     "rewardId": 8
   },
   {
@@ -24,6 +26,7 @@
     "texturePath": "enemies/emerald_watcher.png",
     "health": 10,
     "attackPower": 5,
+    "defensePower": 2,
     "rewardId": 9
   },
   {
@@ -33,6 +36,7 @@
     "texturePath": "enemies/wildroot_spawn.png",
     "health": 10,
     "attackPower": 2,
+    "defensePower": 2,
     "rewardId": 10
   },
   {
@@ -42,6 +46,7 @@
     "texturePath": "enemies/wildroot_brute.png",
     "health": 10,
     "attackPower": 1,
+    "defensePower": 2,
     "rewardId": 11
   },
   {
@@ -51,6 +56,7 @@
     "texturePath": "enemies/living_boulder.png",
     "health": 10,
     "attackPower": 2,
+    "defensePower": 2,
     "rewardId": 14
   },
   {
@@ -60,6 +66,7 @@
     "texturePath": "enemies/hidebeast.png",
     "health": 10,
     "attackPower": 2,
+    "defensePower": 2,
     "rewardId": 13
   },
   {
@@ -69,6 +76,7 @@
     "texturePath": "enemies/goblin_stalker.png",
     "health": 70,
     "attackPower": 2,
+    "defensePower": 2,
     "rewardId": 12
   },
   {
@@ -78,6 +86,7 @@
     "texturePath": "enemies/crab_lord_abyssal.png",
     "health": 200,
     "attackPower": 10,
+    "defensePower": 2,
     "rewardId": 16
   }
 ]

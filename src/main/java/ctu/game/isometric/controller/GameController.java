@@ -172,12 +172,10 @@ public class GameController {
     }
 
 
-
     public void createBoard() {
         boardEventManager = new BoardEventManager(this);
 
     }
-
 
 
     public IsometricMap changeMap(String mapName) {
@@ -190,7 +188,7 @@ public class GameController {
             transitionRenderer.startLoadingScreen(() -> {
                 this.map = newMap;
                 this.character.setGameMap(map);
-                this.game.getGameScreen().getMapRenderer().changeTiledMapRenderer(this.map,this.eventManager);
+                this.game.getGameScreen().getMapRenderer().changeTiledMapRenderer(this.map, this.eventManager);
                 this.pathfinder.setMap(newMap);
                 this.eventManager = this.eventManagerMap.get(mapName);
             });
@@ -844,12 +842,22 @@ public class GameController {
     private boolean hasActiveEvent = false;
     private MapProperties properties;
 
+    boolean isRenderCharacter = true;
+
+    public boolean isRenderCharacter() {
+        return isRenderCharacter;
+    }
+
+
     private void checkPositionEvents(float x, float y) {
         currentEvent = eventManager.checkPositionEvents(x, y);
-
+         isRenderCharacter = true;
         if (currentEvent != null) {
             hasActiveEvent = true;
             currentEventType = currentEvent.getEventType();
+            if (currentEventType.equals("battle")) {
+                isRenderCharacter = false; // Don't render character during battle events
+            }
             currentEventX = currentEvent.getGridX();
             currentEventY = currentEvent.getGridY();
             properties = currentEvent.getProperties();
@@ -859,6 +867,7 @@ public class GameController {
             properties = null;
         }
     }
+
 
     public void setEndEvent() {
         currentEventType = null;
@@ -892,7 +901,6 @@ public class GameController {
         }
         switch (event) {
             case "battle":
-
                 int enemyId = 1; // Default to first enemy
                 if (properties.containsKey("enemy")) {
                     Object enemyObj = properties.get("enemy");
@@ -902,6 +910,9 @@ public class GameController {
                         enemyId = (Integer) enemyObj;
                     }
                 }
+
+
+
                 if (eventManager.isEnemyDefeated(enemyId) &&
                         eventManager.getBooleanProperty(properties, "one_time", true)) {
                     eventManager.completeEvent(currentEvent.getId());
@@ -1023,8 +1034,6 @@ public class GameController {
             getDice().setBonusRoll(true);
         }
     }
-
-
 
 
     boolean isNewRun = false;

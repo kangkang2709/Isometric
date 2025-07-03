@@ -87,7 +87,7 @@ public class GameScreen implements Screen {
 
             this.dice = new Dice(
                     game.getAssetManager().getAnimationManager(),
-                    718, - 65, gameController
+                    770, 15, gameController
             );
             mapRenderer.setDice(dice);
             gameController.setMapRenderer(mapRenderer);
@@ -170,7 +170,7 @@ public class GameScreen implements Screen {
                         gameController.getNpcRenderer().render(batch);
                     }
 
-                    if (characterRenderer != null) characterRenderer.render(batch);
+                    if (characterRenderer != null && gameController.isRenderCharacter()) characterRenderer.render(batch);
                     gameController.getBoardEventManager().getWordScrambleGame().render(batch, 490, 435);
 
 

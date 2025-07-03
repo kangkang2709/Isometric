@@ -28,7 +28,7 @@ public class EnemyLoader {
                 enemy.setTexturePath(enemyJson.getString("texturePath"));
                 enemy.setHealth(enemyJson.getInt("health"));
                 enemy.setAttackPower(enemyJson.getInt("attackPower"));
-
+                enemy.setDefensePower(enemyJson.getInt("defensePower"));
                 if (enemyJson.has("rewardID")) {
                     enemy.setRewardID(enemyJson.getInt("rewardID"));
                 }
@@ -41,6 +41,19 @@ public class EnemyLoader {
         }
     }
 
+    public static Enemy getEnemyByName(String name) {
+        if (!initialized) initialize();
+        if (name == null) return createDefaultEnemy();
+
+        for (Enemy enemy : enemies.values()) {
+            if (name.equalsIgnoreCase(enemy.getEnemyName())) {
+                return enemy;
+            }
+        }
+        return createDefaultEnemy();
+    }
+
+
     public static Enemy getEnemyById(int id) {
         if (!initialized) initialize();
 
@@ -49,17 +62,7 @@ public class EnemyLoader {
             return createDefaultEnemy();
         }
 
-        // Return a copy of the enemy to prevent modifying the template
-        Enemy enemy = new Enemy();
-        enemy.setEnemyID(template.getEnemyID());
-        enemy.setEnemyName(template.getEnemyName());
-        enemy.setEnemyDescription(template.getEnemyDescription());
-        enemy.setTexturePath(template.getTexturePath());
-        enemy.setHealth(template.getHealth());
-        enemy.setAttackPower(template.getAttackPower());
-        enemy.setRewardID(template.getRewardID());
-
-        return enemy;
+        return template;
     }
 
     public static List<Enemy> getAllEnemies() {

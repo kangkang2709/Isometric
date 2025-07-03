@@ -28,7 +28,7 @@ public class Dice {
 
     private static final float DICE_ROLL_DURATION = 1f;
     private static final float BOUNCE_DURATION = 0.5f;
-    private static final int DICE_SIZE = 90;
+    private static final int DICE_SIZE = 140;
     private static final int MIN_DICE_VALUE = 1;
     private static final int MAX_DICE_VALUE = 20;
 
@@ -132,8 +132,6 @@ public class Dice {
                 rotation
         );
 
-        font.draw(batch, "Bonus Roll: " + bonusCount, diceX, diceY - 40);
-        font.draw(batch, "Bonus Roll Active: " + isBonusRoll, diceX, diceY - 60);
     }
 
 

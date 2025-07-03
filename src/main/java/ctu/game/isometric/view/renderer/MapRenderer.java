@@ -21,11 +21,13 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.maps.tiled.renderers.IsometricTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Timer;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import ctu.game.isometric.controller.DialogController;
 import ctu.game.isometric.controller.EventManager;
 import ctu.game.isometric.model.entity.Character;
+import ctu.game.isometric.model.entity.Enemy;
 import ctu.game.isometric.model.game.Dice;
 import ctu.game.isometric.model.game.Items;
 import ctu.game.isometric.model.puzzle.PressurePlatePuzzle;
@@ -33,11 +35,13 @@ import ctu.game.isometric.model.world.IsometricMap;
 import ctu.game.isometric.model.world.MapEvent;
 import ctu.game.isometric.util.AnimationManager;
 import ctu.game.isometric.util.AssetManager;
+import ctu.game.isometric.util.EnemyLoader;
 import ctu.game.isometric.util.ItemLoader;
 
 import java.util.*;
 
 import static ctu.game.isometric.IsometricGame.getGameController;
+import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
 
 public class MapRenderer {
     private IsometricMap map;
@@ -61,6 +65,10 @@ public class MapRenderer {
     private WeatherRenderer weatherRenderer;
 
     private DialogController dialogController;
+
+
+    BitmapFont cardFont;
+    BitmapFont titleFont;
 
     // In MapRenderer.java - modify constructor to take an existing camera
     public MapRenderer(IsometricMap map, AssetManager assetManager, EventManager eventManager, Character character, OrthographicCamera camera) {
@@ -88,6 +96,9 @@ public class MapRenderer {
         this.font = generator.generateFont(parameter);
         generator.dispose();
 
+        this.cardFont = generateVietNameseFont("ModernAntiqua-Regular.ttf", 20);
+        this.titleFont = generateVietNameseFont("GrenzeGotisch.ttf", 35);
+        this.titleFont.setColor(Color.BLACK);
 
         // Use the provided camera instead of creating a new one
         this.camera = camera;
@@ -199,16 +210,19 @@ public class MapRenderer {
         if (isAcceptingRoll) {
             batch.draw(cardBackgroundTexture,
                     centerX + 200,
-                    centerY - 150,
-                    200, 300
+                    centerY - 250,
+                    350, 500
 
             );
 
-            font.draw(batch, "- Target -", centerX + 260,
-                    centerY + 75);
+            titleFont.draw(batch, "Target: " + targetValue, centerX + 330,
+                    centerY - 5);
 
-            font.draw(batch, String.valueOf(targetValue), centerX + 290,
-                    centerY + 50);
+            cardFont.setColor(Color.BLACK);
+            cardFont.draw(batch, "Bonus Roll Left: " + diceRenderer.getBonusCount(),
+                    centerX + 300,
+                    centerY - 90);
+            cardFont.setColor(Color.WHITE);
 
             diceRenderer.render(batch);
 
@@ -255,7 +269,7 @@ public class MapRenderer {
         this.textures.clear();
         this.textures.putAll(assetManager.getTextures());
         this.cardTexture = textures.get("enemy_card_large");
-        this.cardBackgroundTexture = textures.get("enemy_card_back");
+        this.cardBackgroundTexture = textures.get("card-frame");
         Texture inactiveTexture = new Texture(Gdx.files.internal("textures/trap_inactive.png"));
         Texture activeTexture = new Texture(Gdx.files.internal("textures/trap_active.png"));
 
@@ -694,71 +708,75 @@ public class MapRenderer {
         this.targetValue = character.getLevel() * 4 + character.getRun();
     }
 
+    Map<String, Enemy> enemies = new HashMap<>();
+
     private void drawEnemyInfoCard(SpriteBatch batch, MapEvent event) {
-        // Get enemy information from event properties
         if (!map.getMapName().equals("board")) return;
+
+        if (!isAcceptingRoll) centerX = 640;
+        else centerX = 460;
 
         String enemyName = event.getProperties().get("enemyName", String.class);
         if (enemyName == null) enemyName = "Unknown Enemy";
 
-        // Get difficulty level if available
-        String difficulty = event.getProperties().get("difficulty", String.class);
-        if (difficulty == null) difficulty = "Normal";
+        Enemy enemy = enemies.get(enemyName);
+        if (enemy == null) {
+            enemy = EnemyLoader.getEnemyByName(enemyName);
+            enemies.put(enemyName, enemy);
+        }
 
         if (cardTexture == null) {
-            // Fallback to regular enemy card
             cardTexture = textures.get("enemy_card");
         }
 
         if (cardTexture != null) {
-            // Calculate card position at camera center
-            float cardWidth = 200;
-            float cardHeight = 300;
+            float cardWidth = 350;
+            float cardHeight = 500;
+            float cardX = centerX - cardWidth / 2;
+            float cardY = centerY - cardHeight / 2;
 
+            // Draw the card background
+            batch.draw(cardTexture, cardX, cardY, cardWidth, cardHeight);
 
-            // Draw card centered on camera
-            batch.draw(
-                    cardTexture,
-                    centerX - cardWidth / 2,
-                    centerY - cardHeight / 2,
-                    cardWidth,
-                    cardHeight
+            // Draw enemy portrait
+            batch.draw(textures.get(enemyName),
+                    cardX + 70, // inside green area horizontally
+                    cardY + cardHeight - 230, // inside green area vertically
+                    200, 200
             );
 
-            // Draw enemy information
-            if (font != null) {
-                // Store original font properties
-                Color originalColor = font.getColor();
-                float originalScale = font.getData().scaleX;
 
-                // Set larger scale for the card text
-                font.getData().setScale(1.5f);
-                font.setColor(Color.WHITE);
+            // HP (top-left red tag)
+            cardFont.draw(batch, " " + (int) enemy.getHealth(),
+                    cardX + 19,
+                    cardY + cardHeight - 150);
 
+            // ATK (bottom-left red tag)
+            cardFont.draw(batch, " " + enemy.getAttackPower(),
+                    cardX + 22,
+                    cardY + cardHeight - 235);
 
-//                font.draw()
+            // DEF (right red tag)
+            cardFont.draw(batch, "" + enemy.getDefensePower(),
+                    cardX + cardWidth - 37,
+                    cardY + cardHeight - 235);
 
-                // Draw enemy name
-                GlyphLayout nameLayout = new GlyphLayout(font, enemyName);
-                font.draw(batch, enemyName,
-                        centerX - nameLayout.width / 2,
-                        centerY + cardHeight / 4);
-
-
-                renderDice(batch);
-
-                // Draw difficulty
-                font.getData().setScale(1.2f);
-                GlyphLayout diffLayout = new GlyphLayout(font, "Difficulty: " + difficulty);
-                font.draw(batch, "Difficulty: " + difficulty,
-                        centerX - diffLayout.width / 2,
-                        centerY - cardHeight / 8);
+            cardFont.setColor(Color.BLACK);
+            cardFont.draw(batch, "Normal Enemy",
+                    cardX + cardWidth / 4 + 14,
+                    cardY + 210);
+            cardFont.setColor(Color.WHITE);
 
 
-                // Restore original font properties
-                font.setColor(originalColor);
-                font.getData().setScale(originalScale);
-            }
+            GlyphLayout layout = new GlyphLayout(titleFont, enemyName);
+            float textWidth = layout.width;
+            titleFont.draw(batch, layout,
+                    cardX + cardWidth / 2 - textWidth / 2,
+                    cardY + 130);
+            // Optional dice rendering
+            renderDice(batch);
+
+
         }
     }
 

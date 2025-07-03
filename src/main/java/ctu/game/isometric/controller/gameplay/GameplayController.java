@@ -111,8 +111,8 @@ public class GameplayController {
     }
 
     private void initializeUI() {
-        titleFont = generateVietNameseFont("Tektur-Bold.ttf", 18);
-        regularFont = generateVietNameseFont("Tektur-Bold.ttf", 13);
+        titleFont = generateVietNameseFont("Tektur-Bold.ttf", 20);
+        regularFont = generateVietNameseFont("Tektur-Bold.ttf", 14);
         layout = new GlyphLayout();
         viewport = new FitViewport(1280, 720);
         createWhiteTexture();
@@ -576,6 +576,11 @@ public class GameplayController {
     private void drawEnemyStatusSection(SpriteBatch batch, float x, float y, float width, float height) {
         batch.setColor(0.2f, 0.2f, 0.4f, 0.9f);
 
+        Texture bgTexture = getTexture("ui/enemy_bg_1.png");
+        if (bgTexture != null) {
+            batch.setColor(Color.WHITE);
+            batch.draw(bgTexture, x - 20, y - 30, 1280, height + 30);
+        }
 
         String titleText = "KẺ ĐỊCH";
         if (isEnemyBoss()) titleText += " (BOSS)";
@@ -591,10 +596,11 @@ public class GameplayController {
             batch.draw(enemyTexture, 600, y + 20, 80, 80);
         }
 
-        regularFont.setColor(Color.WHITE);
+        regularFont.setColor(Color.BLACK);
         regularFont.draw(batch, "Tên: " + enemyName, x + 120, y + height - 50);
         regularFont.draw(batch, "HP: " + (int) enemyHealth + "/" + (int) enemyMaxHealth, x + 120, y + height - 75);
         regularFont.draw(batch, "Base Attack: " + enemy.getAttackPower(), x + 120, y + height - 100);
+        regularFont.draw(batch, "Base Defend: " + enemy.getDefensePower(), x + 120, y + height - 120);
 
         // Health bar
         float healthPercentage = enemyHealth / enemyMaxHealth;
@@ -605,12 +611,17 @@ public class GameplayController {
 
         //draw description
         String description = "Mô tả:\n" + this.enemy.getEnemyDescription();
-        drawWrappedText(batch, regularFont, description, 830, y + height - 30, 400);
+        drawWrappedBlackText(batch, regularFont, description, 830, y + height - 30, 400);
 
     }
 
     private void drawWrappedText(SpriteBatch batch, BitmapFont font, String text, float x, float y, float width) {
         layout.setText(font, text, Color.WHITE, width, 1, true);
+        font.draw(batch, layout, x, y);
+    }
+
+    private void drawWrappedBlackText(SpriteBatch batch, BitmapFont font, String text, float x, float y, float width) {
+        layout.setText(font, text, Color.BLACK, width, 1, true);
         font.draw(batch, layout, x, y);
     }
 
@@ -711,13 +722,14 @@ public class GameplayController {
     private void drawPlayerStatusColumn(SpriteBatch batch, float x, float y, float width, float height) {
 //        batch.setColor(0.2f, 0.4f, 0.2f, 0.9f);
 
-        Texture bgTexture = getTexture("ui/enemy_card.png");
+        Texture bgTexture = getTexture("ui/card_frame_vintage.png");
         if (bgTexture != null) {
             batch.setColor(Color.WHITE);
             batch.draw(bgTexture, x, y, width, height);
         }
 
-        drawCenteredText(batch, titleFont, playerName, x + width / 2, y + height - 40, Color.BLACK);
+        drawCenteredText(batch, titleFont, playerName, x + width / 2, y + height - 205, Color.BLACK);
+        drawCenteredText(batch, titleFont, String.valueOf(currentLevel), x + width / 2, y + 32, Color.BLACK);
 
         Texture playerTexture = getTexture("characters/player.png");
         if (playerTexture != null) {
@@ -727,15 +739,14 @@ public class GameplayController {
 
         regularFont.setColor(Color.BLACK);
 //        regularFont.draw(batch, "Tên: " + playerName, x + 15, y + height - 180);
-        regularFont.draw(batch, "HP: " + (int) playerHealth + "/" + (int) playerMaxHealth, x + 50, y + height - 375);
-        regularFont.draw(batch, "MP: " + (int) playerMana + "/" + (int) playerMaxMana, x + 170, y + height - 375);
+        regularFont.draw(batch, "" + (int) playerHealth, x + 36, y + height - 165);
+        regularFont.draw(batch, "" + (int) playerMana, x + 227, y + height - 165);
+        regularFont.draw(batch, "" + (int) wordDamageMultiplier, x + 39, y + height - 84);
+        regularFont.draw(batch, "" + (int) gameController.getCharacter().getDefend(), x + 234, y + height - 84);
 
         // Health and mana bars
-        drawHealthBar(batch, playerHealth, playerMaxHealth, x + 30, y + height - 245, width - 70, 12);
-        drawManaBar(batch, playerMana, playerMaxMana, x + 30, y + height - 265, width - 70, 12);
-
-        regularFont.draw(batch, "ATK: " + (int) wordDamageMultiplier, x + 55, y + height - 343);
-        regularFont.draw(batch, "DEF: " + (int) gameController.getCharacter().getDefend(), x + 177, y + height - 343);
+        drawHealthBar(batch, playerHealth, playerMaxHealth, x + 30, y + height - 305, width - 80, 12);
+        drawManaBar(batch, playerMana, playerMaxMana, x + 30, y + height - 335, width - 80, 12);
 
 //        regularFont.setColor(Color.GRAY);
 //        regularFont.draw(batch, "ATK sẽ được cộng vào tổng điểm!", x + 15, y + height - 345);
@@ -760,13 +771,13 @@ public class GameplayController {
     private void drawItemColumn(SpriteBatch batch, float x, float y, float width, float height) {
         batch.setColor(0.3f, 0.2f, 0.4f, 0.9f);
 
-        Texture bgTexture = getTexture("ui/item_bg_2.png");
+        Texture bgTexture = getTexture("ui/item_bg.png");
         if (bgTexture != null) {
             batch.setColor(Color.WHITE);
-            batch.draw(bgTexture, x-15, y, width+15, height);
+            batch.draw(bgTexture, x - 15, y, width + 25f, height);
         }
 
-        drawCenteredText(batch, regularFont, "🎒 ITEM", x + width / 2, y + height - 15, Color.MAGENTA);
+        drawCenteredText(batch, regularFont, "🎒 ITEM", x + width / 2, y + height - 25, Color.BLACK);
 
         itemRectMap.clear();
         Map<String, Integer> characterItems = gameController.getCharacter().getBuffItems();
@@ -800,7 +811,7 @@ public class GameplayController {
                 batch.draw(itemIcon, x + 5, itemY - 20, 20, 20);
             }
 
-            regularFont.setColor(isHovered ? Color.YELLOW : Color.WHITE);
+            regularFont.setColor(isHovered ? Color.YELLOW : Color.BLACK);
             regularFont.draw(batch, item.getItemName(), x + 30, itemY);
             regularFont.draw(batch, "x" + entry.getValue(), x + width - 30, itemY);
 
@@ -812,6 +823,14 @@ public class GameplayController {
     private void drawLetterGridColumn(SpriteBatch batch, float x, float y, float width, float height) {
         batch.setColor(0.25f, 0.25f, 0.35f, 0.9f);
         batch.draw(whiteTexture, x, y, width, height);
+
+
+        Texture bgTexture = getTexture("ui/card_deck.png");
+        if (bgTexture != null) {
+            batch.setColor(Color.WHITE);
+            batch.draw(bgTexture, x, y, width, height);
+        }
+
 
         String currentWord = letterGrid.getCurrentWord();
         drawCurrentWordCells(batch, currentWord, x, y + height - 50, width);
@@ -997,7 +1016,7 @@ public class GameplayController {
                     damage = 0;
                     addCombatLog("Lord " + enemyName + " chống chọi được đòn tấn công yếu!");
                 } else {
-                    damage = Math.min(enemyHealth, damage);
+                    damage = Math.min(enemyHealth, damage -(enemy.getDefensePower() * 0.7f));
                     enemyHealth -= damage;
                     addCombatLog("Từ '" + word + "' gây " + (int) damage + " sát thương!");
                 }

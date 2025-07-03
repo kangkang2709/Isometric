@@ -7,8 +7,11 @@ public class Enemy {
     private String texturePath;
     private float health;
     private int attackPower;
-    private int rewardID; // ID of the reward given upon defeat
+    private int defensePower;
+    private int rewardID;
     private int x,y;
+
+
     public Enemy() {
     }
 
@@ -20,6 +23,14 @@ public class Enemy {
         this.health = health;
         this.attackPower = attackPower;
         this.rewardID = rewardID;
+    }
+
+    public int getDefensePower() {
+        return defensePower;
+    }
+
+    public void setDefensePower(int defensePower) {
+        this.defensePower = defensePower;
     }
 
     public int getX() {
