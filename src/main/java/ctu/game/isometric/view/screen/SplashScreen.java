@@ -9,17 +9,17 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import ctu.game.isometric.IsometricGame;
 import ctu.game.isometric.controller.GameController;
 
+import static ctu.game.isometric.IsometricGame.getGameController;
+
 public class SplashScreen implements Screen {
     private final IsometricGame game;
     private SpriteBatch batch;
     private Texture splashTexture;
     private float timer = 0;
     private final float SPLASH_DURATION = 1.0f; // 1 second duration
-    private GameController gameController;
 
-    public SplashScreen(IsometricGame game, GameController gameController) {
+    public SplashScreen(IsometricGame game) {
         this.game = game;
-        this.gameController = gameController;
         batch = new SpriteBatch();
         splashTexture = new Texture(Gdx.files.internal("backgrounds/main_menu_bg.png")); // Add a splash.png to your assets folder
     }
@@ -42,7 +42,7 @@ public class SplashScreen implements Screen {
 
         // After 1 second, switch to game screen
         if (timer >= SPLASH_DURATION) {
-            GameScreen gameScreen = new GameScreen(game, gameController);
+            GameScreen gameScreen = new GameScreen(game,getGameController());
             game.setGameScreen(gameScreen);
             game.setScreen(gameScreen);
             dispose();

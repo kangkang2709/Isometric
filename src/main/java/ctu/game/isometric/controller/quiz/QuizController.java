@@ -527,6 +527,7 @@ public class QuizController {
         gameController.setState(GameState.EXPLORING);
 
         boolean quizCompleted = this.totalScore > 0;
+
         if (quizCompletionListener != null) {
             quizCompletionListener.onQuizCompleted(quizCompleted);
         }

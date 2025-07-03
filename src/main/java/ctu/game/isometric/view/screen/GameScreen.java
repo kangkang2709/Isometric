@@ -87,10 +87,10 @@ public class GameScreen implements Screen {
 
             this.dice = new Dice(
                     game.getAssetManager().getAnimationManager(),
-                    620, -160, gameController
+                    718, - 65, gameController
             );
             mapRenderer.setDice(dice);
-
+            gameController.setMapRenderer(mapRenderer);
             gameController.getInputController().setMapRenderer(mapRenderer);
 
             characterRenderer = new CharacterRenderer(
@@ -120,6 +120,7 @@ public class GameScreen implements Screen {
             gameController.initializeNPCs(mapRenderer);
             gameController.getBountyBoardController().reset();
 
+            mapRenderer.setDialogController(gameController.getDialogController());
             mapRenderer.loadTextures();
             System.out.println("MapRenderer initialized with textures loaded.");
             gameController.setCreated(false);
@@ -280,7 +281,6 @@ public class GameScreen implements Screen {
     @Override
     public void show() {
         camera.update();
-        camera.zoom = 0.8f; // Reset zoom level
         Gdx.input.setInputProcessor(gameController.getInputController());
     }
 

@@ -31,21 +31,7 @@ public class BoardEventManager {
     private int totalEventsPlaced = 0;
 
     // Your specific board path
-    private final int[][] boardPath = {
-            {10, 0}, {11, 0},
-            {11, 1}, {11, 2}, {11, 3}, {11, 4}, {11, 5}, {11, 6}, {11, 7}, {11, 8}, {11, 9},
-            {12, 9}, {13, 9}, {14, 9}, {15, 9}, {16, 9}, {17, 9}, {18, 9}, {19, 9}, {20, 9},
-            {20, 10}, {20, 11},
-            {19, 11}, {18, 11}, {17, 11}, {16, 11}, {15, 11}, {14, 11}, {13, 11}, {12, 11}, {11, 11},
-            {11, 12}, {11, 13}, {11, 14}, {11, 15}, {11, 16}, {11, 17}, {11, 18}, {11, 19}, {11, 20},
-            {10, 20}, {9, 20},
-            {9, 19}, {9, 18}, {9, 17}, {9, 16}, {9, 15}, {9, 14}, {9, 13}, {9, 12}, {9, 11},
-            {8, 11}, {7, 11}, {6, 11}, {5, 11}, {4, 11}, {3, 11}, {2, 11}, {1, 11}, {0, 11},
-            {0, 10}, {0, 9},
-            {1, 9}, {2, 9}, {3, 9}, {4, 9}, {5, 9}, {6, 9}, {7, 9}, {8, 9}, {9, 9},
-            {9, 8}, {9, 7}, {9, 6}, {9, 5}, {9, 4}, {9, 3}, {9, 2}, {9, 1}, {9, 0}
-    };
-
+    private int[][] boardPath;
     // Set of valid walkable positions for quick lookup
     private Set<String> walkablePositions = new HashSet<>();
 
@@ -65,9 +51,13 @@ public class BoardEventManager {
         try {
             this.gameController = gameController;
 
+            this.map = gameController.getMap();
+            if (this.map == null) {
+                throw new IllegalStateException("Map 'board' not found");
+            }
+
             // Initialize walkable positions from your board path
             initializeWalkablePositions();
-
             // Null safety checks
             if (gameController == null) {
                 throw new IllegalStateException("GameController cannot be null");
@@ -76,11 +66,6 @@ public class BoardEventManager {
             this.eventManager = gameController.getEventManagerMap().get("board");
             if (this.eventManager == null) {
                 throw new IllegalStateException("Event manager for 'board' not found");
-            }
-
-            this.map = gameController.getMapList().get("board");
-            if (this.map == null) {
-                throw new IllegalStateException("Map 'board' not found");
             }
 
 
@@ -102,11 +87,14 @@ public class BoardEventManager {
     }
 
     private void initializeWalkablePositions() {
-        walkablePositions.clear();
-        for (int[] pos : boardPath) {
-            walkablePositions.add(pos[0] + "_" + pos[1]);
+        boolean[][] walkableCache = map.getWalkableCache();
+        for (int y = 0; y < walkableCache.length; y++) {
+            for (int x = 0; x < walkableCache[y].length; x++) {
+                if (walkableCache[y][x]) {
+                    walkablePositions.add(x + "_" + y);
+                }
+            }
         }
-        System.out.println("Initialized " + walkablePositions.size() + " walkable positions");
     }
 
     private void initializeSafeDefaults() {

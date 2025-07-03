@@ -1,6 +1,7 @@
 package ctu.game.isometric.model.world;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.maps.tiled.TiledMap;
@@ -11,10 +12,7 @@ import com.badlogic.gdx.math.Vector2;
 import ctu.game.isometric.model.entity.Enemy;
 import ctu.game.isometric.model.puzzle.PressurePlatePuzzle;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 public class IsometricMap {
     private TiledMap tiledMap;
@@ -23,9 +21,9 @@ public class IsometricMap {
     private int mapWidth;
     private int mapHeight;
     private TiledMapTileLayer baseLayer;
+    private TiledMapTileLayer terrianLayer;
     private boolean[][] walkableCache;
     private int[][] mapData;
-
     private String mapName; // Default map name
 
     // Chunking system
@@ -37,6 +35,8 @@ public class IsometricMap {
     int startX = 0;
     int startY = 0;
 
+    int endX = 0;
+    int endY = 0;
 
     public IsometricMap(String tmxFilePath) {
         // Load the TMX file
@@ -53,8 +53,10 @@ public class IsometricMap {
 
         switch (this.mapName) {
             case "board":
-                this.startX = 10;
+                this.startX = 0;
                 this.startY = 0;
+                this.endX = 15;
+                this.endY = 15;
                 break;
             case "main":
                 this.startX = 12;
@@ -75,7 +77,7 @@ public class IsometricMap {
 
         // Assume the first layer is the base layer
         baseLayer = (TiledMapTileLayer) tiledMap.getLayers().get("ground_layer");
-
+        terrianLayer = (TiledMapTileLayer) tiledMap.getLayers().get("terrain_layer");
         // Initialize data structures
         initializeMapData();
         initializeWalkableCache();
@@ -88,6 +90,25 @@ public class IsometricMap {
         puzzle = new PressurePlatePuzzle("puzzle1", this, 3);
 
         loadPlate();
+    }
+
+    public TiledMapTileLayer getTerrianLayer() {
+        return terrianLayer;
+    }
+
+    public void setTileId(int x, int y, int tileId) {
+        if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight) {
+            throw new IndexOutOfBoundsException("Coordinates out of bounds: " + x + ", " + y);
+        }
+
+        TiledMapTileLayer.Cell cell = baseLayer.getCell(x, y);
+        if (cell == null) {
+            cell = new TiledMapTileLayer.Cell();
+            baseLayer.setCell(x, y, cell);
+        }
+        TiledMapTile tile = tiledMap.getTileSets().getTile(tileId);
+        cell.setTile(tile);
+
     }
 
     public boolean[][] getWalkableCache() {

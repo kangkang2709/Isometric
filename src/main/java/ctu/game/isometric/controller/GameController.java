@@ -190,17 +190,10 @@ public class GameController {
             transitionRenderer.startLoadingScreen(() -> {
                 this.map = newMap;
                 this.character.setGameMap(map);
-                this.game.getGameScreen().getMapRenderer().changeTiledMapRenderer(this.map);
+                this.game.getGameScreen().getMapRenderer().changeTiledMapRenderer(this.map,this.eventManager);
                 this.pathfinder.setMap(newMap);
                 this.eventManager = this.eventManagerMap.get(mapName);
-                this.game.getGameScreen().getMapRenderer().setEventManager(this.eventManager);
-
             });
-
-
-
-
-
             isNewRun = false;
             return newMap;
         } else {
@@ -860,6 +853,7 @@ public class GameController {
             currentEventX = currentEvent.getGridX();
             currentEventY = currentEvent.getGridY();
             properties = currentEvent.getProperties();
+            getMapRenderer().setAcceptingRoll(true);
         } else {
             hasActiveEvent = false;
             properties = null;
@@ -867,6 +861,7 @@ public class GameController {
     }
 
     public void setEndEvent() {
+        currentEventType = null;
         hasActiveEvent = false;
         currentEvent = null;
         properties = null;
@@ -1029,48 +1024,7 @@ public class GameController {
         }
     }
 
-    private void moveToNextEvent() {
-        // Find next event on the board path
-        int currentPathIndex = getDice().getCurrentPathIndex();
-        int[][] boardPath = getDice().getBoardPath();
-        Map<String, MapEvent> events = eventManager.getEvents();
 
-        // Search forward on path for next event
-        for (int i = 1; i < boardPath.length; i++) {
-            int checkIndex = (currentPathIndex + i) % boardPath.length;
-            int[] position = boardPath[checkIndex];
-
-            // Check if this position has an event
-            for (MapEvent event : events.values()) {
-                if (event.getGridX() == position[0] &&
-                        event.getGridY() == position[1] &&
-                        !event.isCompleted()) {
-
-                    getDialogController().showSimpleMessage("Moving to next event!");
-                    Timer.schedule(new Timer.Task() {
-                        @Override
-                        public void run() {
-                            moveCharacterAlongPath(position[0], position[1]);
-                            getDice().setCurrentPathIndex(checkIndex);
-                        }
-                    }, 1.5f);
-                    return;
-                }
-            }
-        }
-
-        // If no event found, move forward 3 steps
-        getDialogController().showSimpleMessage("No events found ahead. Moving 3 steps forward.");
-        Timer.schedule(new Timer.Task() {
-            @Override
-            public void run() {
-                int newIndex = (currentPathIndex + 3) % boardPath.length;
-                int[] position = boardPath[newIndex];
-                moveCharacterAlongPath(position[0], position[1]);
-                getDice().setCurrentPathIndex(newIndex);
-            }
-        }, 1.5f);
-    }
 
 
     boolean isNewRun = false;

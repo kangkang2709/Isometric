@@ -21,6 +21,7 @@ public class DialogController {
     private String currentSceneId;
     private int currentDialogIndex = 0;
     private Runnable onDialogFinishedAction;
+    private Runnable onCanncelFinishedAction;
     // Flag to track if we're showing choices or dialogues
     private boolean showingChoices = false;
 
@@ -248,6 +249,181 @@ public class DialogController {
         startDialog("system_messages", "choice_dialog");
     }
 
+    public void showMessageWithChoices(String message, String actionChoiceText, String cancelChoiceText, Runnable onActionCompleted) {
+        // Create a temporary dialog with the message
+        Dialog tempDialog = new Dialog();
+        tempDialog.setText(message);
+
+        // Find or create the "system_messages" arc
+        Arc arc = findArc("system_messages");
+        if (arc == null) {
+            arc = new Arc();
+            arc.setId("system_messages");
+            if (storyData.getArcs() == null) {
+                storyData.setArcs(new ArrayList<>());
+            }
+            storyData.getArcs().add(arc);
+        }
+
+
+        Scene scene1 = findScene(arc, "scene_not_enough_item");
+        if (scene1 == null) {
+            scene1 = new Scene();
+            scene1.setId("scene_not_enough_item");
+            if (arc.getScenes() == null) {
+                arc.setScenes(new ArrayList<>());
+            }
+            arc.getScenes().add(scene1);
+        }
+
+        Scene scene2 = findScene(arc, "scene_end");
+        if (scene2 == null) {
+            scene2 = new Scene();
+            scene2.setId("scene_end");
+            if (arc.getScenes() == null) {
+                arc.setScenes(new ArrayList<>());
+            }
+            arc.getScenes().add(scene2);
+        }
+
+        // Find or create the "choice_dialog" scene
+        Scene scene = findScene(arc, "choice_dialog");
+        if (scene == null) {
+            scene = new Scene();
+            scene.setId("choice_dialog");
+            if (arc.getScenes() == null) {
+                arc.setScenes(new ArrayList<>());
+            }
+            arc.getScenes().add(scene);
+        }
+
+        // Update dialog
+        List<Dialog> dialogues = new ArrayList<>();
+        dialogues.add(tempDialog);
+        scene.setDialogues(dialogues);
+
+
+        Dialog tempDialog2 = new Dialog();
+        tempDialog2.setText("See you next time!");
+        List<Dialog> dialogues_end = new ArrayList<>();
+        dialogues_end.add(tempDialog2);
+        scene2.setDialogues(dialogues_end);
+
+
+        // Create the two choices
+        List<Choice> choices = new ArrayList<>();
+
+        // Choice 1: Action with required item
+        Choice actionChoice = new Choice();
+        actionChoice.setText(actionChoiceText);
+        actionChoice.setRequired_item(null); // No required item for this choice
+        actionChoice.setNext_scene("scene_end");
+        choices.add(actionChoice);
+
+        // Choice 2: Cancel option
+        Choice cancelChoice = new Choice();
+        cancelChoice.setText(cancelChoiceText);
+        cancelChoice.setNext_scene("scene_end"); // This will make performAction false
+        choices.add(cancelChoice);
+
+        // Set the choices for the scene
+        scene.setChoices(choices);
+
+        // Set action to perform when dialog is finished (only runs if the required item choice is selected)
+        setOnDialogFinishedAction(onActionCompleted);
+
+        // Start the dialog
+        startDialog("system_messages", "choice_dialog");
+    }
+
+    public void showMessageWithChoices(String message, String actionChoiceText, String cancelChoiceText, Runnable onActionCompleted, Runnable onCancelCompleted) {
+        // Create a temporary dialog with the message
+        Dialog tempDialog = new Dialog();
+        tempDialog.setText(message);
+
+        // Find or create the "system_messages" arc
+        Arc arc = findArc("system_messages");
+        if (arc == null) {
+            arc = new Arc();
+            arc.setId("system_messages");
+            if (storyData.getArcs() == null) {
+                storyData.setArcs(new ArrayList<>());
+            }
+            storyData.getArcs().add(arc);
+        }
+
+
+        Scene scene1 = findScene(arc, "scene_not_enough_item");
+        if (scene1 == null) {
+            scene1 = new Scene();
+            scene1.setId("scene_not_enough_item");
+            if (arc.getScenes() == null) {
+                arc.setScenes(new ArrayList<>());
+            }
+            arc.getScenes().add(scene1);
+        }
+
+        Scene scene2 = findScene(arc, "scene_end");
+        if (scene2 == null) {
+            scene2 = new Scene();
+            scene2.setId("scene_end");
+            if (arc.getScenes() == null) {
+                arc.setScenes(new ArrayList<>());
+            }
+            arc.getScenes().add(scene2);
+        }
+
+        // Find or create the "choice_dialog" scene
+        Scene scene = findScene(arc, "choice_dialog");
+        if (scene == null) {
+            scene = new Scene();
+            scene.setId("choice_dialog");
+            if (arc.getScenes() == null) {
+                arc.setScenes(new ArrayList<>());
+            }
+            arc.getScenes().add(scene);
+        }
+
+        // Update dialog
+        List<Dialog> dialogues = new ArrayList<>();
+        dialogues.add(tempDialog);
+        scene.setDialogues(dialogues);
+
+
+        Dialog tempDialog2 = new Dialog();
+        tempDialog2.setText("See you next time!");
+        List<Dialog> dialogues_end = new ArrayList<>();
+        dialogues_end.add(tempDialog2);
+        scene2.setDialogues(dialogues_end);
+
+
+        // Create the two choices
+        List<Choice> choices = new ArrayList<>();
+
+        // Choice 1: Action with required item
+        Choice actionChoice = new Choice();
+        actionChoice.setText(actionChoiceText);
+        actionChoice.setRequired_item(null); // No required item for this choice
+        actionChoice.setNext_scene("scene_end");
+        choices.add(actionChoice);
+
+        // Choice 2: Cancel option
+        Choice cancelChoice = new Choice();
+        cancelChoice.setText(cancelChoiceText);
+        cancelChoice.setNext_scene("scene_end"); // This will make performAction false
+        choices.add(cancelChoice);
+
+        // Set the choices for the scene
+        scene.setChoices(choices);
+
+        // Set action to perform when dialog is finished (only runs if the required item choice is selected)
+        setOnDialogFinishedAction(onActionCompleted);
+        setOnCanncelFinishedAction(onCancelCompleted);
+
+        // Start the dialog
+        startDialog("system_messages", "choice_dialog");
+    }
+
     // After
     public void selectChoice(int index) {
         if (!dialogActive || !showingChoices || currentChoices.isEmpty()) {
@@ -284,6 +460,22 @@ public class DialogController {
                     // If player doesn't have the required item, redirect to scene_not_enough_item
                     startDialog(currentArcId, "scene_not_enough_item");
                 }
+            } else if (choice.getText().equals("YES")) {
+                performAction = true;
+                isCancelAction = false;
+                if (choice.getNext_scene() != null) {
+                    startDialog(currentArcId, choice.getNext_scene());
+                } else {
+                    endDialog();
+                }
+            } else if (choice.getText().equals("NO")) {
+                performAction = false;
+                isCancelAction= true;
+                if (choice.getNext_scene() != null) {
+                    startDialog(currentArcId, choice.getNext_scene());
+                } else {
+                    endDialog();
+                }
             } else {
                 if (itemName != null && !itemName.isEmpty()) {
                     Items item = ItemLoader.getItemByName(itemName);
@@ -302,6 +494,7 @@ public class DialogController {
                 if (choice.getNext_scene() != null) {
                     if (choice.getNext_scene().equals("scene_end")) {
                         performAction = false;
+                        isCancelAction= true;
                     }
                     startDialog(currentArcId, choice.getNext_scene());
                 } else {
@@ -376,6 +569,7 @@ public class DialogController {
         return showingChoices && !currentChoices.isEmpty();
     }
 
+    private boolean isCancelAction = false;
 
     public void endDialog() {
         dialogActive = false;
@@ -390,11 +584,25 @@ public class DialogController {
 
         // Execute the callback if it exists and performAction is true
         if (onDialogFinishedAction != null && performAction == true) {
+            onCanncelFinishedAction = null;
             onDialogFinishedAction.run();
             onDialogFinishedAction = null;
             performAction = false;
+            isCancelAction = false; // Reset cancel action flag
+        }
+        if (onDialogFinishedAction != null && isCancelAction == true) {
+            onDialogFinishedAction = null;
+            onCanncelFinishedAction.run();
+            onCanncelFinishedAction = null;
+            performAction = false;
+            isCancelAction = false;
+
         }
 
+    }
+
+    public void setPerformAction(boolean performAction) {
+        this.performAction = performAction;
     }
 
     public String getCurrentSceneId() {
@@ -415,5 +623,13 @@ public class DialogController {
 
     public void setOnDialogFinishedAction(Runnable action) {
         this.onDialogFinishedAction = action;
+    }
+
+    public Runnable getOnCanncelFinishedAction() {
+        return onCanncelFinishedAction;
+    }
+
+    public void setOnCanncelFinishedAction(Runnable onCanncelFinishedAction) {
+        this.onCanncelFinishedAction = onCanncelFinishedAction;
     }
 }

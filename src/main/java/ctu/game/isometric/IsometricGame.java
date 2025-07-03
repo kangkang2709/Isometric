@@ -10,7 +10,7 @@ import ctu.game.isometric.view.screen.*;
 
 public class IsometricGame extends Game {
     private AssetManager assetManager;
-    private GameController gameController;
+    private static GameController gameController;
     private GameScreen gameScreen;
 
     private SplashScreen splashScreen;
@@ -26,7 +26,7 @@ public class IsometricGame extends Game {
 
 
         // Initialize screens
-        splashScreen = new SplashScreen(this, gameController);
+        splashScreen = new SplashScreen(this);
         gameScreen = new GameScreen(this, gameController);
 //        gameOverScreen = new EndScreen(() -> {
 //            changeScreen("GAME");
@@ -74,6 +74,9 @@ public class IsometricGame extends Game {
 
     }
 
+    public static GameController getGameController() {
+        return gameController;
+    }
     public GameScreen getGameScreen() {
         return gameScreen;
     }

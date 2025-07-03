@@ -21,7 +21,9 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.maps.tiled.renderers.IsometricTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Timer;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import ctu.game.isometric.controller.DialogController;
 import ctu.game.isometric.controller.EventManager;
 import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.game.Dice;
@@ -34,6 +36,8 @@ import ctu.game.isometric.util.AssetManager;
 import ctu.game.isometric.util.ItemLoader;
 
 import java.util.*;
+
+import static ctu.game.isometric.IsometricGame.getGameController;
 
 public class MapRenderer {
     private IsometricMap map;
@@ -56,6 +60,7 @@ public class MapRenderer {
     private EventManager eventManager;
     private WeatherRenderer weatherRenderer;
 
+    private DialogController dialogController;
 
     // In MapRenderer.java - modify constructor to take an existing camera
     public MapRenderer(IsometricMap map, AssetManager assetManager, EventManager eventManager, Character character, OrthographicCamera camera) {
@@ -108,7 +113,7 @@ public class MapRenderer {
         smoothSlowMotion(true);
         setWeather("snow", 0.4f); // Set default weather to foggy with medium intensity
 
-
+        updateRollTargetValue();
     }
 
 
@@ -129,17 +134,85 @@ public class MapRenderer {
      */
     boolean isRolling = false;
     int currentFaceValue = 1; // Store the current face value
-    int prviousFaceValue = 1; // Store the previous face value
+    int previousFaceValue = 1; // Store the previous face value
 
     public int rollingDice() {
-        prviousFaceValue = diceRenderer.getCurrentFaceValue();
+        previousFaceValue = diceRenderer.getCurrentFaceValue();
         currentFaceValue = diceRenderer.rollDice();
         return currentFaceValue;
     }
 
 
+    boolean isAcceptingRoll = false;
+
+    public void rollingDice(int targetValue) {
+        previousFaceValue = diceRenderer.getCurrentFaceValue();
+
+        diceRenderer.setCompletionListener((success -> {
+            currentFaceValue = diceRenderer.getCurrentFaceValue();
+
+            if (success) {
+                dialogController.showMessageWithChoices(
+                        "You want to skip this event", "YES", "No",
+                        () -> {
+                            isAcceptingRoll = false;
+                            getGameController().setEndEvent();
+                        }, () -> {
+                            isAcceptingRoll = false;
+                        }
+                );
+            } else {
+                Timer.schedule(new Timer.Task() {
+                    @Override
+                    public void run() {
+                        if (diceRenderer.getBonusCount() > 0) {
+                            dialogController.showMessageWithChoices(
+                                    "You rolled a " + currentFaceValue + ", which is not enough to succeed.\n You can retry with bonus roll!!!", "YES", "No",
+                                    () -> {
+                                        isAcceptingRoll = true;
+                                        diceRenderer.activeBonusRoll();
+                                    },
+                                    () -> {
+                                        isAcceptingRoll = false;
+                                    }
+                            );
+                        } else {
+                            dialogController.showSimpleMessage("You rolled a " + currentFaceValue + ", which is not enough to succeed.\n You can not retry!!!");
+                            isAcceptingRoll = false;
+                        }
+                    }
+                }, 1.0f);
+
+            }
+        }));
+
+        diceRenderer.rollDice(targetValue);
+    }
+
+
+    public void setAcceptingRoll(boolean acceptingRoll) {
+        isAcceptingRoll = acceptingRoll;
+    }
+
     public void renderDice(SpriteBatch batch) {
-        diceRenderer.render(batch);
+
+        if (isAcceptingRoll) {
+            batch.draw(cardBackgroundTexture,
+                    centerX + 200,
+                    centerY - 150,
+                    200, 300
+
+            );
+
+            font.draw(batch, "- Target -", centerX + 260,
+                    centerY + 75);
+
+            font.draw(batch, String.valueOf(targetValue), centerX + 290,
+                    centerY + 50);
+
+            diceRenderer.render(batch);
+
+        }
     }
 
     public boolean handleRollingClick(int screenX, int screenY) {
@@ -147,20 +220,21 @@ public class MapRenderer {
         camera.unproject(worldCoords);
 
         if (diceRenderer.handleClick(worldCoords.x, worldCoords.y)) {
-            rollingDice();
+            rollingDice(targetValue);
             return true;
         }
         return false;
     }
 
 
-    public void changeTiledMapRenderer(IsometricMap map) {
+    public void changeTiledMapRenderer(IsometricMap map, EventManager eventManager) {
         if (this.tiledMapRenderer != null) {
             this.tiledMapRenderer.dispose();
         }
         this.tiledMapRenderer = new IsometricTiledMapRenderer(map.getTiledMap());
         this.map = map;
-
+        this.eventManager = eventManager;
+        updateRollTargetValue();
     }
 
     public void changeWeather(String type, float intensity) {
@@ -178,10 +252,10 @@ public class MapRenderer {
     Map<String, TextureRegion> textureRegions = new HashMap<>();
 
     public void loadTextures() {
-
+        this.textures.clear();
         this.textures.putAll(assetManager.getTextures());
-
-
+        this.cardTexture = textures.get("enemy_card_large");
+        this.cardBackgroundTexture = textures.get("enemy_card_back");
         Texture inactiveTexture = new Texture(Gdx.files.internal("textures/trap_inactive.png"));
         Texture activeTexture = new Texture(Gdx.files.internal("textures/trap_active.png"));
 
@@ -255,26 +329,37 @@ public class MapRenderer {
         // End batch if currently drawing to use renderer
         boolean batchWasDrawing = batch.isDrawing();
 
+
         if (batchWasDrawing) {
+
             batch.end();
+
         }
 
         // Render tile map
         tiledMapRenderer.setView(camera);
         tiledMapRenderer.render();
+//        tiledMapRenderer.getBatch().begin();
+//        tiledMapRenderer.renderTileLayer(map.getBaseLayer());
+//        tiledMapRenderer.getBatch().end();
+
 
         // Resume batch if it was drawing before
         if (batchWasDrawing) {
             batch.begin();
+
             batch.setProjectionMatrix(camera.combined);
-            renderObjectLayer(batch, "object");
+
             renderPressurePlate(batch);
+//                renderDice(batch);
+//                renderHighlight(batch);
 
-            if (map.getMapName().equals("board")) {
-                renderBoard(batch);
-                renderDice(batch);
-            }
 
+//            tiledMapRenderer.getBatch().begin();
+//            tiledMapRenderer.renderTileLayer(map.getTerrianLayer());
+//            tiledMapRenderer.getBatch().end();
+
+            renderBoard(batch);
 
             weatherRenderer.render(batch);
         }
@@ -290,10 +375,28 @@ public class MapRenderer {
         for (MapEvent event : eventManager.getEvents().values()) {
             float[] isoPos = toIsometric(event.getGridX(), event.getGridY());
             isoPos[1] = isoPos[1] + boardOffsetY; // Adjust Y position for board offset
+            if (event.isOneTime() && event.isCompleted()) continue;
 
-            // Draw highlight ground tile
+            String type = event.getEventType();
 
-            // Skip completed one-time events
+            switch (type) {
+                case "treasure":
+                    drawItemTexture(batch, event.getProperties().get("itemName", String.class), isoPos[0] + 16, isoPos[1] + 8, 32, 32);
+                    break;
+                case "battle":
+                    drawEnemySpinCard(batch, isoPos[0] + 14, isoPos[1] + 12, 30, 40);
+                    break;
+            }
+        }
+    }
+
+
+    public void renderHighlight(SpriteBatch batch) {
+        if (!eventManager.getMapName().equals("board")) return;
+        // Render highlights for events on the board
+        for (MapEvent event : eventManager.getEvents().values()) {
+            float[] isoPos = toIsometric(event.getGridX(), event.getGridY());
+            isoPos[1] = isoPos[1] + boardOffsetY; // Adjust Y position for board offset
             if (event.isOneTime() && event.isCompleted()) continue;
 
             String type = event.getEventType();
@@ -301,7 +404,6 @@ public class MapRenderer {
             switch (type) {
                 case "treasure":
                     drawTexture(batch, "item_hightlight", isoPos[0], isoPos[1], 64, 34);
-                    drawItemTexture(batch, event.getProperties().get("itemName", String.class), isoPos[0] + 16, isoPos[1] + 8, 32, 32);
                     break;
                 case "word_scramble":
                     drawTexture(batch, "item_hightlight", isoPos[0], isoPos[1], 64, 34);
@@ -317,7 +419,6 @@ public class MapRenderer {
                     break;
                 case "battle":
                     drawTexture(batch, "enemy_hightlight", isoPos[0], isoPos[1], 64, 34);
-                    drawEnemySpinCard(batch, isoPos[0] + 14, isoPos[1] + 12, 30, 40);
                     break;
             }
         }
@@ -329,7 +430,6 @@ public class MapRenderer {
     private static final float SLOW_MOTION_FACTOR = 0.2f; // 30% of normal speed
 
     private void drawEnemySpinCard(SpriteBatch batch, float x, float y, float width, float height) {
-        Texture cardTexture = null;
         Texture cardBackTexture = null;
 
         // Get the front texture
@@ -581,8 +681,18 @@ public class MapRenderer {
     }
 
 
-    int centerX = 660;
+    int centerX = 460;
     int centerY = 0;
+
+    Texture cardTexture;
+    Texture cardBackgroundTexture;
+
+    int targetValue = 10;
+
+
+    public void updateRollTargetValue() {
+        this.targetValue = character.getLevel() * 4 + character.getRun();
+    }
 
     private void drawEnemyInfoCard(SpriteBatch batch, MapEvent event) {
         // Get enemy information from event properties
@@ -595,8 +705,6 @@ public class MapRenderer {
         String difficulty = event.getProperties().get("difficulty", String.class);
         if (difficulty == null) difficulty = "Normal";
 
-        // Get card texture
-        Texture cardTexture = textures.get("enemy_card_large");
         if (cardTexture == null) {
             // Fallback to regular enemy card
             cardTexture = textures.get("enemy_card");
@@ -607,7 +715,6 @@ public class MapRenderer {
             float cardWidth = 200;
             float cardHeight = 300;
 
-            ;
 
             // Draw card centered on camera
             batch.draw(
@@ -628,11 +735,17 @@ public class MapRenderer {
                 font.getData().setScale(1.5f);
                 font.setColor(Color.WHITE);
 
+
+//                font.draw()
+
                 // Draw enemy name
                 GlyphLayout nameLayout = new GlyphLayout(font, enemyName);
                 font.draw(batch, enemyName,
                         centerX - nameLayout.width / 2,
                         centerY + cardHeight / 4);
+
+
+                renderDice(batch);
 
                 // Draw difficulty
                 font.getData().setScale(1.2f);
@@ -641,6 +754,7 @@ public class MapRenderer {
                         centerX - diffLayout.width / 2,
                         centerY - cardHeight / 8);
 
+
                 // Restore original font properties
                 font.setColor(originalColor);
                 font.getData().setScale(originalScale);
@@ -648,13 +762,6 @@ public class MapRenderer {
         }
     }
 
-    public float getOffsetX() {
-        return offsetX;
-    }
-
-    public float getOffsetY() {
-        return offsetY;
-    }
 
     public IsometricMap getMap() {
         return map;
@@ -677,13 +784,13 @@ public class MapRenderer {
         }
     }
 
-    public AssetManager getAssetManager() {
-        return assetManager;
+
+    public DialogController getDialogController() {
+        return dialogController;
     }
 
-    public void setAssetManager(AssetManager assetManager) {
-        this.assetManager = assetManager;
+    public void setDialogController(DialogController dialogController) {
+        this.dialogController = dialogController;
     }
-
 
 }

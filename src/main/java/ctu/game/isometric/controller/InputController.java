@@ -397,7 +397,8 @@ public class InputController extends InputAdapter {
 
             }
             case Keys.F8 -> {
-                gameController.getGame().changeScreen("DUNGEON");
+//                gameController.getGame().changeScreen("DUNGEON");
+                gameController.changeMap("main");
             }
             case Keys.F5 -> {
                 gameController.getQuestTrackerView().toggleVisibility();
