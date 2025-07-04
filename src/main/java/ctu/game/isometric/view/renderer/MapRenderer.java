@@ -156,7 +156,7 @@ public class MapRenderer {
 
     boolean isAcceptingRoll = false;
 
-    public  void setShouldRenderCharacter(boolean shouldRenderCharacter) {
+    public void setShouldRenderCharacter(boolean shouldRenderCharacter) {
         this.isAcceptingRoll = shouldRenderCharacter;
         getGameController().setRenderCharacter(true);
     }
@@ -376,6 +376,7 @@ public class MapRenderer {
 
             batch.setProjectionMatrix(camera.combined);
 
+            renderObjectLayer(batch, "object");
             renderPressurePlate(batch);
 //                renderDice(batch);
 //                renderHighlight(batch);
@@ -385,7 +386,9 @@ public class MapRenderer {
 //            tiledMapRenderer.renderTileLayer(map.getTerrianLayer());
 //            tiledMapRenderer.getBatch().end();
 
-            renderBoard(batch);
+            if (map.getMapName().equals("board"))
+                renderBoard(batch);
+
 
             weatherRenderer.render(batch);
         }
@@ -507,7 +510,7 @@ public class MapRenderer {
     private void drawMiniGameSpinCard(SpriteBatch batch, float x, float y, float width, float height) {
 
         // Get the front texture
-            cardBlockTexture = textures.get("block_card");
+        cardBlockTexture = textures.get("block_card");
 
 
         // Get the back texture (optional)
@@ -593,7 +596,6 @@ public class MapRenderer {
             }
         }
     }
-
 
 
     public void update(float delta) {
@@ -761,8 +763,7 @@ public class MapRenderer {
 
         if (!isAcceptingRoll) {
             centerX = 640;
-        }
-        else centerX = 460;
+        } else centerX = 460;
 
         String enemyName = event.getProperties().get("enemyName", String.class);
         if (enemyName == null) enemyName = "Unknown Enemy";
@@ -787,11 +788,12 @@ public class MapRenderer {
             batch.draw(cardTexture, cardX, cardY, cardWidth, cardHeight);
 
             // Draw enemy portrait
-            batch.draw(textures.get(enemyName),
-                    cardX + 70, // inside green area horizontally
-                    cardY + cardHeight - 230, // inside green area vertically
-                    200, 200
-            );
+            if (textures.containsKey(enemyName))
+                batch.draw(textures.get(enemyName),
+                        cardX + 70, // inside green area horizontally
+                        cardY + cardHeight - 230, // inside green area vertically
+                        200, 200
+                );
 
 
             // HP (top-left red tag)

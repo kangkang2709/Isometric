@@ -184,7 +184,7 @@ public class GameController {
         IsometricMap newMap = this.mapList.get(mapName);
         if (newMap != null) {
 
-
+            System.out.println("Changing map to: " + mapName);
             transitionRenderer.startLoadingScreen(() -> {
                 this.map = newMap;
                 this.character.setGameMap(map);
@@ -251,16 +251,16 @@ public class GameController {
                     break;
                 case "Patche Trader":
                     dialogController.showMessageWithChoices("Chúng tôi có vài ủy thác. Bạn có muốn tiếp nhận không?", "CCCD",
-                            "Yes [Cần CCCD]", "No", () -> setState(GameState.BOUNTY_BOARD));
+                            "Yes [Cần CCCD]", "Nope", () -> setState(GameState.BOUNTY_BOARD));
                     ;
                     break;
                 case "Merchant":
                     dialogController.showMessageWithChoices("I have something to trade. What do you want", "CCCD",
-                            "Yes [Cần CCCD]", "No", () -> merchantUI.show());
+                            "Yes [Cần CCCD]", "Nope", () -> merchantUI.show());
                     break;
                 case "Waitess Hera":
                     dialogController.showMessageWithChoices("Do want to heal", "CCCD",
-                            "Yes [Cần CCCD]", "No", () -> getCharacter().recovery());
+                            "Yes [Cần CCCD]", "Nope", () -> getCharacter().recovery());
                     break;
                 case "Teleporter":
                     dialogController.startDialog("teleporting_background", "scene_intro");
@@ -854,13 +854,14 @@ public class GameController {
 
     private void checkPositionEvents(float x, float y) {
         currentEvent = eventManager.checkPositionEvents(x, y);
-         isRenderCharacter = true;
+        isRenderCharacter = true;
         if (currentEvent != null) {
             hasActiveEvent = true;
             currentEventType = currentEvent.getEventType();
             if (currentEventType.equals("battle")) {
                 isRenderCharacter = false; // Don't render character during battle events
             }
+            currentEventId = currentEvent.getId();
             currentEventX = currentEvent.getGridX();
             currentEventY = currentEvent.getGridY();
             properties = currentEvent.getProperties();
@@ -877,14 +878,18 @@ public class GameController {
         hasActiveEvent = false;
         currentEvent = null;
         properties = null;
+        currentEventId = null;
     }
 
+    String currentEventId;
+
     public void setCompletedEvent() {
-        eventManager.completeEvent(currentEvent.getId());
+        eventManager.completeEvent(currentEventId);
         currentEventType = null;
         hasActiveEvent = false;
         currentEvent = null;
         properties = null;
+        currentEventId = null;
     }
 
 
@@ -922,7 +927,6 @@ public class GameController {
                         enemyId = (Integer) enemyObj;
                     }
                 }
-
 
 
                 if (eventManager.isEnemyDefeated(enemyId) &&
@@ -980,12 +984,15 @@ public class GameController {
                     if (success) {
                         // Apply random movement effect after successful quiz
                         applyQuizMovementEffect(getCharacter().getScore() - score);
+                        setCompletedEvent();
+
                     } else {
                         applyQuizMovementEffect(getCharacter().getScore() - score);
+                        setCompletedEvent();
+
                     }
                 });
 
-                setCompletedEvent();
                 break;
             case "mulquiz":
                 getDialogController().showSimpleMessage("Multi-Choice Quiz mini-game will start soon!");
@@ -1001,11 +1008,14 @@ public class GameController {
                     if (success) {
                         // Apply random movement effect after successful quiz
                         applyQuizMovementEffect(getCharacter().getScore() - score);
+                        setCompletedEvent();
+
                     } else {
                         applyQuizMovementEffect(getCharacter().getScore() - score);
+                        setCompletedEvent();
+
                     }
                 });
-                setCompletedEvent();
                 break;
             case "new_run_event":
                 getCharacter().updateRun();
@@ -1020,11 +1030,14 @@ public class GameController {
                 boardEventManager.getWordScrambleGame().setQuizCompletionListener(success -> {
                     if (success) {
                         applyQuizMovementEffect(getCharacter().getScore() - score);
+                        setCompletedEvent();
+
                     } else {
                         applyQuizMovementEffect(getCharacter().getScore() - score);
+                        setCompletedEvent();
+
                     }
                 });
-                setCompletedEvent();
             case "cutscene":
                 String cutsceneName = properties.get("cutscene", String.class);
                 if (cutsceneName != null) {

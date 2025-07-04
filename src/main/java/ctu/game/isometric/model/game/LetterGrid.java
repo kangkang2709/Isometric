@@ -17,6 +17,14 @@ public class LetterGrid {
     private Random random;
 
 
+    public void clearWord() {
+        currentSelection.clear();
+        for (int y = 0; y < GRID_SIZE; y++) {
+            for (int x = 0; x < GRID_SIZE; x++) {
+                selectedCells[y][x] = false;
+            }
+        }
+    }
     public LetterGrid() {
         grid = new char[GRID_SIZE][GRID_SIZE];
         selectedCells = new boolean[GRID_SIZE][GRID_SIZE];

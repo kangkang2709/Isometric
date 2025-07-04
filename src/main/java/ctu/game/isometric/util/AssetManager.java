@@ -95,6 +95,8 @@ public class AssetManager implements Disposable {
     }
 
 
+
+
     private Texture loadTexture(String name, String path) {
         Texture texture = new Texture(Gdx.files.internal(path));
         textures.put(name, texture);

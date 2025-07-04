@@ -23,7 +23,8 @@ public class Quest {
         AVAILABLE,
         IN_PROGRESS,
         COMPLETED,
-        CLAIMED
+        CLAIMED,
+        LOCKED
     }
 
     public Quest() {

@@ -266,7 +266,15 @@ public class GameplayController {
     public void update(float delta) {
         if (!active) return;
         cardAnimationManager.update(delta);
+        updateCardAnimation(delta);  // Add this line
         if (isCombatMode) updateCombat(delta);
+
+        if (timerAction > 0) {
+            timerAction -= delta;
+            if (timerAction <= 0) {
+                timerAction = 0;
+            }
+        }
     }
 
     private void updateCombat(float delta) {
@@ -357,6 +365,7 @@ public class GameplayController {
 
 
     public boolean handleCombatClick(float x, float screenY) {
+        if (timerAction > 0 || !isPlayerTurn) return false; // Không xử lý click khi đang trong thời gian chờ
         float y = Gdx.graphics.getHeight() - screenY;
 
         if (submitButtonRect != null && submitButtonRect.contains(x, y)) {
@@ -397,7 +406,7 @@ public class GameplayController {
             int newCount = items.get(item.getItemName()) - 1;
             if (newCount <= 0) items.remove(item.getItemName());
             else items.put(item.getItemName(), newCount);
-
+            timerAction = 5f;
             switch (item.getItemName()) {
                 case "Elixir":
                     playerHealing((int) item.getValue(), () -> {
@@ -488,7 +497,9 @@ public class GameplayController {
 
 
     private void checkGridClick(float x, float y) {
+        if (!isPlayerTurn) return;
         if (x < gridX || x >= gridX + gridSize || y < gridY || y >= gridY + gridSize) return;
+
 
         int gridSizeValue = letterGrid.getGridSize();
         int cellX = (int) ((x - gridX) / cellSize);
@@ -579,6 +590,8 @@ public class GameplayController {
         final float SCREEN_WIDTH = viewport.getWorldWidth();
         final float SCREEN_HEIGHT = viewport.getWorldHeight();
 
+        // Removed camera shake completely - camera stays fixed
+
         // Enemy status section (top)
         final float ENEMY_SECTION_HEIGHT = 120;
         final float ENEMY_SECTION_Y = SCREEN_HEIGHT - ENEMY_SECTION_HEIGHT - MARGIN;
@@ -593,20 +606,52 @@ public class GameplayController {
         final float BOTTOM_SECTION_Y = MARGIN;
         final float BOTTOM_SECTION_HEIGHT = LOG_SECTION_Y - 2 * MARGIN;
 
-        // Tính toán lại column widths để cân đối hơn
-        final float PLAYER_COLUMN_WIDTH = 280;  // Tăng từ 250
-        final float ITEM_COLUMN_WIDTH = 220;    // Tăng từ 200
+        final float PLAYER_COLUMN_WIDTH = 280;
+        final float ITEM_COLUMN_WIDTH = 220;
         final float GRID_COLUMN_WIDTH = SCREEN_WIDTH - PLAYER_COLUMN_WIDTH - ITEM_COLUMN_WIDTH - 4 * MARGIN;
 
-        // Column positions - điều chỉnh để không bị overlap
         final float PLAYER_COLUMN_X = MARGIN;
         final float GRID_COLUMN_X = PLAYER_COLUMN_X + PLAYER_COLUMN_WIDTH + MARGIN;
         final float ITEM_COLUMN_X = GRID_COLUMN_X + GRID_COLUMN_WIDTH + MARGIN;
 
-        // Draw three columns với kích thước đã điều chỉnh
-        drawPlayerStatusColumn(batch, PLAYER_COLUMN_X, BOTTOM_SECTION_Y, PLAYER_COLUMN_WIDTH, BOTTOM_SECTION_HEIGHT);
+        // Draw columns
+        if (!isCardAnimating) {
+            drawPlayerStatusColumn(batch, PLAYER_COLUMN_X, BOTTOM_SECTION_Y, PLAYER_COLUMN_WIDTH, BOTTOM_SECTION_HEIGHT);
+        }
         drawLetterGridColumn(batch, GRID_COLUMN_X, BOTTOM_SECTION_Y, GRID_COLUMN_WIDTH, BOTTOM_SECTION_HEIGHT);
         drawItemColumn(batch, ITEM_COLUMN_X, BOTTOM_SECTION_Y, ITEM_COLUMN_WIDTH, BOTTOM_SECTION_HEIGHT);
+
+        // Draw gentle animated card effects
+        if (isCardAnimating) {
+
+            // Main spell card
+            Texture cardTexture = getTexture("ui/card_frame_vintage.png");
+            batch.setColor(cardTintColor);
+            float cardWidth = 200 * cardAnimScale;
+            float cardHeight = 200 * cardAnimScale;
+
+            batch.draw(cardTexture,
+                    cardAnimX, cardAnimY,
+                    cardWidth / 2, cardHeight / 2,
+                    cardWidth, cardHeight,
+                    1, 1, cardAnimRotation,
+                    0, 0, cardTexture.getWidth(), cardTexture.getHeight(),
+                    false, false);
+        }
+    }
+
+    // Helper method for rotated text
+    private void drawRotatedText(SpriteBatch batch, BitmapFont font, String text, float x, float y, float rotation, Color color) {
+        layout.setText(font, text);
+
+        // Save current state
+        batch.end();
+        batch.begin();
+
+        font.setColor(color);
+        font.draw(batch, text,
+                x - layout.width / 2,
+                y + layout.height / 2);
     }
 
     String difficultyText = "";
@@ -878,24 +923,24 @@ public class GameplayController {
             if (meaning != null && !meaning.isEmpty()) {
                 regularFont.setColor(Color.CYAN);
                 if (meaning.length() > 50) {
-                    meaning = meaning.substring(0, 50) + "...";
+                    meaning = meaning.substring(0, 50) + ".......";
                 }
                 regularFont.draw(batch, "Meaning: " + meaning, x + 20, y + height - 30);
             }
         }
-        regularFont.setColor(Color.WHITE);
-        regularFont.draw(batch,
-                "           Cách tính điểm từ vựng:\n"
-                        + "- Mỗi ký tự: +1 điểm\n"
-                        + "- Mỗi Nguyên âm A,I,U,E,O: +2 điểm \n"
-                        + "- Nếu từ dài hơn 5 ký tự: +2 điểm\n"
-                        + "- Ký tự hiếm Z,Q,X,J,K: +2 điểm mỗi ký tự\n"
-                        + "- Nếu từ là danh từ: +1 điểm\n"
-                        + "- Nếu từ là động từ: +2 điểm\n"
-                        + "- Nếu từ là tính từ: +2 điểm\n"
-                        + "- Nếu từ là trạng từ từ: +3 điểm\n"
-                        + "--> Tổng điểm là sát thương\n",
-                gridX + 330, gridY + gridSize - 30);
+//        regularFont.setColor(Color.WHITE);
+//        regularFont.draw(batch,
+//                "           Cách tính điểm từ vựng:\n"
+//                        + "- Mỗi ký tự: +1 điểm\n"
+//                        + "- Mỗi Nguyên âm A,I,U,E,O: +2 điểm \n"
+//                        + "- Nếu từ dài hơn 5 ký tự: +2 điểm\n"
+//                        + "- Ký tự hiếm Z,Q,X,J,K: +2 điểm mỗi ký tự\n"
+//                        + "- Nếu từ là danh từ: +1 điểm\n"
+//                        + "- Nếu từ là động từ: +2 điểm\n"
+//                        + "- Nếu từ là tính từ: +2 điểm\n"
+//                        + "- Nếu từ là trạng từ từ: +3 điểm\n"
+//                        + "--> Tổng điểm là sát thương\n",
+//                gridX + 330, gridY + gridSize - 30);
 
 
         drawLetterGrid(batch, gridX, gridY, gridSize);
@@ -904,7 +949,7 @@ public class GameplayController {
         submitButtonRect = new Rectangle(x + 70, y + 16, 120, 40);
         clearButtonRect = new Rectangle(x + 210, y + 16, 120, 40);
 
-        if (isPlayerTurn && !combatTimeUp) {
+        if (isPlayerTurn && !combatTimeUp && timerAction == 0) {
             drawButton(batch, submitButtonRect, "CAST SPELL");
             drawButton(batch, clearButtonRect, "BỎ CHỌN");
         }
@@ -912,6 +957,7 @@ public class GameplayController {
 
 
     private void drawLetterGrid(SpriteBatch batch, float gridX, float gridY, float gridSize) {
+        if (timerAction > 0) return;
         int gridSizeValue = letterGrid.getGridSize();
         float cellSize = gridSize / gridSizeValue;
         char[][] grid = letterGrid.getGrid();
@@ -952,26 +998,26 @@ public class GameplayController {
             regularFont.setColor(Color.GRAY);
             drawCenteredText(batch, regularFont, "Chọn các chữ cái để tạo từ", columnX + columnWidth / 2, y + 7, Color.GRAY);
             return;
-        }
+        } else {
+            final float CELL_SIZE = 35;
+            final float CELL_SPACING = 5;
+            float totalWidth = currentWord.length() * (CELL_SIZE + CELL_SPACING) - CELL_SPACING;
+            float startX = columnX + (columnWidth - totalWidth) / 2;
 
-        final float CELL_SIZE = 35;
-        final float CELL_SPACING = 5;
-        float totalWidth = currentWord.length() * (CELL_SIZE + CELL_SPACING) - CELL_SPACING;
-        float startX = columnX + (columnWidth - totalWidth) / 2;
+            for (int i = 0; i < currentWord.length(); i++) {
+                char letter = currentWord.charAt(i);
+                float cellX = startX + i * (CELL_SIZE + CELL_SPACING);
 
-        for (int i = 0; i < currentWord.length(); i++) {
-            char letter = currentWord.charAt(i);
-            float cellX = startX + i * (CELL_SIZE + CELL_SPACING);
+                boolean isVowel = VOWELS.indexOf(Character.toUpperCase(letter)) != -1;
+                batch.setColor(Color.WHITE);
+                batch.draw(isVowel ? vowelCellTexture : wordCellTexture, cellX, y, CELL_SIZE, CELL_SIZE);
 
-            boolean isVowel = VOWELS.indexOf(Character.toUpperCase(letter)) != -1;
-            batch.setColor(Color.WHITE);
-            batch.draw(isVowel ? vowelCellTexture : wordCellTexture, cellX, y, CELL_SIZE, CELL_SIZE);
-
-            layout.setText(regularFont, String.valueOf(Character.toUpperCase(letter)));
-            regularFont.setColor(isVowel ? Color.BLUE : Color.BLACK);
-            regularFont.draw(batch, String.valueOf(Character.toUpperCase(letter)),
-                    cellX + (CELL_SIZE - layout.width) / 2,
-                    y + (CELL_SIZE + layout.height) / 2);
+                layout.setText(regularFont, String.valueOf(Character.toUpperCase(letter)));
+                regularFont.setColor(isVowel ? Color.BLUE : Color.BLACK);
+                regularFont.draw(batch, String.valueOf(Character.toUpperCase(letter)),
+                        cellX + (CELL_SIZE - layout.width) / 2,
+                        y + (CELL_SIZE + layout.height) / 2);
+            }
         }
     }
 
@@ -1016,6 +1062,7 @@ public class GameplayController {
             playerHealth = Math.max(0, playerHealth - damage);
         }
         isPlayerTurn = true;
+
         enemyAttack((int) damage, action, (int) heal, () -> {
             checkCombatEnd();
             if (isCombatMode) {
@@ -1027,6 +1074,12 @@ public class GameplayController {
 
 
     }
+
+    // Add these enhanced animation fields to your class
+    // Enhanced animation fields with Yu-Gi-Oh style
+
+
+    float timerAction = 0;
 
     public boolean submitWord() {
         if (!active) return false;
@@ -1054,34 +1107,59 @@ public class GameplayController {
                     damage = 0;
                     addCombatLog("Lord " + enemyName + " chống chọi được đòn tấn công yếu!");
                 } else {
-                    damage = Math.min(enemyHealth, damage - (enemy.getDefensePower() * 0.7f));
-                    enemyHealth -= damage;
+                    damage -= enemy.getDefensePower() * 0.7f;
                     addCombatLog("Từ '" + word + "' gây " + (int) damage + " sát thương!");
                 }
 
                 addCombatLog("+" + points + " điểm!");
 
-                playerAttack(word, 10, () -> {
-                    checkCombatEnd();
-                    if (isCombatMode && enemyHealth > 0) {
-                        isPlayerTurn = false;
-                        addCombatLog("---Đến lượt của " + enemyName + "!---");
+                // Replace the playerAttack call with this:
+                if (isCombatMode && isPlayerTurn) {
+                    letterGrid.clearWord();
+
+                    if (damage > enemyHealth) {
+                        startCardAttackAnimation(word, (int) damage, () -> {
+                            checkCombatEnd();
+                            if (isCombatMode && enemyHealth > 0) {
+                                isPlayerTurn = false;
+                                addCombatLog("---Đến lượt của " + enemyName + "!---");
+
+                            }
+                        });
+                        enemyHealth = Math.max(0, enemyHealth - damage);
+
+                    } else if (damage > 0) {
+                        playerAttack(word, (int) damage, () -> {
+                            checkCombatEnd();
+                            if (isCombatMode && enemyHealth > 0) {
+                                isPlayerTurn = false;
+                                addCombatLog("---Đến lượt của " + enemyName + "!---");
+
+                            }
+                        });
+                        enemyHealth = Math.max(0, enemyHealth - damage);
+                    } else {
+                        checkCombatEnd();
+                        if (isCombatMode && enemyHealth > 0) {
+                            isPlayerTurn = false;
+                            addCombatLog("---Đến lượt của " + enemyName + "!---");
+
+                        }
                     }
-                });
+                }
             }
             achievementManager.updateProgress(Achievement.AchievementType.WORD_COUNT, 1);
-
-            letterGrid.regenerateGrid();
-
+            timerAction = 5f;
             Timer.schedule(new Timer.Task() {
                 @Override
                 public void run() {
                     isDrawingWordMeaning = false;
                 }
-            }, 3.0f);
+            }, 2.4f);
 
             return true;
         } else {
+            timerAction = 5f;
             addCombatLog("Từ '" + word + "' không hợp lệ!");
             gameController.getCharacter().updateWrongWordCount();
             if (isCombatMode && enemyHealth > 0) {
@@ -1092,6 +1170,136 @@ public class GameplayController {
         }
     }
 
+    private static final float MARGIN = 20;
+    private static final float SCREEN_WIDTH = 1280;
+    private static final float SCREEN_HEIGHT = 720;
+    private static final float ENEMY_SECTION_HEIGHT = 120;
+    private boolean isCardAnimating = false;
+    private float cardAnimX, cardAnimY, cardAnimScale, cardAnimRotation;
+    private float cardAnimStartX, cardAnimStartY;
+    private float cardAnimTargetX, cardAnimTargetY;
+    private float cardAnimDuration = 2.0f; // Longer for dramatic Yu-Gi-Oh effect
+    private float cardAnimTimer = 0;
+    private String animatingWord = "";
+    private Runnable cardAnimCallback;
+
+    // Yu-Gi-Oh style effects
+    private float screenShakeTimer = 0;
+    private boolean isSpellActivating = false;
+    private Color cardTintColor = Color.WHITE.cpy();
+
+    private void startCardAttackAnimation(String word, int damage, Runnable onComplete) {
+        animatingWord = word;
+        cardAnimCallback = onComplete;
+
+        // Yu-Gi-Oh style starting position (card rises from player deck)
+        cardAnimStartX = MARGIN + 140; // Center of player column
+        cardAnimStartY = MARGIN + 100;
+
+        // Target position (center screen for spell activation)
+        cardAnimTargetX = SCREEN_WIDTH / 2 - 100;
+        cardAnimTargetY = SCREEN_HEIGHT / 2 - 100;
+
+        // Reset animation state
+        cardAnimX = cardAnimStartX;
+        cardAnimY = cardAnimStartY;
+        cardAnimScale = 0.8f; // Start smaller
+        cardAnimRotation = 0;
+        cardAnimTimer = 0;
+        isCardAnimating = true;
+        isSpellActivating = false;
+
+        cardTintColor.set(Color.WHITE);
+
+        // Yu-Gi-Oh activation sound
+        effectManager.playClickSound();
+    }
+
+    private void updateCardAnimation(float delta) {
+        if (!isCardAnimating) return;
+
+        cardAnimTimer += delta;
+        float progress = Math.min(cardAnimTimer / cardAnimDuration, 1.0f);
+
+        // Phase 1: Card Rise & Flip (0-0.25)
+        if (progress < 0.25f) {
+            float phaseProgress = progress / 0.25f;
+
+            // Card giữ nguyên scale và rotation
+            cardAnimScale = 1.0f;
+            cardAnimRotation = 0f;
+
+            // Move to center position
+            cardAnimX = cardAnimStartX + (cardAnimTargetX - cardAnimStartX) * phaseProgress;
+            cardAnimY = cardAnimStartY + (cardAnimTargetY - cardAnimStartY) * phaseProgress;
+
+            // Building golden glow
+            cardTintColor.set(1, 1, 0.5f + phaseProgress * 0.5f, 1); // Golden tint
+        }
+        // Phase 2: Spell Activation Preparation (0.25-0.5)
+        else if (progress < 0.5f) {
+            float phaseProgress = (progress - 0.25f) / 0.25f;
+
+            // Card giữ nguyên tại center, không scale, không spin
+            cardAnimScale = 1.0f;
+            cardAnimRotation = 0f;
+            cardAnimX = cardAnimTargetX;
+            cardAnimY = cardAnimTargetY;
+
+        }
+        // Phase 3: SPELL ACTIVATION! (0.5-0.75)
+        else if (progress < 0.75f) {
+            float phaseProgress = (progress - 0.5f) / 0.25f;
+
+            if (!isSpellActivating) {
+                isSpellActivating = true;
+
+                screenShakeTimer = 0.5f;
+            }
+
+            // Không còn scale và rotation cho card
+            cardAnimScale = 1.0f;
+            cardAnimRotation = 0f;
+
+
+            // Intense white/golden flash
+            float flashIntensity = (float) Math.sin(phaseProgress * Math.PI * 20);
+            cardTintColor.set(2 - flashIntensity, 2 - flashIntensity, 1, 1);
+
+        }
+        // Phase 4: Spell Launch (0.75-1.0)
+        else {
+            float phaseProgress = (progress - 0.75f) / 0.25f;
+
+            // Card launches toward enemy
+            float launchProgress = (float) (1 - Math.pow(1 - phaseProgress, 3));
+            cardAnimX = cardAnimTargetX + (580 - cardAnimTargetX) * launchProgress;
+            cardAnimY = cardAnimTargetY + (SCREEN_HEIGHT - ENEMY_SECTION_HEIGHT - MARGIN - cardAnimTargetY) * launchProgress;
+
+            // Card grows then shrinks on impact
+            if (phaseProgress < 0.3f) {
+                cardAnimScale = 1.2f + (phaseProgress / 0.3f) * 0.8f; // Grow to 2.0
+            } else {
+                cardAnimScale = 2.0f * (1 - ((phaseProgress - 0.3f) / 0.7f)); // Shrink to 0
+            }
+
+
+            if (phaseProgress > 0.8f && screenShakeTimer <= 0) {
+                screenShakeTimer = 0.3f;
+            }
+        }
+
+        // Animation complete
+        if (progress >= 1.0f) {
+            isCardAnimating = false;
+            isSpellActivating = false;
+            if (cardAnimCallback != null) {
+                cardAnimCallback.run();
+            }
+        }
+    }
+
+
     private void checkCombatEnd() {
         if (playerHealth <= 0 || combatTimeUp) {
             String message = combatTimeUp ? "Hết thời gian! Bạn đã thua!" : "Bạn bị đánh bại!";
@@ -1099,11 +1307,12 @@ public class GameplayController {
             playerHealth = 0;
             endCombat(false);
             isGameOver = gameController.getCharacter().gameOver();
+            timerAction = 0;
         } else if (enemyHealth <= 0) {
             addCombatLog("Bạn đã hạ gục " + enemyName + "!");
             enemyHealth = 0;
             endCombat(true);
-
+            timerAction = 0;
             if (currentEvent != null && currentEvent.isOneTime()) {
                 gameController.getEventManager().recordDefeatedEnemy(this.enemy.getEnemyID());
                 gameController.getEventManager().completeEvent(currentEvent.getId());
@@ -1149,6 +1358,7 @@ public class GameplayController {
         this.achievementManager = gameController.getAchievementManager();
         this.enemyMaxHealth = enemy.getHealth() + currentLevel * 5;
         this.enemyHealth = enemy.getHealth() + currentLevel * 5;
+
 
         addCombatLog("Bắt đầu chiến đấu với " + enemyName + "!");
         letterGrid.regenerateGrid();

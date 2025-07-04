@@ -1,153 +1,245 @@
 [
   {
-    "id": "quest_001",
-    "title": "Wolf Hunter",
-    "description": "Hunt 3 wolves in the forest",
-    "status": "AVAILABLE",
-    "visible": true,
-    "requirements": {
-      "Elixir": 1
-    },
-    "reward": {
-      "experience": 100,
-      "gold": 50,
-      "items": {
-        "Potion of Healing": 1
-      }
-    }
-  },
-  {
     "id": "quest_002",
-    "title": "Herbalist's Request",
-    "description": "Gather 5 healing herbs",
+    "title": "Forest Gathering",
+    "description": "Collect 5 Healing Herbs in Whispering Woods",
     "status": "AVAILABLE",
     "visible": true,
     "requirements": {
       "Healing Herb": 5
     },
     "reward": {
-      "experience": 75,
-      "gold": 40,
-      "items": {}
+      "experience": 80,
+      "gold": 40
     }
   },
   {
     "id": "quest_003",
-    "title": "Spider Problem",
-    "description": "Kill 2 giant spiders",
+    "title": "Message for Tian",
+    "description": "Talk to Lorekeeper Tian in the Tower of Knowledge",
     "status": "AVAILABLE",
     "visible": true,
-    "requirements": {
-      "Spider Fang": 2
-    },
+    "requirements": {},
     "reward": {
-      "experience": 120,
-      "gold": 60,
-      "items": {
-        "Potion of Healing": 1
-      }
+      "experience": 50
     }
   },
   {
     "id": "quest_004",
-    "title": "Mushroom Collector",
-    "description": "Collect 8 glowing mushrooms from the cave",
+    "title": "Potion Delivery",
+    "description": "Deliver 2 Elixirs to the injured soldier in East Camp",
     "status": "AVAILABLE",
     "visible": true,
     "requirements": {
-      "Glowing Mushroom": 8
+      "Elixir": 2
     },
     "reward": {
-      "experience": 150,
-      "gold": 75,
-      "items": {
-        "Potion of Healing": 1
-      }
+      "experience": 120,
+      "gold": 60
     }
   },
   {
     "id": "quest_005",
-    "title": "Healing Potion Delivery",
-    "description": "Deliver 3 healing potions to the village elder",
-    "status": "AVAILABLE",
+    "title": "The Ancient Tome",
+    "description": "Recover the Book of Returned from the Final Boss",
+    "status": "LOCKED",
     "visible": true,
-    "requirements": {
-      "Potion of Healing": 1
-    },
+    "requirements": {},
     "reward": {
-      "experience": 150,
-      "gold": 75,
-      "items": {
-        "Magic Book": 1
-      }
+      "experience": 500,
+      "gold": 1000
     }
   },
   {
     "id": "quest_006",
-    "title": "Magic Book Quest",
-    "description": "Deliver 1 magic book to the wizard",
+    "title": "Trial by Fire I",
+    "description": "Unlock mini-game 1 via mysterious NPC",
     "status": "AVAILABLE",
     "visible": true,
-    "requirements": {
-      "Magic Book": 1
-    },
+    "requirements": {},
     "reward": {
-      "experience": 150,
-      "gold": 75,
-      "items": {
-        "Magic Book": 1
-      }
+      "experience": 100
     }
   },
   {
     "id": "quest_007",
-    "title": "Magic Book Quest2",
-    "description": "Deliver 1 magic book to the wizard",
-    "status": "AVAILABLE",
+    "title": "Trial by Fire II",
+    "description": "Unlock mini-game 2 via mysterious NPC",
+    "status": "LOCKED",
     "visible": true,
-    "requirements": {
-      "Magic Book": 2
-    },
+    "requirements": {},
     "reward": {
-      "experience": 150,
-      "gold": 75,
-      "items": {
-        "Magic Book": 1
-      }
+      "experience": 500
     }
   },
   {
     "id": "quest_008",
-    "title": "Magic Book Quest3",
-    "description": "Deliver 1 magic book to the wizard",
+    "title": "Into the Abyss",
+    "description": "Use Ruby Omega to enter Dungeon A",
     "status": "AVAILABLE",
     "visible": true,
-    "requirements": {
-      "Magic Book": 2
-    },
+    "requirements": {},
     "reward": {
-      "experience": 150,
-      "gold": 75,
-      "items": {
-        "Magic Book": 1
-      }
+      "experience": 200
     }
   },
   {
     "id": "quest_009",
-    "title": "Magic Book Quest3",
-    "description": "Deliver 1 magic book to the wizard",
+    "title": "Cold Depths",
+    "description": "Use Saphire Alpha to enter Dungeon B",
+    "status": "LOCKED",
+    "visible": true,
+    "requirements": {},
+    "reward": {
+      "experience": 200
+    }
+  },
+  {
+    "id": "quest_010",
+    "title": "Toxic Experiment",
+    "description": "Use Toxic Potion on any enemy",
     "status": "AVAILABLE",
     "visible": true,
     "requirements": {
-      "Magic Book": 2
+    },
+    "reward": {
+      "experience": 90,
+      "gold": 30,
+      "items": {
+        "Toxic Potion": 1
+      }
+    }
+  },
+  {
+    "id": "quest_011",
+    "title": "Beast Anatomy",
+    "description": "Bring back 3 Beast Flesh",
+    "status": "AVAILABLE",
+    "visible": true,
+    "requirements": {
+      "Beast Flesh": 3
     },
     "reward": {
       "experience": 150,
-      "gold": 75,
-      "items": {
-        "Magic Book": 1
-      }
+      "gold": 80
+    }
+  },
+  {
+    "id": "quest_014",
+    "title": "Dungeon Scout I",
+    "description": "Defeat 5 Skeleton Warriors in Dungeon A",
+    "status": "AVAILABLE",
+    "visible": true,
+    "requirements": {},
+    "reward": {
+      "experience": 200,
+      "gold": 100
+    }
+  },
+  {
+    "id": "quest_015",
+    "title": "The Forgotten Hide",
+    "description": "Bring back 2 Hide of the Fallen",
+    "status": "AVAILABLE",
+    "visible": true,
+    "requirements": {
+      "Hide of the Fallen": 2
+    },
+    "reward": {
+      "experience": 120,
+      "gold": 20
+    }
+  },
+  {
+    "id": "quest_016",
+    "title": "Enchanted Shards",
+    "description": "Collect 3 Enchanted Stones from dungeon monsters",
+    "status": "AVAILABLE",
+    "visible": true,
+    "requirements": {
+      "Enchanted Stone": 3
+    },
+    "reward": {
+      "experience": 140
+    }
+  },
+  {
+    "id": "quest_017",
+    "title": "Strength Within",
+    "description": "Use Draught of Fury before next battle",
+    "status": "AVAILABLE",
+    "visible": true,
+    "requirements": {
+      "Draught of Fury": 1
+    },
+    "reward": {
+      "experience": 80
+    }
+  },
+  {
+    "id": "quest_018",
+    "title": "Aegis of Hope",
+    "description": "Use Aegis Brew to protect allies in a fight",
+    "status": "AVAILABLE",
+    "visible": true,
+    "requirements": {
+      "Aegis Brew": 1
+    },
+    "reward": {
+      "experience": 80
+    }
+  },
+  {
+    "id": "quest_019",
+    "title": "Returning Light",
+    "description": "Return the Book of Returned to the High Temple",
+    "status": "LOCKED",
+    "visible": true,
+    "requirements": {
+      "Book of Returned": 1
+    },
+    "reward": {
+      "experience": 400
+    }
+  },
+  {
+    "id": "quest_020",
+    "title": "War Preparation",
+    "description": "Deliver 5 Elixirs and 5 Arcane Essences to Commander Kael",
+    "status": "LOCKED",
+    "visible": true,
+    "requirements": {
+      "Elixir": 5,
+      "Arcane Essence": 5
+    },
+    "reward": {
+      "experience": 300,
+      "gold": 450
+    }
+  },
+  {
+    "id": "quest_023",
+    "title": "Recipe Hunt: Elixir",
+    "description": "Discover the recipe for Elixir from Tian",
+    "status": "AVAILABLE",
+    "visible": true,
+    "requirements": {
+      "Healing Herb": 1
+    },
+    "reward": {
+      "experience": 100
+    }
+  },
+  {
+    "id": "quest_024",
+    "title": "Tower’s Challenge",
+    "description": "Complete the puzzle in the Tower of Trials",
+    "status": "LOCKED",
+    "visible": true,
+    "requirements": {
+    },
+    "reward": {
+      "experience": 300
     }
   }
 ]

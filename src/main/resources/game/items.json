@@ -72,7 +72,7 @@
   {
     "itemID": 8,
     "itemName": "Ruby Omega",
-    "itemDescription": "Dùng tại Cổng Dịch Chuyển để đến vùng đất …",
+    "itemDescription": "Dùng tại Cổng Dịch Chuyển để đến hầm ngục A",
     "texturePath": "game/items/ruby_omega.png",
     "itemEffect": "N/A",
     "value": 0.0,
@@ -82,7 +82,7 @@
   {
     "itemID": 9,
     "itemName": "Saphire Alpha",
-    "itemDescription": "Dùng tại Cổng Dịch Chuyển để đến vùng đất …",
+    "itemDescription": "Dùng tại Cổng Dịch Chuyển để đến hầm ngục B",
     "texturePath": "game/items/saphire_alpha.png",
     "itemEffect": "N/A",
     "value": 0.0,
@@ -92,7 +92,7 @@
   {
     "itemID": 10,
     "itemName": "Emeral Delta",
-    "itemDescription": "Dùng tại Cổng Dịch Chuyển để đến khu rừng cổ xưa.",
+    "itemDescription": "Dùng tại Cổng Dịch Chuyển để đến hầm ngục C",
     "texturePath": "game/items/emeral_delta.png",
     "itemEffect": "N/A",
     "value": 0.0,

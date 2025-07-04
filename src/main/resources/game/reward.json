@@ -2,31 +2,97 @@
   {
     "rewardID": 1,
     "itemID": 1,
-    "amount": 3,
-    "description": "Reward for defeating a goblin camp."
+    "amount": 1,
+    "description": "Elixir - Hồi phục 20 HP."
   },
   {
     "rewardID": 2,
     "itemID": 2,
-    "amount": 2,
-    "description": "Reward from a hidden chest."
+    "amount": 1,
+    "description": "Arcane Essence - Hồi phục 20 Mana."
   },
   {
     "rewardID": 3,
-    "itemID": 2,
-    "amount": 2,
-    "description": "Reward from a hidden chest."
+    "itemID": 3,
+    "amount": 1,
+    "description": "Draught of Fury - Tăng chỉ số tấn công thêm 1."
   },
   {
-    "rewardID": 10,
+    "rewardID": 4,
+    "itemID": 4,
+    "amount": 1,
+    "description": "Aegis Brew - Tăng chỉ số phòng thủ thêm 1."
+  },
+  {
+    "rewardID": 5,
+    "itemID": 6,
+    "amount": 1,
+    "description": "Grimoire of Trials I - Mở khóa mini-game 1 sau khi trò chuyện với NPC huyền bí."
+  },
+  {
+    "rewardID": 6,
+    "itemID": 7,
+    "amount": 1,
+    "description": "Grimoire of Trials II - Mở khóa mini-game 2 sau khi trò chuyện với NPC huyền bí."
+  },
+  {
+    "rewardID": 7,
+    "itemID": 8,
+    "amount": 1,
+    "description": "Ruby Omega - Dùng tại Cổng Dịch Chuyển để đến hầm ngục A"
+  },
+  {
+    "rewardID": 8,
+    "itemID": 9,
+    "amount": 1,
+    "description": "Saphire Alpha - Dùng tại Cổng Dịch Chuyển để đến hầm ngục B"
+  },
+  {
+    "rewardID": 9,
     "itemID": 10,
     "amount": 1,
-    "description": "Reward from a hidden chest."
+    "description": "Emeral Delta - Dùng tại Cổng Dịch Chuyển để đến khu rừng cổ xưa."
   },
   {
     "rewardID": 10,
-    "itemID": 20,
+    "itemID": 11,
+    "amount": 2,
+    "description": "Healing Herb - Nguyên liệu chế tạo Elixir hoặc dùng cho nhiệm vụ."
+  },
+  {
+    "rewardID": 11,
+    "itemID": 12,
+    "amount": 2,
+    "description": "Mana Blossom - Nguyên liệu chế tạo Arcane Essence hoặc dùng cho nhiệm vụ."
+  },
+  {
+    "rewardID": 12,
+    "itemID": 13,
+    "amount": 3,
+    "description": "Enchanted Stone - Đá ma thuật – nguyên liệu dùng cho nhiệm vụ, nhận được khi đánh bại quái vật."
+  },
+  {
+    "rewardID": 13,
+    "itemID": 14,
+    "amount": 3,
+    "description": "Beast Flesh - Thịt quái vật – nguyên liệu dùng cho nhiệm vụ, nhận được khi đánh bại quái vật."
+  },
+  {
+    "rewardID": 14,
+    "itemID": 15,
+    "amount": 3,
+    "description": "Hide of the Fallen - Da quái vật – nguyên liệu dùng cho nhiệm vụ, nhận được khi đánh bại quái vật."
+  },
+  {
+    "rewardID": 15,
+    "itemID": 16,
     "amount": 1,
-    "description": "Reward from a hidden chest."
+    "description": "Toxic Poiton - Gây 20 sát thương cho kẻ địch"
+  },
+  {
+    "rewardID": 15,
+    "itemID": 7,
+    "amount": 1,
+    "description": "Toxic Poiton - Gây 20 sát thương cho kẻ địch"
   }
 ]

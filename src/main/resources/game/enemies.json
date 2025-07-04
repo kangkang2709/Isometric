@@ -14,7 +14,7 @@
     "enemyName": "Frost Revenant",
     "enemyDescription": "Mini-Boss – canh giữ đá Saphire có khả năng vô hiệu hóa 1 số ký tự.",
     "texturePath": "enemies/frost_revenant.png",
-    "health": 10,
+    "health": 5,
     "attackPower": 5,
     "defensePower": 2,
     "rewardId": 8
@@ -24,7 +24,7 @@
     "enemyName": "Emerald Watcher",
     "enemyDescription": "Mini-Boss – bảo vệ đá Emerald có khả năng vô hiệu hóa 1 số ký tự.",
     "texturePath": "enemies/emerald_watcher.png",
-    "health": 10,
+    "health": 5,
     "attackPower": 5,
     "defensePower": 2,
     "rewardId": 9
@@ -34,7 +34,7 @@
     "enemyName": "Wildroot Spawn",
     "enemyDescription": "Thực vật hoang dại cấp thấp",
     "texturePath": "enemies/wildroot_spawn.png",
-    "health": 10,
+    "health": 5,
     "attackPower": 2,
     "defensePower": 2,
     "rewardId": 10
@@ -44,7 +44,7 @@
     "enemyName": "Wildroot Brute boss",
     "enemyDescription": "Thực vật đột biến có độc",
     "texturePath": "enemies/wildroot_brute.png",
-    "health": 10,
+    "health": 5,
     "attackPower": 1,
     "defensePower": 2,
     "rewardId": 11
@@ -54,7 +54,7 @@
     "enemyName": "Living Boulder",
     "enemyDescription": "Sinh vật mang lớp da dày – khó hạ",
     "texturePath": "enemies/living_boulder.png",
-    "health": 10,
+    "health": 5,
     "attackPower": 2,
     "defensePower": 2,
     "rewardId": 14
@@ -64,7 +64,7 @@
     "enemyName": "Hidebeast",
     "enemyDescription": "Sinh vật mang lớp da dày",
     "texturePath": "enemies/hidebeast.png",
-    "health": 10,
+    "health": 5,
     "attackPower": 2,
     "defensePower": 2,
     "rewardId": 13
@@ -74,7 +74,7 @@
     "enemyName": "Goblin Stalker",
     "enemyDescription": "Goblin ranh mãnh",
     "texturePath": "enemies/goblin_stalker.png",
-    "health": 70,
+    "health": 5,
     "attackPower": 2,
     "defensePower": 2,
     "rewardId": 12
@@ -84,7 +84,7 @@
     "enemyName": "Crab Lord Abyssal",
     "enemyDescription": "Final Boss – vô hiệu hóa sát thương dưới 15.",
     "texturePath": "enemies/crab_lord_abyssal.png",
-    "health": 200,
+    "health": 5,
     "attackPower": 10,
     "defensePower": 2,
     "rewardId": 16

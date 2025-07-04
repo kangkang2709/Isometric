@@ -42,32 +42,60 @@ public class BountyBoardController {
     }
 
     public void updateQuestStatusFromQuestTracker(QuestTracker questTracker) {
-        for (Quest quest : allQuests.values()) {
-            quest.setStatus(Quest.QuestStatus.AVAILABLE);
-        }
+        System.out.println("Updating quest statuses from QuestTracker...");
+
+        // Separate lists to track updated quest groups
+        List<Quest> lockedQuests = new ArrayList<>();
+        List<Quest> availableQuests = new ArrayList<>();
+
+        // Update statuses from QuestTracker
         for (Quest activeQuest : questTracker.getActiveQuests()) {
             Quest boardQuest = allQuests.get(activeQuest.getId());
             if (boardQuest != null) {
                 boardQuest.setStatus(Quest.QuestStatus.IN_PROGRESS);
             }
         }
+
         for (Quest completedQuest : questTracker.getCompletedQuests()) {
             Quest boardQuest = allQuests.get(completedQuest.getId());
             if (boardQuest != null) {
                 boardQuest.setStatus(completedQuest.getStatus());
             }
         }
+
+        // Classify remaining quests
+        for (Quest quest : allQuests.values()) {
+            Quest.QuestStatus status = quest.getStatus();
+            if (status == Quest.QuestStatus.LOCKED) {
+                lockedQuests.add(quest);
+            } else if (status == Quest.QuestStatus.AVAILABLE) {
+                availableQuests.add(quest);
+            }
+        }
+
+        // Update the quest tracker with the new status lists
+        questTracker.setLockedQuests(lockedQuests);
+        questTracker.setAvailableQuests(availableQuests);
     }
+
+
     public Map<String, Quest> getAllQuests() {
         return allQuests;
     }
+
     public List<Quest> getActiveQuests() {
         return gameController.getCharacter().getQuestTracker().getActiveQuests();
     }
 
+
     public List<Quest> getCompletedQuests() {
         return gameController.getCharacter().getQuestTracker().getCompletedQuests();
     }
+
+    public List<Quest> getLockedQuests() {
+        return gameController.getCharacter().getQuestTracker().getLockedQuests();
+    }
+
 
     public void acceptQuest(String questId) {
         Character character = gameController.getCharacter();
@@ -119,13 +147,15 @@ public class BountyBoardController {
             if (reward != null) {
                 character.expToLevelUp(reward.getExperience());
                 character.addScore(reward.getGold());
-
-                for (Map.Entry<String, Integer> itemReward : reward.getItems().entrySet()) {
-                    Items item = ItemLoader.getItemByName(itemReward.getKey());
-                    if (item != null) {
-                        character.addItem(item, itemReward.getValue());
+                if (reward.getItems() != null) {
+                    for (Map.Entry<String, Integer> itemReward : reward.getItems().entrySet()) {
+                        Items item = ItemLoader.getItemByName(itemReward.getKey());
+                        if (item != null) {
+                            character.addItem(item, itemReward.getValue());
+                        }
                     }
                 }
+
             }
 
             quest.setStatus(Quest.QuestStatus.CLAIMED);
@@ -144,7 +174,6 @@ public class BountyBoardController {
             if (newLevel > currentLevel) {
                 gameController.showLevelUpNotification();
             }
-
 
 
         }

@@ -51,7 +51,7 @@ public class BoardEventManager {
         try {
             this.gameController = gameController;
 
-            this.map = gameController.getMap();
+            this.map = gameController.getMapList().get("board");
             if (this.map == null) {
                 throw new IllegalStateException("Map 'board' not found");
             }

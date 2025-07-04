@@ -46,7 +46,8 @@ public class BountyBoardView {
     private Matrix4 uiMatrix;
 
     // Quest view mode
-    private enum QuestTab { AVAILABLE, ACTIVE, COMPLETED }
+    private enum QuestTab {AVAILABLE, ACTIVE, COMPLETED, LOCKED}
+
     private QuestTab currentTab = QuestTab.AVAILABLE;
 
     // UI Elements
@@ -92,9 +93,10 @@ public class BountyBoardView {
         float tabWidth = 120;
         float tabHeight = 40;
         float tabY = boardY + boardHeight - 95;
-        tabBounds.put(QuestTab.AVAILABLE, new Rectangle(boardX + 20, tabY, tabWidth+20, tabHeight));
+        tabBounds.put(QuestTab.AVAILABLE, new Rectangle(boardX + 20, tabY, tabWidth + 20, tabHeight));
         tabBounds.put(QuestTab.ACTIVE, new Rectangle(boardX + 20 + tabWidth + 10, tabY, tabWidth, tabHeight));
-        tabBounds.put(QuestTab.COMPLETED, new Rectangle(boardX + 20 + (tabWidth + 10) * 2, tabY, tabWidth+20, tabHeight));
+        tabBounds.put(QuestTab.COMPLETED, new Rectangle(boardX + 20 + (tabWidth + 10) * 2, tabY, tabWidth + 20, tabHeight));
+        tabBounds.put(QuestTab.LOCKED, new Rectangle(boardX + 20 + (tabWidth + 10) * 3, tabY, tabWidth + 20, tabHeight));
 
         // Create buttons
         acceptButton = new Rectangle(boardX + 500, boardY + 110, 150, 50);
@@ -118,7 +120,7 @@ public class BountyBoardView {
 
         batch.setProjectionMatrix(uiMatrix);
         // Draw background
-        batch.draw(backgroundTexture, boardX - 20, boardY +20, boardWidth+40, boardHeight +40);
+        batch.draw(backgroundTexture, boardX - 20, boardY + 20, boardWidth + 40, boardHeight + 40);
 
         // Draw title
         String title = "BOUNTY BOARD";
@@ -155,6 +157,9 @@ public class BountyBoardView {
                     break;
                 case COMPLETED:
                     normalFont.setColor(COLOR_COMPLETED);
+                    break;
+                case LOCKED:
+                    normalFont.setColor(Color.GRAY);
                     break;
                 case CLAIMED:
                     normalFont.setColor(COLOR_CLAIMED);
@@ -229,10 +234,13 @@ public class BountyBoardView {
                     detailX + 10, detailY - 230 - (reqY * 20));
 
             int rewardY = 0;
-            for (Map.Entry<String, Integer> item : reward.getItems().entrySet()) {
-                normalFont.draw(batch, "- " + item.getValue() + "x " + item.getKey(),
-                        detailX + 10, detailY - 250 - (reqY * 20) - (rewardY * 20));
-                rewardY++;
+            if (reward.getItems() != null && !reward.getItems().isEmpty()) {
+                for (Map.Entry<String, Integer> item : reward.getItems().entrySet()) {
+                    normalFont.draw(batch, "- " + item.getValue() + "x " + item.getKey(),
+                            detailX + 10, detailY - 250 - (reqY * 20) - (rewardY * 20));
+                    rewardY++;
+                }
+
             }
 
             // Draw accept button if quest is available
@@ -263,11 +271,16 @@ public class BountyBoardView {
         }
     }
 
+    boolean needUpdate = true;
+
     private void updateQuestSlots() {
         // Filter quests based on the current tab
         switch (currentTab) {
             case AVAILABLE:
-                controller.updateQuestStatusFromQuestTracker(controller.getGameController().getCharacter().getQuestTracker());
+                if (needUpdate) {
+                    controller.updateQuestStatusFromQuestTracker(controller.getGameController().getCharacter().getQuestTracker());
+                    needUpdate = false; // Reset flag after update
+                }
                 currentQuestList = controller.getAllQuests().values().stream()
                         .filter(quest -> quest.getStatus() == Quest.QuestStatus.AVAILABLE)
                         .toList();
@@ -277,6 +290,9 @@ public class BountyBoardView {
                 break;
             case COMPLETED:
                 currentQuestList = controller.getCompletedQuests();
+                break;
+            case LOCKED:
+                currentQuestList = controller.getLockedQuests();
                 break;
             default:
                 currentQuestList = new ArrayList<>();
@@ -301,7 +317,9 @@ public class BountyBoardView {
             questSlots.add(new QuestSlot(currentQuestList.get(i), new Rectangle(slotX, yOffset, slotWidth, slotHeight)));
         }
     }
-
+    public void markQuestUpdateNeeded() {
+        needUpdate = true;
+    }
     public boolean handleClick(float screenX, float screenY) {
         Vector2 pos = new Vector2(screenX, Gdx.graphics.getHeight() - screenY);
 
@@ -343,6 +361,7 @@ public class BountyBoardView {
         if (selectedQuest != null && selectedQuest.getStatus() == Quest.QuestStatus.AVAILABLE) {
             if (acceptButton.contains(pos)) {
                 controller.acceptQuest(selectedQuest.getId());
+                needUpdate = true; // Mark update needed after quest change
                 selectedQuest = null;
                 return true;
             }
@@ -352,6 +371,7 @@ public class BountyBoardView {
         if (selectedQuest != null && selectedQuest.getStatus() == Quest.QuestStatus.COMPLETED) {
             if (submitButton.contains(pos)) {
                 controller.submitQuest(selectedQuest.getId());
+                needUpdate = true; // Mark update needed after quest change
                 selectedQuest = null;
                 return true;
             }
