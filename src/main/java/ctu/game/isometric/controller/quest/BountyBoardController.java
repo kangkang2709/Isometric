@@ -101,7 +101,7 @@ public class BountyBoardController {
         Character character = gameController.getCharacter();
         Quest quest = allQuests.get(questId);
 
-        if (quest != null && quest.getStatus() == Quest.QuestStatus.AVAILABLE) {
+        if (quest != null && quest.getStatus() == Quest.QuestStatus.AVAILABLE || quest.getStatus() == Quest.QuestStatus.LOCKED) {
             quest.setStatus(Quest.QuestStatus.IN_PROGRESS);
             character.getQuestTracker().getActiveQuests().add(quest);
             gameController.getDialogController().showSimpleMessage("Quest accepted: " + quest.getTitle());
@@ -120,19 +120,46 @@ public class BountyBoardController {
                 return false;
             }
 
-            for (String item : requirements.keySet()) {
-                int requiredAmount = requirements.get(item);
-                int availableAmount = inventory.getOrDefault(item, 0);
+            if (requirements == null || requirements.isEmpty()) {
+                if (character.getFlags().contains(quest.getId())) {
+                    quest.setStatus(Quest.QuestStatus.COMPLETED);
+                    return true;
+                } else return false;
+            } else {
+                for (String item : requirements.keySet()) {
+                    int requiredAmount = requirements.get(item);
+                    int availableAmount = inventory.getOrDefault(item, 0);
 
-                if (availableAmount < requiredAmount) {
-                    return false;
+                    if (availableAmount < requiredAmount) {
+                        return false;
+                    }
                 }
+                quest.setStatus(Quest.QuestStatus.COMPLETED);
+                return true;
             }
-            quest.setStatus(Quest.QuestStatus.COMPLETED);
-            return true;
         }
         return false;
     }
+
+    public boolean checkCanAcceptQuest(String questId) {
+        Character character = gameController.getCharacter();
+        Quest quest = allQuests.get(questId);
+
+        if (quest.getStatus() == Quest.QuestStatus.AVAILABLE) {
+            return true;
+        }
+
+        if (quest.getStatus() == Quest.QuestStatus.IN_PROGRESS || quest.getStatus() == Quest.QuestStatus.COMPLETED)
+            return false;
+        String conditions = quest.getConditions();
+
+        if (conditions != null && character.getFlags().contains(conditions)) {
+            return true;
+        }
+
+        return false;
+    }
+
 
     public void submitQuest(String questId) {
         Character character = gameController.getCharacter();

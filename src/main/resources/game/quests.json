@@ -43,6 +43,7 @@
     "title": "The Ancient Tome",
     "description": "Recover the Book of Returned from the Final Boss",
     "status": "LOCKED",
+    "conditions": "defeat_final_boss",
     "visible": true,
     "requirements": {},
     "reward": {
@@ -66,6 +67,7 @@
     "title": "Trial by Fire II",
     "description": "Unlock mini-game 2 via mysterious NPC",
     "status": "LOCKED",
+    "conditions": "defeat_final_boss",
     "visible": true,
     "requirements": {},
     "reward": {
@@ -88,6 +90,7 @@
     "title": "Cold Depths",
     "description": "Use Saphire Alpha to enter Dungeon B",
     "status": "LOCKED",
+    "conditions": "defeat_final_boss",
     "visible": true,
     "requirements": {},
     "reward": {
@@ -194,6 +197,7 @@
     "title": "Returning Light",
     "description": "Return the Book of Returned to the High Temple",
     "status": "LOCKED",
+    "conditions": "intro",
     "visible": true,
     "requirements": {
       "Book of Returned": 1
@@ -207,6 +211,7 @@
     "title": "War Preparation",
     "description": "Deliver 5 Elixirs and 5 Arcane Essences to Commander Kael",
     "status": "LOCKED",
+    "conditions": "defeat_final_boss",
     "visible": true,
     "requirements": {
       "Elixir": 5,
@@ -235,6 +240,7 @@
     "title": "Tower’s Challenge",
     "description": "Complete the puzzle in the Tower of Trials",
     "status": "LOCKED",
+    "conditions": "defeat_final_boss",
     "visible": true,
     "requirements": {
     },

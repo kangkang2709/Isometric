@@ -15,6 +15,9 @@ public class Quest {
     private HashMap<String, Integer> requirements; // Concrete implementation
     private HashMap<String, Integer> progress; // Concrete implementation
 
+
+    private String conditions;
+
     private boolean visible;
 
     private String prerequisiteQuestId;
@@ -66,144 +69,12 @@ public class Quest {
         return newProgress >= requiredAmount;
     }
 
-    /**
-     * Check if all requirements for this quest are met
-     * @return true if all requirements are satisfied
-     */
-    public boolean checkRequirements() {
-        for (Map.Entry<String, Integer> entry : requirements.entrySet()) {
-            String item = entry.getKey();
-            int required = entry.getValue();
-            int current = progress.getOrDefault(item, 0);
-
-            if (current < required) {
-                return false;
-            }
-        }
-        return true;
+    public String getConditions() {
+        return conditions;
     }
 
-    /**
-     * Check if the character has the items required by this quest
-     * @param character The character to check
-     * @return true if character has all required items in sufficient quantities
-     */
-    public boolean characterHasRequiredItems(Character character) {
-        for (Map.Entry<String, Integer> entry : requirements.entrySet()) {
-            String itemName = entry.getKey();
-            int requiredQuantity = entry.getValue();
-
-            if (!character.hasItem(itemName) ||
-                    character.getItems().get(itemName) < requiredQuantity) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Start the quest, changing its status to IN_PROGRESS
-     */
-    public void startQuest() {
-        if (status == QuestStatus.AVAILABLE) {
-            status = QuestStatus.IN_PROGRESS;
-        }
-    }
-
-    /**
-     * Complete the quest, changing status to COMPLETED
-     */
-    public void completeQuest() {
-        if (status == QuestStatus.IN_PROGRESS && checkRequirements()) {
-            status = QuestStatus.COMPLETED;
-        }
-    }
-
-    /**
-     * Award quest rewards to the character and mark as CLAIMED
-     * @param character The character to receive rewards
-     * @return true if rewards were successfully claimed
-     */
-    public boolean claimRewards(Character character) {
-        if (status != QuestStatus.COMPLETED) {
-            return false;
-        }
-
-        // Award experience
-        character.expToLevelUp(reward.getExperience());
-
-        // Award gold (assuming character has a way to add gold)
-        // This might need additional implementation
-        character.addScore(reward.getGold());
-
-        // Award items
-        for (Map.Entry<String, Integer> item : reward.getItems().entrySet()) {
-            // This assumes items in rewards match the format expected by character.addItem
-            // You might need to fetch the actual Item object first
-            if (item.getValue() > 0) {
-                ctu.game.isometric.model.game.Items gameItem =
-                        ctu.game.isometric.util.ItemLoader.getItemByName(item.getKey());
-                if (gameItem != null) {
-                    character.addItem(gameItem, item.getValue());
-                }
-            }
-        }
-
-        status = QuestStatus.CLAIMED;
-        return true;
-    }
-
-    /**
-     * Set a prerequisite quest that must be completed before this one
-     * @param questId The ID of the prerequisite quest
-     */
-    public void setPrerequisiteQuest(String questId) {
-        this.prerequisiteQuestId = questId;
-    }
-
-    /**
-     * Check if this quest's prerequisites are met
-     * @param character The character to check against
-     * @return true if prerequisites are met or if there are no prerequisites
-     */
-    public boolean prerequisitesMet(Character character) {
-        if (prerequisiteQuestId == null) {
-            return true;
-        }
-
-        for (Quest quest : character.getCompletedQuests()) {
-            if (quest.getId().equals(prerequisiteQuestId) &&
-                    (quest.getStatus() == QuestStatus.COMPLETED ||
-                            quest.getStatus() == QuestStatus.CLAIMED)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Get the progress percentage for this quest
-     * @return progress as a value between 0 and 1
-     */
-    public float getProgressPercentage() {
-        if (requirements.isEmpty()) {
-            return status == QuestStatus.COMPLETED || status == QuestStatus.CLAIMED ? 1.0f : 0.0f;
-        }
-
-        int totalRequired = 0;
-        int totalProgress = 0;
-
-        for (Map.Entry<String, Integer> entry : requirements.entrySet()) {
-            String item = entry.getKey();
-            int required = entry.getValue();
-            int current = progress.getOrDefault(item, 0);
-
-            totalRequired += required;
-            totalProgress += Math.min(current, required);
-        }
-
-        return totalRequired > 0 ? (float)totalProgress / totalRequired : 0.0f;
+    public void setConditions(String conditions) {
+        this.conditions = conditions;
     }
 
     // Existing getters and setters

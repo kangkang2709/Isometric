@@ -94,9 +94,9 @@ public class BountyBoardView {
         float tabHeight = 40;
         float tabY = boardY + boardHeight - 95;
         tabBounds.put(QuestTab.AVAILABLE, new Rectangle(boardX + 20, tabY, tabWidth + 20, tabHeight));
-        tabBounds.put(QuestTab.ACTIVE, new Rectangle(boardX + 20 + tabWidth + 10, tabY, tabWidth, tabHeight));
+        tabBounds.put(QuestTab.ACTIVE, new Rectangle(boardX + 20 + tabWidth + 20, tabY, tabWidth, tabHeight));
         tabBounds.put(QuestTab.COMPLETED, new Rectangle(boardX + 20 + (tabWidth + 10) * 2, tabY, tabWidth + 20, tabHeight));
-        tabBounds.put(QuestTab.LOCKED, new Rectangle(boardX + 20 + (tabWidth + 10) * 3, tabY, tabWidth + 20, tabHeight));
+        tabBounds.put(QuestTab.LOCKED, new Rectangle(boardX + 30 + (tabWidth + 10) * 3, tabY, tabWidth + 20, tabHeight));
 
         // Create buttons
         acceptButton = new Rectangle(boardX + 500, boardY + 110, 150, 50);
@@ -209,6 +209,12 @@ public class BountyBoardView {
             // Description
             normalFont.draw(batch, selectedQuest.getDescription(),
                     detailX, detailY - 40, 350, -1, true);
+            // Requirements
+            if (selectedQuest.getStatus() == Quest.QuestStatus.LOCKED) {
+                normalFont.setColor(Color.BROWN);
+                normalFont.draw(batch, "Conditions:" + selectedQuest.getConditions(), detailX, detailY - 80);
+                normalFont.setColor(Color.WHITE); // Skip further rendering for locked quests
+            }
 
             // Requirements
             normalFont.setColor(Color.YELLOW);
@@ -244,7 +250,7 @@ public class BountyBoardView {
             }
 
             // Draw accept button if quest is available
-            if (selectedQuest.getStatus() == Quest.QuestStatus.AVAILABLE) {
+            if (selectedQuest.getStatus() == Quest.QuestStatus.AVAILABLE || controller.checkCanAcceptQuest(selectedQuest.getId())) {
                 batch.draw(buttonTexture, acceptButton.x, acceptButton.y, acceptButton.width, acceptButton.height);
                 layout.setText(normalFont, "Accept Quest");
                 normalFont.draw(batch, "Accept Quest",
@@ -317,9 +323,11 @@ public class BountyBoardView {
             questSlots.add(new QuestSlot(currentQuestList.get(i), new Rectangle(slotX, yOffset, slotWidth, slotHeight)));
         }
     }
+
     public void markQuestUpdateNeeded() {
         needUpdate = true;
     }
+
     public boolean handleClick(float screenX, float screenY) {
         Vector2 pos = new Vector2(screenX, Gdx.graphics.getHeight() - screenY);
 
@@ -358,7 +366,7 @@ public class BountyBoardView {
         }
 
         // Check if accept button was clicked
-        if (selectedQuest != null && selectedQuest.getStatus() == Quest.QuestStatus.AVAILABLE) {
+        if (selectedQuest != null && (selectedQuest.getStatus() == Quest.QuestStatus.AVAILABLE || controller.checkCanAcceptQuest(selectedQuest.getId()))) {
             if (acceptButton.contains(pos)) {
                 controller.acceptQuest(selectedQuest.getId());
                 needUpdate = true; // Mark update needed after quest change
