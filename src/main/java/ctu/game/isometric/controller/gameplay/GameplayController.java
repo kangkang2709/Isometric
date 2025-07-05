@@ -1320,7 +1320,7 @@ public class GameplayController {
             }
 
             achievementManager.updateProgress(Achievement.AchievementType.COMBAT_WIN, 1);
-            this.newLevel = gameController.getCharacter().expToLevelUp(this.experienceGain);
+            this.newLevel = gameController.getCharacter().addExperience(this.experienceGain);
         }
     }
 

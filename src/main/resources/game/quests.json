@@ -31,7 +31,7 @@
     "status": "AVAILABLE",
     "visible": true,
     "requirements": {
-      "Elixir": 2
+      "Elixir": 1
     },
     "reward": {
       "experience": 120,

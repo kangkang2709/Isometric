@@ -159,7 +159,7 @@ public class PressurePlatePuzzle {
                 case "reward":
                     // Give the player some reward (exp, item, etc)
                     character.addScore(10);
-                    character.expToLevelUp(5);
+                    character.addExperience(5);
                     break;
             }
         }

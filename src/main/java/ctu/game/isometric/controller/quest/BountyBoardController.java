@@ -172,7 +172,7 @@ public class BountyBoardController {
 
             QuestReward reward = quest.getReward();
             if (reward != null) {
-                character.expToLevelUp(reward.getExperience());
+                character.addExperience(reward.getExperience());
                 character.addScore(reward.getGold());
                 if (reward.getItems() != null) {
                     for (Map.Entry<String, Integer> itemReward : reward.getItems().entrySet()) {
@@ -196,7 +196,7 @@ public class BountyBoardController {
             );
 
             int currentLevel = character.getLevel();
-            int newLevel = character.expToLevelUp(reward.getExperience());
+            int newLevel = character.addExperience(reward.getExperience());
 
             if (newLevel > currentLevel) {
                 gameController.showLevelUpNotification();

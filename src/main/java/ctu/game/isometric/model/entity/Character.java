@@ -66,18 +66,22 @@ public class Character {
     }
 
 
-    public int expToLevelUp(float exp) {
+    public int addExperience(float exp) {
         if (exp < 0) {
             throw new IllegalArgumentException("Experience points cannot be negative");
         }
-        this.exp += exp; // Add experience points
-        int requiredExp = level * 50; // Scale experience requirement dynamically
-        if (this.exp >= requiredExp) {
-            this.exp -= requiredExp; // Reset exp after leveling up
-            levelUp(1); // Level up the character
+
+        this.exp += exp;
+
+        // Handle multiple level-ups
+        while (this.exp >= level * 50) {
+            this.exp -= level * 50;
+            levelUp(1);
         }
+
         return level;
     }
+
 
 
     public void decreaseHealth(float amount) {

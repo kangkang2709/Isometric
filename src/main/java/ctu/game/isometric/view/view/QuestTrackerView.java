@@ -112,10 +112,13 @@ public class QuestTrackerView {
         offset += 30;
         font.draw(batch, "- XP: " + quest.getReward().getExperience(), x + 20, y - 150 - offset);
         font.draw(batch, "- Gold: " + quest.getReward().getGold(), x + 20, y - 170 - offset);
-        for (Map.Entry<String, Integer> item : quest.getReward().getItems().entrySet()) {
-            font.draw(batch, "- " + item.getValue() + "x " + item.getKey(), x + 20, y - 190 - offset);
-            offset += 20;
+        if (quest.getReward().getItems() != null && !quest.getReward().getItems().isEmpty()) {
+            for (Map.Entry<String, Integer> item : quest.getReward().getItems().entrySet()) {
+                font.draw(batch, "- " + item.getValue() + "x " + item.getKey(), x + 20, y - 190 - offset);
+                offset += 20;
+            }
         }
+
     }
 
     private void drawQuestList(SpriteBatch batch, String title, List<Quest> quests, float x, float y) {
@@ -161,7 +164,7 @@ public class QuestTrackerView {
         }
 
         // Calculate visible indices based on scroll position
-        int startIndex = (int)(scrollOffset / questItemHeight);
+        int startIndex = (int) (scrollOffset / questItemHeight);
         int endIndex = Math.min(quests.size(), startIndex + MAX_VISIBLE_QUESTS);
 
         float visibleAreaTop = y - 20;
@@ -220,10 +223,10 @@ public class QuestTrackerView {
 
             // Draw text
             smallFont.setColor(Color.LIGHT_GRAY);
-            smallFont.draw(batch, item + ": " + collected + "/" + required, x+5, y+12);
+            smallFont.draw(batch, item + ": " + collected + "/" + required, x + 5, y + 12);
 
             // Draw progress bar
-            float progress = Math.min(1.0f, (float)collected / required);
+            float progress = Math.min(1.0f, (float) collected / required);
             batch.setColor(0.2f, 0.2f, 0.2f, 1);
             batch.draw(backgroundTexture, x, y - 10, width, 5);
             batch.setColor(0.2f, 0.7f, 1.0f, 1);
@@ -263,7 +266,7 @@ public class QuestTrackerView {
         }
 
         // Check if a quest is clicked
-        int startIndex = (int)(scrollOffset / 60);
+        int startIndex = (int) (scrollOffset / 60);
         int endIndex = Math.min(activeQuests.size(), startIndex + MAX_VISIBLE_QUESTS);
 
         float visibleAreaTop = QUEST_LIST_Y - 20;

@@ -460,7 +460,7 @@ public class DialogController {
                 }
             } else if (choice.getText().equals("NO")) {
                 performAction = false;
-                isCancelAction= true;
+                isCancelAction = true;
                 if (choice.getNext_scene() != null) {
                     startDialog(currentArcId, choice.getNext_scene());
                 } else {
@@ -484,7 +484,7 @@ public class DialogController {
                 if (choice.getNext_scene() != null) {
                     if (choice.getNext_scene().equals("scene_end")) {
                         performAction = false;
-                        isCancelAction= true;
+                        isCancelAction = true;
                     }
                     startDialog(currentArcId, choice.getNext_scene());
                 } else {
@@ -573,14 +573,13 @@ public class DialogController {
         gameController.setState(GameState.EXPLORING);
 
         // Execute the callback if it exists and performAction is true
-        if (onDialogFinishedAction != null && performAction == true) {
+        if (onDialogFinishedAction != null && performAction) {
             onCanncelFinishedAction = null;
             onDialogFinishedAction.run();
             onDialogFinishedAction = null;
             performAction = false;
             isCancelAction = false; // Reset cancel action flag
-        }
-        if (onDialogFinishedAction != null && isCancelAction == true) {
+        } else if (onCanncelFinishedAction != null && isCancelAction) {
             onDialogFinishedAction = null;
             onCanncelFinishedAction.run();
             onCanncelFinishedAction = null;
