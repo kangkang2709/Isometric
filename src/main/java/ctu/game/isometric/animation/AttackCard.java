@@ -240,11 +240,11 @@ public class AttackCard {
             for (int dy = -2; dy <= 2; dy++)
                 if (dx * dx + dy * dy != 0 && Math.abs(dx) + Math.abs(dy) <= 2) {
                     FONT.setColor(0.08f, 0.85f, 1f, 0.28f * opacity);
-                    FONT.draw(batch, shown, textX + dx, textY + dy);
+                    FONT.draw(batch, shown, textX + dx-3, textY + dy-3);
                 }
         // Main text
         FONT.setColor(0.5f, 1f, 1f, opacity);
-        FONT.draw(batch, shown, textX, textY);
+        FONT.draw(batch, shown, textX-3, textY-3);
 
         // Value pop
         if (value != 0) {

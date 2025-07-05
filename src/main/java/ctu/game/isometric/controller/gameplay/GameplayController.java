@@ -2,6 +2,7 @@ package ctu.game.isometric.controller.gameplay;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.*;
@@ -122,17 +123,54 @@ public class GameplayController {
 
 
     // Gọi khi có hành động (ví dụ: player tấn công)
+// Camera animation properties
+    private boolean isCameraZooming = false;
+    private float cameraZoomTarget = 1.0f;
+    private float cameraZoomOriginal = 1.0f;
+    private float cameraZoomCurrent = 1.0f;
+    private float cameraZoomDuration = 0.5f;
+    private float cameraZoomTimer = 0f;
+    private float cameraShakeIntensity = 0f;
+    private Vector3 cameraOriginalPosition = new Vector3();
+    private Vector3 cameraTargetPosition = new Vector3();
 
     public void playerAttack(String word, int dmg, Runnable onComplete) {
+        // Save original camera position and start zoom animation
+        cameraOriginalPosition.set(viewport.getCamera().position);
+        cameraZoomOriginal = ((OrthographicCamera)viewport.getCamera()).zoom;
+        cameraZoomCurrent = cameraZoomOriginal;
+
+        // Set zoom target (closer to enemy)
+        cameraZoomTarget = 0.7f; // Closer zoom
+        cameraTargetPosition.set(600, 550, 0); // Position near enemy
+
+        // Start zoom animation
+        isCameraZooming = true;
+        cameraZoomTimer = 0f;
+        cameraShakeIntensity = 0.1f; // Small shake for dramatic effect
+
+        // Create attack card as before
         AttackCard card = new AttackCard(
                 AttackCard.CardType.ATTACK,
                 word,
                 dmg,
-                600, 280, 600, 380, 600, 550
+                600, 100, 600, 280, 600, 550
         );
 
+        // Extend onComplete to reset camera when animation finishes
+        Runnable extendedComplete = () -> {
+            // Reset camera zoom
+            isCameraZooming = false;
+            cameraZoomTimer = 0f;
+            ((OrthographicCamera)viewport.getCamera()).zoom = cameraZoomOriginal;
+            viewport.getCamera().position.set(cameraOriginalPosition);
+
+            // Call the original onComplete
+            if (onComplete != null) onComplete.run();
+        };
+
         card.setSFXCallback(() -> effectManager.playClickSound());
-        card.setOnComplete(onComplete);
+        card.setOnComplete(extendedComplete);
         cardAnimationManager.addCard(card);
     }
 
@@ -188,7 +226,7 @@ public class GameplayController {
                     AttackCard.CardType.ATTACK,
                     "MISS",
                     0,
-                    600, 580, 250, 450, 250, -400
+                    600, 580, 250, 400, 250, 400
             );
             card.setSFXCallback(() -> effectManager.playClickSound());
         } else {
@@ -197,17 +235,18 @@ public class GameplayController {
                         AttackCard.CardType.STRONG,
                         "",
                         dmg,
-                        600, 580, 400, 450, 90, 270
+                        600, 580, 400, 450, 90, 250
                 );
             else
                 card = new AttackCard(
                         AttackCard.CardType.ATTACK,
                         "",
                         dmg,
-                        600, 580, 400, 450, 90, 270
+                        600, 580, 400, 450, 90, 250
                 );
             card.setSFXCallback(() -> effectManager.playClickSound());
         }
+
         card.setOnComplete(onComplete);
         cardAnimationManager.addCard(card);
     }
@@ -266,8 +305,7 @@ public class GameplayController {
     public void update(float delta) {
         if (!active) return;
         cardAnimationManager.update(delta);
-        updateCardAnimation(delta);  // Add this line
-        if (isCombatMode) updateCombat(delta);
+        updateCardAnimation(delta);
 
         if (timerAction > 0) {
             timerAction -= delta;
@@ -275,6 +313,37 @@ public class GameplayController {
                 timerAction = 0;
             }
         }
+
+        // Update camera zoom animation
+        if (isCameraZooming) {
+            cameraZoomTimer += delta;
+            float progress = Math.min(cameraZoomTimer / cameraZoomDuration, 1.0f);
+
+            // Smooth interpolation
+            float smoothProgress = (float) (1 - Math.pow(1 - progress, 3));
+
+            // Update camera zoom
+            OrthographicCamera camera = (OrthographicCamera) viewport.getCamera();
+            camera.zoom = cameraZoomOriginal + (cameraZoomTarget - cameraZoomOriginal) * smoothProgress;
+
+            // Move camera position
+            camera.position.x = cameraOriginalPosition.x +
+                    (cameraTargetPosition.x - cameraOriginalPosition.x) * smoothProgress;
+            camera.position.y = cameraOriginalPosition.y +
+                    (cameraTargetPosition.y - cameraOriginalPosition.y) * smoothProgress;
+
+            // Add camera shake if needed
+            if (cameraShakeIntensity > 0) {
+                camera.position.x += (Math.random() - 0.5) * cameraShakeIntensity * 2;
+                camera.position.y += (Math.random() - 0.5) * cameraShakeIntensity * 2;
+                cameraShakeIntensity *= 0.95f; // Decay shake intensity
+            }
+
+            camera.update();
+        }
+
+        if (isCombatMode) updateCombat(delta);
+        // Rest of your update method...
     }
 
     private void updateCombat(float delta) {
@@ -490,7 +559,8 @@ public class GameplayController {
         final float GRID_COLUMN_X = MARGIN + PLAYER_COLUMN_WIDTH + MARGIN;
 
         // Center grid trong grid column
-        gridX = GRID_COLUMN_X + (GRID_COLUMN_WIDTH - gridSize) / 2 - 150;
+        gridX = GRID_COLUMN_X + (GRID_COLUMN_WIDTH - gridSize) / 2;
+//        gridX = GRID_COLUMN_X + (GRID_COLUMN_WIDTH - gridSize) / 2 -150;
         gridY = 80; // Margin bottom + button height + spacing
         cellSize = gridSize / letterGrid.getGridSize();
     }
@@ -904,6 +974,7 @@ public class GameplayController {
 
 
     private void drawLetterGridColumn(SpriteBatch batch, float x, float y, float width, float height) {
+        if (timerAction > 0) return; // Không vẽ nếu đang trong thời gian chờ
         batch.setColor(0.25f, 0.25f, 0.35f, 0.9f);
         batch.draw(whiteTexture, x, y, width, height);
 
@@ -946,8 +1017,11 @@ public class GameplayController {
         drawLetterGrid(batch, gridX, gridY, gridSize);
 
         // Buttons
-        submitButtonRect = new Rectangle(x + 70, y + 16, 120, 40);
-        clearButtonRect = new Rectangle(x + 210, y + 16, 120, 40);
+//        submitButtonRect = new Rectangle(x + 70, y + 16, 120, 40);
+//        clearButtonRect = new Rectangle(x + 210, y + 16, 120, 40);
+
+        submitButtonRect = new Rectangle(x + 220, y + 16, 120, 40);
+        clearButtonRect = new Rectangle(x + 360, y + 16, 120, 40);
 
         if (isPlayerTurn && !combatTimeUp && timerAction == 0) {
             drawButton(batch, submitButtonRect, "CAST SPELL");

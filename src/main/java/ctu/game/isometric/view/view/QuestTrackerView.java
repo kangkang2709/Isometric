@@ -50,7 +50,7 @@ public class QuestTrackerView {
 
         this.font.setColor(Color.WHITE);
         this.layout = new GlyphLayout();
-        this.closeButtonBounds = new Rectangle(750, 550, 40, 40);
+        this.closeButtonBounds = new Rectangle(1050, 580, 40, 40);
         this.scrollUpButton = new Rectangle(430, QUEST_LIST_Y - 10, 30, 30);
         this.scrollDownButton = new Rectangle(430, QUEST_LIST_Y - 300, 30, 30);
         this.isVisible = false;
