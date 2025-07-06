@@ -386,9 +386,9 @@ public class MapRenderer {
 //            tiledMapRenderer.renderTileLayer(map.getTerrianLayer());
 //            tiledMapRenderer.getBatch().end();
 
-            if (map.getMapName().equals("board"))
+            if (map.getMapName().equals("board")) {
                 renderBoard(batch);
-
+            }
 
             weatherRenderer.render(batch);
         }
@@ -407,10 +407,12 @@ public class MapRenderer {
             if (event.isOneTime() && event.isCompleted()) continue;
 
             String type = event.getEventType();
-
             switch (type) {
                 case "treasure":
                     drawItemTexture(batch, event.getProperties().get("itemName", String.class), isoPos[0] + 16, isoPos[1] + 8, 32, 32);
+                    break;
+                case "new_run_event":
+                    drawTexture(batch, "new_run", isoPos[0], isoPos[1], 64, 34);
                     break;
                 case "battle":
                     drawEnemySpinCard(batch, isoPos[0] + 14, isoPos[1] + 12, 30, 40);
@@ -440,9 +442,7 @@ public class MapRenderer {
                 case "word_scramble":
                     drawTexture(batch, "item_hightlight", isoPos[0], isoPos[1], 64, 34);
                     break;
-                case "new_run_event":
-                    drawTexture(batch, "new_run", isoPos[0], isoPos[1], 64, 34);
-                    break;
+
                 case "quiz":
                     drawTexture(batch, "quiz_hightlight", isoPos[0], isoPos[1], 64, 34);
                     break;

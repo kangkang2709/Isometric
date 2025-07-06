@@ -32,10 +32,10 @@ public class IsometricMap {
     private boolean chunkingEnabled = false;
     PressurePlatePuzzle puzzle;
 
-    int startX = 0;
-    int startY = 0;
+    int startX = 1;
+    int startY = 1;
 
-    int endX = 0;
+    int endX = 15;
     int endY = 0;
 
     public IsometricMap(String tmxFilePath) {
@@ -92,6 +92,117 @@ public class IsometricMap {
         loadPlate();
     }
 
+
+    public void generateRandomMaze() {
+        int[][] maze = new int[21][21]; // 0: wall, 1: path
+        startX = getRandomOdd(mapWidth);
+        startY = getRandomOdd(mapHeight);
+
+        generateMazeDFS(maze, startX, startY);
+        int[] farthest = findFarthestPathCell(maze, startX, startY);
+        endX = farthest[0];
+        endY = farthest[1];
+
+        for (int y = 0; y < mapHeight; y++) {
+            for (int x = 0; x < mapWidth; x++) {
+                boolean isPath = maze[x][y] == 1;
+
+                TiledMapTileLayer.Cell groundCell = new TiledMapTileLayer.Cell();
+                groundCell.setTile(tiledMap.getTileSets().getTile(isPath ? 1 : 0));
+                baseLayer.setCell(x, y, groundCell);
+
+                TiledMapTileLayer.Cell terrainCell = new TiledMapTileLayer.Cell();
+                terrainCell.setTile(tiledMap.getTileSets().getTile(isPath ? 0 : 2));
+                terrianLayer.setCell(x, y, terrainCell);
+
+            }
+        }
+        initializeMapData();
+        initializeWalkableCache();
+        System.out.println("Start: (" + startX + "," + startY + ")");
+        System.out.println("End:   (" + endX + "," + endY + ")");
+    }
+
+    private int getRandomOdd(int max) {
+        Random rand = new Random();
+        int r = rand.nextInt((max - 1) / 2) * 2 + 1;
+        return Math.min(r, max - 2); // tránh sát rìa
+    }
+
+    private int[] findFarthestPathCell(int[][] maze, int sx, int sy) {
+        boolean[][] visited = new boolean[mapWidth][mapHeight];
+        Queue<int[]> queue = new LinkedList<>();
+        queue.add(new int[]{sx, sy, 0});
+
+        int maxDist = -1;
+        int[] farthest = new int[]{sx, sy};
+
+        int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+
+        while (!queue.isEmpty()) {
+            int[] curr = queue.poll();
+            int x = curr[0], y = curr[1], dist = curr[2];
+            if (visited[x][y]) continue;
+            visited[x][y] = true;
+
+            if (dist > maxDist) {
+                maxDist = dist;
+                farthest[0] = x;
+                farthest[1] = y;
+            }
+
+            for (int[] d : dirs) {
+                int nx = x + d[0];
+                int ny = y + d[1];
+                if (nx >= 0 && ny >= 0 && nx < mapWidth && ny < mapHeight && maze[nx][ny] == 1 && !visited[nx][ny]) {
+                    queue.add(new int[]{nx, ny, dist + 1});
+                }
+            }
+        }
+
+        return farthest;
+    }
+
+    private void generateMazeDFS(int[][] maze, int startX, int startY) {
+        for (int[] row : maze) {
+            Arrays.fill(row, 0); // all walls
+        }
+
+        Random rand = new Random();
+        Deque<int[]> stack = new ArrayDeque<>();
+        maze[startX][startY] = 1;
+        stack.push(new int[]{startX, startY});
+
+        int[][] directions = {{2, 0}, {-2, 0}, {0, 2}, {0, -2}}; // skip by 2
+
+        while (!stack.isEmpty()) {
+            int[] current = stack.peek();
+            int cx = current[0], cy = current[1];
+
+            List<int[]> neighbors = new ArrayList<>();
+            for (int[] d : directions) {
+                int nx = cx + d[0];
+                int ny = cy + d[1];
+                if (nx > 0 && ny > 0 && nx < mapWidth - 1 && ny < mapHeight - 1 && maze[nx][ny] == 0) {
+                    neighbors.add(new int[]{nx, ny});
+                }
+            }
+
+            if (!neighbors.isEmpty()) {
+                int[] next = neighbors.get(rand.nextInt(neighbors.size()));
+                int nx = next[0], ny = next[1];
+                int wallX = cx + (nx - cx) / 2;
+                int wallY = cy + (ny - cy) / 2;
+                maze[wallX][wallY] = 1;
+                maze[nx][ny] = 1;
+                stack.push(new int[]{nx, ny});
+            } else {
+                stack.pop();
+            }
+        }
+    }
+
+
     public TiledMapTileLayer getTerrianLayer() {
         return terrianLayer;
     }
@@ -110,6 +221,7 @@ public class IsometricMap {
         cell.setTile(tile);
 
     }
+
 
     public boolean[][] getWalkableCache() {
         return walkableCache;
@@ -155,9 +267,11 @@ public class IsometricMap {
 
 
     public TiledMapTileLayer.Cell getCell(int x, int y) {
-        TiledMapTileLayer tiledMapLayer = (TiledMapTileLayer) tiledMap.getLayers().get("terrain_layer");
-        if (tiledMapLayer == null) return null; // Ensure the layer exists
-        return tiledMapLayer.getCell(x, y); // Delegate to the TiledMapTileLayer
+        MapLayer layer = tiledMap.getLayers().get("terrain_layer");
+        if (layer instanceof TiledMapTileLayer tiledMapLayer) {
+            return tiledMapLayer.getCell(x, y);
+        }
+        return null; // Return null if the layer is not of the expected type
     }
 
     // For backwards compatibility
@@ -186,6 +300,9 @@ public class IsometricMap {
 
     // Direct access to tile ID without going through chunks
     protected int getTileIdDirect(int x, int y) {
+        if (baseLayer == null) {
+            return 0; // Empty tile
+        }
         TiledMapTileLayer.Cell cell = baseLayer.getCell(x, y);
         if (cell != null && cell.getTile() != null) {
             return cell.getTile().getId();
@@ -205,16 +322,10 @@ public class IsometricMap {
 
 
     public void setTileWalkable(int x, int y, boolean walkable) {
-        if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight) {
-            throw new IndexOutOfBoundsException("Coordinates out of bounds: " + x + ", " + y);
+        if (walkableCache == null) {
+            initializeWalkableCache();
         }
-
-        if (!chunkingEnabled) {
-            walkableCache[y][x] = walkable;
-        } else {
-            MapChunk chunk = getOrCreateChunk(x, y);
-            chunk.setWalkable(x % CHUNK_SIZE, y % CHUNK_SIZE, walkable);
-        }
+        walkableCache[y][x] = walkable;
     }
 
     // Get or create a chunk for the given position
@@ -331,27 +442,19 @@ public class IsometricMap {
         return baseLayer;
     }
 
-    public void setTiledMap(TiledMap tiledMap) {
-        this.tiledMap = tiledMap;
+    public int getEndX() {
+        return endX;
     }
 
-    public void setTileWidth(int tileWidth) {
-        this.tileWidth = tileWidth;
+    public void setEndX(int endX) {
+        this.endX = endX;
     }
 
-    public void setTileHeight(int tileHeight) {
-        this.tileHeight = tileHeight;
+    public int getEndY() {
+        return endY;
     }
 
-    public void setMapWidth(int mapWidth) {
-        this.mapWidth = mapWidth;
-    }
-
-    public void setMapHeight(int mapHeight) {
-        this.mapHeight = mapHeight;
-    }
-
-    public void setBaseLayer(TiledMapTileLayer baseLayer) {
-        this.baseLayer = baseLayer;
+    public void setEndY(int endY) {
+        this.endY = endY;
     }
 }

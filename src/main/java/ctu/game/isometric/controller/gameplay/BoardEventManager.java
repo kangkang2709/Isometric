@@ -31,7 +31,6 @@ public class BoardEventManager {
     private int totalEventsPlaced = 0;
 
     // Your specific board path
-    private int[][] boardPath;
     // Set of valid walkable positions for quick lookup
     private Set<String> walkablePositions = new HashSet<>();
 
@@ -132,6 +131,8 @@ public class BoardEventManager {
     }
 
     public void randomBoardEveryRun() {
+        initializeWalkablePositions();
+
         try {
             this.currentRun = gameController.getCharacter().getRun();
             resetBoard();
@@ -191,54 +192,49 @@ public class BoardEventManager {
 
     private void distributeRemainingEvents(int remainingEvents) {
         try {
-            // Define distribution percentages for remaining events
-            int itemEvents = (int) Math.round(remainingEvents * 0.3);      // 40% items
-            int enemyEvents = (int) Math.round(remainingEvents * 0.4);     // 30% enemies
-            int wordEvents = (int) Math.round(remainingEvents * 0.2);      // 20% word scramble
+            int itemEvents = (int) Math.round(remainingEvents * 0.3);
+            int enemyEvents = (int) Math.round(remainingEvents * 0.4);
+            int wordEvents = (int) Math.round(remainingEvents * 0.2);
+            int trapEvents = (int) Math.round(remainingEvents * 0.1);
             int quizEvents = 0;
             int multiQuizEvents = 0;
 
             // Add quiz events if run >= 3
             if (currentRun >= 0) {
-                quizEvents = Math.min(3, remainingEvents / 10);           // Small number of quiz events
-                multiQuizEvents = Math.min(2, remainingEvents / 15);      // Small number of multi-quiz events
-
-                // Adjust other events to accommodate quiz events
+                quizEvents = Math.min(3, remainingEvents / 10);
+                multiQuizEvents = Math.min(2, remainingEvents / 15);
                 itemEvents = Math.max(0, itemEvents - quizEvents - multiQuizEvents);
             }
 
-            // Ensure we don't exceed remaining events
-            int totalDistributed = itemEvents + enemyEvents + wordEvents + quizEvents + multiQuizEvents;
+            // Adjust if total exceeds or undershoots
+            int totalDistributed = itemEvents + enemyEvents + wordEvents + trapEvents + quizEvents + multiQuizEvents;
             if (totalDistributed > remainingEvents) {
-                // Reduce item events if we're over
                 itemEvents = Math.max(0, itemEvents - (totalDistributed - remainingEvents));
             } else if (totalDistributed < remainingEvents) {
-                // Add remaining to items
                 itemEvents += (remainingEvents - totalDistributed);
             }
 
             System.out.println("Distributing " + remainingEvents + " events: Items=" + itemEvents +
-                    ", Enemies=" + enemyEvents + ", Words=" + wordEvents +
+                    ", Enemies=" + enemyEvents + ", Words=" + wordEvents + ", Traps=" + trapEvents +
                     ", Quiz=" + quizEvents + ", MultiQuiz=" + multiQuizEvents);
 
-            // Place events in order
+            // Place events
             placeSpecificEvents("treasure", itemEvents, "item");
+            placeSpecificEvents("trap", trapEvents, "plate");
             placeSpecificEvents("enemy", enemyEvents, "enemy");
             placeSpecificEvents("word_scramble", wordEvents, "word");
-
             if (currentRun >= 0) {
                 placeSpecificEvents("quiz", quizEvents, "quiz");
                 placeSpecificEvents("mulquiz", multiQuizEvents, "multiquiz");
             }
 
-
-            // Fill any remaining spots if we're still under 40
             fillToExactTotal();
 
         } catch (Exception e) {
             System.err.println("Error distributing remaining events: " + e.getMessage());
         }
     }
+
 
     private void placeSpecificEvents(String eventType, int count, String displayType) {
         try {
@@ -278,7 +274,7 @@ public class BoardEventManager {
                         MapEvent multiQuizEvent = new MapEvent(positionKey, "mulquiz", pos[0], pos[1], "Multiple Quiz Challenge", "0");
                         eventManager.addEvent(multiQuizEvent);
                         break;
-                    case "plate":
+                    case "trap":
                         addPlates(pos[0], pos[1], "trap", pos[0], pos[1]);
                         break;
                 }
@@ -382,7 +378,7 @@ public class BoardEventManager {
 
     public void placedDefaultEvent() {
         try {
-            int x = 9, y = 0;
+            int x = this.map.getEndX(), y = this.map.getEndY();
             String positionKey = x + "_" + y;
 
             if (!usedPositions.contains(positionKey)) {

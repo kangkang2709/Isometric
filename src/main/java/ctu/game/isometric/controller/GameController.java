@@ -184,13 +184,18 @@ public class GameController {
         IsometricMap newMap = this.mapList.get(mapName);
         if (newMap != null) {
 
-            System.out.println("Changing map to: " + mapName);
             transitionRenderer.startLoadingScreen(() -> {
+                if (newMap.getMapName().equals("board")) {
+                    newMap.generateRandomMaze();
+                    boardEventManager.randomBoardEveryRun();
+                }
+
                 this.map = newMap;
                 this.character.setGameMap(map);
-                this.game.getGameScreen().getMapRenderer().changeTiledMapRenderer(this.map, this.eventManager);
                 this.pathfinder.setMap(newMap);
                 this.eventManager = this.eventManagerMap.get(mapName);
+                this.game.getGameScreen().getMapRenderer().changeTiledMapRenderer(this.map, this.eventManager);
+
             });
             isNewRun = false;
             return newMap;
