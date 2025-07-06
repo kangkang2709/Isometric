@@ -24,8 +24,6 @@ public class BoardEventManager {
     private Random random = new Random();
     private Set<String> usedPositions = new HashSet<>();
 
-    // Board configuration - Exactly 40 events required
-    private final int BOARD_SIZE = 21;
     private final int TOTAL_WALKABLE_TILES = 80;
     private final int EXACT_TOTAL_EVENTS = 40; // Must be exactly 40
     private int totalEventsPlaced = 0;
@@ -37,14 +35,6 @@ public class BoardEventManager {
     int currentRun = 0;
     private WordScrambleGame wordScrambleGame;
 
-    public Map<Integer, int[][]> defaultEventsForRun = Map.of(
-            0, new int[][]{{11, 4}},
-            2, new int[][]{{11, 0}, {11, 1}},
-            4, new int[][]{{11, 1}, {11, 2}},
-            6, new int[][]{{11, 2}, {11, 3}},
-            8, new int[][]{{11, 3}, {11, 4}},
-            10, new int[][]{{11, 4}, {11, 5}}
-    );
 
     public BoardEventManager(GameController gameController) {
         try {
@@ -131,7 +121,7 @@ public class BoardEventManager {
     }
 
     public void randomBoardEveryRun() {
-        initializeWalkablePositions();
+        initializeSafeDefaults();
 
         try {
             this.currentRun = gameController.getCharacter().getRun();
@@ -164,37 +154,14 @@ public class BoardEventManager {
     }
 
     private void placeDefaultEventsForRun() {
-        try {
-            if (defaultEventsForRun.containsKey(currentRun)) {
-                int[][] positions = defaultEventsForRun.get(currentRun);
-                for (int[] position : positions) {
-                    int x = position[0];
-                    int y = position[1];
-                    String positionKey = x + "_" + y;
 
-                    if (walkablePositions.contains(positionKey) && !usedPositions.contains(positionKey)) {
-                        usedPositions.add(positionKey);
-                        totalEventsPlaced++;
-
-                        // Create default event for this run
-                        MapEvent defaultEvent = new MapEvent("default_run_" + currentRun + "_" + positionKey,
-                                "default_event", x, y, "Default Event Run " + currentRun, "0");
-                        eventManager.addEvent(defaultEvent);
-
-                        System.out.println("Placed default event for run " + currentRun + " at (" + x + ", " + y + ")");
-                    }
-                }
-            }
-        } catch (Exception e) {
-            System.err.println("Error placing default events for run: " + e.getMessage());
-        }
     }
 
     private void distributeRemainingEvents(int remainingEvents) {
         try {
             int itemEvents = (int) Math.round(remainingEvents * 0.3);
             int enemyEvents = (int) Math.round(remainingEvents * 0.4);
-            int wordEvents = (int) Math.round(remainingEvents * 0.2);
+            int wordEvents = (int) Math.round(remainingEvents * 0.3);
             int trapEvents = (int) Math.round(remainingEvents * 0.1);
             int quizEvents = 0;
             int multiQuizEvents = 0;
@@ -387,6 +354,17 @@ public class BoardEventManager {
 
                 MapEvent defaultEvent = new MapEvent("new_run_event", "new_run_event", x, y, "new_run_event", "0");
                 eventManager.addEvent(defaultEvent);
+            }
+
+            for (int[] pos : map.getMaze().layers.get("fake")) {
+                String fakePositionKey = pos[0] + "_" + pos[1];
+                if (!usedPositions.contains(fakePositionKey)) {
+                    usedPositions.add(fakePositionKey);
+//                    totalEventsPlaced++;
+
+                    MapEvent fakeEvent = new MapEvent(fakePositionKey, "new_run_event", pos[0], pos[1], "Fake Event", "0");
+                    eventManager.addEvent(fakeEvent);
+                }
             }
         } catch (Exception e) {
             System.err.println("Error placing default event: " + e.getMessage());

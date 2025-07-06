@@ -342,12 +342,14 @@ public class MapRenderer {
 //        batch.draw(backgroundTexture, bgX, bgY, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
         // Update camera position based on character position
-        float[] isoPos = toIsometric(character.getGridX(), character.getGridY());
 
-        camera.position.set(645, 25, 0);
-        camera.update();
+
         if (!map.getMapName().equals("board")) {
+            float[] isoPos = toIsometric(character.getGridX(), character.getGridY());
             camera.position.set(isoPos[0], isoPos[1], 0);
+            camera.update();
+        } else {
+            camera.position.set(645, 25, 0);
             camera.update();
         }
 

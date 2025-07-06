@@ -5,236 +5,222 @@ import ctu.game.isometric.model.world.MazeGenerationResult;
 import java.util.*;
 
 public class MazeGenerator {
+    private static final int WIDTH = 21;
+    private static final int HEIGHT = 21;
 
-    private int mapWidth, mapHeight;
-    private int startX, startY, endX, endY;
+    private static final int WALL = 0;
+    private static final int FLOOR = 1;
 
-    public MazeGenerator(int mapWidth, int mapHeight) {
-        this.mapWidth = mapWidth;
-        this.mapHeight = mapHeight;
-    }
+    private static final int TILE_BLOCK = 2;
 
-    public MazeGenerationResult generateMazeData() {
-        MazeGenerationResult result = new MazeGenerationResult();
+    private static final Random random = new Random();
 
-        int[][] maze = new int[mapWidth][mapHeight];
-        int[][] pathLayer = new int[mapWidth][mapHeight];
-        int[][] fakeEndLayer = new int[mapWidth][mapHeight];
-        int[][] chestLayer = new int[mapWidth][mapHeight];
+    private static final int[][] DIRS = {
+            {0, -2}, {0, 2}, {-2, 0}, {2, 0}
+    };
 
-        // B1: Sinh mê cung bằng Prim
-        startX = getRandomOdd(mapWidth);
-        startY = getRandomOdd(mapHeight);
-        generateMazePrim(maze, startX, startY);
+    public static MazeGenerationResult generateMaze() {
+        int[][] baseLayer = new int[HEIGHT][WIDTH];
+        int[][] terrainLayer = new int[HEIGHT][WIDTH];
 
-        // B2: Tìm endpoint thật
-        int[] far = findFarthestPathCell(maze, startX, startY);
-        endX = far[0];
-        endY = far[1];
+        for (int y = 0; y < HEIGHT; y++)
+            Arrays.fill(baseLayer[y], WALL);
 
-        // B3: Tìm đường chính xác
-        int[][] exactPath = findShortestPath(maze, startX, startY, endX, endY);
-        for (int x = 0; x < mapWidth; x++)
-            for (int y = 0; y < mapHeight; y++)
-                if (exactPath[x][y] == 1) pathLayer[x][y] = 1;
-
-        // B4: End point giả
-        List<int[]> deadEnds = findDeadEnds(maze);
-        Collections.shuffle(deadEnds);
-        int fakeCount = Math.min(3, deadEnds.size());
-        for (int i = 0; i < fakeCount; i++) {
-            int[] p = deadEnds.get(i);
-            if (exactPath[p[0]][p[1]] != 1)
-                fakeEndLayer[p[0]][p[1]] = 2;
-        }
-
-        // B5: Đặt rương ở dead ends còn lại
-        int chests = 0;
-        for (int[] p : deadEnds) {
-            int x = p[0], y = p[1];
-            if (pathLayer[x][y] == 0 && fakeEndLayer[x][y] == 0 && chests < 5) {
-                chestLayer[x][y] = 6;
-                chests++;
-            }
-        }
-
-        // B6: Enemy spawn
-        List<int[]> enemySpawns = suggestEnemySpawns(maze, exactPath, 5);
-
-        // B7: Minimap mask
-        int[][] minimapMask = generateMinimapMask(exactPath);
-
-        // Kết quả
-        result.startX = startX;
-        result.startY = startY;
-        result.endX = endX;
-        result.endY = endY;
-        result.layers.put(0, pathLayer);
-        result.layers.put(1, fakeEndLayer);
-        result.layers.put(6, chestLayer);
-        result.pathLength = countPathLength(exactPath);
-        result.enemySpawns = enemySpawns;
-        result.minimapMask = minimapMask;
-
-        return result;
-    }
-
-    // ------------------------ SUPPORT METHODS ------------------------
-
-    private int getRandomOdd(int max) {
-        Random rand = new Random();
-        int r = rand.nextInt((max - 1) / 2) * 2 + 1;
-        return Math.min(r, max - 2);
-    }
-
-    private void generateMazePrim(int[][] maze, int sx, int sy) {
-        for (int[] row : maze) Arrays.fill(row, 0);
-        maze[sx][sy] = 1;
+        int startX = randomOdd(WIDTH);
+        int startY = randomOdd(HEIGHT);
+        baseLayer[startY][startX] = FLOOR;
 
         List<int[]> frontier = new ArrayList<>();
-        int[][] dirs = {{2, 0}, {-2, 0}, {0, 2}, {0, -2}};
-
-        for (int[] d : dirs) {
-            int nx = sx + d[0], ny = sy + d[1];
-            if (inBounds(nx, ny)) frontier.add(new int[]{nx, ny, sx, sy});
+        for (int[] dir : DIRS) {
+            int nx = startX + dir[0];
+            int ny = startY + dir[1];
+            if (inBounds(nx, ny))
+                frontier.add(new int[]{nx, ny, startX, startY});
         }
 
-        Random rand = new Random();
         while (!frontier.isEmpty()) {
-            int[] f = frontier.remove(rand.nextInt(frontier.size()));
-            int x = f[0], y = f[1], px = f[2], py = f[3];
-            if (maze[x][y] == 0) {
-                maze[x][y] = 1;
-                maze[(x + px) / 2][(y + py) / 2] = 1;
-                for (int[] d : dirs) {
-                    int nx = x + d[0], ny = y + d[1];
-                    if (inBounds(nx, ny) && maze[nx][ny] == 0) {
+            int[] f = frontier.remove(random.nextInt(frontier.size()));
+            int x = f[0], y = f[1], fx = f[2], fy = f[3];
+            if (baseLayer[y][x] == WALL) {
+                baseLayer[y][x] = FLOOR;
+                baseLayer[(y + fy) / 2][(x + fx) / 2] = FLOOR;
+                for (int[] dir : DIRS) {
+                    int nx = x + dir[0];
+                    int ny = y + dir[1];
+                    if (inBounds(nx, ny) && baseLayer[ny][nx] == WALL) {
                         frontier.add(new int[]{nx, ny, x, y});
                     }
                 }
             }
         }
-    }
 
-    private int[] findFarthestPathCell(int[][] maze, int sx, int sy) {
-        boolean[][] visited = new boolean[mapWidth][mapHeight];
-        Queue<int[]> queue = new LinkedList<>();
-        queue.add(new int[]{sx, sy, 0});
-        int maxDist = -1;
-        int[] farthest = new int[]{sx, sy};
-        int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+        for (int y = 0; y < HEIGHT; y++)
+            for (int x = 0; x < WIDTH; x++)
+                terrainLayer[y][x] = (baseLayer[y][x] == FLOOR) ? 0 : TILE_BLOCK;
 
-        while (!queue.isEmpty()) {
-            int[] curr = queue.poll();
-            int x = curr[0], y = curr[1], dist = curr[2];
-            if (visited[x][y]) continue;
-            visited[x][y] = true;
-            if (dist > maxDist) {
-                maxDist = dist;
-                farthest = new int[]{x, y};
-            }
-            for (int[] d : dirs) {
-                int nx = x + d[0], ny = y + d[1];
-                if (inBounds(nx, ny) && maze[nx][ny] == 1 && !visited[nx][ny]) {
-                    queue.add(new int[]{nx, ny, dist + 1});
-                }
-            }
-        }
-        return farthest;
-    }
+        List<int[]> floorTiles = collectTiles(baseLayer, FLOOR);
+        int[] start, end;
+        do {
+            start = floorTiles.get(random.nextInt(floorTiles.size()));
+            end = floorTiles.get(random.nextInt(floorTiles.size()));
+        } while (Arrays.equals(start, end) || manhattan(start, end) < 10);
 
-    private int[][] findShortestPath(int[][] maze, int sx, int sy, int ex, int ey) {
-        int[][] path = new int[mapWidth][mapHeight];
-        boolean[][] visited = new boolean[mapWidth][mapHeight];
-        int[][] parentX = new int[mapWidth][mapHeight];
-        int[][] parentY = new int[mapWidth][mapHeight];
-        for (int[] row : parentX) Arrays.fill(row, -1);
-        for (int[] row : parentY) Arrays.fill(row, -1);
+        List<int[]> path = aStarPath(baseLayer, start, end);
 
-        Queue<int[]> queue = new LinkedList<>();
-        queue.add(new int[]{sx, sy});
-        visited[sx][sy] = true;
-
-        int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
-        while (!queue.isEmpty()) {
-            int[] curr = queue.poll();
-            int x = curr[0], y = curr[1];
-            if (x == ex && y == ey) break;
-
-            for (int[] d : dirs) {
-                int nx = x + d[0], ny = y + d[1];
-                if (inBounds(nx, ny) && maze[nx][ny] == 1 && !visited[nx][ny]) {
-                    queue.add(new int[]{nx, ny});
-                    visited[nx][ny] = true;
-                    parentX[nx][ny] = x;
-                    parentY[nx][ny] = y;
-                }
+        // Fake endpoints
+        List<int[]> fake = new ArrayList<>();
+        int fakeCount = 2 + random.nextInt(2);
+        int fakesAdded = 0;
+        while (fakesAdded < fakeCount) {
+            int[] fakeEnd = floorTiles.get(random.nextInt(floorTiles.size()));
+            if (!contains(path, fakeEnd) && !contains(fake, fakeEnd)) {
+                fake.add(fakeEnd);
+                fakesAdded++;
             }
         }
 
-        // reconstruct
-        int x = ex, y = ey;
-        while (x != -1 && y != -1) {
-            path[x][y] = 1;
-            int px = parentX[x][y], py = parentY[x][y];
-            x = px;
-            y = py;
-        }
-
-        return path;
-    }
-
-    private List<int[]> findDeadEnds(int[][] maze) {
-        List<int[]> result = new ArrayList<>();
-        int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
-        for (int x = 1; x < mapWidth - 1; x++) {
-            for (int y = 1; y < mapHeight - 1; y++) {
-                if (maze[x][y] == 1) {
-                    int count = 0;
-                    for (int[] d : dirs) if (maze[x + d[0]][y + d[1]] == 1) count++;
-                    if (count == 1) result.add(new int[]{x, y});
-                }
+        // Chests
+        List<int[]> chest = new ArrayList<>();
+        int chestCount = 3 + random.nextInt(3);
+        int chestsPlaced = 0;
+        while (chestsPlaced < chestCount) {
+            int[] c = floorTiles.get(random.nextInt(floorTiles.size()));
+            if (!contains(path, c) && !contains(fake, c) && !contains(chest, c)) {
+                chest.add(c);
+                chestsPlaced++;
             }
         }
+
+        // Minimap
+        int[][] minimapMask = new int[HEIGHT][WIDTH];
+        for (int y = 0; y < HEIGHT; y++)
+            Arrays.fill(minimapMask[y], -1);
+        for (int[] p : path)
+            minimapMask[p[1]][p[0]] = 1;
+        for (int y = 0; y < HEIGHT; y++)
+            for (int x = 0; x < WIDTH; x++)
+                if (baseLayer[y][x] == WALL)
+                    minimapMask[y][x] = 0;
+
+        // Enemy spawns
+        List<int[]> enemySpawns = new ArrayList<>();
+        for (int i = 1; i < path.size() - 1; i++) {
+            if (random.nextFloat() < 0.2f) {
+                enemySpawns.add(path.get(i));
+            }
+        }
+
+        // Output
+        MazeGenerationResult result = new MazeGenerationResult();
+        result.layers.put("base", baseLayer);
+        result.layers.put("terrain", terrainLayer);
+        result.layers.put("path", toArray(path));
+        result.layers.put("fake", toArray(fake));
+        result.layers.put("chest", toArray(chest));
+        result.minimapMask = minimapMask;
+        result.enemySpawns = enemySpawns;
+        result.pathLength = path.size();
+        result.startX = start[0];
+        result.startY = start[1];
+        result.endX = end[0];
+        result.endY = end[1];
+
         return result;
     }
 
-    private List<int[]> suggestEnemySpawns(int[][] maze, int[][] exactPath, int minDist) {
-        List<int[]> spawns = new ArrayList<>();
-        int[][] dirs = {{1,0},{-1,0},{0,1},{0,-1}};
-        for (int x = 1; x < mapWidth - 1; x++) {
-            for (int y = 1; y < mapHeight - 1; y++) {
-                if (maze[x][y] == 1 && exactPath[x][y] == 0) {
-                    if (Math.abs(x - startX) + Math.abs(y - startY) >= minDist &&
-                            Math.abs(x - endX) + Math.abs(y - endY) >= minDist) {
-                        int open = 0;
-                        for (int[] d : dirs) if (maze[x + d[0]][y + d[1]] == 1) open++;
-                        if (open >= 2) spawns.add(new int[]{x, y});
+    private static boolean contains(List<int[]> list, int[] point) {
+        for (int[] p : list) {
+            if (Arrays.equals(p, point)) return true;
+        }
+        return false;
+    }
+
+    private static int[][] toArray(List<int[]> list) {
+        int[][] arr = new int[list.size()][2];
+        for (int i = 0; i < list.size(); i++) {
+            arr[i][0] = list.get(i)[0];
+            arr[i][1] = list.get(i)[1];
+        }
+        return arr;
+    }
+
+
+    private static int randomOdd(int max) {
+        int r = random.nextInt(max / 2) * 2 + 1;
+        return Math.min(r, max - 1);
+    }
+
+    private static boolean inBounds(int x, int y) {
+        return x > 0 && y > 0 && x < WIDTH - 1 && y < HEIGHT - 1;
+    }
+
+    private static int manhattan(int[] a, int[] b) {
+        return Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]);
+    }
+
+    private static List<int[]> collectTiles(int[][] layer, int value) {
+        List<int[]> list = new ArrayList<>();
+        for (int y = 0; y < layer.length; y++)
+            for (int x = 0; x < layer[0].length; x++)
+                if (layer[y][x] == value)
+                    list.add(new int[]{x, y});
+        return list;
+    }
+
+    private static List<int[]> aStarPath(int[][] maze, int[] start, int[] end) {
+        PriorityQueue<Node> open = new PriorityQueue<>(Comparator.comparingInt(n -> n.f));
+        Map<String, Node> allNodes = new HashMap<>();
+
+        Node startNode = new Node(start[0], start[1], null, 0, manhattan(start, end));
+        open.add(startNode);
+        allNodes.put(startNode.key(), startNode);
+
+        while (!open.isEmpty()) {
+            Node current = open.poll();
+
+            if (current.x == end[0] && current.y == end[1]) {
+                List<int[]> path = new ArrayList<>();
+                while (current != null) {
+                    path.add(0, new int[]{current.x, current.y});
+                    current = current.parent;
+                }
+                return path;
+            }
+
+            for (int[] d : new int[][]{{0, 1}, {1, 0}, {-1, 0}, {0, -1}}) {
+                int nx = current.x + d[0], ny = current.y + d[1];
+                if (inBounds(nx, ny) && maze[ny][nx] == FLOOR) {
+                    int g = current.g + 1;
+                    String key = nx + "," + ny;
+                    Node neighbor = allNodes.getOrDefault(key, new Node(nx, ny, null, Integer.MAX_VALUE, manhattan(new int[]{nx, ny}, end)));
+                    if (g < neighbor.g) {
+                        neighbor.g = g;
+                        neighbor.f = g + neighbor.h;
+                        neighbor.parent = current;
+                        allNodes.put(key, neighbor);
+                        open.add(neighbor);
                     }
                 }
             }
         }
-        Collections.shuffle(spawns);
-        return spawns.subList(0, Math.min(spawns.size(), 10));
+        return new ArrayList<>();
     }
 
-    private int countPathLength(int[][] path) {
-        int count = 0;
-        for (int[] row : path)
-            for (int cell : row)
-                if (cell == 1) count++;
-        return count;
-    }
+    private static class Node {
+        int x, y, g, h, f;
+        Node parent;
 
-    private int[][] generateMinimapMask(int[][] path) {
-        int[][] mask = new int[mapWidth][mapHeight];
-        for (int x = 0; x < mapWidth; x++)
-            for (int y = 0; y < mapHeight; y++)
-                mask[x][y] = (path[x][y] == 1) ? 1 : 0;
-        return mask;
-    }
+        Node(int x, int y, Node parent, int g, int h) {
+            this.x = x;
+            this.y = y;
+            this.parent = parent;
+            this.g = g;
+            this.h = h;
+            this.f = g + h;
+        }
 
-    private boolean inBounds(int x, int y) {
-        return x > 0 && y > 0 && x < mapWidth - 1 && y < mapHeight - 1;
+        String key() {
+            return x + "," + y;
+        }
     }
 }

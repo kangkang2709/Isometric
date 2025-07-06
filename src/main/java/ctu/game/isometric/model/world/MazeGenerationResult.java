@@ -4,8 +4,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
 public class MazeGenerationResult {
-    public Map<Integer, int[][]> layers = new HashMap<>(); // 0: đường chính, 1: end giả, 6: rương
+    public Map<String, int[][]> layers = new HashMap<>();
     public int[][] minimapMask;
     public List<int[]> enemySpawns;
     public int pathLength;

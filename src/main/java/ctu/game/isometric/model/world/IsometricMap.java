@@ -11,6 +11,7 @@ import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.Vector2;
 import ctu.game.isometric.model.entity.Enemy;
 import ctu.game.isometric.model.puzzle.PressurePlatePuzzle;
+import ctu.game.isometric.util.MazeGenerator;
 
 import java.util.*;
 
@@ -32,11 +33,11 @@ public class IsometricMap {
     private boolean chunkingEnabled = false;
     PressurePlatePuzzle puzzle;
 
-    int startX = 1;
-    int startY = 1;
+    int startX = 15;
+    int startY = 15;
 
     int endX = 15;
-    int endY = 0;
+    int endY = 15;
 
     public IsometricMap(String tmxFilePath) {
         // Load the TMX file
@@ -51,22 +52,6 @@ public class IsometricMap {
             this.mapName = "default_map"; // Fallback name
         }
 
-        switch (this.mapName) {
-            case "board":
-                this.startX = 0;
-                this.startY = 0;
-                this.endX = 15;
-                this.endY = 15;
-                break;
-            case "main":
-                this.startX = 12;
-                this.startY = 12;
-                break;
-            default:
-                // Keep the original name
-        }
-
-
         // Get map properties
         MapProperties props = tiledMap.getProperties();
 
@@ -78,9 +63,14 @@ public class IsometricMap {
         // Assume the first layer is the base layer
         baseLayer = (TiledMapTileLayer) tiledMap.getLayers().get("ground_layer");
         terrianLayer = (TiledMapTileLayer) tiledMap.getLayers().get("terrain_layer");
+
+        if (mapName.equals("board")) {
+            generateRandomMaze();
+        } else {
+            initializeMapData();
+            initializeWalkableCache();
+        }
         // Initialize data structures
-        initializeMapData();
-        initializeWalkableCache();
 
 
         // Auto-enable chunking for large maps
@@ -92,35 +82,58 @@ public class IsometricMap {
         loadPlate();
     }
 
+    MazeGenerationResult maze;
+
+    public MazeGenerationResult getMaze() {
+        return maze;
+    }
+
 
     public void generateRandomMaze() {
-        int[][] maze = new int[21][21]; // 0: wall, 1: path
-        startX = getRandomOdd(mapWidth);
-        startY = getRandomOdd(mapHeight);
+        MazeGenerator generator = new MazeGenerator();
+        System.out.println("Generating random maze with size: " + mapWidth + "x" + mapHeight);
+        this.maze = generator.generateMaze(); // Generate maze data
 
-        generateMazePrim(maze, startX, startY);
-        int[] farthest = findFarthestPathCell(maze, startX, startY);
-        endX = farthest[0];
-        endY = farthest[1];
+        this.startX = maze.startX;
+        this.startY = maze.startY;
+        this.endX = maze.endX;
+        this.endY = maze.endY;
+
+        int[][] base = this.maze.layers.get("base");
+        int[][] terrain = this.maze.layers.get("terrain");
 
         for (int y = 0; y < mapHeight; y++) {
             for (int x = 0; x < mapWidth; x++) {
-                boolean isPath = maze[x][y] == 1;
-
+                boolean isPath = base[y][x] == 1;  // ĐÚNG: [y][x]
                 TiledMapTileLayer.Cell groundCell = new TiledMapTileLayer.Cell();
                 groundCell.setTile(tiledMap.getTileSets().getTile(isPath ? 1 : 0));
                 baseLayer.setCell(x, y, groundCell);
-
-                TiledMapTileLayer.Cell terrainCell = new TiledMapTileLayer.Cell();
-                terrainCell.setTile(tiledMap.getTileSets().getTile(isPath ? 0 : 2));
-                terrianLayer.setCell(x, y, terrainCell);
-
             }
         }
+
+        for (int y = 0; y < mapHeight; y++) {
+            for (int x = 0; x < mapWidth; x++) {
+                boolean isBlocked = terrain[y][x] == 2;
+                TiledMapTileLayer.Cell terrainCell = new TiledMapTileLayer.Cell();
+                terrainCell.setTile(tiledMap.getTileSets().getTile(isBlocked ? 2 : 0));
+                terrianLayer.setCell(x, y, terrainCell);
+            }
+        }
+
+
         initializeMapData();
         initializeWalkableCache();
-        System.out.println("Start: (" + startX + "," + startY + ")");
-        System.out.println("End:   (" + endX + "," + endY + ")");
+        printMatrix(maze.layers.get("fake"));
+        System.out.println("Maze generated from (" + startX + "," + startY + ") to (" + endX + "," + endY + ")");
+    }
+
+    public static void printMatrix(int[][] matrix) {
+        for (int i = 0; i < matrix.length; i++) {
+            for (int j = 0; j < matrix[i].length; j++) {
+                System.out.print(matrix[i][j] + " ");
+            }
+            System.out.println(); // xuống dòng sau mỗi hàng
+        }
     }
 
     private int getRandomOdd(int max) {
@@ -206,7 +219,6 @@ public class IsometricMap {
             }
         }
     }
-
 
 
     public TiledMapTileLayer getTerrianLayer() {
@@ -463,4 +475,6 @@ public class IsometricMap {
     public void setEndY(int endY) {
         this.endY = endY;
     }
+
+
 }
