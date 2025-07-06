@@ -98,7 +98,7 @@ public class IsometricMap {
         startX = getRandomOdd(mapWidth);
         startY = getRandomOdd(mapHeight);
 
-        generateMazeDFS(maze, startX, startY);
+        generateMazePrim(maze, startX, startY);
         int[] farthest = findFarthestPathCell(maze, startX, startY);
         endX = farthest[0];
         endY = farthest[1];
@@ -163,44 +163,50 @@ public class IsometricMap {
         return farthest;
     }
 
-    private void generateMazeDFS(int[][] maze, int startX, int startY) {
+    private void generateMazePrim(int[][] maze, int startX, int startY) {
         for (int[] row : maze) {
-            Arrays.fill(row, 0); // all walls
+            Arrays.fill(row, 0); // toàn bộ là tường
         }
 
         Random rand = new Random();
-        Deque<int[]> stack = new ArrayDeque<>();
+        List<int[]> walls = new ArrayList<>();
+
         maze[startX][startY] = 1;
-        stack.push(new int[]{startX, startY});
 
-        int[][] directions = {{2, 0}, {-2, 0}, {0, 2}, {0, -2}}; // skip by 2
+        int[][] directions = {{2, 0}, {-2, 0}, {0, 2}, {0, -2}};
 
-        while (!stack.isEmpty()) {
-            int[] current = stack.peek();
-            int cx = current[0], cy = current[1];
-
-            List<int[]> neighbors = new ArrayList<>();
-            for (int[] d : directions) {
-                int nx = cx + d[0];
-                int ny = cy + d[1];
-                if (nx > 0 && ny > 0 && nx < mapWidth - 1 && ny < mapHeight - 1 && maze[nx][ny] == 0) {
-                    neighbors.add(new int[]{nx, ny});
-                }
+        // Thêm các tường lân cận vào danh sách
+        for (int[] dir : directions) {
+            int wx = startX + dir[0];
+            int wy = startY + dir[1];
+            if (wx > 0 && wy > 0 && wx < mapWidth - 1 && wy < mapHeight - 1) {
+                walls.add(new int[]{wx, wy, startX, startY});
             }
+        }
 
-            if (!neighbors.isEmpty()) {
-                int[] next = neighbors.get(rand.nextInt(neighbors.size()));
-                int nx = next[0], ny = next[1];
-                int wallX = cx + (nx - cx) / 2;
-                int wallY = cy + (ny - cy) / 2;
-                maze[wallX][wallY] = 1;
-                maze[nx][ny] = 1;
-                stack.push(new int[]{nx, ny});
-            } else {
-                stack.pop();
+        while (!walls.isEmpty()) {
+            int[] wall = walls.remove(rand.nextInt(walls.size()));
+            int wx = wall[0], wy = wall[1];
+            int px = wall[2], py = wall[3];
+
+            if (maze[wx][wy] == 0) {
+                int betweenX = (wx + px) / 2;
+                int betweenY = (wy + py) / 2;
+
+                maze[betweenX][betweenY] = 1;
+                maze[wx][wy] = 1;
+
+                for (int[] dir : directions) {
+                    int nx = wx + dir[0];
+                    int ny = wy + dir[1];
+                    if (nx > 0 && ny > 0 && nx < mapWidth - 1 && ny < mapHeight - 1 && maze[nx][ny] == 0) {
+                        walls.add(new int[]{nx, ny, wx, wy});
+                    }
+                }
             }
         }
     }
+
 
 
     public TiledMapTileLayer getTerrianLayer() {
