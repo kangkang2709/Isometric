@@ -65,10 +65,10 @@ public class InputController extends InputAdapter {
         float gridX = (worldX / (tileWidth / 2) - worldY / (tileHeight / 2)) / 2;
         float gridY = (worldX / (tileWidth / 2) + worldY / (tileHeight / 2)) / 2;
 
-//        if (debugLog) {
-//            Gdx.app.log("Conversion", "World: " + worldX + "," + worldY +
-//                    " -> Grid: " + gridX + "," + gridY);
-//        }
+        if (debugLog) {
+            Gdx.app.log("Conversion", "World: " + worldX + "," + worldY +
+                    " -> Grid: " + gridX + "," + gridY);
+        }
 
         return new int[]{Math.round(gridX), Math.round(gridY)};
     }
@@ -82,9 +82,7 @@ public class InputController extends InputAdapter {
     }
 
     private void moveCharacter(int dx, int dy) {
-        if (gameController.canMove(dx, dy)) {
             gameController.moveCharacter(dx, dy);
-        }
     }
 
     @Override
@@ -240,37 +238,38 @@ public class InputController extends InputAdapter {
     private boolean handleExploringStateClick(int screenX, int screenY) {
         // Don't process clicks during dialog or movement cooldown
 
+        return handleCharacterMovement(screenX, screenY);
 
-        if (gameController.getBoardEventManager().getWordScrambleGame().isActive()) {
-            return gameController.getBoardEventManager().getWordScrambleGame().handleMouseInput(screenX, screenY);
-        }
-
-        if (gameController.getDialogController().isDialogActive() || moveCooldown > 0) {
-            return false;
-        }
-
-        // Check for UI element clicks first
-        if (gameController.getInventoryUI().isVisible()) {
-            gameController.getInventoryUI().handleClick(screenX, screenY);
-            return true;
-        }
-
-        if (gameController.getMerchantUI().isVisible()) {
-            gameController.getMerchantUI().handleClick(screenX, screenY);
-            return true;
-        }
-
-        if (gameController.getAchievementUI().isActive()) {
-            gameController.getAchievementUI().handleInput(screenX, screenY);
-            return true;
-        }
-
-        if (gameController.getEventManager().getMapName().equals("board")) {
-            return mapRenderer.handleRollingClick(screenX, screenY);
-        }
+//        if (gameController.getBoardEventManager().getWordScrambleGame().isActive()) {
+//            return gameController.getBoardEventManager().getWordScrambleGame().handleMouseInput(screenX, screenY);
+//        }
+//
+//        if (gameController.getDialogController().isDialogActive() || moveCooldown > 0) {
+//            return false;
+//        }
+//
+//        // Check for UI element clicks first
+//        if (gameController.getInventoryUI().isVisible()) {
+//            gameController.getInventoryUI().handleClick(screenX, screenY);
+//            return true;
+//        }
+//
+//        if (gameController.getMerchantUI().isVisible()) {
+//            gameController.getMerchantUI().handleClick(screenX, screenY);
+//            return true;
+//        }
+//
+//        if (gameController.getAchievementUI().isActive()) {
+//            gameController.getAchievementUI().handleInput(screenX, screenY);
+//            return true;
+//        }
+//
+//        if (gameController.getEventManager().getMapName().equals("board")) {
+//            return mapRenderer.handleRollingClick(screenX, screenY);
+//        }
 
         // Handle character movement
-        return handleCharacterMovement(screenX, screenY);
+
     }
 
     /**
@@ -468,22 +467,6 @@ public class InputController extends InputAdapter {
                 moveCharacter(0, 1);
                 moved = true;
             }
-//            case Keys.Q -> { // Diagonal Up-Left
-//                moveCharacter(1, -1);
-//                moved = true;
-//            }
-//            case Keys.E -> { // Diagonal Up-Right
-//                moveCharacter(1, 1);
-//                moved = true;
-//            }
-//            case Keys.Z -> { // Diagonal Down-Left
-//                moveCharacter(-1, -1);
-//                moved = true;
-//            }
-//            case Keys.C -> { // Diagonal Down-Right
-//                moveCharacter(-1, 1);
-//                moved = true;
-//            }
             default -> {
             }
         }

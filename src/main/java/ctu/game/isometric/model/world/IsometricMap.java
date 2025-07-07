@@ -33,11 +33,11 @@ public class IsometricMap {
     private boolean chunkingEnabled = false;
     PressurePlatePuzzle puzzle;
 
-    int startX = 15;
-    int startY = 15;
+    int startX = 0;
+    int startY = 0;
 
-    int endX = 15;
-    int endY = 15;
+    int endX = 0;
+    int endY = 0;
 
     public IsometricMap(String tmxFilePath) {
         // Load the TMX file
@@ -65,7 +65,7 @@ public class IsometricMap {
         terrianLayer = (TiledMapTileLayer) tiledMap.getLayers().get("terrain_layer");
 
         if (mapName.equals("board")) {
-            generateRandomMaze();
+            generateRandomMaze(0);
         } else {
             initializeMapData();
             initializeWalkableCache();
@@ -89,10 +89,10 @@ public class IsometricMap {
     }
 
 
-    public void generateRandomMaze() {
+    public void generateRandomMaze(int diff) {
         MazeGenerator generator = new MazeGenerator();
         System.out.println("Generating random maze with size: " + mapWidth + "x" + mapHeight);
-        this.maze = generator.generateMaze(); // Generate maze data
+        this.maze = generator.generateMaze(mapWidth, mapHeight, new Random(), diff); // Generate maze data
 
         this.startX = maze.startX;
         this.startY = maze.startY;
@@ -100,16 +100,22 @@ public class IsometricMap {
         this.endY = maze.endY;
 
         int[][] base = this.maze.layers.get("base");
+        walkableCache = new boolean[mapHeight][mapWidth];
         int[][] terrain = this.maze.layers.get("terrain");
 
         for (int y = 0; y < mapHeight; y++) {
             for (int x = 0; x < mapWidth; x++) {
-                boolean isPath = base[y][x] == 1;  // ĐÚNG: [y][x]
+                boolean isPath = base[y][x] == 1;
+
+                // Render tile
                 TiledMapTileLayer.Cell groundCell = new TiledMapTileLayer.Cell();
                 groundCell.setTile(tiledMap.getTileSets().getTile(isPath ? 1 : 0));
                 baseLayer.setCell(x, y, groundCell);
+
+                walkableCache[y][x] = isPath;
             }
         }
+
 
         for (int y = 0; y < mapHeight; y++) {
             for (int x = 0; x < mapWidth; x++) {
@@ -121,9 +127,6 @@ public class IsometricMap {
         }
 
 
-        initializeMapData();
-        initializeWalkableCache();
-        printMatrix(maze.layers.get("fake"));
         System.out.println("Maze generated from (" + startX + "," + startY + ") to (" + endX + "," + endY + ")");
     }
 
@@ -136,87 +139,12 @@ public class IsometricMap {
         }
     }
 
-    private int getRandomOdd(int max) {
-        Random rand = new Random();
-        int r = rand.nextInt((max - 1) / 2) * 2 + 1;
-        return Math.min(r, max - 2); // tránh sát rìa
-    }
-
-    private int[] findFarthestPathCell(int[][] maze, int sx, int sy) {
-        boolean[][] visited = new boolean[mapWidth][mapHeight];
-        Queue<int[]> queue = new LinkedList<>();
-        queue.add(new int[]{sx, sy, 0});
-
-        int maxDist = -1;
-        int[] farthest = new int[]{sx, sy};
-
-        int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
-
-        while (!queue.isEmpty()) {
-            int[] curr = queue.poll();
-            int x = curr[0], y = curr[1], dist = curr[2];
-            if (visited[x][y]) continue;
-            visited[x][y] = true;
-
-            if (dist > maxDist) {
-                maxDist = dist;
-                farthest[0] = x;
-                farthest[1] = y;
+    public static void printMatrix(boolean[][] matrix) {
+        for (int i = 0; i < matrix.length; i++) {
+            for (int j = 0; j < matrix[i].length; j++) {
+                System.out.print((matrix[i][j] ? 1 : 0) + " ");
             }
-
-            for (int[] d : dirs) {
-                int nx = x + d[0];
-                int ny = y + d[1];
-                if (nx >= 0 && ny >= 0 && nx < mapWidth && ny < mapHeight && maze[nx][ny] == 1 && !visited[nx][ny]) {
-                    queue.add(new int[]{nx, ny, dist + 1});
-                }
-            }
-        }
-
-        return farthest;
-    }
-
-    private void generateMazePrim(int[][] maze, int startX, int startY) {
-        for (int[] row : maze) {
-            Arrays.fill(row, 0); // toàn bộ là tường
-        }
-
-        Random rand = new Random();
-        List<int[]> walls = new ArrayList<>();
-
-        maze[startX][startY] = 1;
-
-        int[][] directions = {{2, 0}, {-2, 0}, {0, 2}, {0, -2}};
-
-        // Thêm các tường lân cận vào danh sách
-        for (int[] dir : directions) {
-            int wx = startX + dir[0];
-            int wy = startY + dir[1];
-            if (wx > 0 && wy > 0 && wx < mapWidth - 1 && wy < mapHeight - 1) {
-                walls.add(new int[]{wx, wy, startX, startY});
-            }
-        }
-
-        while (!walls.isEmpty()) {
-            int[] wall = walls.remove(rand.nextInt(walls.size()));
-            int wx = wall[0], wy = wall[1];
-            int px = wall[2], py = wall[3];
-
-            if (maze[wx][wy] == 0) {
-                int betweenX = (wx + px) / 2;
-                int betweenY = (wy + py) / 2;
-
-                maze[betweenX][betweenY] = 1;
-                maze[wx][wy] = 1;
-
-                for (int[] dir : directions) {
-                    int nx = wx + dir[0];
-                    int ny = wy + dir[1];
-                    if (nx > 0 && ny > 0 && nx < mapWidth - 1 && ny < mapHeight - 1 && maze[nx][ny] == 0) {
-                        walls.add(new int[]{nx, ny, wx, wy});
-                    }
-                }
-            }
+            System.out.println(); // xuống dòng sau mỗi hàng
         }
     }
 
@@ -310,7 +238,7 @@ public class IsometricMap {
         Arrays.parallelSetAll(mapData, y -> {
             int[] row = new int[mapWidth];
             for (int x = 0; x < mapWidth; x++) {
-                row[x] = getTileIdDirect(x, y);
+                row[x] = getTileIdDirect(y, x);
             }
             return row;
         });
@@ -389,7 +317,7 @@ public class IsometricMap {
             return false;
         }
 
-        if (!chunkingEnabled) {
+        if (mapName.equals("board") || !chunkingEnabled) {
             return walkableCache[y][x];
         } else {
             MapChunk chunk = getOrCreateChunk(x, y);

@@ -38,7 +38,6 @@ public class EventManager {
                     int objGridX = (int) (rect.x / map.getTileHeight());
                     int objGridY = (int) (rect.y / map.getTileHeight());
 
-                    System.out.println("Object at grid position: " + objGridX + ", " + objGridY);
 
                     MapProperties props = object.getProperties();
                     if (props.containsKey("event")) {

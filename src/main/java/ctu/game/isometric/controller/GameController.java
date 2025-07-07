@@ -186,7 +186,7 @@ public class GameController {
 
             transitionRenderer.startLoadingScreen(() -> {
                 if (newMap.getMapName().equals("board")) {
-                    newMap.generateRandomMaze();
+                    newMap.generateRandomMaze(getCharacter().getRun() / 2);
                     boardEventManager.randomBoardEveryRun();
                 }
 
@@ -681,7 +681,8 @@ public class GameController {
     public boolean canMove(int dx, int dy) {
         float newX = character.getGridX() + dx;
         float newY = character.getGridY() + dy;
-        return map.isWalkable((int) newX, (int) newY) && isNotBlockedByNPC(newX, newY);
+        if (map.getMapName().equals("board")) return map.isWalkable((int) newX, (int) newY);
+        else return map.isWalkable((int) newX, (int) newY) && isNotBlockedByNPC(newX, newY);
     }
 
     public boolean isNotBlockedByNPC(float x, float y) {
@@ -702,34 +703,6 @@ public class GameController {
 //        }
 //    }
 
-    private boolean isValidPosition(int x, int y) {
-        if (map == null || map.getMapData() == null) return false;
-
-        int[][] mapData = map.getMapData();
-        if (mapData.length == 0) return false;
-
-        if (x < 0 || y < 0 || y >= mapData.length || x >= mapData[0].length) {
-            return false;
-        }
-
-        return mapData[y][x] != 0;
-    }
-
-    private void findValidStartPosition() {
-        // Find the first walkable tile on the new map
-        int[][] mapData = map.getMapData();
-        for (int y = 0; y < mapData.length; y++) {
-            for (int x = 0; x < mapData[y].length; x++) {
-                if (mapData[y][x] != 0) {
-                    character.setPosition(x, y);
-                    return;
-                }
-            }
-        }
-        // If no walkable tile found, place at (0,0) as a last resort
-        character.setPosition(0, 0);
-    }
-
 
     public void moveCharacter(int dx, int dy) {
 
@@ -742,7 +715,7 @@ public class GameController {
         float newY = character.getGridY() + dy;
 
         character.moveToward(newX, newY);
-//        character.setMoving(true);
+
 
         // Optional: Trigger a dialog when character reaches certain positions
         if (eventManager.getMapName().equals("board"))

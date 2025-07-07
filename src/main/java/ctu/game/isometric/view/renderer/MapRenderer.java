@@ -296,7 +296,7 @@ public class MapRenderer {
             TextureRegion texture = textureRegions.get(plate.getEffectType() + "_" + (plate.isActivated() ? "active" : "inactive"));
             if (texture != null) {
                 float[] isoPos = toIsometric(plate.getGridX(), plate.getGridY());
-                batch.draw(texture, isoPos[0], isoPos[1], 64, 32);
+                batch.draw(texture, isoPos[0] +10, isoPos[1]+16, 40, 32);
             }
 //            if (!plate.getEffectType().equals("trap") && !plate.isActivated()) {
 //                float[] isoPos = toIsometric(plate.getTargetX(), plate.getTargetY());
@@ -333,16 +333,8 @@ public class MapRenderer {
     }
 
 
-    PerspectiveCamera camera_3d = new PerspectiveCamera();
 
     public void render(SpriteBatch batch) {
-        // Draw background for the entire screen
-//        float bgX = camera.position.x - (Gdx.graphics.getWidth() / 2f);
-//        float bgY = camera.position.y - (Gdx.graphics.getHeight() / 2f);
-//        batch.draw(backgroundTexture, bgX, bgY, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-
-        // Update camera position based on character position
-
 
         if (!map.getMapName().equals("board")) {
             float[] isoPos = toIsometric(character.getGridX(), character.getGridY());
@@ -352,6 +344,7 @@ public class MapRenderer {
             camera.position.set(645, 25, 0);
             camera.update();
         }
+
 
 
         // End batch if currently drawing to use renderer
@@ -414,13 +407,13 @@ public class MapRenderer {
                     drawItemTexture(batch, event.getProperties().get("itemName", String.class), isoPos[0] + 16, isoPos[1] + 8, 32, 32);
                     break;
                 case "new_run_event":
-                    drawTexture(batch, "new_run", isoPos[0], isoPos[1], 64, 34);
+                    drawTexture(batch, "new_run", isoPos[0], isoPos[1], 32, 64);
                     break;
                 case "battle":
-                    drawEnemySpinCard(batch, isoPos[0] + 14, isoPos[1] + 12, 30, 40);
+                    drawEnemySpinCard(batch, isoPos[0] + 14, isoPos[1] + 12, 20, 30);
                     break;
                 case "word_scramble", "mulquiz", "quiz":
-                    drawMiniGameSpinCard(batch, isoPos[0] + 14, isoPos[1] + 12, 30, 40);
+                    drawMiniGameSpinCard(batch, isoPos[0] + 14, isoPos[1] + 12, 20, 30);
                     break;
             }
         }
@@ -779,6 +772,8 @@ public class MapRenderer {
         if (cardTexture == null) {
             cardTexture = textures.get("enemy_card");
         }
+
+
 
         if (cardTexture != null) {
             float cardWidth = 350;

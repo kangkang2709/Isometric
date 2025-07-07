@@ -19,13 +19,11 @@ public class BoardEventManager {
     private String mapName = "board";
     private EventManager eventManager;
     private IsometricMap map;
-    private final int START_X = 10;
-    private final int START_Y = 0;
     private Random random = new Random();
     private Set<String> usedPositions = new HashSet<>();
 
     private final int TOTAL_WALKABLE_TILES = 80;
-    private final int EXACT_TOTAL_EVENTS = 40; // Must be exactly 40
+    private final int EXACT_TOTAL_EVENTS = 30; // Must be exactly 40
     private int totalEventsPlaced = 0;
 
     // Your specific board path
@@ -103,7 +101,10 @@ public class BoardEventManager {
                 int y = Integer.parseInt(coords[1]);
 
                 // Skip start position
-                if (x == START_X && y == START_Y) {
+                if (x == map.getStartX() && y == map.getStartY()) {
+                    continue;
+                }
+                if (x == map.getEndX() && y == map.getEndY()) {
                     continue;
                 }
 
@@ -121,7 +122,7 @@ public class BoardEventManager {
     }
 
     public void randomBoardEveryRun() {
-        initializeSafeDefaults();
+        initializeWalkablePositions();
 
         try {
             this.currentRun = gameController.getCharacter().getRun();
@@ -159,26 +160,36 @@ public class BoardEventManager {
 
     private void distributeRemainingEvents(int remainingEvents) {
         try {
-            int itemEvents = (int) Math.round(remainingEvents * 0.3);
-            int enemyEvents = (int) Math.round(remainingEvents * 0.4);
-            int wordEvents = (int) Math.round(remainingEvents * 0.3);
-            int trapEvents = (int) Math.round(remainingEvents * 0.1);
             int quizEvents = 0;
             int multiQuizEvents = 0;
+            int wordEvents = 0;
 
-            // Add quiz events if run >= 3
-            if (currentRun >= 0) {
-                quizEvents = Math.min(3, remainingEvents / 10);
-                multiQuizEvents = Math.min(2, remainingEvents / 15);
-                itemEvents = Math.max(0, itemEvents - quizEvents - multiQuizEvents);
-            }
+            // Tính số lượng quiz/word tối đa có thể, nhưng không quá 3 mỗi loại
+            int trio = Math.min(remainingEvents / 3, 3); // mỗi loại 1/3
+            quizEvents = trio;
+            multiQuizEvents = trio;
+            wordEvents = trio;
 
-            // Adjust if total exceeds or undershoots
-            int totalDistributed = itemEvents + enemyEvents + wordEvents + trapEvents + quizEvents + multiQuizEvents;
-            if (totalDistributed > remainingEvents) {
-                itemEvents = Math.max(0, itemEvents - (totalDistributed - remainingEvents));
-            } else if (totalDistributed < remainingEvents) {
-                itemEvents += (remainingEvents - totalDistributed);
+            int reserved = quizEvents + multiQuizEvents + wordEvents;
+            int available = remainingEvents - reserved;
+
+            // Giới hạn item nhỏ hơn hoặc bằng quiz để ưu tiên học tập
+            int itemEvents = Math.min((int) Math.round(available * 0.1), quizEvents);
+            available -= itemEvents;
+
+            // Chia phần còn lại cho enemy và trap
+            int enemyEvents = (int) Math.round(available * 0.6);
+            int trapEvents = available - enemyEvents;
+
+            // Kiểm tra tổng, điều chỉnh nếu lệch
+            int totalDistributed = itemEvents + enemyEvents + trapEvents + quizEvents + multiQuizEvents + wordEvents;
+            int diff = remainingEvents - totalDistributed;
+
+            if (diff > 0) {
+                enemyEvents += diff; // đổ thêm vào enemy nếu còn dư
+            } else if (diff < 0 && itemEvents > 0) {
+                int reduce = Math.min(itemEvents, -diff);
+                itemEvents -= reduce;
             }
 
             System.out.println("Distributing " + remainingEvents + " events: Items=" + itemEvents +
@@ -186,14 +197,11 @@ public class BoardEventManager {
                     ", Quiz=" + quizEvents + ", MultiQuiz=" + multiQuizEvents);
 
             // Place events
-            placeSpecificEvents("treasure", itemEvents, "item");
             placeSpecificEvents("trap", trapEvents, "plate");
             placeSpecificEvents("enemy", enemyEvents, "enemy");
             placeSpecificEvents("word_scramble", wordEvents, "word");
-            if (currentRun >= 0) {
-                placeSpecificEvents("quiz", quizEvents, "quiz");
-                placeSpecificEvents("mulquiz", multiQuizEvents, "multiquiz");
-            }
+            placeSpecificEvents("quiz", quizEvents, "quiz");
+            placeSpecificEvents("mulquiz", multiQuizEvents, "multiquiz");
 
             fillToExactTotal();
 
@@ -201,6 +209,10 @@ public class BoardEventManager {
             System.err.println("Error distributing remaining events: " + e.getMessage());
         }
     }
+
+
+
+
 
 
     private void placeSpecificEvents(String eventType, int count, String displayType) {
@@ -365,7 +377,37 @@ public class BoardEventManager {
                     MapEvent fakeEvent = new MapEvent(fakePositionKey, "new_run_event", pos[0], pos[1], "Fake Event", "0");
                     eventManager.addEvent(fakeEvent);
                 }
+
             }
+
+            for (int[] pos : map.getMaze().layers.get("chest")) {
+                String itemsPositionKey = pos[0] + "_" + pos[1];
+                if (!usedPositions.contains(itemsPositionKey)) {
+                    usedPositions.add(itemsPositionKey);
+                    totalEventsPlaced++;
+
+                    System.out.println("Placing treasure at: " + itemsPositionKey);
+                    Items randomItem = items.get(random.nextInt(items.size()));
+                    MapEvent itemEvent = new MapEvent(itemsPositionKey, "treasure", pos[0], pos[1],
+                            randomItem.getItemName(), String.valueOf(randomItem.getItemID()));
+                    eventManager.addEvent(itemEvent);
+                }
+
+            }
+            for (int[] pos : map.getMaze().layers.get("enemy")) {
+                String enemyPositionKey = pos[0] + "_" + pos[1];
+                if (!usedPositions.contains(enemyPositionKey)) {
+                    usedPositions.add(enemyPositionKey);
+                    totalEventsPlaced++;
+
+                    Enemy randomEnemy = enemies.get(random.nextInt(enemies.size()));
+                    eventManager.addEnemyEvent(enemyPositionKey, pos[0], pos[1], randomEnemy);
+                }
+
+            }
+            System.out.println("Size enemy: " + map.getMaze().layers.get("enemy").length);
+
+
         } catch (Exception e) {
             System.err.println("Error placing default event: " + e.getMessage());
         }

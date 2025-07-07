@@ -82,7 +82,6 @@ public class ExploringUI {
     }
 
 
-
     private void createSkin() {
         skin = new Skin();
         // Load custom font
@@ -194,7 +193,7 @@ public class ExploringUI {
         // Time frame with time label
         timeFrameImage = new Image(new TextureRegionDrawable(timeFrameTexture));
         timeLabel = new Label("Lv " + character.getLevel(), skin, "default");
-        healthLabel = new Label("HP " + (int)character.getHealth() + "/" + (int)maxHealth, skin, "default");
+        healthLabel = new Label("HP " + (int) character.getHealth() + "/" + (int) maxHealth, skin, "default");
 
         float healthBarWidth = healthBarTexture.getWidth();
         float healthBarHeight = healthBarTexture.getHeight();
@@ -310,13 +309,13 @@ public class ExploringUI {
             timeLabel.setText(charLevel);
 
             // Update player info
-            runLabel.setText("Run: " + character.getRun());
+            runLabel.setText("Floor: " + character.getRun());
             playerNameLabel.setText(character.getName().replaceAll("_", " "));
 
             // Update health and max health
             float health = character.getHealth();
             maxHealth = character.getMaxHealth(); // Get dynamic max health
-            healthLabel.setText("HP: " + (int)health + "/" + (int)maxHealth);
+            healthLabel.setText("HP: " + (int) health + "/" + (int) maxHealth);
             // Update mana and max mana
             float mana = character.getMana();
             maxMana = character.getMaxMana(); // Get dynamic max mana
@@ -327,7 +326,7 @@ public class ExploringUI {
 //            expLabel.setText("EXP: " + (int)exp + "/" + maxExp);
 
             // Update health bar color based on health percentage
-            float healthPercent = health / (float)maxHealth;
+            float healthPercent = health / (float) maxHealth;
             Color healthColor = new Color(
                     1f - healthPercent,  // More red as health decreases
                     healthPercent,       // More green as health increases
@@ -342,14 +341,14 @@ public class ExploringUI {
 
             // Dispose old texture before setting new one
             if (healthIndicator.getDrawable() != null) {
-                ((TextureRegionDrawable)healthIndicator.getDrawable()).getRegion().getTexture().dispose();
+                ((TextureRegionDrawable) healthIndicator.getDrawable()).getRegion().getTexture().dispose();
             }
 
             // Set new health texture
             healthIndicator.setDrawable(new TextureRegionDrawable(new Texture(healthPixmap)));
 
             // Update mana indicator
-            float manaPercent = mana / (float)maxMana;
+            float manaPercent = mana / (float) maxMana;
             Color manaColor = new Color(0.2f, 0.2f, 1f, 1f); // Blue color for mana
 
             Pixmap manaPixmap = new Pixmap(1, 10, Pixmap.Format.RGBA8888);
@@ -358,14 +357,14 @@ public class ExploringUI {
 
             // Dispose old texture before setting new one
             if (manaIndicator.getDrawable() != null) {
-                ((TextureRegionDrawable)manaIndicator.getDrawable()).getRegion().getTexture().dispose();
+                ((TextureRegionDrawable) manaIndicator.getDrawable()).getRegion().getTexture().dispose();
             }
 
             // Set new mana texture
             manaIndicator.setDrawable(new TextureRegionDrawable(new Texture(manaPixmap)));
 
             // Update exp indicator
-            float expPercent = exp / (float)maxExp;
+            float expPercent = exp / (float) maxExp;
             Color expColor = new Color(1f, 0.8f, 0.2f, 1f); // Gold color for exp
 
             Pixmap expPixmap = new Pixmap(1, 10, Pixmap.Format.RGBA8888);
@@ -374,7 +373,7 @@ public class ExploringUI {
 
             // Dispose old texture before setting new one
             if (expIndicator.getDrawable() != null) {
-                ((TextureRegionDrawable)expIndicator.getDrawable()).getRegion().getTexture().dispose();
+                ((TextureRegionDrawable) expIndicator.getDrawable()).getRegion().getTexture().dispose();
             }
 
             // Set new exp texture
@@ -492,6 +491,7 @@ public class ExploringUI {
 
         cachedBackgroundTexture = new Texture(cachedBackgroundPixmap);
     }
+
     private void reinitializeExpBar(float exp, Color expColor) {
         if (cachedBackgroundPixmap == null || cachedBackgroundTexture == null) {
             initializeExpBarBackground();
@@ -505,7 +505,7 @@ public class ExploringUI {
         float expPercent = exp / (float) maxExp;
         int centerX = size / 2;
         int centerY = size / 2;
-        int radius = (int)((size / 2 - size / 10) * 1.1f); // 80% of the radius
+        int radius = (int) ((size / 2 - size / 10) * 1.1f); // 80% of the radius
         int thickness = size / 2;
 
         for (int x = 0; x < size; x++) {
@@ -527,7 +527,7 @@ public class ExploringUI {
                                 expColor.a
                         );
                         progressPixmap.setColor(gradientColor);
-                        progressPixmap.drawPixel(x+1, y);
+                        progressPixmap.drawPixel(x + 1, y);
                     }
                 }
             }
@@ -565,6 +565,7 @@ public class ExploringUI {
 
     /**
      * Explicitly sets UI visibility
+     *
      * @param visible true to show UI, false to hide
      */
     public void setUIVisible(boolean visible) {
@@ -573,6 +574,7 @@ public class ExploringUI {
 
     /**
      * Returns current UI visibility
+     *
      * @return true if UI is visible, false otherwise
      */
     public boolean isUIVisible() {
