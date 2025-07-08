@@ -99,6 +99,7 @@ public class GameplayController {
     private float gridX, gridY, gridSize, cellSize;
     private CardAnimationManager cardAnimationManager;
 
+
     public GameplayController(GameController gameController) {
         this.gameController = gameController;
         this.letterGrid = new LetterGrid();
@@ -203,9 +204,9 @@ public class GameplayController {
     public void playerBuff(int buff, Runnable onComplete) {
         AttackCard card = new AttackCard(
                 AttackCard.CardType.SPECIAL,
-                "BUFF",
+                "",
                 buff,
-                90, 230, 90, 230, 90, 230
+                80, 250, 80, 250, 80, 250
         );
         card.setSFXCallback(() -> effectManager.playClickSound());
         card.setOnComplete(onComplete);
@@ -1164,6 +1165,8 @@ public class GameplayController {
 
     float timerAction = 0;
 
+
+
     public boolean submitWord() {
         if (!active) return false;
 
@@ -1390,12 +1393,14 @@ public class GameplayController {
             playerHealth = 0;
             endCombat(false);
             isGameOver = gameController.getCharacter().gameOver();
+            gameController.getCharacter().resetWinStreak();
             timerAction = 0;
         } else if (enemyHealth <= 0) {
             addCombatLog("Bạn đã hạ gục " + enemyName + "!");
             enemyHealth = 0;
             endCombat(true);
             timerAction = 0;
+            gameController.getCharacter().incrementWinStreak();
             if (currentEvent != null && currentEvent.isOneTime()) {
                 gameController.getEventManager().recordDefeatedEnemy(this.enemy.getEnemyID());
                 gameController.getEventManager().completeEvent(currentEvent.getId());

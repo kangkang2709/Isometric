@@ -11,7 +11,7 @@ public class MusicController {
     private final Map<String, Music> musicTracks;
     private String currentTrackId;
     private float volume = 0.5f;
-    private boolean enabled = true;
+    private boolean enabled = false;
 
     public MusicController() {
         this.musicTracks = new HashMap<>();

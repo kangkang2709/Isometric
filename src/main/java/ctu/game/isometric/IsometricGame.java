@@ -16,7 +16,7 @@ public class IsometricGame extends Game {
     private SplashScreen splashScreen;
     private LinearCaveScreen dungeonScreen;
     private EndScreen gameOverScreen;
-
+    private DarkestDungeon darkestDungeonScreen;
     @Override
     public void create() {
         assetManager = new AssetManager();
@@ -26,14 +26,15 @@ public class IsometricGame extends Game {
 
 
         // Initialize screens
-        splashScreen = new SplashScreen(this);
-        gameScreen = new GameScreen(this, gameController);
+//        splashScreen = new SplashScreen(this);
+//        gameScreen = new GameScreen(this, gameController);
 //        gameOverScreen = new EndScreen(() -> {
 //            changeScreen("GAME");
 //        });
 //        dungeonScreen = new LinearCaveScreen(this, gameController);
 
-        setScreen(gameScreen);
+        darkestDungeonScreen = new DarkestDungeon(this, gameController);
+        setScreen(darkestDungeonScreen);
     }
 
     @Override

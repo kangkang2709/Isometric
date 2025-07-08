@@ -42,6 +42,7 @@ public class Character {
     private IsometricMap gameMap;
     private float targetX, targetY;
     private float moveSpeed = 2.5f; // Grid cells per second
+    private int playerWinStreak = 0;
 
     // Quest tracking
     private QuestTracker questTracker;
@@ -171,7 +172,6 @@ public class Character {
         }
         isTutorials.put(tutorialType, true);
     }
-
     public Character(float startX, float startY) {
         this.gridX = startX;
         this.gridY = startY;
@@ -966,6 +966,15 @@ public class Character {
         this.score = score;
     }
 
+    public int getWinStreak() {
+        return playerWinStreak;
+    }
+    public void incrementWinStreak() {
+        this.playerWinStreak++;
+    }
+    public void resetWinStreak() {
+        this.playerWinStreak = 0;
+    }
     public void setNewlearneWords(Set<String> newlearneWords) {
         this.newlearneWords = newlearneWords;
     }

@@ -51,7 +51,7 @@ public class AssetManager implements Disposable {
         loadTexture("card_bg_attack", "textures/card_bg_attack.png");
         loadTexture("card_bg_heal", "textures/health.png");
         loadTexture("card_bg_mana", "textures/mana_3.png");
-        loadTexture("card_bg_special", "textures/buff_2.png");
+        loadTexture("card_bg_special", "textures/halo.png");
         loadTexture("glass", "textures/glass.png");
         loadTexture("glass_shard", "textures/glass_shard.png");
         loadTexture("glow", "textures/glow.png");
