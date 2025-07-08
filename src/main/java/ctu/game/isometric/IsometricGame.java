@@ -2,6 +2,7 @@ package ctu.game.isometric;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import ctu.game.isometric.controller.GameController;
 import ctu.game.isometric.model.game.GameState;
@@ -17,6 +18,7 @@ public class IsometricGame extends Game {
     private LinearCaveScreen dungeonScreen;
     private EndScreen gameOverScreen;
     private DarkestDungeon darkestDungeonScreen;
+
     @Override
     public void create() {
         assetManager = new AssetManager();
@@ -56,6 +58,9 @@ public class IsometricGame extends Game {
             case "GAME":
                 setScreen(gameScreen);
                 break;
+            case "DARK_DUNGEON":
+                setScreen(darkestDungeonScreen);
+                break;
             case "DUNGEON":
                 dungeonScreen.setGameStarted(false);
                 setScreen(dungeonScreen);
@@ -78,8 +83,13 @@ public class IsometricGame extends Game {
     public static GameController getGameController() {
         return gameController;
     }
+
     public GameScreen getGameScreen() {
         return gameScreen;
+    }
+
+    public DarkestDungeon getDarkestDungeonScreen() {
+        return darkestDungeonScreen;
     }
 
     public void setGameScreen(GameScreen gameScreen) {

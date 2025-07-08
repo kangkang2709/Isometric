@@ -95,9 +95,13 @@ public class AssetManager implements Disposable {
     }
 
 
-
-
-    private Texture loadTexture(String name, String path) {
+    public Texture loadTexture(String name, String path) {
+        if (textures.containsKey(name)) {
+            return textures.get(name);
+        }
+        if (textures.containsKey(path)) {
+            return textures.get(name);
+        }
         Texture texture = new Texture(Gdx.files.internal(path));
         texture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
         textures.put(name, texture);

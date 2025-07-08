@@ -1,20 +1,33 @@
 package ctu.game.isometric.view.screen;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.Timer;
 import ctu.game.isometric.IsometricGame;
 import ctu.game.isometric.controller.GameController;
 import ctu.game.isometric.model.entity.Character;
+import ctu.game.isometric.model.entity.Enemy;
+import ctu.game.isometric.model.game.GameState;
+import ctu.game.isometric.model.game.Items;
+import ctu.game.isometric.model.game.Reward;
 import ctu.game.isometric.util.AssetManager;
+import ctu.game.isometric.util.ItemLoader;
+import ctu.game.isometric.util.RewardLoader;
+import ctu.game.isometric.util.WordNetValidator;
+
+import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
 
 public class DarkestDungeon implements Screen {
     private SpriteBatch batch;
@@ -24,65 +37,89 @@ public class DarkestDungeon implements Screen {
 
     // Combat state
     private enum CombatState {
-        PLAYER_TURN, ENEMY_TURN, COMBAT_END, ANIMATING, TURN_TRANSITION
+        PLAYER_TURN, ENEMY_TURN, COMBAT_END, ANIMATING
     }
 
     // Animation state for skill animations
     private enum AnimationState {
-        IDLE, SKILL_START, SKILL_EFFECT, SKILL_END
+        IDLE, MOVE_TO_CENTER, SKILL_EFFECT, MOVE_BACK
     }
 
     private CombatState combatState = CombatState.PLAYER_TURN;
     private AnimationState animState = AnimationState.IDLE;
     private float animationTimer = 0;
-    private float turnTransitionTimer = 0;
-    private final float SKILL_ZOOM_DURATION = 0.6f;
-    private final float SKILL_EFFECT_DURATION = 1.0f;
-    private final float TURN_TRANSITION_DURATION = 1.2f;
+    private final float MOVE_DURATION = 0.8f;
+    private final float SKILL_EFFECT_DURATION = 1.2f;
+    private final float IDLE_ANIMATION_SPEED = 2.0f;
     private String combatLog = "";
 
-    // Character stats
-    private int playerHP = 45, playerMaxHP = 60;
+    // Pause menu
+    private boolean isPaused = false;
+    private boolean escKeyPressed = false;
+
+    // Character stats - Enhanced with ATK and DEF
+    private int playerHP = 4, playerMaxHP = 60;
     private int playerMana = 25, playerMaxMana = 50;
-    private int enemyHP = 40, enemyMaxHP = 40;
-    private int enemyMana = 20, enemyMaxMana = 30;
+    private int playerATK = 15, playerDEF = 8;
+    private int enemyHP = 4, enemyMaxHP = 40;
+    private int enemyMana = 20, enemyMaxMana = 20;
+    private int enemyATK = 12, enemyDEF = 5;
     private String playerName = "Plague Doctor";
     private String enemyName = "Cactoid Vertephile";
 
-    // Screen dimensions
+    // Screen dimensions - Split into two 360px halves
     private final float SCREEN_WIDTH = 1280;
     private final float SCREEN_HEIGHT = 720;
+    private final float TOP_HALF_HEIGHT = 360;
+    private final float BOTTOM_HALF_HEIGHT = 360;
 
-    // UI Layout constants
-    private final float TOP_BAR_HEIGHT = 60;
-    private final float BOTTOM_HUD_HEIGHT = 200;
-    private final float SIDE_MARGIN = 40;
+    // Combat area (top half)
+    private final float COMBAT_AREA_Y = BOTTOM_HALF_HEIGHT;
+    private final float COMBAT_CENTER_Y = COMBAT_AREA_Y + TOP_HALF_HEIGHT / 2;
 
-    // Character info panels
-    private final float INFO_PANEL_WIDTH = 280;
-    private final float INFO_PANEL_HEIGHT = 160;
-    private final float PLAYER_INFO_X = SIDE_MARGIN;
-    private final float ENEMY_INFO_X = SCREEN_WIDTH - INFO_PANEL_WIDTH - SIDE_MARGIN;
-    private final float INFO_PANEL_Y = 20;
+    // Character positions
+    private float playerStartX = SCREEN_WIDTH * 0.25f;
+    private float playerStartY = COMBAT_CENTER_Y;
+    private float enemyStartX = SCREEN_WIDTH * 0.75f;
+    private float enemyStartY = COMBAT_CENTER_Y;
 
-    // Health/Mana bars
-    private final float BAR_WIDTH = 240;
-    private final float BAR_HEIGHT = 14;
-    private final float MANA_BAR_HEIGHT = 12;
+    // Current animated positions
+    private float playerCurrentX = playerStartX;
+    private float playerCurrentY = playerStartY;
+    private float enemyCurrentX = enemyStartX;
+    private float enemyCurrentY = enemyStartY;
 
-    // Skill bars
+    // Scale for character animation
+    private float playerScale = 1.0f;
+    private float enemyScale = 1.0f;
+    private final float MAX_SCALE = 1.5f;
+
+    private final float CHAR_WIDTH = 200;
+    private final float CHAR_HEIGHT = 250;
+
+    // Bottom UI layout
+    private final float STATUS_PANEL_WIDTH = 300;
+    private final float STATUS_PANEL_HEIGHT = 200;
+    private final float PLAYER_STATUS_X = 50;
+    private final float ENEMY_STATUS_X = SCREEN_WIDTH - STATUS_PANEL_WIDTH - 50;
+    private final float STATUS_PANEL_Y = 50;
+
+    // Skill bar layout
     private final float SKILL_BAR_WIDTH = 400;
     private final float SKILL_BAR_HEIGHT = 80;
-    private final float PLAYER_SKILL_BAR_X = (SCREEN_WIDTH / 2) - SKILL_BAR_WIDTH - 20;
-    private final float ENEMY_SKILL_BAR_X = (SCREEN_WIDTH / 2) + 20;
-    private final float SKILL_BAR_Y = BOTTOM_HUD_HEIGHT - 100;
-
+    private final float SKILL_BAR_X = (SCREEN_WIDTH - SKILL_BAR_WIDTH) / 2;
+    private final float SKILL_BAR_Y = 250;
     private final float SKILL_BUTTON_SIZE = 64;
     private final float SKILL_BUTTON_SPACING = 12;
 
+    // Health/Mana bars
+    private final float BAR_WIDTH = 200;
+    private final float BAR_HEIGHT = 14;
+    private final float MANA_BAR_HEIGHT = 12;
+
     // Skills configuration
     private String[] skillIcons = {"⚔️", "🔥", "⚡", "💉", "🛡️"};
-    private String[] skillNames = {"Attack", "Flame", "Lightning", "Heal", "Defend"};
+    private String[] skillNames = {"Attack", "Word", "TypeW", "Heal", "Defend"};
     private int[] skillManaCost = {0, 5, 5, 10, 0};
     private boolean[] skillEnabled = {true, true, true, true, true};
 
@@ -91,29 +128,10 @@ public class DarkestDungeon implements Screen {
     private String[] enemySkillNames = {"Attack", "Special", "Heal"};
     private int[] enemySkillCost = {0, 8, 12};
 
-    // Character positions
-    private final float COMBAT_AREA_Y = TOP_BAR_HEIGHT;
-    private final float COMBAT_AREA_HEIGHT = SCREEN_HEIGHT - TOP_BAR_HEIGHT - BOTTOM_HUD_HEIGHT;
-    private final float COMBAT_CENTER_Y = COMBAT_AREA_Y + COMBAT_AREA_HEIGHT / 2;
-
-    private float playerX = SCREEN_WIDTH * 0.3f;
-    private float playerY = COMBAT_CENTER_Y;
-    private float enemyX = SCREEN_WIDTH * 0.7f;
-    private float enemyY = COMBAT_CENTER_Y;
-
-    private final float CHAR_WIDTH = 100;
-    private final float CHAR_HEIGHT = 180;
-
-    // Camera zoom effect
-    private float targetZoom = 1.0f;
-    private float currentZoom = 1.0f;
-    private final float ZOOM_SPEED = 3.0f;
-    private final float SKILL_ZOOM_FACTOR = 0.7f;
-
     // Textures
-    private Texture playerIdleTexture;
+    private Texture[] playerIdleTextures = new Texture[2]; // For idle animation
     private Texture[] playerSkillTextures = new Texture[5];
-    private Texture enemyIdleTexture;
+    private Texture[] enemyIdleTextures = new Texture[2]; // For idle animation
     private Texture[] enemySkillTextures = new Texture[3];
     private Texture[] skillButtonTextures = new Texture[5];
     private Texture[] effectTextures = new Texture[3];
@@ -128,46 +146,237 @@ public class DarkestDungeon implements Screen {
     private int currentSkill = -1;
     private int enemyAction = -1;
 
+    // Animation control
+    private boolean isAnimating = false;
+    private boolean isPlayerAction = false;
+    private boolean enemyTurnTriggered = false;
+    private float idleAnimationTimer = 0;
+
     IsometricGame game;
     GameController gameController;
     Character player;
     AssetManager assetManager;
+
+    WordNetValidator wordNetValidator;
 
     public DarkestDungeon(IsometricGame game, GameController gameController) {
         this.gameController = gameController;
         this.game = game;
         this.player = gameController.getCharacter();
         this.assetManager = game.getAssetManager();
+        this.wordNetValidator = gameController.getWordNetValidator();
     }
+
+    int rewardId = 0;
+
+    public void startCombat(Enemy enemy) {
+        this.enemyName = enemy.getEnemyName();
+        this.enemyMaxHP = (int) enemy.getHealth();
+        this.enemyHP = enemyMaxHP;
+
+        this.enemyATK = enemy.getAttackPower();
+        this.enemyDEF = enemy.getDefensePower();
+
+        this.rewardId = enemy.getRewardID();
+
+        this.playerName = gameController.getCharacter().getName();
+        this.playerMaxHP = (int) gameController.getCharacter().getMaxHealth();
+        this.playerHP = (int) gameController.getCharacter().getHealth();
+        this.playerMana = (int) gameController.getCharacter().getMana();
+        this.playerMaxMana = (int) gameController.getCharacter().getMaxMana();
+        this.playerATK = (int) gameController.getCharacter().getDamage();
+        this.playerDEF = (int) gameController.getCharacter().getDamage();
+
+        this.isAnimating = false;
+        this.isPlayerAction = true;
+        this.enemyTurnTriggered = false;
+        this.combatState = CombatState.PLAYER_TURN;
+        this.animState = AnimationState.IDLE;
+        this.animationTimer = 0;
+        this.idleAnimationTimer = 0;
+        this.currentPlayerTexture = playerIdleTextures[0];
+        this.currentEnemyTexture = enemyIdleTextures[0];
+        this.currentEffectTexture = null;
+        this.showEffect = false;
+        this.effectOnPlayer = false;
+        this.currentSkill = -1;
+        this.enemyAction = -1;
+        this.playerCurrentX = playerStartX;
+        this.playerCurrentY = playerStartY;
+        this.enemyCurrentX = enemyStartX;
+        this.enemyCurrentY = enemyStartY;
+
+        this.combatLog = "Combat begins! Choose your action.";
+
+        this.victory = false;
+        defeated = false;
+
+        currentLevel = gameController.getCharacter().getLevel();
+        newLevel = currentLevel;
+
+        item = null;
+        reward = null;
+    }
+
+    int currentLevel = 0;
+    int newLevel = 0;
+
+    BitmapFont titleFont;
 
     @Override
     public void show() {
+
+
         batch = new SpriteBatch();
-        font = new BitmapFont();
+        font = generateVietNameseFont("GrenzeGotisch.ttf", 20);
+        titleFont = generateVietNameseFont("GrenzeGotisch.ttf", 26);
         shapeRenderer = new ShapeRenderer();
         camera = new OrthographicCamera();
         camera.setToOrtho(false, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-        font.getData().setScale(1.2f);
         combatLog = "Combat begins! Choose your action.";
 
         loadTextures();
 
-        currentPlayerTexture = playerIdleTexture;
-        currentEnemyTexture = enemyIdleTexture;
+        currentPlayerTexture = playerIdleTextures[0];
+        currentEnemyTexture = enemyIdleTextures[0];
+
+
+        Gdx.input.setInputProcessor(new com.badlogic.gdx.InputAdapter() {
+            @Override
+            public boolean keyDown(int keycode) {
+                if (keycode == Input.Keys.ESCAPE) {
+                    isPaused = !isPaused;
+                    return true;
+                }
+
+                if (isPaused) {
+                    if (keycode == Input.Keys.Q) {
+                        Gdx.app.exit();
+                        return true;
+                    }
+                    return true; // Ignore other input when paused
+                }
+
+                return false;
+            }
+
+
+            @Override
+            public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+                if (!Gdx.input.justTouched()) return false;
+
+                screenY = 720 - screenY; // Invert Y coordinateif
+                if (victory) {
+                    if (continueButtonBounds != null && continueButtonBounds.contains(screenX, screenY)) {
+                        gameController.getCharacter().addItem(item, reward.getAmount());
+                        gameController.getCharacter().setHealth(playerHP);
+                        gameController.getCharacter().setMana(playerMana);
+                        Timer.schedule(new Timer.Task() {
+                            @Override
+                            public void run() {
+                                gameController.setCompletedEvent();
+                                gameController.setState(GameState.EXPLORING);
+                                gameController.getCharacter().setHealth(playerHP);
+                                gameController.getCharacter().setMana(playerMana);
+                                game.changeScreen("GAME");
+
+                                if (newLevel > currentLevel) gameController.showLevelUpNotification();
+                            }
+                        }, 0.5f);
+                    }
+
+                    return true;
+
+                } else if (defeated) {
+                    if (continueButtonBounds != null && continueButtonBounds.contains(screenX, screenY)) {
+                        gameController.setState(GameState.MAIN_MENU);
+                        game.changeScreen("GAME_OVER");
+                        return true;
+                    }
+
+                    return true; // Ngăn xử lý các input khác khi đã thua
+                } else {
+                    if (isPaused) {
+                        // Các giá trị này phải giống trong drawPauseMenu()
+                        float menuWidth = 400;
+                        float menuHeight = 300;
+                        float menuX = (SCREEN_WIDTH - menuWidth) / 2;
+                        float menuY = (SCREEN_HEIGHT - menuHeight) / 2;
+
+                        float buttonWidth = 240;
+                        float buttonHeight = 40;
+
+                        float continueButtonX = menuX + (menuWidth - buttonWidth) / 2;
+                        float continueButtonY = menuY + 160;
+
+                        float quitButtonX = continueButtonX;
+                        float quitButtonY = menuY + 110;
+
+                        // Kiểm tra click vào "Continue"
+                        if (screenX >= continueButtonX && screenX <= continueButtonX + buttonWidth &&
+                                screenY >= continueButtonY && screenY <= continueButtonY + buttonHeight) {
+                            isPaused = false;
+                            return true;
+                        }
+
+                        // Kiểm tra click vào "Quit Game"
+                        if (screenX >= quitButtonX && screenX <= quitButtonX + buttonWidth &&
+                                screenY >= quitButtonY && screenY <= quitButtonY + buttonHeight) {
+                            Gdx.app.exit();
+                            return true;
+                        }
+
+                        return true; // Ngăn xử lý các input khác khi đang pause
+                    }
+
+                    if (combatState == CombatState.PLAYER_TURN && !isAnimating) {
+
+
+                        for (int i = 0; i < 5; i++) {
+                            float skillX = SKILL_BAR_X + 20 + i * (SKILL_BUTTON_SIZE + SKILL_BUTTON_SPACING);
+                            float skillY = SKILL_BAR_Y + 8;
+
+                            if (skillEnabled[i] &&
+                                    screenX >= skillX && screenX <= skillX + SKILL_BUTTON_SIZE &&
+                                    screenY >= skillY && screenY <= skillY + SKILL_BUTTON_SIZE) {
+                                handlePlayerAction(i);
+                                return true;
+                            }
+                        }
+                    } else if (combatState == CombatState.COMBAT_END) {
+                        game.setScreen(new DarkestDungeon(game, gameController));
+                        return true;
+                    }
+                }
+
+
+                return false;
+            }
+
+        });
+
     }
 
+    int experience = 0;
+
     private void loadTextures() {
-        // Player textures
-        playerIdleTexture = new Texture("dungeon/idle1.png");
+        // Player idle animation textures
+        playerIdleTextures[0] = new Texture("dungeon/idle1.png");
+        playerIdleTextures[1] = new Texture("dungeon/idle2.png");
+
+        // Player skill textures
         playerSkillTextures[0] = new Texture("dungeon/player_attack.png");
         playerSkillTextures[1] = new Texture("dungeon/player_flame.png");
         playerSkillTextures[2] = new Texture("dungeon/player_lightning.png");
         playerSkillTextures[3] = new Texture("dungeon/player_heal.png");
         playerSkillTextures[4] = new Texture("dungeon/player_defend.png");
 
-        // Enemy textures
-        enemyIdleTexture = new Texture("dungeon/enemy_idle.png");
+        // Enemy idle animation textures
+        enemyIdleTextures[0] = new Texture("dungeon/enemy_idle1.png");
+        enemyIdleTextures[1] = new Texture("dungeon/enemy_idle2.png");
+
+        // Enemy skill textures
         enemySkillTextures[0] = new Texture("dungeon/enemy_attack.png");
         enemySkillTextures[1] = new Texture("dungeon/enemy_special.png");
         enemySkillTextures[2] = new Texture("dungeon/enemy_heal.png");
@@ -187,91 +396,328 @@ public class DarkestDungeon implements Screen {
         backgroundTexture = new Texture("backgrounds/black.png");
     }
 
+    boolean defeated = false;
+
     @Override
     public void render(float delta) {
-        updateCombat(delta);
+        if (victory) {
+            renderReward(batch);
+        } else if (defeated && !victory) {
+            renderDefeat(batch);
+        } else {
+            if (!isPaused) {
+                updateCombat(delta);
+                updateIdleAnimations(delta);
+            }
 
-        Gdx.gl.glClearColor(0.05f, 0.05f, 0.08f, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+            Gdx.gl.glClearColor(0.05f, 0.05f, 0.08f, 1);
+            Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        camera.update();
-        batch.setProjectionMatrix(camera.combined);
-        shapeRenderer.setProjectionMatrix(camera.combined);
+            camera.update();
+            batch.setProjectionMatrix(camera.combined);
+            shapeRenderer.setProjectionMatrix(camera.combined);
 
-        drawBackground();
-        drawCharacters();
-        drawUI();
+            drawBackground();
+            drawCharacters();
+            drawBottomUI();
 
-        handleInput();
+            if (isPaused) {
+                drawPauseMenu();
+            }
+
+        }
     }
 
-    private void updateCombat(float delta) {
-        animationTimer += delta;
+//        handleInput();
 
-        // Update skill availability based on mana
+
+    boolean victory = false;
+
+    private Rectangle continueButtonBounds;
+    Items item = null;
+    Reward reward = null;
+
+    private void renderReward(SpriteBatch batch) {
+        float panelWidth = 600, panelHeight = 400;
+        float panelX = (1280 - panelWidth) / 2;
+        float panelY = (720 - panelHeight) / 2;
+
+        // 1. Vẽ nền panel
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(0f, 0f, 0f, 0.8f); // Semi-transparent black
+        shapeRenderer.rect(panelX, panelY, panelWidth, panelHeight);
+        shapeRenderer.end();
+
+
+        batch.begin();
+        titleFont.setColor(Color.WHITE);
+        titleFont.draw(batch, "VICTORY", panelX + 250, panelY + panelHeight - 40);
+
+        // 3. Hiển thị hình ảnh và mô tả vật phẩm
+        if (item != null) {
+            Texture itemTexture = assetManager.loadTexture(item.getItemName(), item.getTexturePath());
+            if (itemTexture != null) {
+                batch.setColor(Color.WHITE);
+                batch.draw(itemTexture, panelX + 100, panelY + panelHeight / 2 - 32, 64, 64);
+            }
+            font.setColor(Color.YELLOW);
+            font.draw(batch, item.getItemName() + " x" + reward.getAmount(), panelX + 180, panelY + panelHeight / 2 + 30);
+            font.draw(batch, reward.getDescription(), panelX + 180, panelY + panelHeight / 2);
+        }
+
+        // 4. Vẽ nút "Continue"
+        float buttonWidth = 200, buttonHeight = 50;
+        float buttonX = 1280 / 2 - buttonWidth / 2;
+        float buttonY = panelY + 50;
+        continueButtonBounds = new Rectangle(buttonX, buttonY, buttonWidth, buttonHeight);
+
+        batch.end();
+
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(0.2f, 0.2f, 0.3f, 1f); // Button background
+        shapeRenderer.rect(buttonX, buttonY, buttonWidth, buttonHeight);
+        shapeRenderer.end();
+
+        // 5. Vẽ chữ trên nút
+        batch.begin();
+        font.setColor(Color.WHITE);
+        font.draw(batch, "Continue", buttonX + 70, buttonY + 33);
+        batch.end();
+    }
+
+    public void renderDefeat(SpriteBatch batch) {
+        float panelWidth = 600, panelHeight = 400;
+        float panelX = (1280 - panelWidth) / 2;
+        float panelY = (720 - panelHeight) / 2;
+
+        // Draw defeat panel background
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(0f, 0f, 0f, 0.8f); // Semi-transparent black
+        shapeRenderer.rect(panelX, panelY, panelWidth, panelHeight);
+        shapeRenderer.end();
+
+        batch.begin();
+        titleFont.setColor(Color.RED);
+        titleFont.draw(batch, "You have been defeated!", panelX + 210, panelY + panelHeight - 40);
+
+        // Draw continue button
+        float buttonWidth = 200, buttonHeight = 50;
+        float buttonX = 1280 / 2 - buttonWidth / 2;
+        float buttonY = panelY + 50;
+        continueButtonBounds = new Rectangle(buttonX, buttonY, buttonWidth, buttonHeight);
+
+        batch.end();
+
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(0.2f, 0.2f, 0.3f, 1f); // Button background
+        shapeRenderer.rect(buttonX, buttonY, buttonWidth, buttonHeight);
+        shapeRenderer.end();
+
+        // Draw text on the button
+        batch.begin();
+        font.setColor(Color.WHITE);
+        font.draw(batch, "Continue", buttonX + 70, buttonY + 33);
+        batch.end();
+    }
+
+    private void updateIdleAnimations(float delta) {
+        if (animState == AnimationState.IDLE) {
+            idleAnimationTimer += delta;
+
+            // Switch between idle frames
+            int frame = (int) (idleAnimationTimer * IDLE_ANIMATION_SPEED) % 2;
+            currentPlayerTexture = playerIdleTextures[frame];
+            currentEnemyTexture = enemyIdleTextures[frame];
+        }
+    }
+
+    private float combatEndDelayTimer = 0f;
+    private boolean pendingCombatEnd = false;
+
+    private void updateCombat(float delta) {
+        // Update skill availability
         for (int i = 0; i < skillManaCost.length; i++) {
             skillEnabled[i] = (playerMana >= skillManaCost[i]);
         }
 
-        // Handle turn transitions
-        if (combatState == CombatState.TURN_TRANSITION) {
-            turnTransitionTimer += delta;
-            if (turnTransitionTimer >= TURN_TRANSITION_DURATION) {
-                turnTransitionTimer = 0;
+        // Animation update
+        if (isAnimating) {
+            animationTimer += delta;
+            updateAnimation();
+        }
+
+        // Delay combat end if flagged
+        if (pendingCombatEnd) {
+            combatEndDelayTimer += delta;
+            if (combatEndDelayTimer >= 1.5f) { // Delay 1.5 seconds
+                pendingCombatEnd = false;
+                combatEndDelayTimer = 0f;
+
                 if (playerHP <= 0) {
                     combatState = CombatState.COMBAT_END;
                     combatLog = "Defeat! You have fallen in battle.";
+                    victory = false;
+                    defeated = true;
                 } else if (enemyHP <= 0) {
                     combatState = CombatState.COMBAT_END;
                     combatLog = "Victory! The enemy has been defeated!";
-                } else {
-                    combatState = (combatState == CombatState.PLAYER_TURN) ?
-                            CombatState.ENEMY_TURN : CombatState.PLAYER_TURN;
+                    victory = true;
+                    defeated = false;
+                    reward = RewardLoader.getRewardById(this.rewardId);
+                    item = ItemLoader.getItemById(reward.getItemID());
                 }
+
+                isAnimating = false;
             }
-            return;
+            return; // Wait before continuing update
         }
 
-        // Handle skill animations
-        if (animState == AnimationState.SKILL_START && animationTimer > SKILL_ZOOM_DURATION) {
-            animState = AnimationState.SKILL_EFFECT;
-            animationTimer = 0;
-            showEffect = true;
-            applySkillEffects();
-        }
-
-        if (animState == AnimationState.SKILL_EFFECT && animationTimer > SKILL_EFFECT_DURATION) {
-            animState = AnimationState.SKILL_END;
-            animationTimer = 0;
-            showEffect = false;
-        }
-
-        if (animState == AnimationState.SKILL_END && animationTimer > SKILL_ZOOM_DURATION) {
-            animState = AnimationState.IDLE;
-            animationTimer = 0;
-            currentPlayerTexture = playerIdleTexture;
-            currentEnemyTexture = enemyIdleTexture;
-            targetZoom = 1.0f;
-
-            // Transition to next turn
-            combatState = CombatState.TURN_TRANSITION;
-            if (combatState == CombatState.ANIMATING) {
-                startEnemyTurn();
+        // Trigger delayed end if HP hits 0
+        if (!pendingCombatEnd) {
+            if (playerHP <= 0 || enemyHP <= 0) {
+                pendingCombatEnd = true;
+                combatEndDelayTimer = 0f;
             }
         }
 
-        // Auto enemy turn
-        if (combatState == CombatState.ENEMY_TURN && animState == AnimationState.IDLE) {
+        // Auto enemy turn trigger
+        if (combatState == CombatState.ENEMY_TURN && !isAnimating && !enemyTurnTriggered) {
+            enemyTurnTriggered = true;
             startEnemyTurn();
         }
     }
 
 
+    private void updateAnimation() {
+        float progress = animationTimer;
+
+        switch (animState) {
+            case MOVE_TO_CENTER:
+                if (progress >= MOVE_DURATION) {
+                    animState = AnimationState.SKILL_EFFECT;
+                    animationTimer = 0;
+                    applySkillEffects();
+                    showEffect = true;
+                } else {
+                    updateMoveToCenter(progress / MOVE_DURATION);
+                }
+                break;
+
+            case SKILL_EFFECT:
+                if (progress >= SKILL_EFFECT_DURATION) {
+                    animState = AnimationState.MOVE_BACK;
+                    animationTimer = 0;
+                    showEffect = false;
+                } else {
+                    updateSkillEffect(progress / SKILL_EFFECT_DURATION);
+                }
+                break;
+
+            case MOVE_BACK:
+                if (progress >= MOVE_DURATION) {
+                    animState = AnimationState.IDLE;
+                    animationTimer = 0;
+                    isAnimating = false;
+                    resetCharacterPositions();
+                    finishTurn();
+                } else {
+                    updateMoveBack(progress / MOVE_DURATION);
+                }
+                break;
+        }
+    }
+
+    private void updateMoveToCenter(float progress) {
+        float easeProgress = Interpolation.pow2Out.apply(progress);
+
+        // Only move for attack skills, not heal/defend
+        boolean shouldMove = isPlayerAction ?
+                (currentSkill == 0 || currentSkill == 1 || currentSkill == 2) :
+                (enemyAction == 0 || enemyAction == 1);
+
+        if (shouldMove) {
+            if (isPlayerAction) {
+                // Player moves to center-left, enemy moves closer
+                playerCurrentX = MathUtils.lerp(playerStartX, SCREEN_WIDTH * 0.4f, easeProgress);
+                playerCurrentY = MathUtils.lerp(playerStartY, COMBAT_CENTER_Y, easeProgress);
+                playerScale = MathUtils.lerp(1.0f, MAX_SCALE, easeProgress);
+
+                enemyCurrentX = MathUtils.lerp(enemyStartX, SCREEN_WIDTH * 0.6f, easeProgress);
+                enemyCurrentY = MathUtils.lerp(enemyStartY, COMBAT_CENTER_Y, easeProgress);
+                enemyScale = MathUtils.lerp(1.0f, MAX_SCALE, easeProgress);
+            } else {
+                // Enemy moves to center-right, player moves closer
+                enemyCurrentX = MathUtils.lerp(enemyStartX, SCREEN_WIDTH * 0.6f, easeProgress);
+                enemyCurrentY = MathUtils.lerp(enemyStartY, COMBAT_CENTER_Y, easeProgress);
+                enemyScale = MathUtils.lerp(1.0f, MAX_SCALE, easeProgress);
+
+                playerCurrentX = MathUtils.lerp(playerStartX, SCREEN_WIDTH * 0.4f, easeProgress);
+                playerCurrentY = MathUtils.lerp(playerStartY, COMBAT_CENTER_Y, easeProgress);
+                playerScale = MathUtils.lerp(1.0f, MAX_SCALE, easeProgress);
+            }
+        }
+    }
+
+    private void updateSkillEffect(float progress) {
+        // Add some shake effect during skill execution
+        float shake = (float) Math.sin(progress * 20) * 1f;
+
+        if (isPlayerAction) {
+            playerCurrentX += shake;
+        } else {
+            enemyCurrentX += shake;
+        }
+    }
+
+    private void updateMoveBack(float progress) {
+        float easeProgress = Interpolation.pow2In.apply(progress);
+
+        // Only move back for attack skills, not heal/defend
+        boolean shouldMove = isPlayerAction ?
+                (currentSkill == 0 || currentSkill == 1 || currentSkill == 2) :
+                (enemyAction == 0 || enemyAction == 1);
+
+        if (shouldMove) {
+            // Move both characters back to original positions and reset scales
+            playerCurrentX = MathUtils.lerp(SCREEN_WIDTH * 0.4f, playerStartX, easeProgress);
+            playerCurrentY = MathUtils.lerp(COMBAT_CENTER_Y, playerStartY, easeProgress);
+            playerScale = MathUtils.lerp(MAX_SCALE, 1.0f, easeProgress);
+
+            enemyCurrentX = MathUtils.lerp(SCREEN_WIDTH * 0.6f, enemyStartX, easeProgress);
+            enemyCurrentY = MathUtils.lerp(COMBAT_CENTER_Y, enemyStartY, easeProgress);
+            enemyScale = MathUtils.lerp(MAX_SCALE, 1.0f, easeProgress);
+        }
+    }
+
+
+    private void resetCharacterPositions() {
+        playerCurrentX = playerStartX;
+        playerCurrentY = playerStartY;
+        playerScale = 1.0f;
+
+        enemyCurrentX = enemyStartX;
+        enemyCurrentY = enemyStartY;
+        enemyScale = 1.0f;
+
+        currentPlayerTexture = playerIdleTextures[0];
+        currentEnemyTexture = enemyIdleTextures[0];
+    }
+
+    private void finishTurn() {
+        // Switch turns properly
+        if (isPlayerAction) {
+            combatState = CombatState.ENEMY_TURN;
+            enemyTurnTriggered = false; // Reset for next enemy turn
+        } else {
+            combatState = CombatState.PLAYER_TURN;
+        }
+        isPlayerAction = false;
+    }
 
     private void applySkillEffects() {
-        if (combatState == CombatState.ANIMATING) {
+        if (isPlayerAction) {
             applyPlayerSkillEffects();
-        } else if (combatState == CombatState.ENEMY_TURN) {
+        } else {
             applyEnemySkillEffects();
         }
     }
@@ -279,21 +725,26 @@ public class DarkestDungeon implements Screen {
     private void applyPlayerSkillEffects() {
         switch (currentSkill) {
             case 0: // Attack
-                int damage = MathUtils.random(8, 12);
+                int damage = MathUtils.random(playerATK - 2, playerATK + 2) - enemyDEF;
+                damage = Math.max(1, damage);
                 enemyHP = Math.max(0, enemyHP - damage);
                 combatLog = "You attack for " + damage + " damage!";
                 break;
             case 1: // Flame
                 playerMana -= 5;
-                int flameDamage = MathUtils.random(12, 18);
+
+
+                int flameDamage = MathUtils.random(playerATK + 5, playerATK + 10) - enemyDEF;
+                flameDamage = Math.max(1, flameDamage);
                 enemyHP = Math.max(0, enemyHP - flameDamage);
-                combatLog = "Flame spell deals " + flameDamage + " damage!";
+                combatLog = "Word spell deals " + flameDamage + " damage!";
                 break;
             case 2: // Lightning
                 playerMana -= 5;
-                int lightningDamage = MathUtils.random(14, 20);
+                int lightningDamage = MathUtils.random(playerATK + 5, playerATK + 10) - enemyDEF;
+                lightningDamage = Math.max(1, lightningDamage);
                 enemyHP = Math.max(0, enemyHP - lightningDamage);
-                combatLog = "Lightning bolt strikes for " + lightningDamage + " damage!";
+                combatLog = "Type for strikes for " + lightningDamage + " damage!";
                 break;
             case 3: // Heal
                 playerMana -= 10;
@@ -303,7 +754,8 @@ public class DarkestDungeon implements Screen {
                 break;
             case 4: // Defend
                 playerMana = Math.min(playerMaxMana, playerMana + 3);
-                combatLog = "You defend and recover 3 mana!";
+                playerDEF += 2; // Temporary defense boost
+                combatLog = "You defend and recover 3 mana! DEF increased!";
                 break;
         }
     }
@@ -311,32 +763,36 @@ public class DarkestDungeon implements Screen {
     private void applyEnemySkillEffects() {
         switch (enemyAction) {
             case 0: // Attack
-                int damage = MathUtils.random(8, 14);
+                int damage = MathUtils.random(enemyATK - 2, enemyATK + 2) - playerDEF;
+                damage = Math.max(1, damage);
                 playerHP = Math.max(0, playerHP - damage);
                 combatLog = enemyName + " attacks for " + damage + " damage!";
                 break;
             case 1: // Special
                 if (enemyMana >= 8) {
                     enemyMana -= 8;
-                    int specialDamage = MathUtils.random(15, 22);
+                    int specialDamage = MathUtils.random(enemyATK + 5, enemyATK + 10) - playerDEF;
+                    specialDamage = Math.max(1, specialDamage);
                     playerHP = Math.max(0, playerHP - specialDamage);
                     combatLog = enemyName + " uses special attack for " + specialDamage + " damage!";
                 } else {
-                    // Fallback to normal attack
-                    int fallbackDamage = MathUtils.random(6, 10);
-                    playerHP = Math.max(0, playerHP - fallbackDamage);
-                    combatLog = enemyName + " attacks for " + fallbackDamage + " damage!";
+                    damage = MathUtils.random(enemyATK - 2, enemyATK + 2) - playerDEF;
+                    damage = Math.max(1, damage);
+                    playerHP = Math.max(0, playerHP - damage);
+                    combatLog = enemyName + " attacks for " + damage + " damage!";
                 }
                 break;
             case 2: // Heal
                 if (enemyMana >= 12) {
                     enemyMana -= 12;
-                    int heal = MathUtils.random(12, 18);
+                    int heal = MathUtils.random(10, 20);
                     enemyHP = Math.min(enemyMaxHP, enemyHP + heal);
                     combatLog = enemyName + " heals for " + heal + " HP!";
                 } else {
-                    enemyMana = Math.min(enemyMaxMana, enemyMana + 5);
-                    combatLog = enemyName + " recovers mana!";
+                    damage = MathUtils.random(enemyATK - 2, enemyATK + 2) - playerDEF;
+                    damage = Math.max(1, damage);
+                    playerHP = Math.max(0, playerHP - damage);
+                    combatLog = enemyName + " attacks for " + damage + " damage!";
                 }
                 break;
         }
@@ -344,131 +800,171 @@ public class DarkestDungeon implements Screen {
 
     private void drawBackground() {
         batch.begin();
-        batch.draw(backgroundTexture, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        // Top half - combat area
+        batch.draw(backgroundTexture, 0, BOTTOM_HALF_HEIGHT, SCREEN_WIDTH, TOP_HALF_HEIGHT);
+        // Bottom half - UI area
+        batch.setColor(0.1f, 0.1f, 0.15f, 1);
+        batch.draw(backgroundTexture, 0, 0, SCREEN_WIDTH, BOTTOM_HALF_HEIGHT);
+        batch.setColor(Color.WHITE);
         batch.end();
     }
 
     private void drawCharacters() {
         batch.begin();
 
-        // Draw player
+        // Draw player with animation
+        float playerWidth = CHAR_WIDTH * playerScale;
+        float playerHeight = CHAR_HEIGHT * playerScale;
         batch.draw(currentPlayerTexture,
-                playerX - CHAR_WIDTH/2, playerY - CHAR_HEIGHT/2,
-                CHAR_WIDTH, CHAR_HEIGHT);
+                playerCurrentX - playerWidth / 2 - 150, playerCurrentY - playerHeight / 2,
+                playerWidth, playerHeight);
 
-        // Draw enemy
+        // Draw enemy with animation
+        float enemyWidth = CHAR_WIDTH * enemyScale;
+        float enemyHeight = CHAR_HEIGHT * enemyScale;
         batch.draw(currentEnemyTexture,
-                enemyX - CHAR_WIDTH/2, enemyY - CHAR_HEIGHT/2,
-                CHAR_WIDTH, CHAR_HEIGHT);
+                enemyCurrentX - enemyWidth / 2 + 150, enemyCurrentY - enemyHeight / 2,
+                enemyWidth, enemyHeight);
 
         // Draw effects
         if (showEffect && currentEffectTexture != null) {
-            float effectX = effectOnPlayer ? playerX : enemyX;
-            float effectY = effectOnPlayer ? playerY : enemyY;
-            batch.draw(currentEffectTexture,
-                    effectX - 60, effectY - 60, 120, 120);
+            float effectX = effectOnPlayer ? playerCurrentX - 150 : enemyCurrentX + 150;
+            float effectY = effectOnPlayer ? playerCurrentY : enemyCurrentY;
+            float effectScale = effectOnPlayer ? playerScale : enemyScale;
+            float effectSize = 120 * effectScale;
+
+            // Flip Y for enemy attack effects
+            if (!effectOnPlayer && !isPlayerAction && enemyAction == 0) {
+                batch.draw(currentEffectTexture,
+                        effectX - effectSize / 2, effectY + effectSize / 2,
+                        effectSize / 2, -effectSize / 2,
+                        effectSize, effectSize,
+                        1, 1, 0,
+                        0, 0, currentEffectTexture.getWidth(), currentEffectTexture.getHeight(),
+                        false, true);
+            } else {
+                batch.draw(currentEffectTexture,
+                        effectX - effectSize / 2, effectY - effectSize / 2,
+                        effectSize, effectSize);
+            }
         }
 
         batch.end();
     }
 
-    private void drawUI() {
-        // Draw HUD background
+    private void drawBottomUI() {
+        // Draw bottom UI background
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(0.02f, 0.02f, 0.05f, 0.95f);
-        shapeRenderer.rect(0, 0, SCREEN_WIDTH, BOTTOM_HUD_HEIGHT);
-        shapeRenderer.setColor(0.02f, 0.02f, 0.05f, 0.95f);
-        shapeRenderer.rect(0, SCREEN_HEIGHT - TOP_BAR_HEIGHT, SCREEN_WIDTH, TOP_BAR_HEIGHT);
+        shapeRenderer.rect(0, 0, SCREEN_WIDTH, BOTTOM_HALF_HEIGHT);
         shapeRenderer.end();
 
-        drawInfoPanels();
-        drawSkillBars();
-        drawText();
+        drawStatusPanels();
+        drawSkillBar();
+        drawCombatLog();
     }
 
-    private void drawInfoPanels() {
+    private void drawStatusPanels() {
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
-        // Player info panel
+        // Player status panel
         shapeRenderer.setColor(0.08f, 0.08f, 0.12f, 0.9f);
-        shapeRenderer.rect(PLAYER_INFO_X, INFO_PANEL_Y, INFO_PANEL_WIDTH, INFO_PANEL_HEIGHT);
+        shapeRenderer.rect(PLAYER_STATUS_X, STATUS_PANEL_Y, STATUS_PANEL_WIDTH, STATUS_PANEL_HEIGHT);
         shapeRenderer.setColor(0.3f, 0.15f, 0.15f, 0.8f);
-        shapeRenderer.rect(PLAYER_INFO_X, INFO_PANEL_Y + INFO_PANEL_HEIGHT - 2, INFO_PANEL_WIDTH, 2);
+        shapeRenderer.rect(PLAYER_STATUS_X, STATUS_PANEL_Y + STATUS_PANEL_HEIGHT - 2, STATUS_PANEL_WIDTH, 2);
 
-        // Enemy info panel
+        // Enemy status panel
         shapeRenderer.setColor(0.08f, 0.08f, 0.12f, 0.9f);
-        shapeRenderer.rect(ENEMY_INFO_X, INFO_PANEL_Y, INFO_PANEL_WIDTH, INFO_PANEL_HEIGHT);
+        shapeRenderer.rect(ENEMY_STATUS_X, STATUS_PANEL_Y, STATUS_PANEL_WIDTH, STATUS_PANEL_HEIGHT);
         shapeRenderer.setColor(0.3f, 0.15f, 0.15f, 0.8f);
-        shapeRenderer.rect(ENEMY_INFO_X, INFO_PANEL_Y + INFO_PANEL_HEIGHT - 2, INFO_PANEL_WIDTH, 2);
+        shapeRenderer.rect(ENEMY_STATUS_X, STATUS_PANEL_Y + STATUS_PANEL_HEIGHT - 2, STATUS_PANEL_WIDTH, 2);
 
-        drawHealthManaBar();
+        drawStatusBars();
 
         shapeRenderer.end();
+
+        // Draw status text
+        batch.begin();
+        font.setColor(Color.WHITE);
+        font.draw(batch, playerName, PLAYER_STATUS_X + 20, STATUS_PANEL_Y + STATUS_PANEL_HEIGHT - 20);
+        font.draw(batch, enemyName, ENEMY_STATUS_X + 20, STATUS_PANEL_Y + STATUS_PANEL_HEIGHT - 20);
+
+        // Player detailed stats
+        font.draw(batch, "HP: " + playerHP + "/" + playerMaxHP, PLAYER_STATUS_X + 20, STATUS_PANEL_Y + 150);
+        font.draw(batch, "MP: " + playerMana + "/" + playerMaxMana, PLAYER_STATUS_X + 20, STATUS_PANEL_Y + 115);
+        font.draw(batch, "ATK: " + playerATK, PLAYER_STATUS_X + 20, STATUS_PANEL_Y + 80);
+        font.draw(batch, "DEF: " + playerDEF, PLAYER_STATUS_X + 20, STATUS_PANEL_Y + 45);
+
+        // Enemy detailed stats
+        font.draw(batch, "HP: " + enemyHP + "/" + enemyMaxHP, ENEMY_STATUS_X + 20, STATUS_PANEL_Y + 150);
+        font.draw(batch, "MP: " + enemyMana + "/" + enemyMaxMana, ENEMY_STATUS_X + 20, STATUS_PANEL_Y + 115);
+        font.draw(batch, "ATK: " + enemyATK, ENEMY_STATUS_X + 20, STATUS_PANEL_Y + 80);
+        font.draw(batch, "DEF: " + enemyDEF, ENEMY_STATUS_X + 20, STATUS_PANEL_Y + 45);
+
+        batch.end();
     }
 
-    private void drawHealthManaBar() {
+    private void drawStatusBars() {
         // Player bars
-        float playerBarX = PLAYER_INFO_X + 20;
-        float playerHPBarY = INFO_PANEL_Y + 80;
-        float playerManaBarY = INFO_PANEL_Y + 50;
+        float playerBarX = PLAYER_STATUS_X + 120;
+        float playerHPBarY = STATUS_PANEL_Y + 135;
+        float playerManaBarY = STATUS_PANEL_Y + 100;
 
-        // Player HP
+        // Player HP bar
         shapeRenderer.setColor(0.2f, 0.2f, 0.2f, 1);
         shapeRenderer.rect(playerBarX, playerHPBarY, BAR_WIDTH, BAR_HEIGHT);
         shapeRenderer.setColor(0.8f, 0.2f, 0.2f, 1);
         shapeRenderer.rect(playerBarX, playerHPBarY,
-                BAR_WIDTH * (float)playerHP / playerMaxHP, BAR_HEIGHT);
+                BAR_WIDTH * (float) playerHP / playerMaxHP, BAR_HEIGHT);
 
-        // Player Mana
+        // Player Mana bar
         shapeRenderer.setColor(0.2f, 0.2f, 0.2f, 1);
         shapeRenderer.rect(playerBarX, playerManaBarY, BAR_WIDTH, MANA_BAR_HEIGHT);
         shapeRenderer.setColor(0.2f, 0.4f, 0.8f, 1);
         shapeRenderer.rect(playerBarX, playerManaBarY,
-                BAR_WIDTH * (float)playerMana / playerMaxMana, MANA_BAR_HEIGHT);
+                BAR_WIDTH * (float) playerMana / playerMaxMana, MANA_BAR_HEIGHT);
 
         // Enemy bars
-        float enemyBarX = ENEMY_INFO_X + 20;
-        float enemyHPBarY = INFO_PANEL_Y + 80;
-        float enemyManaBarY = INFO_PANEL_Y + 50;
+        float enemyBarX = ENEMY_STATUS_X + 120;
+        float enemyHPBarY = STATUS_PANEL_Y + 135;
+        float enemyManaBarY = STATUS_PANEL_Y + 100;
 
-        // Enemy HP
+        // Enemy HP bar
         shapeRenderer.setColor(0.2f, 0.2f, 0.2f, 1);
         shapeRenderer.rect(enemyBarX, enemyHPBarY, BAR_WIDTH, BAR_HEIGHT);
         shapeRenderer.setColor(0.8f, 0.2f, 0.2f, 1);
         shapeRenderer.rect(enemyBarX, enemyHPBarY,
-                BAR_WIDTH * (float)enemyHP / enemyMaxHP, BAR_HEIGHT);
+                BAR_WIDTH * (float) enemyHP / enemyMaxHP, BAR_HEIGHT);
 
-        // Enemy Mana
+        // Enemy Mana bar
         shapeRenderer.setColor(0.2f, 0.2f, 0.2f, 1);
         shapeRenderer.rect(enemyBarX, enemyManaBarY, BAR_WIDTH, MANA_BAR_HEIGHT);
         shapeRenderer.setColor(0.2f, 0.4f, 0.8f, 1);
         shapeRenderer.rect(enemyBarX, enemyManaBarY,
-                BAR_WIDTH * (float)enemyMana / enemyMaxMana, MANA_BAR_HEIGHT);
+                BAR_WIDTH * (float) enemyMana / enemyMaxMana, MANA_BAR_HEIGHT);
     }
 
-    private void drawSkillBars() {
+    private void drawSkillBar() {
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
-        // Player skill bar
+        // Skill bar background
         shapeRenderer.setColor(0.1f, 0.06f, 0.06f, 0.9f);
-        shapeRenderer.rect(PLAYER_SKILL_BAR_X, SKILL_BAR_Y, SKILL_BAR_WIDTH, SKILL_BAR_HEIGHT);
+        shapeRenderer.rect(SKILL_BAR_X, SKILL_BAR_Y, SKILL_BAR_WIDTH, SKILL_BAR_HEIGHT);
 
-        // Enemy skill bar
-        shapeRenderer.setColor(0.06f, 0.06f, 0.1f, 0.9f);
-        shapeRenderer.rect(ENEMY_SKILL_BAR_X, SKILL_BAR_Y, SKILL_BAR_WIDTH, SKILL_BAR_HEIGHT);
-
-        // Player skill buttons
+        // Skill buttons using skillButtonTextures
         for (int i = 0; i < 5; i++) {
-            float skillX = PLAYER_SKILL_BAR_X + 20 + i * (SKILL_BUTTON_SIZE + SKILL_BUTTON_SPACING);
+            float skillX = SKILL_BAR_X + 20 + i * (SKILL_BUTTON_SIZE + SKILL_BUTTON_SPACING);
             float skillY = SKILL_BAR_Y + 8;
 
-            shapeRenderer.setColor(skillEnabled[i] ?
+            // Button background
+            boolean canUse = skillEnabled[i] && combatState == CombatState.PLAYER_TURN && !isAnimating;
+            shapeRenderer.setColor(canUse ?
                     new Color(0.15f, 0.1f, 0.1f, 1) :
                     new Color(0.05f, 0.05f, 0.05f, 1));
             shapeRenderer.rect(skillX, skillY, SKILL_BUTTON_SIZE, SKILL_BUTTON_SIZE);
 
-            // Border
-            shapeRenderer.setColor(skillEnabled[i] ?
+            // Button border
+            shapeRenderer.setColor(canUse ?
                     new Color(0.4f, 0.25f, 0.25f, 1) :
                     new Color(0.2f, 0.2f, 0.2f, 1));
             shapeRenderer.rect(skillX, skillY, SKILL_BUTTON_SIZE, 2);
@@ -477,76 +973,25 @@ public class DarkestDungeon implements Screen {
             shapeRenderer.rect(skillX + SKILL_BUTTON_SIZE - 2, skillY, 2, SKILL_BUTTON_SIZE);
         }
 
-        // Enemy skill buttons (visual only)
-        for (int i = 0; i < 3; i++) {
-            float skillX = ENEMY_SKILL_BAR_X + 20 + i * (SKILL_BUTTON_SIZE + SKILL_BUTTON_SPACING);
-            float skillY = SKILL_BAR_Y + 8;
-
-            boolean canUse = (enemyMana >= enemySkillCost[i]);
-            shapeRenderer.setColor(canUse ?
-                    new Color(0.1f, 0.1f, 0.15f, 1) :
-                    new Color(0.05f, 0.05f, 0.05f, 1));
-            shapeRenderer.rect(skillX, skillY, SKILL_BUTTON_SIZE, SKILL_BUTTON_SIZE);
-
-            // Border
-            shapeRenderer.setColor(canUse ?
-                    new Color(0.25f, 0.25f, 0.4f, 1) :
-                    new Color(0.2f, 0.2f, 0.2f, 1));
-            shapeRenderer.rect(skillX, skillY, SKILL_BUTTON_SIZE, 2);
-            shapeRenderer.rect(skillX, skillY + SKILL_BUTTON_SIZE - 2, SKILL_BUTTON_SIZE, 2);
-            shapeRenderer.rect(skillX, skillY, 2, SKILL_BUTTON_SIZE);
-            shapeRenderer.rect(skillX + SKILL_BUTTON_SIZE - 2, skillY, 2, SKILL_BUTTON_SIZE);
-        }
-
         shapeRenderer.end();
-    }
 
-    private void drawText() {
+        // Draw skill button textures and info
         batch.begin();
-
-        // Turn indicator
-        font.setColor(Color.ORANGE);
-        font.getData().setScale(1.6f);
-        String turnText = getTurnText();
-        font.draw(batch, turnText, SCREEN_WIDTH / 2 - 80, SCREEN_HEIGHT - 20);
-
-        // Character info
-        font.setColor(Color.WHITE);
-        font.getData().setScale(1.3f);
-        font.draw(batch, playerName, PLAYER_INFO_X + 20, INFO_PANEL_Y + 140);
-        font.draw(batch, enemyName, ENEMY_INFO_X + 20, INFO_PANEL_Y + 140);
-
-        font.getData().setScale(1.0f);
-        // Player stats
-        font.draw(batch, "HP: " + playerHP + "/" + playerMaxHP, PLAYER_INFO_X + 20, INFO_PANEL_Y + 110);
-        font.draw(batch, "Mana: " + playerMana + "/" + playerMaxMana, PLAYER_INFO_X + 20, INFO_PANEL_Y + 35);
-
-        // Enemy stats
-        font.draw(batch, "HP: " + enemyHP + "/" + enemyMaxHP, ENEMY_INFO_X + 20, INFO_PANEL_Y + 110);
-        font.draw(batch, "Mana: " + enemyMana + "/" + enemyMaxMana, ENEMY_INFO_X + 20, INFO_PANEL_Y + 35);
-
-        // Skill icons and costs
-        drawSkillInfo();
-
-        // Combat log
-        font.setColor(Color.YELLOW);
-        font.getData().setScale(1.2f);
-        font.draw(batch, combatLog, SCREEN_WIDTH / 2 - 200, SCREEN_HEIGHT - 100);
-
-        batch.end();
-    }
-
-    private void drawSkillInfo() {
-        // Player skills
         for (int i = 0; i < 5; i++) {
-            float skillX = PLAYER_SKILL_BAR_X + 20 + i * (SKILL_BUTTON_SIZE + SKILL_BUTTON_SPACING);
+            float skillX = SKILL_BAR_X + 20 + i * (SKILL_BUTTON_SIZE + SKILL_BUTTON_SPACING);
             float skillY = SKILL_BAR_Y + 8;
 
-            font.setColor(skillEnabled[i] ? Color.WHITE : Color.GRAY);
-            font.getData().setScale(1.8f);
-            font.draw(batch, skillIcons[i], skillX + 18, skillY + 45);
+            boolean canUse = skillEnabled[i] && combatState == CombatState.PLAYER_TURN && !isAnimating;
 
-            font.getData().setScale(0.8f);
+            // Draw skill button texture
+            if (skillButtonTextures[i] != null) {
+                batch.setColor(canUse ? Color.WHITE : Color.GRAY);
+                batch.draw(skillButtonTextures[i], skillX + 4, skillY + 4,
+                        SKILL_BUTTON_SIZE - 8, SKILL_BUTTON_SIZE - 8);
+                batch.setColor(Color.WHITE);
+            }
+
+            // Draw skill info
             font.setColor(Color.LIGHT_GRAY);
             font.draw(batch, skillNames[i], skillX + 2, skillY - 2);
 
@@ -555,38 +1000,86 @@ public class DarkestDungeon implements Screen {
                 font.draw(batch, "" + skillManaCost[i], skillX + 50, skillY + 15);
             }
         }
-
-        // Enemy skills
-        for (int i = 0; i < 3; i++) {
-            float skillX = ENEMY_SKILL_BAR_X + 20 + i * (SKILL_BUTTON_SIZE + SKILL_BUTTON_SPACING);
-            float skillY = SKILL_BAR_Y + 8;
-
-            boolean canUse = (enemyMana >= enemySkillCost[i]);
-            font.setColor(canUse ? Color.WHITE : Color.GRAY);
-            font.getData().setScale(1.8f);
-            font.draw(batch, enemySkillIcons[i], skillX + 18, skillY + 45);
-
-            font.getData().setScale(0.8f);
-            font.setColor(Color.LIGHT_GRAY);
-            font.draw(batch, enemySkillNames[i], skillX + 2, skillY - 2);
-
-            if (enemySkillCost[i] > 0) {
-                font.setColor(Color.CYAN);
-                font.draw(batch, "" + enemySkillCost[i], skillX + 50, skillY + 15);
-            }
-        }
+        batch.end();
     }
+
+    private final GlyphLayout layout = new GlyphLayout(); // Khai báo 1 lần trong class để tái sử dụng
+
+    private void drawCombatLog() {
+        batch.begin();
+
+        font.setColor(Color.YELLOW);
+
+        // Turn indicator – auto center
+        String turnText = getTurnText();
+        layout.setText(titleFont, turnText);
+        float turnX = (SCREEN_WIDTH - layout.width) / 2;
+        titleFont.draw(batch, layout, turnX, 150);
+
+        // Combat log – auto center
+        layout.setText(font, combatLog);
+        float logX = (SCREEN_WIDTH - layout.width) / 2;
+        font.draw(batch, layout, logX, 50);
+
+        batch.end();
+    }
+
+
+    private void drawPauseMenu() {
+        // Constants
+        float menuWidth = 400;
+        float menuHeight = 300;
+        float menuX = (SCREEN_WIDTH - menuWidth) / 2;
+        float menuY = (SCREEN_HEIGHT - menuHeight) / 2;
+
+        float buttonWidth = 240;
+        float buttonHeight = 40;
+
+        float continueButtonX = menuX + (menuWidth - buttonWidth) / 2;
+        float continueButtonY = menuY + 160;
+
+        float quitButtonX = continueButtonX;
+        float quitButtonY = menuY + 110;
+
+        // 1. Draw semi-transparent overlay
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(0, 0, 0, 0.7f);
+        shapeRenderer.rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+        // 2. Draw menu background
+        shapeRenderer.setColor(0.1f, 0.1f, 0.15f, 0.95f);
+        shapeRenderer.rect(menuX, menuY, menuWidth, menuHeight);
+
+        // 3. Draw border
+        shapeRenderer.setColor(0.3f, 0.3f, 0.4f, 1);
+        shapeRenderer.rect(menuX, menuY, menuWidth, 3);
+        shapeRenderer.rect(menuX, menuY + menuHeight - 3, menuWidth, 3);
+        shapeRenderer.rect(menuX, menuY, 3, menuHeight);
+        shapeRenderer.rect(menuX + menuWidth - 3, menuY, 3, menuHeight);
+
+        // 4. Draw button backgrounds
+        shapeRenderer.setColor(0.2f, 0.2f, 0.25f, 1f);
+        shapeRenderer.rect(continueButtonX, continueButtonY, buttonWidth, buttonHeight);
+        shapeRenderer.rect(quitButtonX, quitButtonY, buttonWidth, buttonHeight);
+        shapeRenderer.end();
+
+        // 5. Draw text
+        batch.begin();
+        font.setColor(Color.WHITE);
+        font.draw(batch, "PAUSED", menuX + 130, menuY + 250);
+
+        font.draw(batch, "Continue - ESC", continueButtonX + 60, continueButtonY + 28);
+        font.draw(batch, "Quit Game - Q", quitButtonX + 60, quitButtonY + 28);
+        batch.end();
+    }
+
 
     private String getTurnText() {
         switch (combatState) {
             case PLAYER_TURN:
-                return "Your Turn";
+                return isAnimating ? "Executing Action..." : "Your Turn";
             case ENEMY_TURN:
-                return "Enemy Turn";
-            case ANIMATING:
-                return "Executing Action...";
-            case TURN_TRANSITION:
-                return "Turn Changing...";
+                return isAnimating ? "Enemy Acting..." : "Enemy Turn";
             case COMBAT_END:
                 return "Combat Ended";
             default:
@@ -594,32 +1087,18 @@ public class DarkestDungeon implements Screen {
         }
     }
 
-    private void handleInput() {
-        if (Gdx.input.justTouched() && combatState == CombatState.PLAYER_TURN) {
-            Vector3 touchPos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
-            camera.unproject(touchPos);
-
-            for (int i = 0; i < 5; i++) {
-                float skillX = PLAYER_SKILL_BAR_X + 20 + i * (SKILL_BUTTON_SIZE + SKILL_BUTTON_SPACING);
-                float skillY = SKILL_BAR_Y + 8;
-
-                if (skillEnabled[i] && touchPos.x >= skillX && touchPos.x <= skillX + SKILL_BUTTON_SIZE &&
-                        touchPos.y >= skillY && touchPos.y <= skillY + SKILL_BUTTON_SIZE) {
-                    handlePlayerAction(i);
-                    break;
-                }
-            }
-        } else if (Gdx.input.justTouched() && combatState == CombatState.COMBAT_END) {
-            game.setScreen(new DarkestDungeon(game, gameController));
-        }
-    }
 
     private void handlePlayerAction(int skillIdx) {
-        combatState = CombatState.ANIMATING;
-        animState = AnimationState.SKILL_START;
+        // Play click sound
+        if (gameController.getEffectManager() != null) {
+            gameController.getEffectManager().playClickSound();
+        }
+
+        isAnimating = true;
+        isPlayerAction = true;
+        animState = AnimationState.MOVE_TO_CENTER;
         animationTimer = 0;
         currentSkill = skillIdx;
-        targetZoom = SKILL_ZOOM_FACTOR;
 
         // Set textures and effects
         currentPlayerTexture = playerSkillTextures[skillIdx];
@@ -637,32 +1116,44 @@ public class DarkestDungeon implements Screen {
     }
 
     private void startEnemyTurn() {
-        combatState = CombatState.ANIMATING;
-        animState = AnimationState.SKILL_START;
-        animationTimer = 0;
-        targetZoom = SKILL_ZOOM_FACTOR;
 
-        // Enemy AI
-        enemyAction = chooseEnemyAction();
-        currentEnemyTexture = enemySkillTextures[enemyAction];
 
-        if (enemyAction == 2) { // Heal
-            currentEffectTexture = effectTextures[1];
-            effectOnPlayer = false;
-        } else { // Attack
-            currentEffectTexture = effectTextures[0];
-            effectOnPlayer = true;
-        }
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                if (gameController.getEffectManager() != null) {
+                    gameController.getEffectManager().playClickSound();
+                }
+
+                isAnimating = true;
+                isPlayerAction = false;
+                animState = AnimationState.MOVE_TO_CENTER;
+                animationTimer = 0;
+
+                // Enemy AI
+                enemyAction = chooseEnemyAction();
+                currentEnemyTexture = enemySkillTextures[enemyAction];
+
+                if (enemyAction == 2) { // Heal
+                    currentEffectTexture = effectTextures[1];
+                    effectOnPlayer = false;
+                } else { // Attack
+                    currentEffectTexture = effectTextures[0];
+                    effectOnPlayer = true;
+                }
+            }
+        }, 1.0f);
+
     }
 
     private int chooseEnemyAction() {
-        // Simple AI with mana consideration
-        if (enemyHP < enemyMaxHP * 0.3f && enemyMana >= 12) {
+        //randomly choose an action based on enemy mana and HP
+        if (enemyMana >= 12 && enemyHP < enemyMaxHP * 0.5f) {
             return 2; // Heal
-        } else if (enemyMana >= 8 && MathUtils.random() < 0.6f) {
-            return 1; // Special attack
+        } else if (enemyMana >= 8 && enemyHP < enemyMaxHP * 0.3f) {
+            return MathUtils.random(0, 1); // Attack or Special
         } else {
-            return 0; // Normal attack
+            return MathUtils.random(0, 1); // Attack or Special
         }
     }
 
@@ -672,13 +1163,16 @@ public class DarkestDungeon implements Screen {
     }
 
     @Override
-    public void pause() {}
+    public void pause() {
+    }
 
     @Override
-    public void resume() {}
+    public void resume() {
+    }
 
     @Override
-    public void hide() {}
+    public void hide() {
+    }
 
     @Override
     public void dispose() {
@@ -686,9 +1180,12 @@ public class DarkestDungeon implements Screen {
         font.dispose();
         shapeRenderer.dispose();
 
-        // Dispose textures
-        if (playerIdleTexture != null) playerIdleTexture.dispose();
-        if (enemyIdleTexture != null) enemyIdleTexture.dispose();
+        for (Texture texture : playerIdleTextures) {
+            if (texture != null) texture.dispose();
+        }
+        for (Texture texture : enemyIdleTextures) {
+            if (texture != null) texture.dispose();
+        }
         if (backgroundTexture != null) backgroundTexture.dispose();
 
         for (Texture texture : playerSkillTextures) {

@@ -1404,7 +1404,7 @@ public class GameplayController {
             if (currentEvent != null && currentEvent.isOneTime()) {
                 gameController.getEventManager().recordDefeatedEnemy(this.enemy.getEnemyID());
                 gameController.getEventManager().completeEvent(currentEvent.getId());
-                gameController.setEndEvent();
+                gameController.setCompletedEvent();
             }
 
             achievementManager.updateProgress(Achievement.AchievementType.COMBAT_WIN, 1);

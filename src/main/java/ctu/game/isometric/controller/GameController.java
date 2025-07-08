@@ -219,8 +219,6 @@ public class GameController {
     }
 
 
-
-
     public void showNPCBackStory() {
         NPC npc = findNPCNear(character.getGridX(), character.getGridY());
 
@@ -857,12 +855,19 @@ public class GameController {
 
                 } else {
                     Enemy enemy = EnemyLoader.getEnemyById(enemyId);
-                    setState(GameState.GAMEPLAY);
-                    gameplayController.activate();
-                    gameplayController.startCombat(enemy);
-                    gameplayController.setCurrentEvent(currentEvent);
+
+                    Random random = new Random();
+                    boolean randomBoolean = random.nextBoolean();
+                    if (randomBoolean) {
+                        game.getDarkestDungeonScreen().startCombat(enemy);
+                        game.changeScreen("DARK_DUNGEON");
+                    } else {
+                        setState(GameState.GAMEPLAY);
+                        gameplayController.activate();
+                        gameplayController.startCombat(enemy);
+                        gameplayController.setCurrentEvent(currentEvent);
+                    }
                 }
-                setEndEvent();
                 break;
             case "treasure":
                 if (currentEvent.isOneTime() && currentEvent.isCompleted()) {
