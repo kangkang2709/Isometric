@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
@@ -26,6 +27,8 @@ import ctu.game.isometric.util.AssetManager;
 import ctu.game.isometric.util.ItemLoader;
 import ctu.game.isometric.util.RewardLoader;
 import ctu.game.isometric.util.WordNetValidator;
+
+import java.util.Set;
 
 import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
 
@@ -216,6 +219,8 @@ public class DarkestDungeon implements Screen {
 
         item = null;
         reward = null;
+
+        inputWord = "";
     }
 
     int currentLevel = 0;
@@ -230,6 +235,7 @@ public class DarkestDungeon implements Screen {
         batch = new SpriteBatch();
         font = generateVietNameseFont("GrenzeGotisch.ttf", 20);
         titleFont = generateVietNameseFont("GrenzeGotisch.ttf", 26);
+        inputFont = generateVietNameseFont("ModernAntiqua-Regular.ttf", 20);
         shapeRenderer = new ShapeRenderer();
         camera = new OrthographicCamera();
         camera.setToOrtho(false, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -279,6 +285,8 @@ public class DarkestDungeon implements Screen {
                                 gameController.setState(GameState.EXPLORING);
                                 gameController.getCharacter().setHealth(playerHP);
                                 gameController.getCharacter().setMana(playerMana);
+                                gameController.getMapRenderer().setZoomed(true);
+                                gameController.setRenderCharacter(true);
                                 game.changeScreen("GAME");
 
                                 if (newLevel > currentLevel) gameController.showLevelUpNotification();
@@ -310,8 +318,8 @@ public class DarkestDungeon implements Screen {
                         float continueButtonX = menuX + (menuWidth - buttonWidth) / 2;
                         float continueButtonY = menuY + 160;
 
-                        float quitButtonX = continueButtonX;
-                        float quitButtonY = menuY + 110;
+                        float menuButtonY = menuY + 110;
+                        float quitButtonY = menuY + 60;
 
                         // Kiểm tra click vào "Continue"
                         if (screenX >= continueButtonX && screenX <= continueButtonX + buttonWidth &&
@@ -319,9 +327,14 @@ public class DarkestDungeon implements Screen {
                             isPaused = false;
                             return true;
                         }
-
+                        if (screenX >= continueButtonX && screenX <= continueButtonX + buttonWidth &&
+                                screenY >= menuButtonY && screenY <= menuButtonY + buttonHeight) {
+                            gameController.setState(GameState.MAIN_MENU);
+                            game.changeScreen("GAME");
+                            return true;
+                        }
                         // Kiểm tra click vào "Quit Game"
-                        if (screenX >= quitButtonX && screenX <= quitButtonX + buttonWidth &&
+                        if (screenX >= continueButtonX && screenX <= continueButtonX + buttonWidth &&
                                 screenY >= quitButtonY && screenY <= quitButtonY + buttonHeight) {
                             Gdx.app.exit();
                             return true;
@@ -354,7 +367,26 @@ public class DarkestDungeon implements Screen {
                 return false;
             }
 
+            @Override
+            public boolean keyTyped(char character) {
+                if (waitingForInput && showInputField) {
+                    if (character == '\r' || character == '\n') { // Enter key
+                        if (!inputWord.trim().isEmpty()) {
+                            processWordInput(inputWord.trim());
+                        }
+                    } else if (character == '\b') { // Backspace
+                        if (inputWord.length() > 0) {
+                            inputWord = inputWord.substring(0, inputWord.length() - 1);
+                        }
+                    } else if (java.lang.Character.isLetter(character)) {
+                        inputWord += java.lang.Character.toUpperCase(character);
+                    }
+                    return true;
+                }
+                return false;
+            }
         });
+// Add this to the InputAdapter in the show() method
 
     }
 
@@ -419,16 +451,52 @@ public class DarkestDungeon implements Screen {
 
             drawBackground();
             drawCharacters();
+
+            // Draw word display effects
+            if (showWordDisplay && !isPaused) {
+                drawWordDisplay();
+            }
+
             drawBottomUI();
 
+            if (showInputField && !isPaused) {
+                drawInputField();
+            }
             if (isPaused) {
                 drawPauseMenu();
             }
-
         }
     }
 
-//        handleInput();
+
+    private void drawInputField() {
+        if (!showInputField) return;
+
+        float fieldWidth = 300;
+        float fieldHeight = 40;
+        float fieldX = (SCREEN_WIDTH - fieldWidth) / 2 + 35;
+        float fieldY = COMBAT_CENTER_Y - 50;
+
+        inputFieldBounds = new Rectangle(fieldX, fieldY, fieldWidth, fieldHeight);
+
+        // Draw input field background
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(0.2f, 0.2f, 0.3f, 0.9f);
+        shapeRenderer.rect(fieldX, fieldY, fieldWidth, fieldHeight);
+        shapeRenderer.setColor(0.6f, 0.6f, 0.8f, 1f);
+        shapeRenderer.rect(fieldX, fieldY, fieldWidth, 2);
+        shapeRenderer.rect(fieldX, fieldY + fieldHeight - 2, fieldWidth, 2);
+        shapeRenderer.rect(fieldX, fieldY, 2, fieldHeight);
+        shapeRenderer.rect(fieldX + fieldWidth - 2, fieldY, 2, fieldHeight);
+        shapeRenderer.end();
+
+        // Draw input text
+        batch.begin();
+        font.setColor(Color.WHITE);
+        inputFont.draw(batch, "PRESS ENTER TO SUBMIT WORD", fieldX, fieldY + 70);
+        inputFont.draw(batch, inputWord + "_", fieldX + 30, fieldY + 25);
+        batch.end();
+    }
 
 
     boolean victory = false;
@@ -536,6 +604,7 @@ public class DarkestDungeon implements Screen {
 
     private void updateCombat(float delta) {
         // Update skill availability
+        updateWordDisplay(delta);
         for (int i = 0; i < skillManaCost.length; i++) {
             skillEnabled[i] = (playerMana >= skillManaCost[i]);
         }
@@ -584,6 +653,7 @@ public class DarkestDungeon implements Screen {
         if (combatState == CombatState.ENEMY_TURN && !isAnimating && !enemyTurnTriggered) {
             enemyTurnTriggered = true;
             startEnemyTurn();
+
         }
     }
 
@@ -604,6 +674,10 @@ public class DarkestDungeon implements Screen {
                 break;
 
             case SKILL_EFFECT:
+                if (currentSkill == 2 && waitingForInput) {
+                    return;
+                }
+
                 if (progress >= SKILL_EFFECT_DURATION) {
                     animState = AnimationState.MOVE_BACK;
                     animationTimer = 0;
@@ -722,6 +796,20 @@ public class DarkestDungeon implements Screen {
         }
     }
 
+    // Add these fields to the DarkestDungeon class
+    private String inputWord = "";
+    private boolean showInputField = false;
+    private boolean waitingForInput = false;
+    private Rectangle inputFieldBounds;
+    private BitmapFont inputFont;
+    // Add these fields to the DarkestDungeon class
+    private String displayWord = "";
+    private boolean showWordDisplay = false;
+    private float wordDisplayTimer = 0f;
+    private final float WORD_DISPLAY_DURATION = 2f;
+    private boolean showDamageEffect = false;
+    private boolean showHealEffect = false;
+
     private void applyPlayerSkillEffects() {
         switch (currentSkill) {
             case 0: // Attack
@@ -730,34 +818,154 @@ public class DarkestDungeon implements Screen {
                 enemyHP = Math.max(0, enemyHP - damage);
                 combatLog = "You attack for " + damage + " damage!";
                 break;
-            case 1: // Flame
+            case 1: // Word (Random from learned words)
                 playerMana -= 5;
+                Set<String> learnedWords = gameController.getCharacter().getLearnedWords();
+                if (learnedWords != null && !learnedWords.isEmpty()) {
+                    String[] wordsArray = learnedWords.toArray(new String[0]);
+                    String randomWord = wordsArray[MathUtils.random(wordsArray.length - 1)];
 
+                    int wordScore = wordNetValidator.getTotalScore(randomWord);
+                    int wordDamage = Math.max(1, wordScore + playerATK - enemyDEF);
+                    enemyHP = Math.max(0, enemyHP - wordDamage);
+                    combatLog = "Word '" + randomWord + "' deals " + wordDamage + " damage!";
 
-                int flameDamage = MathUtils.random(playerATK + 5, playerATK + 10) - enemyDEF;
-                flameDamage = Math.max(1, flameDamage);
-                enemyHP = Math.max(0, enemyHP - flameDamage);
-                combatLog = "Word spell deals " + flameDamage + " damage!";
+                    // Show word display effect
+                    displayWord = randomWord;
+                    showWordDisplay = true;
+                    wordDisplayTimer = 0f;
+                    showDamageEffect = true;
+                } else {
+                    int basicDamage = MathUtils.random(playerATK - 2, playerATK + 2) - enemyDEF;
+                    basicDamage = Math.max(1, basicDamage);
+                    enemyHP = Math.max(0, enemyHP - basicDamage);
+                    combatLog = "No learned words! Basic attack for " + basicDamage + " damage!";
+                }
                 break;
-            case 2: // Lightning
+            case 2: // TypeW (Input word)
                 playerMana -= 5;
-                int lightningDamage = MathUtils.random(playerATK + 5, playerATK + 10) - enemyDEF;
-                lightningDamage = Math.max(1, lightningDamage);
-                enemyHP = Math.max(0, enemyHP - lightningDamage);
-                combatLog = "Type for strikes for " + lightningDamage + " damage!";
-                break;
+                showInputField = true;
+                waitingForInput = true;
+                inputWord = "";
+                combatLog = "   Type a word and press ENTER\nInvalid words will deal damage to you!";
+                return;
             case 3: // Heal
                 playerMana -= 10;
                 int heal = MathUtils.random(15, 25);
                 playerHP = Math.min(playerMaxHP, playerHP + heal);
                 combatLog = "You heal for " + heal + " HP!";
+                showHealEffect = true;
                 break;
             case 4: // Defend
                 playerMana = Math.min(playerMaxMana, playerMana + 3);
-                playerDEF += 2; // Temporary defense boost
+                playerDEF += 2;
                 combatLog = "You defend and recover 3 mana! DEF increased!";
                 break;
         }
+    }
+
+    private void updateWordDisplay(float delta) {
+        if (showWordDisplay) {
+            wordDisplayTimer += delta;
+            if (wordDisplayTimer >= WORD_DISPLAY_DURATION) {
+                showWordDisplay = false;
+                showDamageEffect = false;
+                showHealEffect = false;
+            }
+        }
+    }
+
+    private void drawWordDisplay() {
+        if (!showWordDisplay) return;
+
+        batch.begin();
+
+        // Calculate floating animation
+        float floatOffset = (float) Math.sin(wordDisplayTimer * 4) * 5;
+        float fadeAlpha = Math.max(0, 1 - (wordDisplayTimer / WORD_DISPLAY_DURATION));
+
+        // Position above combat area
+        float wordX = SCREEN_WIDTH / 2;
+        float wordY = COMBAT_CENTER_Y + 100 + floatOffset;
+
+        // Draw word with glow effect
+        titleFont.setColor(1f, 1f, 0.3f, fadeAlpha); // Yellow with fade
+
+        // Draw outline for better visibility
+        for (int x = -1; x <= 1; x++) {
+            for (int y = -1; y <= 1; y++) {
+                if (x != 0 || y != 0) {
+                    titleFont.setColor(0f, 0f, 0f, fadeAlpha * 0.8f);
+                    layout.setText(titleFont, displayWord);
+                    titleFont.draw(batch, layout, wordX - layout.width / 2 + x, wordY + y);
+                }
+            }
+        }
+
+        // Draw main text
+        titleFont.setColor(1f, 1f, 0.3f, fadeAlpha);
+        layout.setText(titleFont, displayWord);
+        titleFont.draw(batch, layout, wordX - layout.width / 2, wordY);
+        drawWordEffects(batch, wordX, wordY - 20, fadeAlpha);
+
+        batch.end();
+
+        // Draw particle effects
+
+    }
+
+    Texture damageParticleTex = new Texture("dungeon/damage_particle.png");
+
+    private void drawWordEffects(SpriteBatch batch, float centerX, float centerY, float alpha) {
+
+        if (!showDamageEffect && !showHealEffect) return;
+
+        if (showDamageEffect && damageParticleTex != null) {
+            float scale = 1.0f + 0.2f * (float) Math.sin(wordDisplayTimer * 8); // nhấp nháy to–nhỏ
+            float size = 92 * scale;
+            batch.setColor(1f, 0.3f, 0.1f, alpha * 0.8f);
+            batch.draw(
+                    damageParticleTex,
+                    centerX - size / 2f - 25, centerY - size / 2f + 20,
+                    size + 50, size
+            );
+        }
+
+
+        batch.setColor(Color.WHITE); // Reset lại màu
+    }
+
+
+    private void processWordInput(String word) {
+        displayWord = word;
+        showWordDisplay = true;
+        wordDisplayTimer = 0f;
+
+        if (wordNetValidator.isValidWord(word)) {
+            int wordScore = wordNetValidator.getTotalScore(word);
+            int wordDamage = Math.max(1, wordScore + playerATK - enemyDEF);
+            enemyHP = Math.max(0, enemyHP - wordDamage);
+            combatLog = "'" + word + "' is valid! Deals " + wordDamage + " damage!";
+
+            showDamageEffect = true;
+            currentEffectTexture = effectTextures[0];
+            effectOnPlayer = false;
+
+            if (gameController.getCharacter().updateDict(word))
+                gameController.getDictionaryView().addNewWord(word);
+        } else {
+            int selfDamage = MathUtils.random(3, 8);
+            playerHP = Math.max(0, playerHP - selfDamage);
+            combatLog = "'" + word + "' is invalid! You take " + selfDamage + " damage!";
+
+            showDamageEffect = true;
+            currentEffectTexture = effectTextures[0];
+            effectOnPlayer = true;
+        }
+
+        showInputField = false;
+        waitingForInput = false;
+        inputWord = "";
     }
 
     private void applyEnemySkillEffects() {
@@ -1017,9 +1225,9 @@ public class DarkestDungeon implements Screen {
         titleFont.draw(batch, layout, turnX, 150);
 
         // Combat log – auto center
-        layout.setText(font, combatLog);
+        layout.setText(inputFont, combatLog);
         float logX = (SCREEN_WIDTH - layout.width) / 2;
-        font.draw(batch, layout, logX, 50);
+        inputFont.draw(batch, layout, logX, 50);
 
         batch.end();
     }
@@ -1038,8 +1246,8 @@ public class DarkestDungeon implements Screen {
         float continueButtonX = menuX + (menuWidth - buttonWidth) / 2;
         float continueButtonY = menuY + 160;
 
-        float quitButtonX = continueButtonX;
-        float quitButtonY = menuY + 110;
+        float menuButtonY = menuY + 110;
+        float quitButtonY = menuY + 60;
 
         // 1. Draw semi-transparent overlay
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
@@ -1060,7 +1268,8 @@ public class DarkestDungeon implements Screen {
         // 4. Draw button backgrounds
         shapeRenderer.setColor(0.2f, 0.2f, 0.25f, 1f);
         shapeRenderer.rect(continueButtonX, continueButtonY, buttonWidth, buttonHeight);
-        shapeRenderer.rect(quitButtonX, quitButtonY, buttonWidth, buttonHeight);
+        shapeRenderer.rect(continueButtonX, menuButtonY, buttonWidth, buttonHeight);
+        shapeRenderer.rect(continueButtonX, quitButtonY, buttonWidth, buttonHeight);
         shapeRenderer.end();
 
         // 5. Draw text
@@ -1069,7 +1278,8 @@ public class DarkestDungeon implements Screen {
         font.draw(batch, "PAUSED", menuX + 130, menuY + 250);
 
         font.draw(batch, "Continue - ESC", continueButtonX + 60, continueButtonY + 28);
-        font.draw(batch, "Quit Game - Q", quitButtonX + 60, quitButtonY + 28);
+        font.draw(batch, "Main Menu - Q", continueButtonX + 60, menuButtonY + 28);
+        font.draw(batch, "Quit Game - Q", continueButtonX + 60, quitButtonY + 28);
         batch.end();
     }
 
@@ -1093,6 +1303,11 @@ public class DarkestDungeon implements Screen {
         if (gameController.getEffectManager() != null) {
             gameController.getEffectManager().playClickSound();
         }
+
+        // Reset word effects
+        showWordDisplay = false;
+        showDamageEffect = false;
+        showHealEffect = false;
 
         isAnimating = true;
         isPlayerAction = true;

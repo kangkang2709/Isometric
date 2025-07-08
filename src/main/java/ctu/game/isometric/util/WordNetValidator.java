@@ -339,6 +339,7 @@ public class WordNetValidator {
     }
 
 
+
     public int getTotalScore(String word) {
         if (cache.get(word.toUpperCase()) != null) {
             System.out.println("Cache hit for word: " + cache.get(word.toUpperCase()));
