@@ -33,8 +33,6 @@ public class SettingsMenu {
     private float padding = 20f;
 
     // Animation properties
-    private float animationTime = 0;
-    private float selectionPulse = 0;
     private String menuTitle = "Thiết Lập";
 
     private Texture sliderKnobTexture;    // For sliders
@@ -116,8 +114,46 @@ public class SettingsMenu {
     }
 
     public void update(float delta) {
-        animationTime += delta;
-        selectionPulse = (float) Math.sin(animationTime * 5) * 0.2f + 0.8f;
+    }
+
+
+
+    public boolean handleMouseClick(float mouseX, float mouseY) {
+        mouseY = Gdx.graphics.getHeight() - mouseY; // Invert Y coordinate for correct hit detection
+        for (int i = 0; i < buttonRectangles.size(); i++) {
+            Rectangle buttonRect = buttonRectangles.get(i);
+            if (buttonRect.contains(mouseX, mouseY)) {
+                selectedIndex = i;
+                activateSelectedItem();
+                return true;
+            }
+        }
+
+        for (int i = 0; i < sliderRectangles.size(); i++) {
+            Rectangle sliderRect = sliderRectangles.get(i);
+            if (sliderRect.contains(mouseX, mouseY)) {
+                isDraggingSlider = true;
+                draggingSliderIndex = i;
+                return true;
+            }
+        }
+
+        return false;
+    }
+    public boolean handleMouseDrag(float mouseX, float mouseY) {
+        if (isDraggingSlider && draggingSliderIndex >= 0 && draggingSliderIndex < sliderRectangles.size()) {
+            Rectangle sliderRect = sliderRectangles.get(draggingSliderIndex);
+            MenuOption option = menuOptions.get(draggingSliderIndex);
+            float sliderWidth = sliderRect.width;
+            float newValue = (mouseX - sliderRect.x) / sliderWidth;
+            newValue = Math.max(0f, Math.min(1f, newValue)); // Clamp between 0 and 1
+            option.setValue(newValue);
+            if (option.getName().equals("Âm Lượng")) {
+                gameController.getMusicController().setVolume(option.getValue());
+            }
+            return true;
+        }
+        return false;
     }
 
     public void addMenuOption(String name, MenuOption.OptionType type, Runnable onChange) {

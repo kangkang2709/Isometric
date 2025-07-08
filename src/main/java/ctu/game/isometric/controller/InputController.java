@@ -226,7 +226,8 @@ public class InputController extends InputAdapter {
 
             case QUIZZES:
                 return gameController.getQuizController().handleClick(screenX, screenY);
-
+            case SETTINGS:
+                return gameController.getSettingsMenuController().handleMouseClick(screenX, screenY);
             default:
                 return false;
         }
@@ -324,6 +325,9 @@ public class InputController extends InputAdapter {
             gameController.getCamera().unproject(touchPos);
             gameController.getDictionaryView().handleMouseDrag(touchPos.x, touchPos.y);
             return true;
+        }
+        if( state == GameState.SETTINGS) {
+            return gameController.getSettingsMenuController().handleMouseDrag(screenX, screenY);
         }
 
         // Your existing touchDragged code
@@ -589,7 +593,6 @@ public class InputController extends InputAdapter {
     private boolean handleSettingsInput(int keycode) {
         switch (keycode) {
             case Keys.ESCAPE -> {
-                System.out.println(gameController.getCurrentState() + " " + gameController.getPreviousState());
                 if (gameController.getPreviousState() == GameState.MAIN_MENU) {
                     gameController.setState(GameState.MAIN_MENU);
                     gameController.setPreviousState(GameState.MAIN_MENU);
