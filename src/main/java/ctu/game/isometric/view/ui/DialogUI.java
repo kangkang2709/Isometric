@@ -12,7 +12,9 @@ import ctu.game.isometric.model.dialog.Dialog;
 import ctu.game.isometric.model.dialog.Choice;
 import ctu.game.isometric.model.dialog.Scene;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
 
@@ -35,7 +37,7 @@ public class DialogUI {
     private static final int DIALOG_BOX_WIDTH = 1280;
     private static final int DIALOG_BOX_HEIGHT = 200;
 
-    private static final int CHARACTER_IMAGE_SIZE = 100;
+    private static final int CHARACTER_IMAGE_SIZE = 80;
 
     // Text typing effect variables
     private String currentFullText = "";
@@ -51,38 +53,63 @@ public class DialogUI {
 
     private String mainCharacterName = "Main Character";
 
-    public DialogUI(DialogController dialogController) {
+    public DialogUI(DialogController dialogController, String gender) {
         this.dialogController = dialogController;
 
         this.dialogFont = generateVietNameseFont("GrenzeGotisch.ttf", 20);
         this.nameFont = generateVietNameseFont("GrenzeGotisch.ttf", 18);
         this.promptFont = generateVietNameseFont("GrenzeGotisch.ttf", 18);
-        this.mainCharacterImage = new Texture(Gdx.files.internal("characters/avatar.png"));
+        if (gender.equalsIgnoreCase("MALE")) {
+            Texture avatarTexture = new Texture(Gdx.files.internal("characters/male.png"));
+            avatarTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+            this.mainCharacterImage = avatarTexture;
+
+        } else {
+            Texture avatarTexture = new Texture(Gdx.files.internal("characters/female.png"));
+            avatarTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+            this.mainCharacterImage = avatarTexture;
+        }
         this.batch = new SpriteBatch();
         this.shapeRenderer = new ShapeRenderer();
     }
 
-    private void loadCharacterImage(String imagePath) {
-        // Don't reload the same image
-        imagePath = "characters/" + imagePath;
-        if (imagePath != null && !imagePath.equals(currentImagePath)) {
-            // Dispose previous image to avoid memory leaks
-            if (characterImage != null) {
-                characterImage.dispose();
-                characterImage = null;
-            }
+    Map<String, Texture> characterImageCache = new HashMap<>();
 
+    private void loadCharacterImage(String imagePath) {
+        if (imagePath == null || imagePath.isEmpty()) return;
+
+        String fullPath = "characters/" + imagePath;
+
+        if (fullPath.equals(currentImagePath)) return;
+
+        Texture cached = characterImageCache.get(fullPath);
+        if (cached != null) {
+            characterImage = cached;
+            currentImagePath = fullPath;
+            Gdx.app.log("DialogUI", "Loaded character image from cache: " + fullPath);
+        } else {
             try {
-                characterImage = new Texture(Gdx.files.internal(imagePath));
-                currentImagePath = imagePath;
-                Gdx.app.log("DialogUI", "Loaded character image: " + imagePath);
+                Texture newTexture = new Texture(Gdx.files.internal(fullPath));
+                newTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+
+                characterImageCache.put(fullPath, newTexture);
+
+                // Dispose old texture if needed
+                if (characterImage != null && !characterImageCache.containsValue(characterImage)) {
+                    characterImage.dispose();
+                }
+
+                characterImage = newTexture;
+                currentImagePath = fullPath;
+                Gdx.app.log("DialogUI", "Loaded and cached character image: " + fullPath);
             } catch (Exception e) {
-                Gdx.app.error("DialogUI", "Failed to load character image: " + imagePath, e);
+                Gdx.app.error("DialogUI", "Failed to load character image: " + fullPath, e);
                 characterImage = null;
                 currentImagePath = null;
             }
         }
     }
+
 
     private void loadBackgroundImage(String imagePath) {
         if (imagePath != null && !imagePath.equals(currentBackgroundPath)) {
@@ -192,12 +219,12 @@ public class DialogUI {
         int selectedIndex = dialogController.getSelectedChoiceIndex();
 
         if (choices != null && !choices.isEmpty()) {
-                nameFont.draw(batch,mainCharacterName, DIALOG_BOX_X + 50, DIALOG_BOX_Y + DIALOG_BOX_HEIGHT - 20);
-                batch.draw(mainCharacterImage,
-                        DIALOG_BOX_X + 20,
-                        DIALOG_BOX_Y + DIALOG_BOX_HEIGHT - CHARACTER_IMAGE_SIZE - 60,
-                        CHARACTER_IMAGE_SIZE,
-                        CHARACTER_IMAGE_SIZE);
+            nameFont.draw(batch, mainCharacterName, DIALOG_BOX_X + 50, DIALOG_BOX_Y + DIALOG_BOX_HEIGHT - 20);
+            batch.draw(mainCharacterImage,
+                    DIALOG_BOX_X + 20,
+                    DIALOG_BOX_Y + DIALOG_BOX_HEIGHT - CHARACTER_IMAGE_SIZE - 60,
+                    CHARACTER_IMAGE_SIZE,
+                    CHARACTER_IMAGE_SIZE);
 
             for (int i = 0; i < choices.size(); i++) {
                 if (i == selectedIndex) {

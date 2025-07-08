@@ -17,6 +17,7 @@ import ctu.game.isometric.controller.AchievementManager;
 import ctu.game.isometric.controller.EffectManager;
 import ctu.game.isometric.controller.GameController;
 import ctu.game.isometric.model.entity.Enemy;
+import ctu.game.isometric.model.entity.Gender;
 import ctu.game.isometric.model.game.*;
 import ctu.game.isometric.model.world.MapEvent;
 import ctu.game.isometric.util.*;
@@ -137,7 +138,7 @@ public class GameplayController {
     public void playerAttack(String word, int dmg, Runnable onComplete) {
         // Save original camera position and start zoom animation
         cameraOriginalPosition.set(viewport.getCamera().position);
-        cameraZoomOriginal = ((OrthographicCamera)viewport.getCamera()).zoom;
+        cameraZoomOriginal = ((OrthographicCamera) viewport.getCamera()).zoom;
         cameraZoomCurrent = cameraZoomOriginal;
 
         // Set zoom target (closer to enemy)
@@ -162,7 +163,7 @@ public class GameplayController {
             // Reset camera zoom
             isCameraZooming = false;
             cameraZoomTimer = 0f;
-            ((OrthographicCamera)viewport.getCamera()).zoom = cameraZoomOriginal;
+            ((OrthographicCamera) viewport.getCamera()).zoom = cameraZoomOriginal;
             viewport.getCamera().position.set(cameraOriginalPosition);
 
             // Call the original onComplete
@@ -872,6 +873,8 @@ public class GameplayController {
         combatLogScrollOffset = 0;
     }
 
+    String gender;
+
     private void drawPlayerStatusColumn(SpriteBatch batch, float x, float y, float width, float height) {
 //        batch.setColor(0.2f, 0.4f, 0.2f, 0.9f);
 
@@ -884,10 +887,16 @@ public class GameplayController {
         drawCenteredText(batch, titleFont, playerName, x + width / 2, y + height - 205, Color.BLACK);
         drawCenteredText(batch, titleFont, String.valueOf(currentLevel), x + width / 2, y + 32, Color.BLACK);
 
-        Texture playerTexture = getTexture("characters/player.png");
+
+        Texture playerTexture;
+        if (gender.equalsIgnoreCase("MALE"))
+            playerTexture = getTexture("characters/male.png");
+        else
+            playerTexture = getTexture("characters/female.png");
+
         if (playerTexture != null) {
             batch.setColor(Color.WHITE);
-            batch.draw(playerTexture, x + (width - 100) / 2, y + height - 190, 100, 100);
+            batch.draw(playerTexture, x + (width - 100) / 2, y + height - 170, 100, 100);
         }
 
         regularFont.setColor(Color.BLACK);
@@ -979,11 +988,11 @@ public class GameplayController {
         batch.draw(whiteTexture, x, y, width, height);
 
 
-        Texture bgTexture = getTexture("ui/card_deck.png");
-        if (bgTexture != null) {
-            batch.setColor(Color.WHITE);
-            batch.draw(bgTexture, x, y, width, height);
-        }
+//        Texture bgTexture = getTexture("ui/card_deck.png");
+//        if (bgTexture != null) {
+//            batch.setColor(Color.WHITE);
+//            batch.draw(bgTexture, x, y, width, height);
+//        }
 
 
         String currentWord = letterGrid.getCurrentWord();
@@ -1432,7 +1441,7 @@ public class GameplayController {
         this.achievementManager = gameController.getAchievementManager();
         this.enemyMaxHealth = enemy.getHealth() + currentLevel * 5;
         this.enemyHealth = enemy.getHealth() + currentLevel * 5;
-
+        this.gender = gameController.getCharacter().getGender().toString();
 
         addCombatLog("Bắt đầu chiến đấu với " + enemyName + "!");
         letterGrid.regenerateGrid();
@@ -1519,7 +1528,9 @@ public class GameplayController {
     private Texture getTexture(String path) {
         if (!textureCache.containsKey(path)) {
             try {
-                textureCache.put(path, new Texture(Gdx.files.internal(path)));
+                Texture texture = new Texture(Gdx.files.internal(path));
+                texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+                textureCache.put(path,texture);
             } catch (Exception e) {
                 return whiteTexture;
             }

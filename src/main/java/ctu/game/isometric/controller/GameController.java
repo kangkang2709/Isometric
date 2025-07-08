@@ -219,64 +219,7 @@ public class GameController {
     }
 
 
-    public void interactWithNPC() {
-//
-//        if (!getCharacter().getIsTutorials().get("npc")) {
-//            tutorialUI.show("npc");
-//            getCharacter().setTutorialCompleted("npc");
-//        }
 
-        NPC npc = findNPCNear(character.getGridX(), character.getGridY());
-        if (npc != null) {
-            npc.setBehaviorState("Dialogue");
-            switch (npc.getNpcName()) {
-                case "QuizMaster":
-                    if (getCharacter().getAttempFlags().get("quizAttempts") >= 3) {
-                        dialogController.showSimpleMessage("You have already attempted this quiz today. Come back tomorrow!");
-                    } else {
-                        dialogController.setOnDialogFinishedAction(() -> {
-                            startQuiz(5);
-                            getCharacter().getAttempFlags().put("quizAttempts", 1);
-                        });
-                        dialogController.startDialog("chapter_quiz_intro", "scene_meet_npc");
-
-                    }
-                    break;
-                case "MulQuizMaster":
-                    if (getCharacter().getAttempFlags().get("mulQuizAttempts") >= 1) {
-                        dialogController.showSimpleMessage("You have already attempted this quiz today. Come back tomorrow!");
-                    } else {
-                        dialogController.setOnDialogFinishedAction(() -> {
-                            startMulChoiceQuiz(5);
-                            getCharacter().getAttempFlags().put("mulQuizAttempts", 1);
-
-                        });
-                        dialogController.startDialog("chapter_quiz_intro", "scene_meet_npc");
-                    }
-                    break;
-                case "Patche Trader":
-                    dialogController.showMessageWithChoices("Chúng tôi có vài ủy thác. Bạn có muốn tiếp nhận không?", "CCCD",
-                            "Yes [Cần CCCD]", "Nope", () -> setState(GameState.BOUNTY_BOARD));
-                    ;
-                    break;
-                case "Merchant":
-                    dialogController.showMessageWithChoices("I have something to trade. What do you want", "CCCD",
-                            "Yes [Cần CCCD]", "Nope", () -> merchantUI.show());
-                    break;
-                case "Waitess Hera":
-                    dialogController.showMessageWithChoices("Do want to heal", "CCCD",
-                            "Yes [Cần CCCD]", "Nope", () -> getCharacter().recovery());
-                    break;
-                case "Teleporter":
-                    dialogController.startDialog("teleporting_background", "scene_intro");
-                default:
-                    break;
-            }
-
-        } else {
-            dialogController.showSimpleMessage("No NPC nearby to interact with.");
-        }
-    }
 
     public void showNPCBackStory() {
         NPC npc = findNPCNear(character.getGridX(), character.getGridY());
@@ -831,6 +774,7 @@ public class GameController {
     }
 
     private void checkPositionEvents(float x, float y) {
+        getMapRenderer().setZoomed(false);
         currentEvent = eventManager.checkPositionEvents(x, y);
         isRenderCharacter = true;
         if (currentEvent != null) {

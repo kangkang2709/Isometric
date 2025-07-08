@@ -296,7 +296,7 @@ public class MapRenderer {
             TextureRegion texture = textureRegions.get(plate.getEffectType() + "_" + (plate.isActivated() ? "active" : "inactive"));
             if (texture != null) {
                 float[] isoPos = toIsometric(plate.getGridX(), plate.getGridY());
-                batch.draw(texture, isoPos[0] +10, isoPos[1]+16, 40, 32);
+                batch.draw(texture, isoPos[0] + 10, isoPos[1] + 16, 40, 32);
             }
 //            if (!plate.getEffectType().equals("trap") && !plate.isActivated()) {
 //                float[] isoPos = toIsometric(plate.getTargetX(), plate.getTargetY());
@@ -333,18 +333,32 @@ public class MapRenderer {
     }
 
 
-
     public void render(SpriteBatch batch) {
 
-        if (!map.getMapName().equals("board")) {
+//        if (!map.getMapName().equals("board")) {
+//            float[] isoPos = toIsometric(character.getGridX(), character.getGridY());
+//            camera.position.set(isoPos[0], isoPos[1], 0);
+//            camera.update();
+//        } else {
+//            camera.position.set(645, 25, 0);
+//            camera.update();
+//        }
+
+
+        if (isZoomed && map.getMapName().equals("board")) {
+            camera.position.set(645, 25, 0);
+            camera.zoom = 0.8f; // Set zoom level for the board
+            camera.update();
+        } else if (!isZoomed && map.getMapName().equals("board")) {
+            float[] isoPos = toIsometric(character.getGridX(), character.getGridY());
+            camera.position.set(isoPos[0], isoPos[1], 0);
+            camera.zoom = 0.5f;
+            camera.update();
+        } else {
             float[] isoPos = toIsometric(character.getGridX(), character.getGridY());
             camera.position.set(isoPos[0], isoPos[1], 0);
             camera.update();
-        } else {
-            camera.position.set(645, 25, 0);
-            camera.update();
         }
-
 
 
         // End batch if currently drawing to use renderer
@@ -535,7 +549,7 @@ public class MapRenderer {
                     centerX - (width * scaleX) / 2, // X position adjusted for scale
                     y, // Fixed Y position without floating effect
                     width * scaleX, // Width scaled to simulate perspective
-                    height, // Height
+                    width, // Height
                     0, // Source X
                     0, // Source Y
                     currentTexture.getWidth(), // Source width
@@ -733,7 +747,6 @@ public class MapRenderer {
             }
         }
 
-
     }
 
 
@@ -745,6 +758,13 @@ public class MapRenderer {
 
     int targetValue = 10;
 
+    public boolean isZoomed() {
+        return isZoomed;
+    }
+
+    public void setZoomed(boolean zoomed) {
+        isZoomed = zoomed;
+    }
 
     public void updateRollTargetValue() {
         this.targetValue = character.getLevel() * 4 + character.getRun();
@@ -753,6 +773,8 @@ public class MapRenderer {
     Map<String, Enemy> enemies = new HashMap<>();
 
 
+    boolean isZoomed = false;
+
     private void drawEnemyInfoCard(SpriteBatch batch, MapEvent event) {
         if (!map.getMapName().equals("board")) return;
 
@@ -760,6 +782,7 @@ public class MapRenderer {
             centerX = 640;
         } else centerX = 460;
 
+        isZoomed = true;
         String enemyName = event.getProperties().get("enemyName", String.class);
         if (enemyName == null) enemyName = "Unknown Enemy";
 
@@ -772,7 +795,6 @@ public class MapRenderer {
         if (cardTexture == null) {
             cardTexture = textures.get("enemy_card");
         }
-
 
 
         if (cardTexture != null) {

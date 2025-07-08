@@ -238,37 +238,37 @@ public class InputController extends InputAdapter {
     private boolean handleExploringStateClick(int screenX, int screenY) {
         // Don't process clicks during dialog or movement cooldown
 
+
+        if (gameController.getBoardEventManager().getWordScrambleGame().isActive()) {
+            return gameController.getBoardEventManager().getWordScrambleGame().handleMouseInput(screenX, screenY);
+        }
+
+        if (gameController.getDialogController().isDialogActive() || moveCooldown > 0) {
+            return false;
+        }
+
+        // Check for UI element clicks first
+        if (gameController.getInventoryUI().isVisible()) {
+            gameController.getInventoryUI().handleClick(screenX, screenY);
+            return true;
+        }
+
+        if (gameController.getMerchantUI().isVisible()) {
+            gameController.getMerchantUI().handleClick(screenX, screenY);
+            return true;
+        }
+
+        if (gameController.getAchievementUI().isActive()) {
+            gameController.getAchievementUI().handleInput(screenX, screenY);
+            return true;
+        }
+
+        if (gameController.getEventManager().getMapName().equals("board")) {
+            return mapRenderer.handleRollingClick(screenX, screenY);
+        }
+
         return handleCharacterMovement(screenX, screenY);
 
-//        if (gameController.getBoardEventManager().getWordScrambleGame().isActive()) {
-//            return gameController.getBoardEventManager().getWordScrambleGame().handleMouseInput(screenX, screenY);
-//        }
-//
-//        if (gameController.getDialogController().isDialogActive() || moveCooldown > 0) {
-//            return false;
-//        }
-//
-//        // Check for UI element clicks first
-//        if (gameController.getInventoryUI().isVisible()) {
-//            gameController.getInventoryUI().handleClick(screenX, screenY);
-//            return true;
-//        }
-//
-//        if (gameController.getMerchantUI().isVisible()) {
-//            gameController.getMerchantUI().handleClick(screenX, screenY);
-//            return true;
-//        }
-//
-//        if (gameController.getAchievementUI().isActive()) {
-//            gameController.getAchievementUI().handleInput(screenX, screenY);
-//            return true;
-//        }
-//
-//        if (gameController.getEventManager().getMapName().equals("board")) {
-//            return mapRenderer.handleRollingClick(screenX, screenY);
-//        }
-
-        // Handle character movement
 
     }
 
@@ -408,9 +408,6 @@ public class InputController extends InputAdapter {
                 gameController.setState(GameState.QUEST_TRACKER);
             }
             case Keys.F -> {
-                gameController.interactWithNPC();
-            }
-            case Keys.G -> {
                 gameController.showNPCBackStory();
             }
 
@@ -710,6 +707,7 @@ public class InputController extends InputAdapter {
             }
 
             case EXPLORING -> {
+                if (gameController.getMap().getMapName().equals("board")) return false;
                 float defaultZoom = 1.0f;
                 float minZoom = 0.5f;
                 float zoomStep = 0.1f;

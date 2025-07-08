@@ -35,7 +35,6 @@ public class GameScreen implements Screen {
     private Dice dice;
 
 
-
     public GameScreen(IsometricGame game, GameController gameController) {
         this.game = game;
         this.gameController = gameController;
@@ -52,7 +51,7 @@ public class GameScreen implements Screen {
         originalMatrix = batch.getProjectionMatrix().cpy();
         originalColor = batch.getColor().cpy();
         // In GameScreen.java - when initializing MapRenderer
-        dialogUI = new DialogUI(gameController.getDialogController());
+        dialogUI = new DialogUI(gameController.getDialogController(),"MALE");
         gameController.getInputController().setDialogUI(dialogUI);
         // Set input processor
 
@@ -104,7 +103,7 @@ public class GameScreen implements Screen {
 
             exploringUI = new ExploringUI(gameController);
 
-            dialogUI = new DialogUI(gameController.getDialogController());
+            dialogUI = new DialogUI(gameController.getDialogController(), gameController.getCharacter().getGender().toString());
             dialogUI.setMainCharacterName(gameController.getCharacter().getName());
             gameController.getInputController().setDialogUI(dialogUI);
 
@@ -170,7 +169,8 @@ public class GameScreen implements Screen {
                         gameController.getNpcRenderer().render(batch);
                     }
 
-                    if (characterRenderer != null && gameController.isRenderCharacter()) characterRenderer.render(batch);
+                    if (characterRenderer != null && gameController.isRenderCharacter())
+                        characterRenderer.render(batch);
                     gameController.getBoardEventManager().getWordScrambleGame().render(batch, 490, 435);
 
 
@@ -280,6 +280,7 @@ public class GameScreen implements Screen {
 
     @Override
     public void show() {
+        camera.zoom = 0.5f;
         camera.update();
         Gdx.input.setInputProcessor(gameController.getInputController());
     }
