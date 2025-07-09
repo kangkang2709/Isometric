@@ -778,7 +778,7 @@ public class GameController {
         if (currentEvent != null) {
             hasActiveEvent = true;
             currentEventType = currentEvent.getEventType();
-            if (currentEventType.equals("battle")) {
+            if (currentEventType.equals("battle") && map.getMapName().equals("board")) {
                 isRenderCharacter = false; // Don't render character during battle events
             }
             currentEventId = currentEvent.getId();
@@ -858,6 +858,7 @@ public class GameController {
 
                     Random random = new Random();
                     boolean randomBoolean = random.nextBoolean();
+//                    boolean randomBoolean = false;
                     if (randomBoolean) {
                         game.getDarkestDungeonScreen().startCombat(enemy);
                         game.changeScreen("DARK_DUNGEON");

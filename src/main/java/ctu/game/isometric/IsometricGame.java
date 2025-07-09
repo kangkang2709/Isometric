@@ -32,7 +32,7 @@ public class IsometricGame extends Game {
 //        gameScreen = new GameScreen(this, gameController);
 //        gameOverScreen = new EndScreen(() -> {
 //            changeScreen("GAME");
-//        });
+//       });
 //        dungeonScreen = new LinearCaveScreen(this, gameController);
 
         darkestDungeonScreen = new DarkestDungeon(this, gameController);

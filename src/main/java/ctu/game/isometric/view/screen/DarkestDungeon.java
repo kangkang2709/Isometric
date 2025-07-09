@@ -61,10 +61,10 @@ public class DarkestDungeon implements Screen {
     private boolean escKeyPressed = false;
 
     // Character stats - Enhanced with ATK and DEF
-    private int playerHP = 4, playerMaxHP = 60;
+    private int playerHP = 20, playerMaxHP = 60;
     private int playerMana = 25, playerMaxMana = 50;
     private int playerATK = 15, playerDEF = 8;
-    private int enemyHP = 4, enemyMaxHP = 40;
+    private int enemyHP = 20, enemyMaxHP = 40;
     private int enemyMana = 20, enemyMaxMana = 20;
     private int enemyATK = 12, enemyDEF = 5;
     private String playerName = "Plague Doctor";
@@ -212,6 +212,7 @@ public class DarkestDungeon implements Screen {
         this.combatLog = "Combat begins! Choose your action.";
 
         this.victory = false;
+        isPaused = false;
         defeated = false;
 
         currentLevel = gameController.getCharacter().getLevel();
@@ -252,13 +253,23 @@ public class DarkestDungeon implements Screen {
             @Override
             public boolean keyDown(int keycode) {
                 if (keycode == Input.Keys.ESCAPE) {
-                    isPaused = !isPaused;
+                    if (showTutorial) {
+                        showTutorial = false;
+                        currentTutorialPage = 0;
+                    } else {
+                        isPaused = !isPaused;
+                    }
                     return true;
                 }
 
                 if (isPaused) {
                     if (keycode == Input.Keys.Q) {
                         Gdx.app.exit();
+                        return true;
+                    }
+                    if (keycode == Input.Keys.T) {
+                        showTutorial = !showTutorial;
+                        currentTutorialPage = 0;
                         return true;
                     }
                     return true; // Ignore other input when paused
@@ -273,6 +284,50 @@ public class DarkestDungeon implements Screen {
                 if (!Gdx.input.justTouched()) return false;
 
                 screenY = 720 - screenY; // Invert Y coordinateif
+
+                if (showTutorial) {
+                    // Tutorial navigation
+                    float tutorialWidth = 700;
+                    float tutorialHeight = 500;
+                    float tutorialX = (SCREEN_WIDTH - tutorialWidth) / 2;
+                    float tutorialY = (SCREEN_HEIGHT - tutorialHeight) / 2;
+
+                    float buttonWidth = 100;
+                    float buttonHeight = 40;
+                    float prevButtonX = tutorialX + 50;
+                    float nextButtonX = tutorialX + tutorialWidth - 150;
+                    float closeButtonX = tutorialX + tutorialWidth - 110;
+                    float buttonY = tutorialY + 30;
+                    float closeButtonY = tutorialY + tutorialHeight - 50;
+
+                    // Previous page
+                    if (currentTutorialPage > 0 &&
+                            screenX >= prevButtonX && screenX <= prevButtonX + buttonWidth &&
+                            screenY >= buttonY && screenY <= buttonY + buttonHeight) {
+                        currentTutorialPage -= 2; // Skip title pages
+                        if (currentTutorialPage < 0) currentTutorialPage = 0;
+                        return true;
+                    }
+
+                    // Next page
+                    if (currentTutorialPage < tutorialPages.length - 2 &&
+                            screenX >= nextButtonX && screenX <= nextButtonX + buttonWidth &&
+                            screenY >= buttonY && screenY <= buttonY + buttonHeight) {
+                        currentTutorialPage += 2; // Skip title pages
+                        return true;
+                    }
+
+                    // Close tutorial
+                    if (screenX >= closeButtonX && screenX <= closeButtonX + buttonWidth &&
+                            screenY >= closeButtonY && screenY <= closeButtonY + buttonHeight) {
+                        showTutorial = false;
+                        currentTutorialPage = 0;
+                        return true;
+                    }
+
+                    return true; // Consume input while tutorial is open
+                }
+
                 if (victory) {
                     if (continueButtonBounds != null && continueButtonBounds.contains(screenX, screenY)) {
                         gameController.getCharacter().addItem(item, reward.getAmount());
@@ -305,10 +360,9 @@ public class DarkestDungeon implements Screen {
 
                     return true; // Ngăn xử lý các input khác khi đã thua
                 } else {
-                    if (isPaused) {
-                        // Các giá trị này phải giống trong drawPauseMenu()
+                    if (isPaused && !showTutorial) {
                         float menuWidth = 400;
-                        float menuHeight = 300;
+                        float menuHeight = 350; // Increased height for tutorial button
                         float menuX = (SCREEN_WIDTH - menuWidth) / 2;
                         float menuY = (SCREEN_HEIGHT - menuHeight) / 2;
 
@@ -316,24 +370,35 @@ public class DarkestDungeon implements Screen {
                         float buttonHeight = 40;
 
                         float continueButtonX = menuX + (menuWidth - buttonWidth) / 2;
-                        float continueButtonY = menuY + 160;
-
+                        float continueButtonY = menuY + 210;
+                        float tutorialButtonY = menuY + 160;
                         float menuButtonY = menuY + 110;
                         float quitButtonY = menuY + 60;
 
-                        // Kiểm tra click vào "Continue"
+                        // Continue button
                         if (screenX >= continueButtonX && screenX <= continueButtonX + buttonWidth &&
                                 screenY >= continueButtonY && screenY <= continueButtonY + buttonHeight) {
                             isPaused = false;
                             return true;
                         }
+
+                        // Tutorial button
+                        if (screenX >= continueButtonX && screenX <= continueButtonX + buttonWidth &&
+                                screenY >= tutorialButtonY && screenY <= tutorialButtonY + buttonHeight) {
+                            showTutorial = true;
+                            currentTutorialPage = 0;
+                            return true;
+                        }
+
+                        // Main menu button
                         if (screenX >= continueButtonX && screenX <= continueButtonX + buttonWidth &&
                                 screenY >= menuButtonY && screenY <= menuButtonY + buttonHeight) {
                             gameController.setState(GameState.MAIN_MENU);
                             game.changeScreen("GAME");
                             return true;
                         }
-                        // Kiểm tra click vào "Quit Game"
+
+                        // Quit button
                         if (screenX >= continueButtonX && screenX <= continueButtonX + buttonWidth &&
                                 screenY >= quitButtonY && screenY <= quitButtonY + buttonHeight) {
                             Gdx.app.exit();
@@ -385,9 +450,83 @@ public class DarkestDungeon implements Screen {
                 }
                 return false;
             }
+
+            @Override
+            public boolean mouseMoved(int screenX, int screenY) {
+                mouseX = screenX;
+                mouseY = 720 - screenY; // Invert Y coordinate
+                updateTooltip();
+                return false;
+            }
         });
 // Add this to the InputAdapter in the show() method
 
+    }
+
+    private void updateTooltip() {
+        hoveredSkill = -1;
+        showTooltip = false;
+
+        if (combatState == CombatState.PLAYER_TURN && !isAnimating && !isPaused) {
+            for (int i = 0; i < 5; i++) {
+                float skillX = SKILL_BAR_X + 20 + i * (SKILL_BUTTON_SIZE + SKILL_BUTTON_SPACING);
+                float skillY = SKILL_BAR_Y + 8;
+
+                if (mouseX >= skillX && mouseX <= skillX + SKILL_BUTTON_SIZE &&
+                        mouseY >= skillY && mouseY <= skillY + SKILL_BUTTON_SIZE) {
+                    hoveredSkill = i;
+                    showTooltip = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    private void drawTooltip() {
+        if (!showTooltip || hoveredSkill == -1) return;
+
+        String description = skillDescriptions[hoveredSkill];
+        String manaCost = skillManaCost[hoveredSkill] > 0 ?
+                "Mana Cost: " + skillManaCost[hoveredSkill] : "No mana cost";
+
+        // Calculate tooltip size
+        layout.setText(font, description);
+        float tooltipWidth = Math.max(layout.width + 20, 200);
+        float tooltipHeight = layout.height + 40;
+
+        // Position tooltip above skill button
+        float tooltipX = mouseX - tooltipWidth / 2;
+        float tooltipY = mouseY + 20;
+
+        // Keep tooltip on screen
+        tooltipX = Math.max(10, Math.min(tooltipX, SCREEN_WIDTH - tooltipWidth - 10));
+        tooltipY = Math.max(10, Math.min(tooltipY, SCREEN_HEIGHT - tooltipHeight - 10));
+
+        // Draw tooltip background
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(0.1f, 0.1f, 0.2f, 0.95f);
+        shapeRenderer.rect(tooltipX, tooltipY, tooltipWidth, tooltipHeight);
+
+        // Draw border
+        shapeRenderer.setColor(0.4f, 0.4f, 0.6f, 1f);
+        shapeRenderer.rect(tooltipX, tooltipY, tooltipWidth, 2);
+        shapeRenderer.rect(tooltipX, tooltipY + tooltipHeight - 2, tooltipWidth, 2);
+        shapeRenderer.rect(tooltipX, tooltipY, 2, tooltipHeight);
+        shapeRenderer.rect(tooltipX + tooltipWidth - 2, tooltipY, 2, tooltipHeight);
+        shapeRenderer.end();
+
+        // Draw tooltip text
+        batch.begin();
+        font.setColor(Color.WHITE);
+        font.draw(batch, skillNames[hoveredSkill], tooltipX + 10, tooltipY + tooltipHeight - 10);
+
+        font.setColor(Color.LIGHT_GRAY);
+        font.draw(batch, description, tooltipX + 10, tooltipY + tooltipHeight - 30);
+
+        font.setColor(skillEnabled[hoveredSkill] ? Color.CYAN : Color.RED);
+        font.draw(batch, manaCost, tooltipX + 90, tooltipY + tooltipHeight - 10);
+
+        batch.end();
     }
 
     int experience = 0;
@@ -425,7 +564,7 @@ public class DarkestDungeon implements Screen {
         effectTextures[1] = new Texture("dungeon/heal_effect.png");
         effectTextures[2] = new Texture("dungeon/defense_effect.png");
 
-        backgroundTexture = new Texture("backgrounds/black.png");
+        backgroundTexture = new Texture("backgrounds/dungeon.png");
     }
 
     boolean defeated = false;
@@ -458,12 +597,17 @@ public class DarkestDungeon implements Screen {
             }
 
             drawBottomUI();
-
+            if (showTooltip && !isPaused) {
+                drawTooltip();
+            }
             if (showInputField && !isPaused) {
                 drawInputField();
             }
             if (isPaused) {
                 drawPauseMenu();
+            }
+            if (showTutorial) {
+                drawTutorial();
             }
         }
     }
@@ -618,7 +762,7 @@ public class DarkestDungeon implements Screen {
         // Delay combat end if flagged
         if (pendingCombatEnd) {
             combatEndDelayTimer += delta;
-            if (combatEndDelayTimer >= 1.5f) { // Delay 1.5 seconds
+            if (combatEndDelayTimer >= 2.0f) { // Delay 1.5 seconds
                 pendingCombatEnd = false;
                 combatEndDelayTimer = 0f;
 
@@ -1006,13 +1150,14 @@ public class DarkestDungeon implements Screen {
         }
     }
 
+
     private void drawBackground() {
         batch.begin();
         // Top half - combat area
-        batch.draw(backgroundTexture, 0, BOTTOM_HALF_HEIGHT, SCREEN_WIDTH, TOP_HALF_HEIGHT);
+        batch.draw(backgroundTexture, 0, BOTTOM_HALF_HEIGHT, SCREEN_WIDTH, TOP_HALF_HEIGHT + 100);
         // Bottom half - UI area
         batch.setColor(0.1f, 0.1f, 0.15f, 1);
-        batch.draw(backgroundTexture, 0, 0, SCREEN_WIDTH, BOTTOM_HALF_HEIGHT);
+//        batch.draw(backgroundTexture, 0, 0, SCREEN_WIDTH, BOTTOM_HALF_HEIGHT);
         batch.setColor(Color.WHITE);
         batch.end();
     }
@@ -1059,6 +1204,136 @@ public class DarkestDungeon implements Screen {
 
         batch.end();
     }
+
+    // Add these fields to the class
+    private boolean showTutorial = false;
+    private String[] tutorialPages = {
+            "COMBAT TUTORIAL - Page 1/3",
+            "SKILLS:\n" +
+                    "⚔️ Attack - Basic physical attack (No mana cost)\n" +
+                    "🔥 Word - Use random learned word for damage (5 mana)\n" +
+                    "⚡ TypeW - Type word manually, invalid words hurt you (5 mana)\n" +
+                    "💉 Heal - Restore health points (10 mana)\n" +
+                    "🛡️ Defend - Increase defense and recover mana (No cost)",
+
+            "COMBAT TUTORIAL - Page 2/3",
+            "COMBAT MECHANICS:\n" +
+                    "• Turn-based combat system\n" +
+                    "• Damage = ATK - Enemy DEF (minimum 1)\n" +
+                    "• Word damage = Word Score + ATK - Enemy DEF\n" +
+                    "• Manage your mana carefully\n" +
+                    "• Enemy has different AI patterns",
+
+            "COMBAT TUTORIAL - Page 3/3",
+            "TIPS:\n" +
+                    "• Learn new words to increase Word skill damage\n" +
+                    "• TypeW skill is risky but can be very powerful\n" +
+                    "• Use Defend to recover mana and boost defense\n" +
+                    "• Heal when health is low\n" +
+                    "• Hover over skills to see tooltips\n" +
+                    "• ESC to pause anytime"
+    };
+    private int currentTutorialPage = 0;
+
+    private void drawTutorial() {
+        if (!showTutorial) return;
+
+        float tutorialWidth = 700;
+        float tutorialHeight = 500;
+        float tutorialX = (SCREEN_WIDTH - tutorialWidth) / 2;
+        float tutorialY = (SCREEN_HEIGHT - tutorialHeight) / 2;
+
+        // Draw tutorial background
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(0, 0, 0, 0.8f);
+        shapeRenderer.rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+        shapeRenderer.setColor(0.05f, 0.05f, 0.1f, 0.95f);
+        shapeRenderer.rect(tutorialX, tutorialY, tutorialWidth, tutorialHeight);
+
+        // Border
+        shapeRenderer.setColor(0.4f, 0.4f, 0.6f, 1);
+        shapeRenderer.rect(tutorialX, tutorialY, tutorialWidth, 3);
+        shapeRenderer.rect(tutorialX, tutorialY + tutorialHeight - 3, tutorialWidth, 3);
+        shapeRenderer.rect(tutorialX, tutorialY, 3, tutorialHeight);
+        shapeRenderer.rect(tutorialX + tutorialWidth - 3, tutorialY, 3, tutorialHeight);
+
+        // Navigation buttons
+        float buttonWidth = 100;
+        float buttonHeight = 40;
+        float prevButtonX = tutorialX + 50;
+        float nextButtonX = tutorialX + tutorialWidth - 150;
+        float closeButtonX = tutorialX + tutorialWidth - 110;
+        float buttonY = tutorialY + 30;
+        float closeButtonY = tutorialY + tutorialHeight - 50;
+
+        // Previous button (if not first page)
+        if (currentTutorialPage > 0) {
+            shapeRenderer.setColor(0.2f, 0.2f, 0.3f, 1f);
+            shapeRenderer.rect(prevButtonX, buttonY, buttonWidth, buttonHeight);
+        }
+
+        // Next button (if not last page)
+        if (currentTutorialPage < tutorialPages.length - 2) {
+            shapeRenderer.setColor(0.2f, 0.2f, 0.3f, 1f);
+            shapeRenderer.rect(nextButtonX, buttonY, buttonWidth, buttonHeight);
+        }
+
+        // Close button
+        shapeRenderer.setColor(0.3f, 0.2f, 0.2f, 1f);
+        shapeRenderer.rect(closeButtonX, closeButtonY, buttonWidth, buttonHeight);
+        shapeRenderer.end();
+
+        // Draw tutorial content
+        batch.begin();
+
+        // Title
+        titleFont.setColor(Color.CYAN);
+        titleFont.draw(batch, tutorialPages[currentTutorialPage],
+                tutorialX + 50, tutorialY + tutorialHeight - 50);
+
+        // Content
+        inputFont.setColor(Color.WHITE);
+        String content = tutorialPages[currentTutorialPage + 1];
+        String[] lines = content.split("\n");
+
+        float lineY = tutorialY + tutorialHeight - 100;
+        for (String line : lines) {
+            inputFont.draw(batch, line, tutorialX + 50, lineY);
+            lineY -= 25;
+        }
+
+        // Navigation button text
+        font.setColor(Color.WHITE);
+        if (currentTutorialPage > 0) {
+            font.draw(batch, "Previous", prevButtonX + 20, buttonY + 25);
+        }
+        if (currentTutorialPage < tutorialPages.length - 2) {
+            font.draw(batch, "Next", nextButtonX + 35, buttonY + 25);
+        }
+        font.draw(batch, "Close", closeButtonX + 30, closeButtonY + 25);
+
+        // Page indicator
+        font.setColor(Color.LIGHT_GRAY);
+        String pageInfo = "Page " + ((currentTutorialPage / 2) + 1) + " of " + (tutorialPages.length / 2);
+        font.draw(batch, pageInfo, tutorialX + tutorialWidth / 2 - 40, tutorialY + 20);
+
+        batch.end();
+    }
+
+    // Add these fields to the class
+    private float mouseX = 0, mouseY = 0;
+    private int hoveredSkill = -1;
+    private boolean showTooltip = false;
+
+    // Tooltip data
+    private String[] skillDescriptions = {
+            "Basic attack that deals physical damage",
+            "Cast a word from your dictionary\nDeals damage based on word score",
+            "Type a word manually\nInvalid words damage you!",
+            "Restore health points\nCosts 10 mana",
+            "Increase defense and recover mana\nCosts no mana"
+    };
 
     private void drawBottomUI() {
         // Draw bottom UI background
@@ -1208,6 +1483,7 @@ public class DarkestDungeon implements Screen {
                 font.draw(batch, "" + skillManaCost[i], skillX + 50, skillY + 15);
             }
         }
+        font.draw(batch, "Your Skill", 607, 350);
         batch.end();
     }
 
@@ -1222,6 +1498,7 @@ public class DarkestDungeon implements Screen {
         String turnText = getTurnText();
         layout.setText(titleFont, turnText);
         float turnX = (SCREEN_WIDTH - layout.width) / 2;
+        titleFont.setColor(Color.RED);
         titleFont.draw(batch, layout, turnX, 150);
 
         // Combat log – auto center
@@ -1234,9 +1511,9 @@ public class DarkestDungeon implements Screen {
 
 
     private void drawPauseMenu() {
-        // Constants
+        // Updated constants
         float menuWidth = 400;
-        float menuHeight = 300;
+        float menuHeight = 350; // Increased for tutorial button
         float menuX = (SCREEN_WIDTH - menuWidth) / 2;
         float menuY = (SCREEN_HEIGHT - menuHeight) / 2;
 
@@ -1244,41 +1521,42 @@ public class DarkestDungeon implements Screen {
         float buttonHeight = 40;
 
         float continueButtonX = menuX + (menuWidth - buttonWidth) / 2;
-        float continueButtonY = menuY + 160;
-
+        float continueButtonY = menuY + 210;
+        float tutorialButtonY = menuY + 160;
         float menuButtonY = menuY + 110;
         float quitButtonY = menuY + 60;
 
-        // 1. Draw semi-transparent overlay
+        // Draw overlay and menu background
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(0, 0, 0, 0.7f);
         shapeRenderer.rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-        // 2. Draw menu background
         shapeRenderer.setColor(0.1f, 0.1f, 0.15f, 0.95f);
         shapeRenderer.rect(menuX, menuY, menuWidth, menuHeight);
 
-        // 3. Draw border
+        // Draw border
         shapeRenderer.setColor(0.3f, 0.3f, 0.4f, 1);
         shapeRenderer.rect(menuX, menuY, menuWidth, 3);
         shapeRenderer.rect(menuX, menuY + menuHeight - 3, menuWidth, 3);
         shapeRenderer.rect(menuX, menuY, 3, menuHeight);
         shapeRenderer.rect(menuX + menuWidth - 3, menuY, 3, menuHeight);
 
-        // 4. Draw button backgrounds
+        // Draw button backgrounds
         shapeRenderer.setColor(0.2f, 0.2f, 0.25f, 1f);
         shapeRenderer.rect(continueButtonX, continueButtonY, buttonWidth, buttonHeight);
+        shapeRenderer.rect(continueButtonX, tutorialButtonY, buttonWidth, buttonHeight);
         shapeRenderer.rect(continueButtonX, menuButtonY, buttonWidth, buttonHeight);
         shapeRenderer.rect(continueButtonX, quitButtonY, buttonWidth, buttonHeight);
         shapeRenderer.end();
 
-        // 5. Draw text
+        // Draw text
         batch.begin();
         font.setColor(Color.WHITE);
-        font.draw(batch, "PAUSED", menuX + 130, menuY + 250);
+        font.draw(batch, "PAUSED", menuX + 130, menuY + 300);
 
         font.draw(batch, "Continue - ESC", continueButtonX + 60, continueButtonY + 28);
-        font.draw(batch, "Main Menu - Q", continueButtonX + 60, menuButtonY + 28);
+        font.draw(batch, "Tutorial - T", continueButtonX + 60, tutorialButtonY + 28);
+        font.draw(batch, "Main Menu - M", continueButtonX + 60, menuButtonY + 28);
         font.draw(batch, "Quit Game - Q", continueButtonX + 60, quitButtonY + 28);
         batch.end();
     }

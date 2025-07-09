@@ -33,8 +33,8 @@ public class IsometricMap {
     private boolean chunkingEnabled = false;
     PressurePlatePuzzle puzzle;
 
-    int startX = 0;
-    int startY = 0;
+    int startX = 5;
+    int startY = 17;
 
     int endX = 0;
     int endY = 0;

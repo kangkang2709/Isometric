@@ -398,7 +398,6 @@ public class GameplayController {
 
     private void applyBossEffects() {
         if (isEnemyBoss()) {
-
             setGridSize(3);
             disabledCells.clear();
             int cellsToDisable = random.nextInt(2) + 1;
