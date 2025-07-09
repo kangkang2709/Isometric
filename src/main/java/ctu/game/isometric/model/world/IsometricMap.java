@@ -64,6 +64,15 @@ public class IsometricMap {
         baseLayer = (TiledMapTileLayer) tiledMap.getLayers().get("ground_layer");
         terrianLayer = (TiledMapTileLayer) tiledMap.getLayers().get("terrain_layer");
 
+
+        switch (mapName) {
+            case "main":
+                tileId = 213;
+                startX = 15;
+                startY = 15;
+                break;
+        }
+
         if (mapName.equals("board")) {
             generateRandomMaze(0);
         } else {
@@ -285,6 +294,7 @@ public class IsometricMap {
 
     // Initialize walkable cache
 
+    int tileId = 0; // Default tile ID for walkable tiles
 
     // Made public so chunks can use it
     public boolean calculateWalkable(int x, int y) {
@@ -292,9 +302,17 @@ public class IsometricMap {
         if (cell == null || cell.getTile() == null || cell.getTile().getId() <= 0) {
             return false;
         }
-        TiledMapTileLayer collision = (TiledMapTileLayer) tiledMap.getLayers().get("terrain_layer");
-        if (collision != null) {
-            TiledMapTileLayer.Cell cell2 = collision.getCell(x, y);
+
+
+        if (baseLayer != null && !mapName.equals("board")) {
+            TiledMapTileLayer.Cell cell2 = baseLayer.getCell(x, y);
+            if (cell2 != null && cell2.getTile() != null) {
+                return cell.getTile().getId() == tileId;
+            }
+        }
+
+        if (terrianLayer != null) {
+            TiledMapTileLayer.Cell cell2 = terrianLayer.getCell(x, y);
             if (cell2 != null && cell2.getTile() != null) {
                 MapProperties properties = cell2.getTile().getProperties();
                 return properties.containsKey("walkable") && properties.get("walkable", Boolean.class);

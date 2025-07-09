@@ -22,7 +22,6 @@ public class NPCRenderer {
 
     // Button textures
     private TextureRegion interactButton;
-    private TextureRegion backstoryButton;
     private Character player;
     // Grid units
 
@@ -41,9 +40,7 @@ public class NPCRenderer {
 
         // Load button textures
         Texture interactTexture = new Texture(Gdx.files.internal("ui/interact_button.png"));
-        Texture backstoryTexture = new Texture(Gdx.files.internal("ui/backstory_button.png"));
         interactButton = new TextureRegion(interactTexture);
-        backstoryButton = new TextureRegion(backstoryTexture);
 
         this.font = new BitmapFont(Gdx.files.internal("fonts/IMFellEnglishSC-Regular.fnt"));
         this.font.getRegion().getTexture().setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
@@ -96,15 +93,9 @@ public class NPCRenderer {
         batch.draw(interactButton,
                 isoX - BUTTON_SIZE - BUTTON_SPACING + 40,
                 buttonY - 36,
-                BUTTON_SIZE,
+                BUTTON_SIZE + 10,
                 BUTTON_SIZE);
 
-        // Draw backstory button
-        batch.draw(backstoryButton,
-                isoX + BUTTON_SPACING + 40,
-                buttonY - 36,
-                BUTTON_SIZE,
-                BUTTON_SIZE);
     }
 
     private void renderNPC(NPC npc, SpriteBatch batch) {
@@ -149,7 +140,6 @@ public class NPCRenderer {
         animationManager.dispose();
         this.font.dispose();
         interactButton.getTexture().dispose();
-        backstoryButton.getTexture().dispose();
     }
 
 

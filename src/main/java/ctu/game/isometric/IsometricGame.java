@@ -28,14 +28,14 @@ public class IsometricGame extends Game {
 
 
 //        splashScreen = new SplashScreen(this);
-//        gameScreen = new GameScreen(this, gameController);
+        gameScreen = new GameScreen(this, gameController);
 //        gameOverScreen = new EndScreen(() -> {
 //            changeScreen("GAME");
 //       });
 //        dungeonScreen = new LinearCaveScreen(this, gameController);
 
-        darkestDungeonScreen = new DarkestDungeon(this, gameController);
-        setScreen(darkestDungeonScreen);
+//        darkestDungeonScreen = new DarkestDungeon(this, gameController);
+        setScreen(gameScreen);
     }
 
     @Override
