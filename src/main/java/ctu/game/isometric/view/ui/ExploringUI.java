@@ -309,9 +309,13 @@ public class ExploringUI {
             timeLabel.setText(charLevel);
 
             // Update player info
-            runLabel.setText("Floor: " + character.getRun());
-            playerNameLabel.setText(character.getName().replaceAll("_", " "));
-
+            if (character.getGameMap().getMapName().equals("board")) {
+                runLabel.setText("Floor: " + character.getRun());
+                playerNameLabel.setText(character.getName().replaceAll("_", " "));
+            } else {
+                runLabel.setText((character.getGameMap().getMapName().toUpperCase().equalsIgnoreCase("main") ? "Village Forest" : character.getGameMap().getMapName().toUpperCase()));
+                playerNameLabel.setText(character.getName().replaceAll("_", " ") + " (Lv " + charLevel + ")");
+            }
             // Update health and max health
             float health = character.getHealth();
             maxHealth = character.getMaxHealth(); // Get dynamic max health

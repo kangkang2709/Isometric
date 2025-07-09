@@ -703,7 +703,7 @@ public class MapRenderer {
         // Set text based on event type
         switch (eventType) {
             case "battle":
-                buttonText = "Battle";
+                buttonText = "Comba";
                 drawEnemyInfoCard(batch, event);
                 break;
             case "dialog":
@@ -721,12 +721,15 @@ public class MapRenderer {
             case "teleport":
                 buttonText = "Teleport";
                 break;
+            case "tele":
+                buttonText = "Leave";
+                break;
             case "treasure":
                 buttonText = "Pick up";
                 break;
         }
 
-        if (buttonTexture != null && !eventType.equals("battle")) {
+        if (buttonTexture != null) {
             // Convert grid coordinates to isometric screen coordinates
             float[] isoPos = toIsometric(x, y);
             // Position the button above the tile

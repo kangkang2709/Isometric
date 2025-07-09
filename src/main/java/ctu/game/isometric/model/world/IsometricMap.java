@@ -71,6 +71,11 @@ public class IsometricMap {
                 startX = 15;
                 startY = 15;
                 break;
+            case "tavern":
+                tileId = 1;
+                startX = 5;
+                startY = 5;
+                break;
         }
 
         if (mapName.equals("board")) {
@@ -304,7 +309,7 @@ public class IsometricMap {
         }
 
 
-        if (baseLayer != null && !mapName.equals("board")) {
+        if (baseLayer != null && mapName.equals("main")) {
             TiledMapTileLayer.Cell cell2 = baseLayer.getCell(x, y);
             if (cell2 != null && cell2.getTile() != null) {
                 return cell.getTile().getId() == tileId;

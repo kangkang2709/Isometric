@@ -17,6 +17,7 @@ public class CharacterRenderer {
     private MapRenderer mapRenderer;
     Gender gender;
     GameController gameController;
+
     public CharacterRenderer(Character character, AssetManager assetManager, MapRenderer mapRenderer) {
         this.character = character;
         character.setGameMap(mapRenderer.getMap());
@@ -34,6 +35,10 @@ public class CharacterRenderer {
 
     float offsetY = 17.5f;
     float offsetX = -3f;
+
+    int width = 48; // Width of the character sprite
+    int height = 48; // Height of the character sprite
+
     public void render(SpriteBatch batch) {
         float gridX = character.getGridX();
         float gridY = character.getGridY();
@@ -46,9 +51,10 @@ public class CharacterRenderer {
         float isoY = screenPos[1];
 
 
-        if(mapRenderer.getMap().getMapName().equals("board")){
+        if (mapRenderer.getMap().getMapName().equals("board")) {
             isoY += offsetY;
             isoX += offsetX;
+
         }
         // Get animation frame with translated direction
         String direction = translateDirection(character.getDirection());
@@ -76,7 +82,7 @@ public class CharacterRenderer {
     // Convert simplified direction to sprite sheet direction
     private String translateDirection(String direction) {
         // Map all 8-way directions to our available 6 sprite directions
-        switch(direction) {
+        switch (direction) {
             case "up":
                 return "up";
             case "down":

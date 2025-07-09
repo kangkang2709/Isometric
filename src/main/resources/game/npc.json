@@ -21,9 +21,9 @@
     "npcImage": "healer.png",
     "npcBackStory": "Elara studied ancient healing arts in the mystical forest before settling in this village.",
     "behaviorState": "idle",
-    "xPosition": 10,
-    "yPosition": 12,
-    "mapName": "barbarian_village"
+    "xPosition": 1,
+    "yPosition": 9,
+    "mapName": "tavern"
   },
   {
     "npcID": 4,
@@ -34,9 +34,9 @@
     "npcImage": "captain.png",
     "npcBackStory": "A veteran soldier who now protects the village from various threats.",
     "behaviorState": "idle",
-    "xPosition": 18,
-    "yPosition": 16,
-    "mapName": "barbarian_village"
+    "xPosition": 5,
+    "yPosition": 13,
+    "mapName": "tavern"
   },
   {
     "npcID": 3,
@@ -49,7 +49,7 @@
     "behaviorState": "idle",
     "xPosition": 12,
     "yPosition": 14,
-    "mapName": "barbarian_village"
+    "mapName": "main"
   },
   {
     "npcID": 7,
@@ -88,6 +88,6 @@
     "behaviorState": "idle",
     "xPosition": 16,
     "yPosition": 19,
-    "mapName": "teleporting"
+    "mapName": "main"
   }
 ]

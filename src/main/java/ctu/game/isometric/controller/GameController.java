@@ -117,11 +117,11 @@ public class GameController {
         this.eventManager = new EventManager(map, "board");
 
         this.mapList.put("main", new IsometricMap("maps/main.tmx"));
-        this.mapList.put("dungeon1", new IsometricMap("maps/dungeon1.tmx"));
+        this.mapList.put("tavern", new IsometricMap("maps/tavern.tmx"));
         this.eventManagerMap.put("board", eventManager);
 
         this.eventManagerMap.put("main", new EventManager(this.mapList.get("main"), "main"));
-        this.eventManagerMap.put("dungeon1", new EventManager(this.mapList.get("dungeon1"), "dungeon1"));
+        this.eventManagerMap.put("tavern", new EventManager(this.mapList.get("tavern"), "tavern"));
 
 
         this.character = new Character(10, 0);
@@ -893,6 +893,14 @@ public class GameController {
                     String sceneId = properties.get("scene", String.class);
                     this.dialogController.startDialog(arcId, sceneId);
 
+                }
+                break;
+            case "tele":
+                if (properties != null) {
+                    String mapName = properties.get("map", String.class);
+                    if (mapName != null && !mapName.equals(map.getMapName())) {
+                        changeMap(mapName);
+                    }
                 }
                 break;
             case "quiz":
