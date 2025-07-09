@@ -280,7 +280,7 @@ public class GameScreen implements Screen {
 
     @Override
     public void show() {
-        camera.zoom = 0.5f;
+//        camera.zoom = 0.5f;
         camera.update();
         Gdx.input.setInputProcessor(gameController.getInputController());
     }

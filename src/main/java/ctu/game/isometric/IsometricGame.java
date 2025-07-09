@@ -27,7 +27,6 @@ public class IsometricGame extends Game {
         gameController = new GameController(this);
 
 
-        // Initialize screens
 //        splashScreen = new SplashScreen(this);
 //        gameScreen = new GameScreen(this, gameController);
 //        gameOverScreen = new EndScreen(() -> {

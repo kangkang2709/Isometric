@@ -82,7 +82,7 @@ public class InputController extends InputAdapter {
     }
 
     private void moveCharacter(int dx, int dy) {
-            gameController.moveCharacter(dx, dy);
+        gameController.moveCharacter(dx, dy);
     }
 
     @Override
@@ -326,7 +326,7 @@ public class InputController extends InputAdapter {
             gameController.getDictionaryView().handleMouseDrag(touchPos.x, touchPos.y);
             return true;
         }
-        if( state == GameState.SETTINGS) {
+        if (state == GameState.SETTINGS) {
             return gameController.getSettingsMenuController().handleMouseDrag(screenX, screenY);
         }
 
@@ -404,8 +404,10 @@ public class InputController extends InputAdapter {
                 gameController.changeMap("main");
             }
             case Keys.F9 -> {
-//                gameController.getGame().changeScreen("DUNGEON");
                 gameController.changeMap("board");
+            }
+            case Keys.F10 -> {
+                gameController.getGame().changeScreen("DUNGEON");
             }
             case Keys.Q -> {
                 gameController.getQuestTrackerView().toggleVisibility();

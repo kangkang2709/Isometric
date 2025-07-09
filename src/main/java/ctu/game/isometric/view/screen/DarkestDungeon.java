@@ -15,6 +15,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Timer;
 import ctu.game.isometric.IsometricGame;
 import ctu.game.isometric.controller.GameController;
@@ -95,7 +96,7 @@ public class DarkestDungeon implements Screen {
     // Scale for character animation
     private float playerScale = 1.0f;
     private float enemyScale = 1.0f;
-    private final float MAX_SCALE = 1.5f;
+    private final float MAX_SCALE = 1.4f;
 
     private final float CHAR_WIDTH = 200;
     private final float CHAR_HEIGHT = 250;
@@ -229,6 +230,11 @@ public class DarkestDungeon implements Screen {
 
     BitmapFont titleFont;
 
+    private OrthographicCamera combatCamera;
+    private float cameraShake = 0f;
+    private float cameraZoom = 1f;
+    private Vector2 cameraOffset = new Vector2();
+
     @Override
     public void show() {
 
@@ -240,6 +246,10 @@ public class DarkestDungeon implements Screen {
         shapeRenderer = new ShapeRenderer();
         camera = new OrthographicCamera();
         camera.setToOrtho(false, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+
+        combatCamera = new OrthographicCamera();
+        combatCamera.setToOrtho(false, SCREEN_WIDTH, SCREEN_HEIGHT);
 
         combatLog = "Combat begins! Choose your action.";
 
@@ -463,6 +473,16 @@ public class DarkestDungeon implements Screen {
 
     }
 
+    private void addCameraShake(float intensity, float duration) {
+        cameraShake = Math.max(cameraShake, intensity);
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                cameraShake = Math.max(0, cameraShake - intensity / 10);
+            }
+        }, 0, duration / 10, (int) (duration * 10));
+    }
+
     private void updateTooltip() {
         hoveredSkill = -1;
         showTooltip = false;
@@ -565,6 +585,7 @@ public class DarkestDungeon implements Screen {
         effectTextures[2] = new Texture("dungeon/defense_effect.png");
 
         backgroundTexture = new Texture("backgrounds/dungeon.png");
+        backgroundBlurTexture = new Texture("backgrounds/dungeon_blur.png");
     }
 
     boolean defeated = false;
@@ -745,10 +766,26 @@ public class DarkestDungeon implements Screen {
 
     private float combatEndDelayTimer = 0f;
     private boolean pendingCombatEnd = false;
+    private float timeScale = 1f;
+    private float slowMotionTimer = 0f;
+
+    private void triggerSlowMotion(float duration, float scale) {
+        timeScale = scale;
+        slowMotionTimer = duration;
+    }
 
     private void updateCombat(float delta) {
-        // Update skill availability
-        updateWordDisplay(delta);
+        float scaledDelta = delta * timeScale;
+
+        // Restore normal time
+        if (slowMotionTimer > 0) {
+            slowMotionTimer -= delta;
+            if (slowMotionTimer <= 0) {
+                timeScale = 1f;
+            }
+        }
+
+        updateWordDisplay(scaledDelta);
         for (int i = 0; i < skillManaCost.length; i++) {
             skillEnabled[i] = (playerMana >= skillManaCost[i]);
         }
@@ -845,40 +882,67 @@ public class DarkestDungeon implements Screen {
         }
     }
 
-    private void updateMoveToCenter(float progress) {
-        float easeProgress = Interpolation.pow2Out.apply(progress);
+    float offsetX = 0f;
 
-        // Only move for attack skills, not heal/defend
+    // Replace updateMoveToCenter with this cinematic version:
+    private void updateMoveToCenter(float progress) {
+        // Use different easing for more dramatic effect
+        float anticipationProgress = progress < 0.3f ?
+                Interpolation.pow3In.apply(progress / 0.3f) * 0.1f :
+                0.1f + Interpolation.bounceOut.apply((progress - 0.3f) / 0.7f) * 0.9f;
+
         boolean shouldMove = isPlayerAction ?
                 (currentSkill == 0 || currentSkill == 1 || currentSkill == 2) :
                 (enemyAction == 0 || enemyAction == 1);
 
         if (shouldMove) {
             if (isPlayerAction) {
-                // Player moves to center-left, enemy moves closer
-                playerCurrentX = MathUtils.lerp(playerStartX, SCREEN_WIDTH * 0.4f, easeProgress);
-                playerCurrentY = MathUtils.lerp(playerStartY, COMBAT_CENTER_Y, easeProgress);
-                playerScale = MathUtils.lerp(1.0f, MAX_SCALE, easeProgress);
+                // Dramatic zoom in during player action
+                cameraZoom = MathUtils.lerp(1f, 0.8f, anticipationProgress);
 
-                enemyCurrentX = MathUtils.lerp(enemyStartX, SCREEN_WIDTH * 0.6f, easeProgress);
-                enemyCurrentY = MathUtils.lerp(enemyStartY, COMBAT_CENTER_Y, easeProgress);
-                enemyScale = MathUtils.lerp(1.0f, MAX_SCALE, easeProgress);
+                // Character moves with anticipation
+                float moveX = anticipationProgress < 0.2f ? -30 * (anticipationProgress / 0.2f) : // Pull back
+                        MathUtils.lerp(-30, 150, (anticipationProgress - 0.2f) / 0.8f); // Rush forward
+
+                if (currentSkill == 2 || waitingForInput)
+                    offsetX = 50;
+
+                else offsetX = 250;
+
+                playerCurrentX = playerStartX + moveX + offsetX;
+                playerCurrentY = MathUtils.lerp(playerStartY, COMBAT_CENTER_Y - 20, anticipationProgress);
+
+                // Dynamic scaling with overshoot
+                playerScale = MathUtils.lerp(1.0f, MAX_SCALE * 1.2f, anticipationProgress);
+
+                // Enemy reacts
+                enemyCurrentX = MathUtils.lerp(enemyStartX, SCREEN_WIDTH * 0.65f, anticipationProgress) - 100;
+                enemyScale = MathUtils.lerp(1.0f, 0.9f, anticipationProgress); // Slightly shrink
             } else {
-                // Enemy moves to center-right, player moves closer
-                enemyCurrentX = MathUtils.lerp(enemyStartX, SCREEN_WIDTH * 0.6f, easeProgress);
-                enemyCurrentY = MathUtils.lerp(enemyStartY, COMBAT_CENTER_Y, easeProgress);
-                enemyScale = MathUtils.lerp(1.0f, MAX_SCALE, easeProgress);
+                // Dramatic zoom in during enemy action
+                cameraZoom = MathUtils.lerp(1f, 0.8f, anticipationProgress);
 
-                playerCurrentX = MathUtils.lerp(playerStartX, SCREEN_WIDTH * 0.4f, easeProgress);
-                playerCurrentY = MathUtils.lerp(playerStartY, COMBAT_CENTER_Y, easeProgress);
-                playerScale = MathUtils.lerp(1.0f, MAX_SCALE, easeProgress);
+                // Character moves with anticipation
+                float moveX = anticipationProgress < 0.2f ? 30 * (anticipationProgress / 0.2f) : // Pull back
+                        MathUtils.lerp(30, -150, (anticipationProgress - 0.2f) / 0.8f); // Rush forward
+
+                enemyCurrentX = enemyStartX + moveX - 250;
+                enemyCurrentY = MathUtils.lerp(enemyStartY, COMBAT_CENTER_Y - 20, anticipationProgress);
+
+                // Dynamic scaling with overshoot
+                enemyScale = MathUtils.lerp(1.0f, MAX_SCALE * 1.2f, anticipationProgress);
+
+                // Player reacts
+                playerCurrentX = MathUtils.lerp(playerStartX, SCREEN_WIDTH * 0.35f, anticipationProgress) + 100;
+                playerScale = MathUtils.lerp(1.0f, 0.9f, anticipationProgress); // Slightly shrink
             }
         }
     }
 
+
     private void updateSkillEffect(float progress) {
         // Add some shake effect during skill execution
-        float shake = (float) Math.sin(progress * 20) * 1f;
+        float shake = (float) Math.sin(progress * 20) * 0.1f;
 
         if (isPlayerAction) {
             playerCurrentX += shake;
@@ -887,23 +951,40 @@ public class DarkestDungeon implements Screen {
         }
     }
 
+    //    private void updateMoveBack(float progress) {
+//        float easeProgress = Interpolation.pow2In.apply(progress);
+//
+//        // Only move back for attack skills, not heal/defend
+//        boolean shouldMove = isPlayerAction ?
+//                (currentSkill == 0 || currentSkill == 1 || currentSkill == 2) :
+//                (enemyAction == 0 || enemyAction == 1);
+//
+//        if (shouldMove) {
+//            // Move both characters back to original positions and reset scales
+//            playerCurrentX = MathUtils.lerp(SCREEN_WIDTH * 0.4f, playerStartX, easeProgress);
+//            playerCurrentY = MathUtils.lerp(COMBAT_CENTER_Y, playerStartY, easeProgress);
+//            playerScale = MathUtils.lerp(MAX_SCALE, 1.0f, easeProgress);
+//
+//            enemyCurrentX = MathUtils.lerp(SCREEN_WIDTH * 0.6f, enemyStartX, easeProgress);
+//            enemyCurrentY = MathUtils.lerp(COMBAT_CENTER_Y, enemyStartY, easeProgress);
+//            enemyScale = MathUtils.lerp(MAX_SCALE, 1.0f, easeProgress);
+//        }
+//    }
     private void updateMoveBack(float progress) {
-        float easeProgress = Interpolation.pow2In.apply(progress);
-
         // Only move back for attack skills, not heal/defend
         boolean shouldMove = isPlayerAction ?
                 (currentSkill == 0 || currentSkill == 1 || currentSkill == 2) :
                 (enemyAction == 0 || enemyAction == 1);
 
         if (shouldMove) {
-            // Move both characters back to original positions and reset scales
-            playerCurrentX = MathUtils.lerp(SCREEN_WIDTH * 0.4f, playerStartX, easeProgress);
-            playerCurrentY = MathUtils.lerp(COMBAT_CENTER_Y, playerStartY, easeProgress);
-            playerScale = MathUtils.lerp(MAX_SCALE, 1.0f, easeProgress);
+            // Bỏ qua hiệu ứng di chuyển từ từ, set về gốc luôn
+            playerCurrentX = playerStartX;
+            playerCurrentY = playerStartY;
+            playerScale = 1.0f;
 
-            enemyCurrentX = MathUtils.lerp(SCREEN_WIDTH * 0.6f, enemyStartX, easeProgress);
-            enemyCurrentY = MathUtils.lerp(COMBAT_CENTER_Y, enemyStartY, easeProgress);
-            enemyScale = MathUtils.lerp(MAX_SCALE, 1.0f, easeProgress);
+            enemyCurrentX = enemyStartX;
+            enemyCurrentY = enemyStartY;
+            enemyScale = 1.0f;
         }
     }
 
@@ -961,6 +1042,7 @@ public class DarkestDungeon implements Screen {
                 damage = Math.max(1, damage);
                 enemyHP = Math.max(0, enemyHP - damage);
                 combatLog = "You attack for " + damage + " damage!";
+
                 break;
             case 1: // Word (Random from learned words)
                 playerMana -= 5;
@@ -1150,11 +1232,15 @@ public class DarkestDungeon implements Screen {
         }
     }
 
+    Texture backgroundBlurTexture;
 
     private void drawBackground() {
         batch.begin();
         // Top half - combat area
-        batch.draw(backgroundTexture, 0, BOTTOM_HALF_HEIGHT, SCREEN_WIDTH, TOP_HALF_HEIGHT + 100);
+        if (isAnimating)
+            batch.draw(backgroundBlurTexture, 0, BOTTOM_HALF_HEIGHT, SCREEN_WIDTH, TOP_HALF_HEIGHT + 100);
+        else
+            batch.draw(backgroundTexture, 0, BOTTOM_HALF_HEIGHT, SCREEN_WIDTH, TOP_HALF_HEIGHT + 100);
         // Bottom half - UI area
         batch.setColor(0.1f, 0.1f, 0.15f, 1);
 //        batch.draw(backgroundTexture, 0, 0, SCREEN_WIDTH, BOTTOM_HALF_HEIGHT);
@@ -1187,14 +1273,14 @@ public class DarkestDungeon implements Screen {
             float effectSize = 120 * effectScale;
 
             // Flip Y for enemy attack effects
-            if (!effectOnPlayer && !isPlayerAction && enemyAction == 0) {
+            if (effectOnPlayer && !isPlayerAction && enemyAction == 0) {
                 batch.draw(currentEffectTexture,
-                        effectX - effectSize / 2, effectY + effectSize / 2,
+                        effectX - effectSize / 2 + 40, effectY + effectSize / 2 - 140,
                         effectSize / 2, -effectSize / 2,
                         effectSize, effectSize,
                         1, 1, 0,
                         0, 0, currentEffectTexture.getWidth(), currentEffectTexture.getHeight(),
-                        false, true);
+                        true, false);
             } else {
                 batch.draw(currentEffectTexture,
                         effectX - effectSize / 2, effectY - effectSize / 2,

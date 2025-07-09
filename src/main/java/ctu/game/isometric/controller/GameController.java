@@ -857,8 +857,8 @@ public class GameController {
                     Enemy enemy = EnemyLoader.getEnemyById(enemyId);
 
                     Random random = new Random();
-                    boolean randomBoolean = random.nextBoolean();
-//                    boolean randomBoolean = false;
+//                    boolean randomBoolean = random.nextBoolean();
+                    boolean randomBoolean = false;
                     if (randomBoolean) {
                         game.getDarkestDungeonScreen().startCombat(enemy);
                         game.changeScreen("DARK_DUNGEON");
