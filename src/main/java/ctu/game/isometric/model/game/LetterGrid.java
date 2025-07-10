@@ -16,6 +16,31 @@ public class LetterGrid {
     private static final String LETTERS = "EEEEEEEEEEAAAAAARRRRRRIIIIIIOOOOOOTTTTTTNNNNNNSSSSSSLLLLUUUUUDDDGGBBCCMMPPFFHHVVWWYYKJXQZ";
     private Random random;
 
+    public void toggleCellSelection(int x, int y) {
+        if (canSelect(x, y)) {
+            selectCell(x, y);
+        } else {
+            deselectCell(x,y);
+        }
+    }
+    public boolean deselectCell(int x, int y) {
+        if (x >= 0 && y >= 0 && x < GRID_SIZE && y < GRID_SIZE && selectedCells[y][x]) {
+            selectedCells[y][x] = false;
+            currentSelection.removeIf(pos -> pos[0] == x && pos[1] == y);
+            return true;
+        }
+        return false;
+    }
+    public boolean isCellSelected(int x, int y) {
+        return x >= 0 && y >= 0 && x < GRID_SIZE && y < GRID_SIZE && selectedCells[y][x];
+    }
+
+    public char getLetter(int x, int y) {
+        if (x >= 0 && y >= 0 && x < GRID_SIZE && y < GRID_SIZE) {
+            return grid[y][x];
+        }
+        throw new IndexOutOfBoundsException("Coordinates out of bounds: (" + x + ", " + y + ")");
+    }
 
     public void clearWord() {
         currentSelection.clear();
@@ -25,6 +50,7 @@ public class LetterGrid {
             }
         }
     }
+
     public LetterGrid() {
         grid = new char[GRID_SIZE][GRID_SIZE];
         selectedCells = new boolean[GRID_SIZE][GRID_SIZE];
@@ -50,9 +76,9 @@ public class LetterGrid {
     }
 
 
-
     int vovelCount = 0;
     int vovelLimit = 4;
+
     public void regenerateGrid() {
         for (int y = 0; y < GRID_SIZE; y++) {
             for (int x = 0; x < GRID_SIZE; x++) {

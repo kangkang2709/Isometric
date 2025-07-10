@@ -60,6 +60,8 @@ public class KeyBindingDisplay {
         keyBindings.add(new KeyBinding("V", "Mở từ điển", Color.WHITE));
         keyBindings.add(new KeyBinding("Q", "Mở theo dõi nhiệm vụ", Color.WHITE));
         keyBindings.add(new KeyBinding("F1", "Mở thông tin trạng thái nhân vật", Color.WHITE));
+        keyBindings.add(new KeyBinding("F3", "Mở/đóng thành tựu", Color.WHITE));
+
 
         // Action keys
         keyBindings.add(new KeyBinding("Hành Động", "", Color.YELLOW));
@@ -69,7 +71,6 @@ public class KeyBindingDisplay {
 
         // UI specific keys
         keyBindings.add(new KeyBinding("Giao Diện Đặc Biệt", "", Color.YELLOW));
-        keyBindings.add(new KeyBinding("F3", "Mở/đóng thành tích", Color.WHITE));
         keyBindings.add(new KeyBinding("UP/DOWN", "Điều hướng menu", Color.WHITE));
         keyBindings.add(new KeyBinding("Mouse Wheel", "Phóng to/thu nhỏ ở một số bản đồ", Color.WHITE));
 

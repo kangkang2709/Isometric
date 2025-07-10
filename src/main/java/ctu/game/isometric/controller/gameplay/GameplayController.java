@@ -121,6 +121,8 @@ public class GameplayController {
         createWhiteTexture();
         loadUITextures();
         createSpecialCellTextures();
+        createMainActionButtons();
+        createCloseButton(1280, 720);
     }
 
 
@@ -156,7 +158,7 @@ public class GameplayController {
                 AttackCard.CardType.ATTACK,
                 word,
                 dmg,
-                600, 100, 600, 280, 600, 550
+                830, 600, 830, 600, 830, 470
         );
 
         // Extend onComplete to reset camera when animation finishes
@@ -181,7 +183,7 @@ public class GameplayController {
                 AttackCard.CardType.HEALING,
                 "",
                 heal,
-                90, 230, 90, 230, 90, 230
+                326, 266, 326, 276, 326, 266
         );
         card.setSFXCallback(() -> effectManager.playClickSound());
         card.setOnComplete(onComplete);
@@ -193,7 +195,7 @@ public class GameplayController {
                 AttackCard.CardType.MANA,
                 "",
                 mana,
-                90, 230, 90, 230, 90, 230
+                326, 266, 326, 276, 326, 266
         );
         card.setSFXCallback(() -> effectManager.playClickSound());
         card.setOnComplete(onComplete);
@@ -206,7 +208,7 @@ public class GameplayController {
                 AttackCard.CardType.SPECIAL,
                 "",
                 buff,
-                80, 250, 80, 250, 80, 250
+                326, 266, 326, 276, 326, 266
         );
         card.setSFXCallback(() -> effectManager.playClickSound());
         card.setOnComplete(onComplete);
@@ -220,7 +222,7 @@ public class GameplayController {
                     AttackCard.CardType.HEALING,
                     "",
                     heal,
-                    620, 550, 620, 550, 620, 550
+                    830, 450, 460, 830, 450, 150
             );
             card.setSFXCallback(() -> effectManager.playClickSound());
         } else if (dmg < 0) {
@@ -237,14 +239,14 @@ public class GameplayController {
                         AttackCard.CardType.STRONG,
                         "",
                         dmg,
-                        600, 580, 400, 450, 90, 250
+                        316, 416, 316, 416, 316, 286
                 );
             else
                 card = new AttackCard(
                         AttackCard.CardType.ATTACK,
                         "",
                         dmg,
-                        600, 580, 400, 450, 90, 250
+                        316, 416, 316, 416, 316, 286
                 );
             card.setSFXCallback(() -> effectManager.playClickSound());
         }
@@ -315,34 +317,34 @@ public class GameplayController {
                 timerAction = 0;
             }
         }
-
-        // Update camera zoom animation
-        if (isCameraZooming) {
-            cameraZoomTimer += delta;
-            float progress = Math.min(cameraZoomTimer / cameraZoomDuration, 1.0f);
-
-            // Smooth interpolation
-            float smoothProgress = (float) (1 - Math.pow(1 - progress, 3));
-
-            // Update camera zoom
-            OrthographicCamera camera = (OrthographicCamera) viewport.getCamera();
-            camera.zoom = cameraZoomOriginal + (cameraZoomTarget - cameraZoomOriginal) * smoothProgress;
-
-            // Move camera position
-            camera.position.x = cameraOriginalPosition.x +
-                    (cameraTargetPosition.x - cameraOriginalPosition.x) * smoothProgress;
-            camera.position.y = cameraOriginalPosition.y +
-                    (cameraTargetPosition.y - cameraOriginalPosition.y) * smoothProgress;
-
-            // Add camera shake if needed
-            if (cameraShakeIntensity > 0) {
-                camera.position.x += (Math.random() - 0.5) * cameraShakeIntensity * 2;
-                camera.position.y += (Math.random() - 0.5) * cameraShakeIntensity * 2;
-                cameraShakeIntensity *= 0.95f; // Decay shake intensity
-            }
-
-            camera.update();
-        }
+//
+//        // Update camera zoom animation
+//        if (isCameraZooming) {
+//            cameraZoomTimer += delta;
+//            float progress = Math.min(cameraZoomTimer / cameraZoomDuration, 1.0f);
+//
+//            // Smooth interpolation
+//            float smoothProgress = (float) (1 - Math.pow(1 - progress, 3));
+//
+//            // Update camera zoom
+//            OrthographicCamera camera = (OrthographicCamera) viewport.getCamera();
+//            camera.zoom = cameraZoomOriginal + (cameraZoomTarget - cameraZoomOriginal) * smoothProgress;
+//
+//            // Move camera position
+//            camera.position.x = cameraOriginalPosition.x +
+//                    (cameraTargetPosition.x - cameraOriginalPosition.x) * smoothProgress;
+//            camera.position.y = cameraOriginalPosition.y +
+//                    (cameraTargetPosition.y - cameraOriginalPosition.y) * smoothProgress;
+//
+//            // Add camera shake if needed
+//            if (cameraShakeIntensity > 0) {
+//                camera.position.x += (Math.random() - 0.5) * cameraShakeIntensity * 2;
+//                camera.position.y += (Math.random() - 0.5) * cameraShakeIntensity * 2;
+//                cameraShakeIntensity *= 0.95f; // Decay shake intensity
+//            }
+//
+//            camera.update();
+//        }
 
         if (isCombatMode) updateCombat(delta);
         // Rest of your update method...
@@ -418,7 +420,6 @@ public class GameplayController {
     private float combatLogScrollOffset = 0;
     private float maxCombatLogScrollOffset = 0;
     private boolean isCombatLogScrollable = false;
-    private static final float SCROLL_SPEED = 20f;
 
     // Thêm method này:
     public boolean handleCombatLogScroll(float scrollAmount) {
@@ -431,24 +432,6 @@ public class GameplayController {
         combatLogScrollOffset = Math.max(0, Math.min(maxCombatLogScrollOffset, combatLogScrollOffset + scrollDelta));
 
         return oldOffset != combatLogScrollOffset;
-    }
-
-
-    public boolean handleCombatClick(float x, float screenY) {
-        if (timerAction > 0 || !isPlayerTurn) return false; // Không xử lý click khi đang trong thời gian chờ
-        float y = Gdx.graphics.getHeight() - screenY;
-
-        if (submitButtonRect != null && submitButtonRect.contains(x, y)) {
-            submitWord();
-            return true;
-        } else if (clearButtonRect != null && clearButtonRect.contains(x, y)) {
-            clearSelection();
-            return true;
-        } else {
-            checkGridClick(x, y);
-            handleItemBoxClick(x, y);
-            return true;
-        }
     }
 
     private boolean handleItemBoxClick(float x, float y) {
@@ -469,6 +452,7 @@ public class GameplayController {
             return;
         }
 
+
         Map<String, Integer> items = gameController.getCharacter().getItems();
         if (items.containsKey(item.getItemName()) && items.get(item.getItemName()) > 0) {
 
@@ -476,6 +460,7 @@ public class GameplayController {
             int newCount = items.get(item.getItemName()) - 1;
             if (newCount <= 0) items.remove(item.getItemName());
             else items.put(item.getItemName(), newCount);
+            currentOverlay = OverlayType.NONE;
             timerAction = 5f;
             switch (item.getItemName()) {
                 case "Elixir":
@@ -567,20 +552,6 @@ public class GameplayController {
     }
 
 
-    private void checkGridClick(float x, float y) {
-        if (!isPlayerTurn) return;
-        if (x < gridX || x >= gridX + gridSize || y < gridY || y >= gridY + gridSize) return;
-
-
-        int gridSizeValue = letterGrid.getGridSize();
-        int cellX = (int) ((x - gridX) / cellSize);
-        int cellY = gridSizeValue - 1 - (int) ((y - gridY) / cellSize);
-
-        if (cellX >= 0 && cellX < gridSizeValue && cellY >= 0 && cellY < gridSizeValue && !isCellDisabled(cellX, cellY)) {
-            selectCell(cellX, cellY);
-        }
-    }
-
     public void render(SpriteBatch batch) {
         if (!active) return;
 
@@ -657,57 +628,539 @@ public class GameplayController {
     }
 
     private void renderCombatUI(SpriteBatch batch) {
-        final float MARGIN = 20;
         final float SCREEN_WIDTH = viewport.getWorldWidth();
         final float SCREEN_HEIGHT = viewport.getWorldHeight();
 
-        // Removed camera shake completely - camera stays fixed
+        // Main combat background
+        // Pokemon-style layout: battlefield takes most of the screen
+        final float BATTLEFIELD_HEIGHT = SCREEN_HEIGHT * 0.7f; // 70% for battlefield
+        final float UI_PANEL_HEIGHT = SCREEN_HEIGHT * 0.3f;   // 30% for UI panels
+        drawBattlefield(batch, 0, UI_PANEL_HEIGHT, SCREEN_WIDTH, BATTLEFIELD_HEIGHT);
 
-        // Enemy status section (top)
-        final float ENEMY_SECTION_HEIGHT = 120;
-        final float ENEMY_SECTION_Y = SCREEN_HEIGHT - ENEMY_SECTION_HEIGHT - MARGIN;
-        drawEnemyStatusSection(batch, MARGIN, ENEMY_SECTION_Y, SCREEN_WIDTH - 2 * MARGIN, ENEMY_SECTION_HEIGHT);
+        final float PANEL_Y = 0;
+        final float MAIN_PANEL_WIDTH = SCREEN_WIDTH * 0.6f;
+        final float STATUS_PANEL_HEIGHT = UI_PANEL_HEIGHT * 0.6f;
+        final float OPTION_PANEL_HEIGHT = UI_PANEL_HEIGHT * 0.4f;
 
-        // Combat log section (middle)
-        final float LOG_SECTION_HEIGHT = 100;
-        final float LOG_SECTION_Y = ENEMY_SECTION_Y - LOG_SECTION_HEIGHT - MARGIN;
-        drawCombatLogSection(batch, MARGIN, LOG_SECTION_Y, SCREEN_WIDTH - 2 * MARGIN, LOG_SECTION_HEIGHT);
+        // Player status (top right)
+        drawEnemyInfoPanel(batch, 300, 600, 400, 100);
+        drawPlayerInfo(batch, 750, PANEL_Y + OPTION_PANEL_HEIGHT + STATUS_PANEL_HEIGHT + 36,
+                400, STATUS_PANEL_HEIGHT);
 
-        // Bottom section - Three columns
-        final float BOTTOM_SECTION_Y = MARGIN;
-        final float BOTTOM_SECTION_HEIGHT = LOG_SECTION_Y - 2 * MARGIN;
-
-        final float PLAYER_COLUMN_WIDTH = 280;
-        final float ITEM_COLUMN_WIDTH = 220;
-        final float GRID_COLUMN_WIDTH = SCREEN_WIDTH - PLAYER_COLUMN_WIDTH - ITEM_COLUMN_WIDTH - 4 * MARGIN;
-
-        final float PLAYER_COLUMN_X = MARGIN;
-        final float GRID_COLUMN_X = PLAYER_COLUMN_X + PLAYER_COLUMN_WIDTH + MARGIN;
-        final float ITEM_COLUMN_X = GRID_COLUMN_X + GRID_COLUMN_WIDTH + MARGIN;
-
-        // Draw columns
-        if (!isCardAnimating) {
-            drawPlayerStatusColumn(batch, PLAYER_COLUMN_X, BOTTOM_SECTION_Y, PLAYER_COLUMN_WIDTH, BOTTOM_SECTION_HEIGHT);
+        // Main action panel (left side - like Pokemon's text box)
+        drawMainActionPanel(batch, MARGIN, PANEL_Y + MARGIN,
+                MAIN_PANEL_WIDTH - MARGIN, UI_PANEL_HEIGHT - 2 * MARGIN);
+        // Draw overlays if active
+        if (currentOverlay == OverlayType.SPELL) {
+            drawLetterGridOverlay(batch, SCREEN_WIDTH, SCREEN_HEIGHT);
         }
-        drawLetterGridColumn(batch, GRID_COLUMN_X, BOTTOM_SECTION_Y, GRID_COLUMN_WIDTH, BOTTOM_SECTION_HEIGHT);
-        drawItemColumn(batch, ITEM_COLUMN_X, BOTTOM_SECTION_Y, ITEM_COLUMN_WIDTH, BOTTOM_SECTION_HEIGHT);
 
-        // Draw gentle animated card effects
-        if (isCardAnimating) {
+        if (currentOverlay == OverlayType.INVENTORY) {
+            drawInventoryOverlay(batch, SCREEN_WIDTH, SCREEN_HEIGHT);
+        }
 
-            // Main spell card
-            Texture cardTexture = getTexture("ui/card_frame_vintage.png");
-            batch.setColor(cardTintColor);
-            float cardWidth = 200 * cardAnimScale;
-            float cardHeight = 200 * cardAnimScale;
+        // Draw action buttons (Pokemon-style bottom menu)
+        drawActionButtons(batch, SCREEN_WIDTH, SCREEN_HEIGHT);
+    }
 
-            batch.draw(cardTexture,
-                    cardAnimX, cardAnimY,
-                    cardWidth / 2, cardHeight / 2,
-                    cardWidth, cardHeight,
-                    1, 1, cardAnimRotation,
-                    0, 0, cardTexture.getWidth(), cardTexture.getHeight(),
-                    false, false);
+    private void drawMainActionPanel(SpriteBatch batch, float x, float y, float width, float height) {
+        // Pokemon-style main panel with rounded corners
+        batch.setColor(0.1f, 0.1f, 0.3f, 0.95f);
+        batch.draw(whiteTexture, x, y, width, height);
+
+        // Title
+        drawCenteredText(batch, titleFont, "COMBAT LOG", x + width / 2, y + height - 25, Color.CYAN);
+
+        // Combat log content
+        String logText = getCombatLogText();
+        if (!logText.isEmpty()) {
+            drawScrollableText(batch, regularFont, logText, x + 10, y + height - 50, width - 20, height - 80);
+        }
+
+        // Timer display (Pokemon-style)
+        float timeLeft = COMBAT_TIME_LIMIT - combatTimer;
+        String timeText = String.format("TIME: %02d:%02d", (int) (timeLeft / 60), (int) (timeLeft % 60));
+        regularFont.setColor(timeLeft < 60 ? Color.RED : Color.WHITE);
+        regularFont.draw(batch, timeText, x + width - 120, y + height - 15);
+
+        // Turn indicator
+        String turnText = isPlayerTurn ? "YOUR TURN" : "ENEMY TURN";
+        Color turnColor = isPlayerTurn ? Color.GREEN : Color.RED;
+        drawCenteredText(batch, regularFont, turnText, x + width / 2, y + 15, turnColor);
+    }
+
+
+    private void drawBattlefield(SpriteBatch batch, float x, float y, float width, float height) {
+        // Pokemon-style battlefield background
+        Texture battlefieldBg = getTexture("ui/battlefield_bg.png");
+        if (battlefieldBg != null) {
+            batch.setColor(Color.WHITE);
+            batch.draw(battlefieldBg, x, y, width, height);
+        } else {
+            // Gradient background
+            batch.setColor(0.3f, 0.5f, 0.8f, 1);
+            batch.draw(whiteTexture, x, y, width, height * 0.5f);
+            batch.setColor(0.2f, 0.7f, 0.3f, 1);
+            batch.draw(whiteTexture, x, y, width, height * 0.5f);
+        }
+
+        drawPokemonStyleEnemySection(batch);
+
+
+        // Draw player (bottom left of battlefield)
+        Texture playerTexture;
+        if (gender.equalsIgnoreCase("MALE"))
+            playerTexture = getTexture("characters/male.png"); // Back sprite like Pokemon
+        else
+            playerTexture = getTexture("characters/female.png");
+
+        if (playerTexture != null) {
+            batch.setColor(Color.WHITE);
+
+            batch.draw(playerTexture, 326, 266, 150, 200);
+        }
+
+    }
+
+
+    private void drawPokemonStyleEnemySection(SpriteBatch batch) {
+        Texture enemyTexture = getTexture(this.enemy.getTexturePath());
+        if (enemyTexture != null) {
+            batch.setColor(Color.WHITE);
+
+            batch.draw(enemyTexture,
+                    830,
+                    450,
+                    150, 200);
+        }
+    }
+
+    private void drawEnemyInfoPanel(SpriteBatch batch, float x, float y, float width, float height) {
+        // Panel background
+        batch.setColor(0.2f, 0.3f, 0.5f, 0.9f);
+        batch.draw(whiteTexture, x, y, width, height);
+
+        // Border
+        batch.setColor(0.8f, 0.8f, 1.0f, 1);
+        drawBorder(batch, x, y, width, height, 3);
+
+        // Enemy name and level
+        titleFont.setColor(Color.WHITE);
+        titleFont.draw(batch, enemyName, x + 10, y + height - 15);
+
+        String levelText = "Lv." + currentLevel;
+        layout.setText(regularFont, levelText);
+        regularFont.setColor(Color.YELLOW);
+        regularFont.draw(batch, levelText, x + width - layout.width - 10, y + height - 15);
+
+        // HP bar (Pokemon style)
+        drawPokemonStyleHPBar(batch, enemyHealth, enemyMaxHealth, x + 40, y + 30, width - 60, 20);
+
+        regularFont.setColor(Color.WHITE);
+        regularFont.draw(batch, (int) enemyHealth + "/" + (int) enemyMaxHealth, x + 80, y + 43);
+    }
+
+    private void drawPlayerInfo(SpriteBatch batch, float x, float y, float width, float height) {
+        // Panel background
+        batch.setColor(0.2f, 0.3f, 0.5f, 0.9f);
+        batch.draw(whiteTexture, x, y, width, height);
+        // Border
+        batch.setColor(0.8f, 0.8f, 1.0f, 1);
+        drawBorder(batch, x, y, width, height, 3);
+
+        // Enemy name and level
+        titleFont.setColor(Color.WHITE);
+        titleFont.draw(batch, playerName, x + 10, y + height - 15);
+
+        String levelText = "Lv." + currentLevel;
+        layout.setText(regularFont, levelText);
+        regularFont.setColor(Color.YELLOW);
+        regularFont.draw(batch, levelText, x + width - layout.width - 10, y + height - 15);
+
+        // HP bar (Pokemon style)
+        regularFont.setColor(Color.WHITE);
+        drawPokemonStyleHPBar(batch, playerHealth, playerMaxHealth, x + 40, y + 60, width - 60, 20);
+        drawPokemonStyleMPBar(batch, playerMana, playerMaxMana, x + 40, y + 30, width - 60, 20);
+        regularFont.draw(batch, (int) playerHealth + "/" + (int) playerMaxHealth, x + 80, y + 73);
+        regularFont.draw(batch, (int) playerMana + "/" + (int) playerMaxMana, x + 80, y + 43);
+    }
+
+    Rectangle spellButton = new Rectangle();
+    Rectangle itemButton = new Rectangle();
+
+    public void createMainActionButtons() {
+        float buttonWidth = 150;
+        float buttonHeight = 50;
+        float buttonY = 20;
+        float spacing = 20;
+
+        // Center the buttons
+        float totalWidth = (buttonWidth * 2) + spacing;
+        float startX = (viewport.getWorldWidth() - totalWidth) - spacing * 4;
+
+        // Spell button (opens letter grid)
+        spellButton.set(startX, buttonY, buttonWidth, buttonHeight);
+
+        // Item button (opens inventory)
+        itemButton.set(startX + buttonWidth + spacing, buttonY, buttonWidth, buttonHeight);
+    }
+
+    private void drawActionButtons(SpriteBatch batch, float screenWidth, float screenHeight) {
+
+        drawPokemonStyleButton(batch, spellButton, "SPELL", Color.CYAN);
+        drawPokemonStyleButton(batch, itemButton, "ITEM", Color.ORANGE);
+
+    }
+
+
+    private void drawLetterGridOverlay(SpriteBatch batch, float screenWidth, float screenHeight) {
+        // Semi-transparent background
+        batch.setColor(0, 0, 0, 0.7f);
+        batch.draw(whiteTexture, 0, 0, screenWidth, screenHeight);
+
+        // Main overlay panel
+        float panelWidth = screenWidth * 0.8f;
+        float panelHeight = screenHeight * 0.8f;
+        float panelX = (screenWidth - panelWidth) / 2;
+        float panelY = (screenHeight - panelHeight) / 2;
+
+        drawCenteredText(batch, titleFont, "🔮 SPELL CASTING", panelX + panelWidth / 2, panelY + panelHeight - 30, Color.CYAN);
+
+        // Current word display (Pokemon style)
+        String currentWord = letterGrid.getCurrentWord();
+        drawCurrentWordCells(batch, currentWord, panelX + 50, panelY + panelHeight - 100, panelWidth - 100);
+
+        // Letter grid (centered)
+        float gridSize = Math.min(panelWidth * 0.6f, panelHeight * 0.6f);
+        float gridX = panelX + (panelWidth - gridSize) / 2;
+        float gridY = panelY + 120;
+
+        drawLetterGrid(batch, gridX, gridY, gridSize);
+
+        // Action buttons
+        float buttonWidth = 120;
+        float buttonHeight = 40;
+        float buttonY = panelY + 40;
+
+        submitButtonRect = new Rectangle(panelX + panelWidth / 2 - buttonWidth - 10, buttonY, buttonWidth, buttonHeight);
+        clearButtonRect = new Rectangle(panelX + panelWidth / 2 + 10, buttonY, buttonWidth, buttonHeight);
+
+        drawPokemonStyleButton(batch, submitButtonRect, "CAST", Color.GREEN);
+        drawPokemonStyleButton(batch, clearButtonRect, "CLEAR", Color.RED);
+
+        // Close button
+
+        drawPokemonStyleButton(batch, closeInventoryButton, "x", Color.GRAY);
+
+    }
+
+    Rectangle closeInventoryButton = new Rectangle();
+
+    public void createCloseButton(float screenWidth, float screenHeight) {
+        float panelWidth = screenWidth * 0.7f;
+        float panelHeight = screenHeight * 0.7f;
+        float panelX = (screenWidth - panelWidth) / 2;
+        float panelY = (screenHeight - panelHeight) / 2;
+        closeInventoryButton = new Rectangle(panelX + panelWidth - 60, panelY + panelHeight - 50, 50, 40);
+
+    }
+
+    private void drawInventoryOverlay(SpriteBatch batch, float screenWidth, float screenHeight) {
+        // Semi-transparent background
+        batch.setColor(0, 0, 0, 0.7f);
+        batch.draw(whiteTexture, 0, 0, screenWidth, screenHeight);
+
+        // Main overlay panel
+        float panelWidth = screenWidth * 0.7f;
+        float panelHeight = screenHeight * 0.7f;
+        float panelX = (screenWidth - panelWidth) / 2;
+        float panelY = (screenHeight - panelHeight) / 2;
+
+        // Panel background
+        batch.setColor(0.3f, 0.2f, 0.1f, 0.95f);
+        batch.draw(whiteTexture, panelX, panelY, panelWidth, panelHeight);
+
+        // Border
+        batch.setColor(0.8f, 0.6f, 0.4f, 1);
+        drawBorder(batch, panelX, panelY, panelWidth, panelHeight, 4);
+
+        // Title
+        drawCenteredText(batch, titleFont, "🎒 INVENTORY", panelX + panelWidth / 2, panelY + panelHeight - 30, Color.ORANGE);
+
+        // Item grid
+        drawBeautifulItemGrid(batch, panelX + 20, panelY + 60, panelWidth - 40, panelHeight - 120);
+
+        // Close button
+        drawPokemonStyleButton(batch, closeInventoryButton, "x", Color.GRAY);
+
+
+    }
+
+    private void drawBeautifulItemGrid(SpriteBatch batch, float x, float y, float width, float height) {
+        itemRectMap.clear();
+        Map<String, Integer> characterItems = gameController.getCharacter().getBuffItems();
+
+        if (characterItems == null || characterItems.isEmpty()) {
+            drawCenteredText(batch, regularFont, "No items available", x + width / 2, y + height / 2, Color.GRAY);
+            return;
+        }
+
+        // Grid layout
+        int columns = 3;
+        float itemSlotSize = (width - 40) / columns;
+        float itemSlotHeight = 80;
+
+        Vector3 mousePos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
+        viewport.unproject(mousePos);
+
+        int index = 0;
+        for (Map.Entry<String, Integer> entry : characterItems.entrySet()) {
+            Items item = ItemLoader.getItemByName(entry.getKey());
+            if (item == null) continue;
+
+            int row = index / columns;
+            int col = index % columns;
+
+            float itemX = x + 20 + col * itemSlotSize;
+            float itemY = y + height - 40 - (row + 1) * (itemSlotHeight + 10);
+
+            Rectangle itemRect = new Rectangle(itemX, itemY, itemSlotSize - 10, itemSlotHeight);
+            itemRectMap.put(itemRect, item);
+
+            boolean isHovered = itemRect.contains(mousePos.x, mousePos.y);
+
+            // Item slot background
+            batch.setColor(isHovered ? new Color(0.4f, 0.5f, 0.6f, 0.9f) : new Color(0.2f, 0.3f, 0.4f, 0.8f));
+            batch.draw(whiteTexture, itemRect.x, itemRect.y, itemRect.width, itemRect.height);
+
+            // Border
+            batch.setColor(isHovered ? Color.YELLOW : Color.WHITE);
+            drawBorder(batch, itemRect.x, itemRect.y, itemRect.width, itemRect.height, 2);
+
+            // Item icon
+            Texture itemIcon = getTexture(item.getTexturePath());
+            if (itemIcon != null) {
+                batch.setColor(Color.WHITE);
+                batch.draw(itemIcon, itemX + 5, itemY + itemSlotHeight - 50, 40, 40);
+            }
+
+            // Item name and count
+            regularFont.setColor(Color.WHITE);
+            regularFont.draw(batch, item.getItemName(), itemX + 50, itemY + itemSlotHeight - 15);
+            regularFont.draw(batch, "x" + entry.getValue(), itemX + itemSlotSize - 40, itemY + itemSlotHeight - 15);
+
+            // Mana cost
+            regularFont.setColor(Color.CYAN);
+            regularFont.draw(batch, "MP: " + item.getManaCost(), itemX + 50, itemY + itemSlotHeight - 35);
+
+            index++;
+        }
+    }
+
+    private void drawPokemonStyleButton(SpriteBatch batch, Rectangle buttonRect, String text, Color color) {
+        Vector3 mousePos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
+        viewport.unproject(mousePos);
+        boolean isHovered = buttonRect.contains(mousePos.x, mousePos.y);
+
+        // Button background
+        batch.setColor(isHovered ? color.cpy().mul(1.2f) : color);
+        batch.draw(whiteTexture, buttonRect.x, buttonRect.y, buttonRect.width, buttonRect.height);
+
+        // Border
+        batch.setColor(Color.WHITE);
+        drawBorder(batch, buttonRect.x, buttonRect.y, buttonRect.width, buttonRect.height, 2);
+
+        // Text
+        layout.setText(regularFont, text);
+        regularFont.setColor(Color.BLACK);
+        regularFont.draw(batch, text,
+                buttonRect.x + (buttonRect.width - layout.width) / 2,
+                buttonRect.y + (buttonRect.height + layout.height) / 2);
+    }
+
+    private void drawPokemonStyleHPBar(SpriteBatch batch, float current, float max, float x, float y, float width, float height) {
+        if (max <= 0) return; // Tránh chia cho 0
+
+        float percentage = Math.max(0, current / max); // Clamp về 0 nếu âm
+
+        // 1. Vẽ nền tối (viền ngoài)
+        batch.setColor(0.1f, 0.1f, 0.1f, 1);
+        batch.draw(whiteTexture, x - 2, y - 2, width + 4, height + 4);
+
+        // 2. Vẽ nền trong (background thanh máu)
+        batch.setColor(0.3f, 0.3f, 0.3f, 1);
+        batch.draw(whiteTexture, x, y, width, height);
+
+        // 3. Chọn màu máu theo phần trăm
+        Color hpColor = percentage > 0.5f ? Color.valueOf("4CAF50") : percentage > 0.2f ? Color.valueOf("FFEB3B") : Color.valueOf("F44336");
+
+        // 4. Vẽ phần thanh máu chính
+        batch.setColor(hpColor);
+        batch.draw(whiteTexture, x, y, width * percentage, height);
+
+        // 5. Vẽ viền đen mỏng
+        batch.setColor(Color.BLACK);
+        drawBorder(batch, x, y, width, height, 1);
+
+        // 6. Text "HP"
+        regularFont.setColor(Color.WHITE);
+        regularFont.draw(batch, "HP", x - 30, y + height - 2);
+
+    }
+
+
+    private void drawPokemonStyleMPBar(SpriteBatch batch, float current, float max, float x, float y, float width, float height) {
+        if (max <= 0) return; // Tránh chia cho 0
+
+        float percentage = Math.max(0, current / max); // Clamp về 0 nếu âm
+
+        // 1. Viền ngoài tối
+        batch.setColor(0.1f, 0.1f, 0.1f, 1);
+        batch.draw(whiteTexture, x - 2, y - 2, width + 4, height + 4);
+
+        // 2. Nền trong
+        batch.setColor(0.3f, 0.3f, 0.3f, 1);
+        batch.draw(whiteTexture, x, y, width, height);
+
+        // 3. Thanh MP màu xanh lam (có thể thay bằng gradient texture nếu muốn)
+        Color mpColor = new Color(0.2f, 0.4f, 0.95f, 1); // xanh biển đậm
+        batch.setColor(mpColor);
+        batch.draw(whiteTexture, x, y, width * percentage, height);
+
+        // 4. Viền đen mỏng
+        batch.setColor(Color.BLACK);
+        drawBorder(batch, x, y, width, height, 1);
+
+        // 5. Text "MP"
+        regularFont.setColor(Color.WHITE);
+        regularFont.draw(batch, "MP", x - 30, y + height - 2);
+
+        // 6. Hiển thị số MP hiện tại / tối đa
+    }
+
+
+    private void drawBorder(SpriteBatch batch, float x, float y, float width, float height, float thickness) {
+        // Top
+        batch.draw(whiteTexture, x, y + height - thickness, width, thickness);
+        // Bottom
+        batch.draw(whiteTexture, x, y, width, thickness);
+        // Left
+        batch.draw(whiteTexture, x, y, thickness, height);
+        // Right
+        batch.draw(whiteTexture, x + width - thickness, y, thickness, height);
+    }
+
+    enum OverlayType {
+        NONE,
+        SPELL,
+        INVENTORY
+    }
+
+    OverlayType currentOverlay = OverlayType.NONE;
+
+    // Update the click handler to work with overlays
+    public boolean handleCombatClick(float x, float screenY) {
+        if (timerAction > 0 || !isPlayerTurn) return false;
+        float y = Gdx.graphics.getHeight() - screenY;
+
+        if (spellButton.contains(x, y)) {
+            currentOverlay = (currentOverlay == OverlayType.SPELL) ? OverlayType.NONE : OverlayType.SPELL;
+        } else if (itemButton.contains(x, y)) {
+            currentOverlay = (currentOverlay == OverlayType.INVENTORY) ? OverlayType.NONE : OverlayType.INVENTORY;
+        }
+
+
+        // Handle overlay clicks first
+        if (currentOverlay == OverlayType.SPELL) {
+            return handleGridOverlayClick(x, screenY);
+        } else if (currentOverlay == OverlayType.INVENTORY) {
+            return handleInventoryOverlayClick(x, y);
+        }
+        return false;
+    }
+
+
+    private boolean handleGridOverlayClick(float x, float y) {
+        final float SCREEN_WIDTH = viewport.getWorldWidth();
+        final float SCREEN_HEIGHT = viewport.getWorldHeight();
+
+        float screenY = Gdx.graphics.getHeight() - y;
+
+        float panelWidth = SCREEN_WIDTH * 0.8f;
+        float panelHeight = SCREEN_HEIGHT * 0.8f;
+        float panelX = (SCREEN_WIDTH - panelWidth) / 2;
+        float panelY = (SCREEN_HEIGHT - panelHeight) / 2;
+
+
+        if (closeInventoryButton.contains(x, screenY)) {
+            currentOverlay = OverlayType.NONE;
+            return true;
+        }
+
+        // Submit button
+        if (submitButtonRect != null && submitButtonRect.contains(x, screenY)) {
+            submitWord();
+            currentOverlay = OverlayType.NONE;
+            return true;
+        }
+
+        // Clear button
+        if (clearButtonRect != null && clearButtonRect.contains(x, screenY)) {
+            clearSelection();
+            return true;
+        }
+
+        // Letter grid clicks
+        float gridSize = Math.min(panelWidth * 0.6f, panelHeight * 0.6f);
+        float gridX = panelX + (panelWidth - gridSize) / 2;
+        float gridY = panelY + 120;
+
+        return handleLetterGridClick(x, y, gridX, gridY, gridSize);
+    }
+
+    private boolean handleInventoryOverlayClick(float x, float y) {
+        // Close button
+        if (closeInventoryButton.contains(x, y)) {
+            currentOverlay = OverlayType.NONE;
+            return true;
+        }
+
+        // Item clicks
+        return handleItemBoxClick(x, y);
+    }
+
+
+    private boolean handleLetterGridClick(float x, float y, float gridX, float gridY, float gridSize) {
+        int gridSizeValue = letterGrid.getGridSize();
+        float cellSize = gridSize / gridSizeValue;
+
+        // Check if click is within grid bounds
+        if (x < gridX || x > gridX + gridSize || y < gridY || y > gridY + gridSize) {
+            return false;
+        }
+
+        // Calculate grid coordinates
+        int gridCol = (int) ((x - gridX) / cellSize);
+        int gridRow = (int) ((y - gridY) / cellSize);
+
+        // Validate coordinates
+        if (gridCol < 0 || gridCol >= gridSizeValue || gridRow < 0 || gridRow >= gridSizeValue) {
+            return false;
+        }
+
+        // Check if cell is disabled (for boss fights)
+        if (isCellDisabled(gridCol, gridRow)) {
+            return false;
+        }
+
+        // Handle cell selection
+        boolean wasSelected = letterGrid.getSelectedCells()[gridRow][gridCol];
+        if (wasSelected) {
+            // If cell is already selected, try to deselect it
+            return letterGrid.deselectCell(gridCol, gridRow);
+        } else {
+            // Try to select the cell
+            return selectCell(gridCol, gridRow);
         }
     }
 
@@ -726,48 +1179,6 @@ public class GameplayController {
     }
 
     String difficultyText = "";
-
-    private void drawEnemyStatusSection(SpriteBatch batch, float x, float y, float width, float height) {
-        batch.setColor(0.2f, 0.2f, 0.4f, 0.9f);
-
-        Texture bgTexture = getTexture("ui/enemy_bg_1.png");
-        if (bgTexture != null) {
-            batch.setColor(Color.WHITE);
-            batch.draw(bgTexture, x - 20, y - 30, 1280, height + 30);
-        }
-
-        String titleText = "KẺ ĐỊCH";
-        if (isEnemyBoss()) titleText += " (BOSS)";
-        else if (isEnemyLord()) titleText += " (LORD)";
-
-
-        drawCenteredText(batch, titleFont, titleText, x + 156, y + height - 20, Color.RED);
-
-
-        Texture enemyTexture = getTexture(this.enemy.getTexturePath());
-        if (enemyTexture != null) {
-            batch.setColor(Color.WHITE);
-            batch.draw(enemyTexture, 600, y + 20, 80, 80);
-        }
-
-        regularFont.setColor(Color.BLACK);
-        regularFont.draw(batch, "Tên: " + enemyName, x + 120, y + height - 50);
-        regularFont.draw(batch, "HP: " + (int) enemyHealth + "/" + (int) enemyMaxHealth, x + 120, y + height - 75);
-        regularFont.draw(batch, "Base Attack: " + enemy.getAttackPower(), x + 120, y + height - 100);
-        regularFont.draw(batch, "Base Defend: " + enemy.getDefensePower(), x + 120, y + height - 120);
-
-        // Health bar
-        float healthPercentage = enemyHealth / enemyMaxHealth;
-        batch.setColor(0.3f, 0.3f, 0.3f, 1);
-        batch.draw(whiteTexture, x + 220, y + height - 85, 200, 15);
-        batch.setColor(getHealthColor(healthPercentage));
-        batch.draw(whiteTexture, x + 220, y + height - 85, 200 * healthPercentage, 15);
-
-        //draw description
-        String description = "Mô tả:\n" + this.enemy.getEnemyDescription();
-        drawWrappedBlackText(batch, regularFont, description, 830, y + height - 30, 400);
-
-    }
 
     private void drawWrappedText(SpriteBatch batch, BitmapFont font, String text, float x, float y, float width) {
         layout.setText(font, text, Color.WHITE, width, 1, true);
@@ -864,180 +1275,7 @@ public class GameplayController {
         font.draw(batch, line, x, y);
     }
 
-    // Thêm các utility methods cho scroll:
-    public void scrollToBottom() {
-        combatLogScrollOffset = maxCombatLogScrollOffset;
-    }
-
-    public void scrollToTop() {
-        combatLogScrollOffset = 0;
-    }
-
     String gender;
-
-    private void drawPlayerStatusColumn(SpriteBatch batch, float x, float y, float width, float height) {
-//        batch.setColor(0.2f, 0.4f, 0.2f, 0.9f);
-
-        Texture bgTexture = getTexture("ui/card_frame_vintage.png");
-        if (bgTexture != null) {
-            batch.setColor(Color.WHITE);
-            batch.draw(bgTexture, x, y, width, height);
-        }
-
-        drawCenteredText(batch, titleFont, playerName, x + width / 2, y + height - 205, Color.BLACK);
-        drawCenteredText(batch, titleFont, String.valueOf(currentLevel), x + width / 2, y + 32, Color.BLACK);
-
-
-        Texture playerTexture;
-        if (gender.equalsIgnoreCase("MALE"))
-            playerTexture = getTexture("characters/male.png");
-        else
-            playerTexture = getTexture("characters/female.png");
-
-        if (playerTexture != null) {
-            batch.setColor(Color.WHITE);
-            batch.draw(playerTexture, x + (width - 100) / 2, y + height - 170, 100, 100);
-        }
-
-        regularFont.setColor(Color.BLACK);
-//        regularFont.draw(batch, "Tên: " + playerName, x + 15, y + height - 180);
-        regularFont.draw(batch, "" + (int) playerHealth, x + 36, y + height - 165);
-        regularFont.draw(batch, "" + (int) playerMana, x + 227, y + height - 165);
-        regularFont.draw(batch, "" + (int) wordDamageMultiplier, x + 39, y + height - 84);
-        regularFont.draw(batch, "" + (int) gameController.getCharacter().getDefend(), x + 234, y + height - 84);
-
-        // Health and mana bars
-        drawHealthBar(batch, playerHealth, playerMaxHealth, x + 30, y + height - 305, width - 80, 12);
-        drawManaBar(batch, playerMana, playerMaxMana, x + 30, y + height - 335, width - 80, 12);
-
-//        regularFont.setColor(Color.GRAY);
-//        regularFont.draw(batch, "ATK sẽ được cộng vào tổng điểm!", x + 15, y + height - 345);
-//        regularFont.draw(batch, "DEF sẽ giảm sát thương nhận vào! ", x + 15, y + height - 365);
-//        regularFont.setColor(Color.WHITE);
-    }
-
-    private void drawHealthBar(SpriteBatch batch, float current, float max, float x, float y, float width, float height) {
-        batch.setColor(0.3f, 0.3f, 0.3f, 1);
-        batch.draw(whiteTexture, x, y, width, height);
-        batch.setColor(getHealthColor(current / max));
-        batch.draw(whiteTexture, x, y, width * (current / max), height);
-    }
-
-    private void drawManaBar(SpriteBatch batch, float current, float max, float x, float y, float width, float height) {
-        batch.setColor(0.3f, 0.3f, 0.3f, 1);
-        batch.draw(whiteTexture, x, y, width, height);
-        batch.setColor(0.2f, 0.4f, 0.9f, 1);
-        batch.draw(whiteTexture, x, y, width * (current / max), height);
-    }
-
-    private void drawItemColumn(SpriteBatch batch, float x, float y, float width, float height) {
-        batch.setColor(0.3f, 0.2f, 0.4f, 0.9f);
-
-        Texture bgTexture = getTexture("ui/item_bg.png");
-        if (bgTexture != null) {
-            batch.setColor(Color.WHITE);
-            batch.draw(bgTexture, x - 15, y, width + 25f, height);
-        }
-
-        drawCenteredText(batch, regularFont, "🎒 ITEM", x + width / 2, y + height - 25, Color.BLACK);
-
-        itemRectMap.clear();
-        Map<String, Integer> characterItems = gameController.getCharacter().getBuffItems();
-
-        if (characterItems == null || characterItems.isEmpty()) {
-            regularFont.setColor(Color.GRAY);
-            regularFont.draw(batch, "Không có vật phẩm!", x + 10, y + height - 60);
-            return;
-        }
-
-        Vector3 mousePos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
-        viewport.unproject(mousePos);
-
-        float itemY = y + height - 55;
-        for (Map.Entry<String, Integer> entry : characterItems.entrySet()) {
-            Items item = ItemLoader.getItemByName(entry.getKey());
-            if (item == null) continue;
-
-            Rectangle itemRect = new Rectangle(x, itemY - 25, width, 30);
-            itemRectMap.put(itemRect, item);
-
-            boolean isHovered = itemRect.contains(mousePos.x, mousePos.y);
-            if (isHovered) {
-                batch.setColor(0.5f, 0.5f, 0.7f, 0.8f);
-                batch.draw(whiteTexture, itemRect.x, itemRect.y, itemRect.width, itemRect.height);
-            }
-
-            Texture itemIcon = getTexture(item.getTexturePath());
-            if (itemIcon != null) {
-                batch.setColor(Color.WHITE);
-                batch.draw(itemIcon, x + 5, itemY - 20, 20, 20);
-            }
-
-            regularFont.setColor(isHovered ? Color.YELLOW : Color.BLACK);
-            regularFont.draw(batch, item.getItemName(), x + 30, itemY);
-            regularFont.draw(batch, "x" + entry.getValue(), x + width - 30, itemY);
-
-            itemY -= 35;
-        }
-    }
-
-
-    private void drawLetterGridColumn(SpriteBatch batch, float x, float y, float width, float height) {
-        if (timerAction > 0) return; // Không vẽ nếu đang trong thời gian chờ
-        batch.setColor(0.25f, 0.25f, 0.35f, 0.9f);
-        batch.draw(whiteTexture, x, y, width, height);
-
-
-//        Texture bgTexture = getTexture("ui/card_deck.png");
-//        if (bgTexture != null) {
-//            batch.setColor(Color.WHITE);
-//            batch.draw(bgTexture, x, y, width, height);
-//        }
-
-
-        String currentWord = letterGrid.getCurrentWord();
-        drawCurrentWordCells(batch, currentWord, x, y + height - 50, width);
-
-        if (isDrawingWordMeaning && !lastSubmittedWord.isEmpty()) {
-            String meaning = wordValidator.getWordMeaning(lastSubmittedWord);
-            if (meaning != null && !meaning.isEmpty()) {
-                regularFont.setColor(Color.CYAN);
-                if (meaning.length() > 50) {
-                    meaning = meaning.substring(0, 50) + ".......";
-                }
-                regularFont.draw(batch, "Meaning: " + meaning, x + 20, y + height - 30);
-            }
-        }
-//        regularFont.setColor(Color.WHITE);
-//        regularFont.draw(batch,
-//                "           Cách tính điểm từ vựng:\n"
-//                        + "- Mỗi ký tự: +1 điểm\n"
-//                        + "- Mỗi Nguyên âm A,I,U,E,O: +2 điểm \n"
-//                        + "- Nếu từ dài hơn 5 ký tự: +2 điểm\n"
-//                        + "- Ký tự hiếm Z,Q,X,J,K: +2 điểm mỗi ký tự\n"
-//                        + "- Nếu từ là danh từ: +1 điểm\n"
-//                        + "- Nếu từ là động từ: +2 điểm\n"
-//                        + "- Nếu từ là tính từ: +2 điểm\n"
-//                        + "- Nếu từ là trạng từ từ: +3 điểm\n"
-//                        + "--> Tổng điểm là sát thương\n",
-//                gridX + 330, gridY + gridSize - 30);
-
-
-        drawLetterGrid(batch, gridX, gridY, gridSize);
-
-        // Buttons
-//        submitButtonRect = new Rectangle(x + 70, y + 16, 120, 40);
-//        clearButtonRect = new Rectangle(x + 210, y + 16, 120, 40);
-
-        submitButtonRect = new Rectangle(x + 220, y + 16, 120, 40);
-        clearButtonRect = new Rectangle(x + 360, y + 16, 120, 40);
-
-        if (isPlayerTurn && !combatTimeUp && timerAction == 0) {
-            drawButton(batch, submitButtonRect, "CAST SPELL");
-            drawButton(batch, clearButtonRect, "BỎ CHỌN");
-        }
-    }
-
 
     private void drawLetterGrid(SpriteBatch batch, float gridX, float gridY, float gridSize) {
         if (timerAction > 0) return;
@@ -1079,7 +1317,7 @@ public class GameplayController {
     private void drawCurrentWordCells(SpriteBatch batch, String currentWord, float columnX, float y, float columnWidth) {
         if (currentWord.isEmpty() && !isDrawingWordMeaning) {
             regularFont.setColor(Color.GRAY);
-            drawCenteredText(batch, regularFont, "Chọn các chữ cái để tạo từ", columnX + columnWidth / 2, y + 7, Color.GRAY);
+            drawCenteredText(batch, regularFont, "Chọn các chữ cái để tạo từ", columnX + columnWidth / 2, y + 22, Color.GRAY);
             return;
         } else {
             final float CELL_SIZE = 35;
@@ -1163,7 +1401,6 @@ public class GameplayController {
 
 
     float timerAction = 0;
-
 
 
     public boolean submitWord() {
@@ -1534,7 +1771,7 @@ public class GameplayController {
             try {
                 Texture texture = new Texture(Gdx.files.internal(path));
                 texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-                textureCache.put(path,texture);
+                textureCache.put(path, texture);
             } catch (Exception e) {
                 return whiteTexture;
             }

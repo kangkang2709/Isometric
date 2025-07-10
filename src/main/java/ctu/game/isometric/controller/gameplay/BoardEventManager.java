@@ -246,7 +246,6 @@ public class BoardEventManager {
                         break;
                     case "quiz":
                         MapEvent quizEvent = new MapEvent(positionKey, "quiz", pos[0], pos[1], "Quiz Challenge", "0");
-                        System.out.println("Placing quiz event at " + positionKey);
                         eventManager.addEvent(quizEvent);
                         break;
                     case "mulquiz":

@@ -29,6 +29,8 @@ import ctu.game.isometric.util.ItemLoader;
 import ctu.game.isometric.util.RewardLoader;
 import ctu.game.isometric.util.WordNetValidator;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
@@ -135,7 +137,7 @@ public class DarkestDungeon implements Screen {
     // Textures
     private Texture[] playerIdleTextures = new Texture[2]; // For idle animation
     private Texture[] playerSkillTextures = new Texture[5];
-    private Texture[] enemyIdleTextures = new Texture[2]; // For idle animation
+    private Texture[] enemyIdleTextures = new Texture[3]; // For idle animation
     private Texture[] enemySkillTextures = new Texture[3];
     private Texture[] skillButtonTextures = new Texture[5];
     private Texture[] effectTextures = new Texture[3];
@@ -551,6 +553,48 @@ public class DarkestDungeon implements Screen {
 
     int experience = 0;
 
+    Map<String, Texture[]> enemyIdleTexturesCache = new HashMap<>();
+    Map<String, Texture[]> enemySkillTexturesCache = new HashMap<>();
+
+    public void loadEnemyTextures(String enemyName) {
+        if (enemyIdleTexturesCache.containsKey(enemyName) && enemySkillTexturesCache.containsKey(enemyName)) return;
+
+        Texture[] idleTextures = new Texture[4];
+        for (int i = 0; i < 4; i++) {
+            String texturePath = "dungeon/" + enemyName.toLowerCase() + (i + 1) + "_idle.png";
+            Texture texture = new Texture(texturePath);
+            texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+            idleTextures[i] = texture;
+
+        }
+        enemyIdleTexturesCache.put(enemyName, idleTextures);
+
+        Texture[] skillTextures = new Texture[3];
+        for (int i = 0; i < 3; i++) {
+            String texturePath = "dungeon/" + enemyName.toLowerCase() + (i + 1) + "_skill.png";
+            Texture texture = new Texture(texturePath);
+            texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+            skillTextures[i] = texture;
+
+        }
+        enemySkillTexturesCache.put(enemyName, skillTextures);
+    }
+
+    public Texture[] getEnemyIdleTextures(String enemyName) {
+        if (!enemyIdleTexturesCache.containsKey(enemyName)) {
+            loadEnemyTextures(enemyName);
+        }
+        return enemyIdleTexturesCache.get(enemyName);
+    }
+
+    public Texture[] getEnemySkillTextures(String enemyName) {
+        if (!enemySkillTexturesCache.containsKey(enemyName)) {
+            loadEnemyTextures(enemyName);
+        }
+        return enemySkillTexturesCache.get(enemyName);
+    }
+
+
     private void loadTextures() {
         // Player idle animation textures
         playerIdleTextures[0] = new Texture("dungeon/idle1.png");
@@ -564,13 +608,21 @@ public class DarkestDungeon implements Screen {
         playerSkillTextures[4] = new Texture("dungeon/player_defend.png");
 
         // Enemy idle animation textures
-        enemyIdleTextures[0] = new Texture("dungeon/enemy_idle1.png");
-        enemyIdleTextures[1] = new Texture("dungeon/enemy_idle2.png");
+//        enemyIdleTextures[0] = new Texture("dungeon/enemy_1idle.png");
+//        enemyIdleTextures[1] = new Texture("dungeon/enemy_2idle.png");
+//        enemyIdleTextures[2] = new Texture("dungeon/enemy_3idle.png");
+//        enemyIdleTextures[3] = new Texture("dungeon/enemy_3idle.png");
+//
+//        // Enemy skill textures
+//        enemySkillTextures[0] = new Texture("dungeon/enemy_1skill.png");
+//        enemySkillTextures[1] = new Texture("dungeon/enemy_2skill.png");
+//        enemySkillTextures[2] = new Texture("dungeon/enemy_3skill.png");
 
-        // Enemy skill textures
-        enemySkillTextures[0] = new Texture("dungeon/enemy_attack.png");
-        enemySkillTextures[1] = new Texture("dungeon/enemy_special.png");
-        enemySkillTextures[2] = new Texture("dungeon/enemy_heal.png");
+
+        enemyIdleTextures = getEnemyIdleTextures("bringer-of-death");
+
+
+        enemySkillTextures = getEnemySkillTextures("bringer-of-death");
 
         // Skill button textures
         skillButtonTextures[0] = new Texture("dungeon/skill_attack.png");
