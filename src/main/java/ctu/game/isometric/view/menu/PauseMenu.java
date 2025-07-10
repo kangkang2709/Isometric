@@ -56,7 +56,7 @@ public class PauseMenu {
     private static final float NOTIFICATION_DURATION = 3f;
 
 
-
+    private KeyBindingDisplay keyBindingDisplay;
 
 
     // Animation properties
@@ -81,7 +81,7 @@ public class PauseMenu {
         //all tutorials in there
         // gameController.setState(GameState.TUTORIAL);
         addMenuItem("Xem Hướng Dẫn", this::showTutorialMenu);
-
+        addMenuItem("Xem Phím Tắt", () -> keyBindingDisplay.show());
         addMenuItem("Tùy chỉnh Âm Thanh", () -> gameController.setState(GameState.SETTINGS));
         addMenuItem("Lưu Tiến Trình", this::showSaveGameDialog);
         addMenuItem("Quay Về Menu", () -> {
@@ -89,6 +89,7 @@ public class PauseMenu {
             gameController.setPreviousState(GameState.MAIN_MENU);
             gameController.resetGame();
         });
+
         addMenuItem("Thoát", () -> Gdx.app.exit());
 
         // Set menu position (center of screen)
@@ -97,8 +98,23 @@ public class PauseMenu {
         menuX = Gdx.graphics.getWidth() / 2 - menuWidth / 2;
         menuY = Gdx.graphics.getHeight() / 2 - menuHeight / 2;
 
+        this.keyBindingDisplay = new KeyBindingDisplay(gameController);
 
+    }
 
+    public boolean handleKeyBindingInput(int keycode) {
+        if (keyBindingDisplay.isVisible()) {
+            return keyBindingDisplay.handleInput(keycode);
+        }
+        return false;
+    }
+
+    // Add this method to handle scrolling:
+    public boolean handleKeyBindingScroll(float amountY) {
+        if (keyBindingDisplay.isVisible()) {
+            return keyBindingDisplay.handleScroll(amountY);
+        }
+        return false;
     }
 
     public boolean isTutorialShowing() {
@@ -118,15 +134,16 @@ public class PauseMenu {
         this.menuTitle = "Chọn Hướng Dẫn";
 
         // Add tutorial categories based on what's available in TutorialManager
-        addMenuItem("Movement Tutorial", () -> showTutorial("movement"));
-        addMenuItem("Combat Tutorial", () -> showTutorial("combat"));
-        addMenuItem("Inventory Tutorial", () -> showTutorial("inventory"));
-        addMenuItem("Movement Tutorial", () -> showTutorial("movement"));
-        addMenuItem("Combat Tutorial", () -> showTutorial("combat"));
-        addMenuItem("Inventory Tutorial", () -> showTutorial("inventory"));
-        addMenuItem("Movement Tutorial", () -> showTutorial("movement"));
-        addMenuItem("Combat Tutorial", () -> showTutorial("combat"));
-        addMenuItem("Inventory Tutorial", () -> showTutorial("inventory"));
+        addMenuItem("Di chuyển", () -> showTutorial("movement"));
+        addMenuItem("Chỉ số nhân vật", () -> showTutorial("stats"));
+        addMenuItem("Vật phẩm và Túi đồ", () -> showTutorial("inventory"));
+        addMenuItem("Hệ thống nhiệm vụ", () -> showTutorial("quests"));
+        addMenuItem("Hệ thống thành tích", () -> showTutorial("achievement"));
+
+        addMenuItem("Hệ thống Mê cung", () -> showTutorial("maze"));
+        addMenuItem("Hệ thống chiến đấu", () -> showTutorial("combat"));
+        addMenuItem("Sát thương", () -> showTutorial("damage"));
+        addMenuItem("Hệ thống Hầm ngục", () -> showTutorial("dungeon_system"));
 
         // Add back button
         addMenuItem("Quay Lại", () -> restoreMainMenu(originalTitle));
@@ -170,13 +187,12 @@ public class PauseMenu {
         selectedIndex = 0;
         updateMenuDimensions();
     }
+
     private void updateMenuDimensions() {
         menuHeight = (menuItems.size() * (itemHeight + buttonPadding)) + (padding * 3) + 60;
         menuX = Gdx.graphics.getWidth() / 2 - menuWidth / 2;
         menuY = Gdx.graphics.getHeight() / 2 - menuHeight / 2;
     }
-
-
 
 
     private void showSaveGameDialog() {
@@ -317,6 +333,7 @@ public class PauseMenu {
         if (!wasBatchDrawing) {
             batch.end();
         }
+        keyBindingDisplay.render(batch);
     }
 
 
@@ -373,6 +390,7 @@ public class PauseMenu {
         if (buttonTexture != null && buttonTexture.getTexture() != null) buttonTexture.getTexture().dispose();
         if (buttonSelectedTexture != null && buttonSelectedTexture.getTexture() != null)
             buttonSelectedTexture.getTexture().dispose();
+        if (keyBindingDisplay != null) keyBindingDisplay.dispose();
     }
 
     private static class MenuItem {

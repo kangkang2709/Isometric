@@ -729,7 +729,7 @@ public class MapRenderer {
                 break;
         }
 
-        if (buttonTexture != null) {
+        if (buttonTexture != null && !map.getMapName().equals("board")) {
             // Convert grid coordinates to isometric screen coordinates
             float[] isoPos = toIsometric(x, y);
             // Position the button above the tile

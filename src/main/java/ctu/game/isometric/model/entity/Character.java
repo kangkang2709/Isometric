@@ -662,7 +662,7 @@ public class Character {
                 if (existingAchievement.isUnlocked() &&
                         existingAchievement.getCurrentValue() >= existingAchievement.getTargetValue()) {
                     // If the achievement is now unlocked, set it to unlocked and update the score
-                    score += existingAchievement.getTargetValue();
+                    score += existingAchievement.getTargetValue() * 10;
                     existingAchievement.setUnlocked(true);
                 }
             }

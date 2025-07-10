@@ -62,9 +62,9 @@ public class CharacterInfoDisplay {
         if (!initialized) {
             try {
                 // Initialize fonts with different sizes
-                this.titleFont = generateVietNameseFont("GrenzeGotisch.ttf", TITLE_FONT_SIZE);
-                this.statFont = generateVietNameseFont("GrenzeGotisch.ttf", STAT_FONT_SIZE);
-                this.scoreFont = generateVietNameseFont("GrenzeGotisch.ttf", SCORE_FONT_SIZE);
+                this.titleFont = generateVietNameseFont("Roboto-Black.ttf", TITLE_FONT_SIZE);
+                this.statFont = generateVietNameseFont("Roboto-Black.ttf", STAT_FONT_SIZE);
+                this.scoreFont = generateVietNameseFont("Roboto-Black.ttf", SCORE_FONT_SIZE);
                 this.layout = new GlyphLayout();
                 this.shapeRenderer = new ShapeRenderer();
 
@@ -199,7 +199,7 @@ public class CharacterInfoDisplay {
 
         // Score background
         shapeRenderer.setColor(CYAN_BLUE);
-        shapeRenderer.rect(scoreRect.x + scoreRect.width/2 - 150, scoreRect.y, 300, scoreRect.height);
+        shapeRenderer.rect(scoreRect.x + scoreRect.width / 2 - 150, scoreRect.y, 300, scoreRect.height);
 
         shapeRenderer.end();
     }
@@ -278,13 +278,13 @@ public class CharacterInfoDisplay {
             statFont.setColor(WHITE);
 
             // Quiz attempts
-            String quizText = "Quiz 1 hôm nay: " + attemptFlags.getOrDefault("quizAttempts", 0);
+            String quizText = "Lượt quiz 1 hôm nay: " + attemptFlags.getOrDefault("quizAttempts", 0);
             layout.setText(statFont, quizText);
             statFont.draw(batch, quizText, bottomSection.x + sectionWidth * 0.5f - layout.width / 2, textY + 10);
             // Quiz attempts
-            String quizText2 = "Quiz 2 hôm nay: " + attemptFlags.getOrDefault("mulQuizAttempts", 0);
+            String quizText2 = "Lượt quiz 2 hôm nay: " + attemptFlags.getOrDefault("mulQuizAttempts", 0);
             layout.setText(statFont, quizText);
-            statFont.draw(batch, quizText, bottomSection.x + sectionWidth * 0.5f - layout.width / 2, textY- 25);
+            statFont.draw(batch, quizText2, bottomSection.x + sectionWidth * 0.5f - layout.width / 2, textY - 25);
 
             // Falls
             String fallText = "Gục ngã: " + attemptFlags.getOrDefault("fallen", 0);
@@ -294,7 +294,11 @@ public class CharacterInfoDisplay {
             // Wrong words
             String wrongText = "Từ sai đã gặp: " + attemptFlags.getOrDefault("wrongWord", 0);
             layout.setText(statFont, wrongText);
-            statFont.draw(batch, wrongText, bottomSection.x + sectionWidth * 2.5f - layout.width / 2, textY);
+            statFont.draw(batch, wrongText, bottomSection.x + sectionWidth * 2.5f - layout.width / 2, textY + 10);
+
+            String wordCount = "Số từ đã dùng: " + character.getLearnedWords().size() + character.getNewlearneWords().size();
+            layout.setText(statFont, wrongText);
+            statFont.draw(batch, wordCount, bottomSection.x + sectionWidth * 2.5f - layout.width / 2, textY - 25);
         }
     }
 

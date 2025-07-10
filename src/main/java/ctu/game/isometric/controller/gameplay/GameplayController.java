@@ -631,7 +631,7 @@ public class GameplayController {
             }
             regularFont.setColor(Color.YELLOW);
             regularFont.draw(batch, item.getItemName() + " x" + reward.getAmount(), panelX + 180, panelY + panelHeight / 2 + 30);
-            regularFont.draw(batch, reward.getDescription(), panelX + 180, panelY + panelHeight / 2);
+            drawCenteredText(batch, regularFont, item.getItemDescription(), viewport.getWorldWidth() / 2, panelY + panelHeight - 50, Color.WHITE);
         }
 
         Rectangle continueButton = new Rectangle(viewport.getWorldWidth() / 2 - 100, panelY + 50, 200, 50);

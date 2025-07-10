@@ -35,7 +35,7 @@ public class TutorialUI implements Disposable {
     private static final Color BUTTON_HOVER_COLOR = new Color(0.4f, 0.7f, 1f, 1f);
 
     // Image display constants
-    private static final int FIXED_IMAGE_HEIGHT = 250;
+    private static  int FIXED_IMAGE_HEIGHT = 250;
     private static final int FIXED_IMAGE_WIDTH = 400;
 
     private boolean isVisible = false;
@@ -138,11 +138,11 @@ public class TutorialUI implements Disposable {
 
     private void initializeFonts() {
 
-        titleFont = generateVietNameseFont("ModernAntiqua-Regular.ttf", 30);
+        titleFont = generateVietNameseFont("Roboto-Black.ttf", 30);
 
-        contentFont = generateVietNameseFont("ModernAntiqua-Regular.ttf", 20);
+        contentFont = generateVietNameseFont("Roboto-Black.ttf", 20);
 
-        buttonFont = generateVietNameseFont("ModernAntiqua-Regular.ttf", 20);
+        buttonFont = generateVietNameseFont("Roboto-Black.ttf", 20);
 
     }
 
@@ -199,11 +199,17 @@ public class TutorialUI implements Disposable {
         drawImageFixed(batch, currentPage);
 
         // Draw content text
-        // Draw content text
         contentFont.setColor(TEXT_COLOR.r, TEXT_COLOR.g, TEXT_COLOR.b, alpha);
         contentLayout.setText(contentFont, currentPage.content,
                 TEXT_COLOR, width - padding * 2, Align.left, true);
-        float textY = y + height - padding * 2 - titleLayout.height - FIXED_IMAGE_HEIGHT - padding * 2 - 20;
+
+// Calculate text Y position based on whether current page has an image
+        float textY;
+        if (currentPage.image != null) {
+            textY = y + height - padding * 2 - titleLayout.height - FIXED_IMAGE_HEIGHT - padding * 2 - 20;
+        } else {
+            textY = y + height - padding * 2 - titleLayout.height - padding - 20;
+        }
         contentFont.draw(batch, contentLayout, x + padding, textY);
 
         // Draw navigation controls
@@ -221,22 +227,28 @@ public class TutorialUI implements Disposable {
     }
 
     private void drawImageFixed(SpriteBatch batch, TutorialPage currentPage) {
-        if (currentPage.image == null) return;
+        if (currentPage.image == null) {
+            // Don't modify FIXED_IMAGE_HEIGHT here - it should remain constant
+            return;
+        }
 
-        // Calculate the position to center the image
+        // Use the original fixed height value
+        int imageHeight = 250; // Use local variable instead of modifying the static field
+
+        // Calculate position to center the image
         float imageX = x + (width - FIXED_IMAGE_WIDTH) / 2;
-        float imageY = y + height - padding - titleLayout.height - FIXED_IMAGE_HEIGHT - padding - 20;
+        float imageY = y + height - padding - titleLayout.height - imageHeight - padding - 20;
 
         // Draw image border
         batch.setColor(TITLE_COLOR.r, TITLE_COLOR.g, TITLE_COLOR.b, alpha * 0.5f);
-        batch.draw(whitePixel, imageX - 3, imageY - 3, FIXED_IMAGE_WIDTH + 6, FIXED_IMAGE_HEIGHT + 6);
+        batch.draw(whitePixel, imageX - 3, imageY - 3, FIXED_IMAGE_WIDTH + 6, imageHeight + 6);
 
-        // Draw actual image
+        // Draw the actual image
         batch.setColor(Color.WHITE.r, Color.WHITE.g, Color.WHITE.b, alpha);
         batch.draw(
                 currentPage.image,
                 imageX, imageY,
-                FIXED_IMAGE_WIDTH, FIXED_IMAGE_HEIGHT
+                FIXED_IMAGE_WIDTH, imageHeight
         );
     }
 
@@ -408,12 +420,17 @@ public class TutorialUI implements Disposable {
         // Load tutorial content from the Tutorial objects
         for (Tutorial tutorial : tutorialList) {
             Texture image = null;
-            if (tutorial.getImage() != null && !tutorial.getImage().isEmpty()) {
-                // Load or reuse texture
-                image = loadedTextures.computeIfAbsent(
-                        tutorial.getImage(),
-                        path -> new Texture(Gdx.files.internal("tutorials/" + path))
-                );
+            String imagePath = tutorial.getImage();
+            if (imagePath != null && !imagePath.trim().isEmpty()) {
+                try {
+                    // Load or reuse texture
+                    image = loadedTextures.computeIfAbsent(
+                            imagePath,
+                            path -> new Texture(Gdx.files.internal("tutorials/" + path))
+                    );
+                } catch (Exception e) {
+                    Gdx.app.error("TutorialUI", "Failed to load texture: " + imagePath, e);
+                }
             }
             pages.add(new TutorialPage(tutorial.getTitle(), tutorial.getText(), image));
         }

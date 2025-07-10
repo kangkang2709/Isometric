@@ -210,7 +210,7 @@ public class DarkestDungeon implements Screen {
         this.enemyCurrentX = enemyStartX;
         this.enemyCurrentY = enemyStartY;
 
-        this.combatLog = "Combat begins! Choose your action.";
+        this.combatLog = "Chiến đấu bắt đầu! Chọn hành động.";
 
         this.victory = false;
         isPaused = false;
@@ -242,7 +242,7 @@ public class DarkestDungeon implements Screen {
         batch = new SpriteBatch();
         font = generateVietNameseFont("GrenzeGotisch.ttf", 20);
         titleFont = generateVietNameseFont("GrenzeGotisch.ttf", 26);
-        inputFont = generateVietNameseFont("ModernAntiqua-Regular.ttf", 20);
+        inputFont = generateVietNameseFont("Roboto-Black.ttf", 18);
         shapeRenderer = new ShapeRenderer();
         camera = new OrthographicCamera();
         camera.setToOrtho(false, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -251,7 +251,7 @@ public class DarkestDungeon implements Screen {
         combatCamera = new OrthographicCamera();
         combatCamera.setToOrtho(false, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-        combatLog = "Combat begins! Choose your action.";
+        combatLog = "Chiến đấu bắt đầu! Chọn hành động.";
 
         loadTextures();
 
@@ -507,7 +507,7 @@ public class DarkestDungeon implements Screen {
 
         String description = skillDescriptions[hoveredSkill];
         String manaCost = skillManaCost[hoveredSkill] > 0 ?
-                "Mana Cost: " + skillManaCost[hoveredSkill] : "No mana cost";
+                "Năng lượng: " + skillManaCost[hoveredSkill] : "Không tốn năng lượng";
 
         // Calculate tooltip size
         layout.setText(font, description);
@@ -658,7 +658,7 @@ public class DarkestDungeon implements Screen {
         // Draw input text
         batch.begin();
         font.setColor(Color.WHITE);
-        inputFont.draw(batch, "PRESS ENTER TO SUBMIT WORD", fieldX, fieldY + 70);
+        inputFont.draw(batch, "Nhấn ENTER để hoàn thành từ", fieldX, fieldY + 70);
         inputFont.draw(batch, inputWord + "_", fieldX + 30, fieldY + 25);
         batch.end();
     }
@@ -684,7 +684,7 @@ public class DarkestDungeon implements Screen {
 
         batch.begin();
         titleFont.setColor(Color.WHITE);
-        titleFont.draw(batch, "VICTORY", panelX + 250, panelY + panelHeight - 40);
+        titleFont.draw(batch, "CHIẾN THẮNG", panelX + 250, panelY + panelHeight - 40);
 
         // 3. Hiển thị hình ảnh và mô tả vật phẩm
         if (item != null) {
@@ -714,7 +714,7 @@ public class DarkestDungeon implements Screen {
         // 5. Vẽ chữ trên nút
         batch.begin();
         font.setColor(Color.WHITE);
-        font.draw(batch, "Continue", buttonX + 70, buttonY + 33);
+        font.draw(batch, "Tiếp tục", buttonX + 70, buttonY + 33);
         batch.end();
     }
 
@@ -731,7 +731,7 @@ public class DarkestDungeon implements Screen {
 
         batch.begin();
         titleFont.setColor(Color.RED);
-        titleFont.draw(batch, "You have been defeated!", panelX + 210, panelY + panelHeight - 40);
+        titleFont.draw(batch, "Bạn đã bị hạ gục!", panelX + 210, panelY + panelHeight - 40);
 
         // Draw continue button
         float buttonWidth = 200, buttonHeight = 50;
@@ -749,7 +749,7 @@ public class DarkestDungeon implements Screen {
         // Draw text on the button
         batch.begin();
         font.setColor(Color.WHITE);
-        font.draw(batch, "Continue", buttonX + 70, buttonY + 33);
+        font.draw(batch, "Tiếp tục", buttonX + 70, buttonY + 33);
         batch.end();
     }
 
@@ -805,12 +805,12 @@ public class DarkestDungeon implements Screen {
 
                 if (playerHP <= 0) {
                     combatState = CombatState.COMBAT_END;
-                    combatLog = "Defeat! You have fallen in battle.";
+                    combatLog = "THẤT BẠI! Bạn đã thua trong chiến đấu.";
                     victory = false;
                     defeated = true;
                 } else if (enemyHP <= 0) {
                     combatState = CombatState.COMBAT_END;
-                    combatLog = "Victory! The enemy has been defeated!";
+                    combatLog = "CHIẾN THẮNG! Kẻ địch đã bị hạ gục!";
                     victory = true;
                     defeated = false;
                     reward = RewardLoader.getRewardById(this.rewardId);
@@ -1041,7 +1041,7 @@ public class DarkestDungeon implements Screen {
                 int damage = MathUtils.random(playerATK - 2, playerATK + 2) - enemyDEF;
                 damage = Math.max(1, damage);
                 enemyHP = Math.max(0, enemyHP - damage);
-                combatLog = "You attack for " + damage + " damage!";
+                combatLog = "Bạn tấn công gây " + damage + " sát thương!";
 
                 break;
             case 1: // Word (Random from learned words)
@@ -1054,7 +1054,7 @@ public class DarkestDungeon implements Screen {
                     int wordScore = wordNetValidator.getTotalScore(randomWord);
                     int wordDamage = Math.max(1, wordScore + playerATK - enemyDEF);
                     enemyHP = Math.max(0, enemyHP - wordDamage);
-                    combatLog = "Word '" + randomWord + "' deals " + wordDamage + " damage!";
+                    combatLog = "Từ '" + randomWord + "' gây " + wordDamage + " sát thương!";
 
                     // Show word display effect
                     displayWord = randomWord;
@@ -1065,7 +1065,7 @@ public class DarkestDungeon implements Screen {
                     int basicDamage = MathUtils.random(playerATK - 2, playerATK + 2) - enemyDEF;
                     basicDamage = Math.max(1, basicDamage);
                     enemyHP = Math.max(0, enemyHP - basicDamage);
-                    combatLog = "No learned words! Basic attack for " + basicDamage + " damage!";
+                    combatLog = "Không có từ nào! Tấn công thường " + basicDamage + " sát thương!";
                 }
                 break;
             case 2: // TypeW (Input word)
@@ -1073,19 +1073,19 @@ public class DarkestDungeon implements Screen {
                 showInputField = true;
                 waitingForInput = true;
                 inputWord = "";
-                combatLog = "   Type a word and press ENTER\nInvalid words will deal damage to you!";
+                combatLog = "Nhập một từ và nhấn ENTER\n Từ không hợp lệ sẽ gây sát thương (Phản sát thương) cho bạn!";
                 return;
             case 3: // Heal
                 playerMana -= 10;
                 int heal = MathUtils.random(15, 25);
                 playerHP = Math.min(playerMaxHP, playerHP + heal);
-                combatLog = "You heal for " + heal + " HP!";
+                combatLog = "Bạn hồi phục" + heal + " sinh lực!";
                 showHealEffect = true;
                 break;
             case 4: // Defend
                 playerMana = Math.min(playerMaxMana, playerMana + 3);
                 playerDEF += 2;
-                combatLog = "You defend and recover 3 mana! DEF increased!";
+                combatLog = "Bạn phòng thủ và hồi phục 3 mana! Phòng thủ tăng lên!";
                 break;
         }
     }
@@ -1171,7 +1171,7 @@ public class DarkestDungeon implements Screen {
             int wordScore = wordNetValidator.getTotalScore(word);
             int wordDamage = Math.max(1, wordScore + playerATK - enemyDEF);
             enemyHP = Math.max(0, enemyHP - wordDamage);
-            combatLog = "'" + word + "' is valid! Deals " + wordDamage + " damage!";
+            combatLog = "'" + word + "' hợp lệ! Gây " + wordDamage + " sát thương!";
 
             showDamageEffect = true;
             currentEffectTexture = effectTextures[0];
@@ -1182,7 +1182,7 @@ public class DarkestDungeon implements Screen {
         } else {
             int selfDamage = MathUtils.random(3, 8);
             playerHP = Math.max(0, playerHP - selfDamage);
-            combatLog = "'" + word + "' is invalid! You take " + selfDamage + " damage!";
+            combatLog = "'" + word + "' không hợp lệ! Bạn nhận" + selfDamage + " sát thương!";
 
             showDamageEffect = true;
             currentEffectTexture = effectTextures[0];
@@ -1200,7 +1200,7 @@ public class DarkestDungeon implements Screen {
                 int damage = MathUtils.random(enemyATK - 2, enemyATK + 2) - playerDEF;
                 damage = Math.max(1, damage);
                 playerHP = Math.max(0, playerHP - damage);
-                combatLog = enemyName + " attacks for " + damage + " damage!";
+                combatLog = enemyName + " tấn công gây " + damage + " sát thương!";
                 break;
             case 1: // Special
                 if (enemyMana >= 8) {
@@ -1208,12 +1208,12 @@ public class DarkestDungeon implements Screen {
                     int specialDamage = MathUtils.random(enemyATK + 5, enemyATK + 10) - playerDEF;
                     specialDamage = Math.max(1, specialDamage);
                     playerHP = Math.max(0, playerHP - specialDamage);
-                    combatLog = enemyName + " uses special attack for " + specialDamage + " damage!";
+                    combatLog = enemyName + " sử dụng kỹ năng gây " + specialDamage + " sát thương!";
                 } else {
                     damage = MathUtils.random(enemyATK - 2, enemyATK + 2) - playerDEF;
                     damage = Math.max(1, damage);
                     playerHP = Math.max(0, playerHP - damage);
-                    combatLog = enemyName + " attacks for " + damage + " damage!";
+                    combatLog = enemyName + " tấn công gây " + damage + " sát thương!";
                 }
                 break;
             case 2: // Heal
@@ -1221,12 +1221,12 @@ public class DarkestDungeon implements Screen {
                     enemyMana -= 12;
                     int heal = MathUtils.random(10, 20);
                     enemyHP = Math.min(enemyMaxHP, enemyHP + heal);
-                    combatLog = enemyName + " heals for " + heal + " HP!";
+                    combatLog = enemyName + " hồi phục được " + heal + " sinh lực!";
                 } else {
                     damage = MathUtils.random(enemyATK - 2, enemyATK + 2) - playerDEF;
                     damage = Math.max(1, damage);
                     playerHP = Math.max(0, playerHP - damage);
-                    combatLog = enemyName + " attacks for " + damage + " damage!";
+                    combatLog = enemyName + " tấn công gây " + damage + " sát thương!";
                 }
                 break;
         }
@@ -1294,31 +1294,39 @@ public class DarkestDungeon implements Screen {
     // Add these fields to the class
     private boolean showTutorial = false;
     private String[] tutorialPages = {
-            "COMBAT TUTORIAL - Page 1/3",
-            "SKILLS:\n" +
-                    "⚔️ Attack - Basic physical attack (No mana cost)\n" +
-                    "🔥 Word - Use random learned word for damage (5 mana)\n" +
-                    "⚡ TypeW - Type word manually, invalid words hurt you (5 mana)\n" +
-                    "💉 Heal - Restore health points (10 mana)\n" +
-                    "🛡️ Defend - Increase defense and recover mana (No cost)",
+            "HƯỚNG DẪN CHIẾN ĐẤU - Trang 1/4",
+            "KỸ NĂNG:\n" +
+                    "-Attack - Đòn đánh vật lý cơ bản (Không tốn mana)\n" +
+                    "-Word - Dùng từ đã học ngẫu nhiên để gây sát thương (5 mana)\n" +
+                    "-TypeW - Gõ từ thủ công, nếu sai sẽ tự gây sát thương (5 mana)\n" +
+                    "-Heal - Hồi máu (10 mana)\n" +
+                    "-Defend - Tăng phòng thủ và hồi mana (Không tốn mana)",
 
-            "COMBAT TUTORIAL - Page 2/3",
-            "COMBAT MECHANICS:\n" +
-                    "• Turn-based combat system\n" +
-                    "• Damage = ATK - Enemy DEF (minimum 1)\n" +
-                    "• Word damage = Word Score + ATK - Enemy DEF\n" +
-                    "• Manage your mana carefully\n" +
-                    "• Enemy has different AI patterns",
+            "HƯỚNG DẪN CHIẾN ĐẤU - Trang 2/4",
+            "CƠ CHẾ CHIẾN ĐẤU:\n" +
+                    "-Đây là hệ thống chiến đấu theo lượt: bạn và kẻ địch thay phiên nhau\n hành động.\n" +
+                    "-Mỗi lượt, bạn chọn một kỹ năng để sử dụng.\n" +
+                    "-Mana là năng lượng cần để dùng kỹ năng — khi cạn mana, bạn sẽ không\n thể dùng kỹ năng nữa.\n" +
+                    "-Kẻ địch có hành vi khác nhau — có thể tấn công, phòng thủ, hoặc\n hồi máu. Hãy quan sát để chọn chiến thuật phù hợp.",
 
-            "COMBAT TUTORIAL - Page 3/3",
-            "TIPS:\n" +
-                    "• Learn new words to increase Word skill damage\n" +
-                    "• TypeW skill is risky but can be very powerful\n" +
-                    "• Use Defend to recover mana and boost defense\n" +
-                    "• Heal when health is low\n" +
-                    "• Hover over skills to see tooltips\n" +
-                    "• ESC to pause anytime"
+            "HƯỚNG DẪN CHIẾN ĐẤU - Trang 3/4",
+            "CƠ CHẾ CHIẾN ĐẤU:\n" +
+                    "-Sát thương gây ra = ATK (tấn công) - DEF (phòng thủ) của địch,tối thiểu là 1.\n" +
+                    "-Kỹ năng 1 Word gây sát thương lớn: Word Score + ATK - DEF.\n" +
+                    "-Word Score là điểm của từ trong từ điển bạn đã học — từ càng khó thì\n điểm càng cao.\n" +
+                    "-Kỹ năng TypeW cho phép bạn gõ bất kỳ từ nào. Nếu đúng, sát thương\n rất mạnh. Nếu sai, bạn tự nhận sát thương.\n",
+
+            "HƯỚNG DẪN CHIẾN ĐẤU - Trang 4/4",
+            "MẸO:\n" +
+                    "-Học từ mới để tăng sát thương kỹ năng Word.\n" +
+                    "-TypeW rất mạnh nếu bạn gõ đúng, nhưng dễ gây hại nếu gõ sai.\n" +
+                    "-Dùng Defend để hồi mana và tăng chỉ số phòng thủ.\n" +
+                    "-Luôn chú ý lượng máu — Heal kịp lúc để tránh bị hạ gục.\n" +
+                    "-Di chuột vào kỹ năng để xem chi tiết mô tả (tooltip).\n" +
+                    "-Nhấn ESC để tạm dừng bất cứ lúc nào."
     };
+
+
     private int currentTutorialPage = 0;
 
     private void drawTutorial() {
@@ -1392,16 +1400,16 @@ public class DarkestDungeon implements Screen {
         // Navigation button text
         font.setColor(Color.WHITE);
         if (currentTutorialPage > 0) {
-            font.draw(batch, "Previous", prevButtonX + 20, buttonY + 25);
+            font.draw(batch, "Lùi", prevButtonX + 20, buttonY + 25);
         }
         if (currentTutorialPage < tutorialPages.length - 2) {
-            font.draw(batch, "Next", nextButtonX + 35, buttonY + 25);
+            font.draw(batch, "Tiếp", nextButtonX + 35, buttonY + 25);
         }
-        font.draw(batch, "Close", closeButtonX + 30, closeButtonY + 25);
+        font.draw(batch, "Đóng", closeButtonX + 30, closeButtonY + 25);
 
         // Page indicator
         font.setColor(Color.LIGHT_GRAY);
-        String pageInfo = "Page " + ((currentTutorialPage / 2) + 1) + " of " + (tutorialPages.length / 2);
+        String pageInfo = "Trang " + ((currentTutorialPage / 2) + 1) + " of " + (tutorialPages.length / 2);
         font.draw(batch, pageInfo, tutorialX + tutorialWidth / 2 - 40, tutorialY + 20);
 
         batch.end();
@@ -1414,12 +1422,13 @@ public class DarkestDungeon implements Screen {
 
     // Tooltip data
     private String[] skillDescriptions = {
-            "Basic attack that deals physical damage",
-            "Cast a word from your dictionary\nDeals damage based on word score",
-            "Type a word manually\nInvalid words damage you!",
-            "Restore health points\nCosts 10 mana",
-            "Increase defense and recover mana\nCosts no mana"
+            "Đòn tấn công cơ bản gây sát thương vật lý",
+            "Niệm một từ từ từ điển của bạn\nGây sát thương dựa trên điểm số của từ",
+            "Tự gõ một từ thủ công\nTừ không hợp lệ sẽ gây sát thương cho bạn!",
+            "Hồi phục điểm máu\nTốn 10 năng lượng",
+            "Tăng phòng thủ và hồi năng lượng\nKhông tốn mana"
     };
+
 
     private void drawBottomUI() {
         // Draw bottom UI background
@@ -1569,7 +1578,7 @@ public class DarkestDungeon implements Screen {
                 font.draw(batch, "" + skillManaCost[i], skillX + 50, skillY + 15);
             }
         }
-        font.draw(batch, "Your Skill", 607, 350);
+        font.draw(batch, "Thanh kỹ năng", 607, 350);
         batch.end();
     }
 
@@ -1638,12 +1647,12 @@ public class DarkestDungeon implements Screen {
         // Draw text
         batch.begin();
         font.setColor(Color.WHITE);
-        font.draw(batch, "PAUSED", menuX + 130, menuY + 300);
+        font.draw(batch, "Tạm Dừng", menuX + 130, menuY + 300);
 
-        font.draw(batch, "Continue - ESC", continueButtonX + 60, continueButtonY + 28);
-        font.draw(batch, "Tutorial - T", continueButtonX + 60, tutorialButtonY + 28);
+        font.draw(batch, "Tiếp tục - ESC", continueButtonX + 60, continueButtonY + 28);
+        font.draw(batch, "Hướng dẫn - T", continueButtonX + 60, tutorialButtonY + 28);
         font.draw(batch, "Main Menu - M", continueButtonX + 60, menuButtonY + 28);
-        font.draw(batch, "Quit Game - Q", continueButtonX + 60, quitButtonY + 28);
+        font.draw(batch, "Thoát - Q", continueButtonX + 60, quitButtonY + 28);
         batch.end();
     }
 
@@ -1651,11 +1660,11 @@ public class DarkestDungeon implements Screen {
     private String getTurnText() {
         switch (combatState) {
             case PLAYER_TURN:
-                return isAnimating ? "Executing Action..." : "Your Turn";
+                return isAnimating ? "Thực thi hành động..." : "Lượt của Người Chơi";
             case ENEMY_TURN:
-                return isAnimating ? "Enemy Acting..." : "Enemy Turn";
+                return isAnimating ? "Kẻ địch hành động..." : "Lượt của Kẻ Địch";
             case COMBAT_END:
-                return "Combat Ended";
+                return "Chiến đấu Kết Thúc";
             default:
                 return "";
         }

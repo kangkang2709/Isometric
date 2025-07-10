@@ -574,6 +574,9 @@ public class InputController extends InputAdapter {
     }
 
     private boolean handleMenuInput(int keycode) {
+        if (gameController.getMenuController().handleKeyBindingInput(keycode)) {
+            return true;
+        }
         switch (keycode) {
             case Keys.ESCAPE -> {
                 if (gameController.getMenuController().isTutorialShowing()) {
@@ -710,7 +713,9 @@ public class InputController extends InputAdapter {
             case GAMEPLAY -> {
                 gameController.getGameplayController().handleCombatLogScroll(amountY);
             }
-
+            case MENU -> {
+                return gameController.getMenuController().handleKeyBindingScroll(amountY);
+            }
             case EXPLORING -> {
                 if (gameController.getMap().getMapName().equals("board")) return false;
                 float defaultZoom = 1.0f;
