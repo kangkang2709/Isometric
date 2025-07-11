@@ -126,32 +126,7 @@ public class GameplayController {
     }
 
 
-    // Gọi khi có hành động (ví dụ: player tấn công)
-// Camera animation properties
-    private boolean isCameraZooming = false;
-    private float cameraZoomTarget = 1.0f;
-    private float cameraZoomOriginal = 1.0f;
-    private float cameraZoomCurrent = 1.0f;
-    private float cameraZoomDuration = 0.5f;
-    private float cameraZoomTimer = 0f;
-    private float cameraShakeIntensity = 0f;
-    private Vector3 cameraOriginalPosition = new Vector3();
-    private Vector3 cameraTargetPosition = new Vector3();
-
     public void playerAttack(String word, int dmg, Runnable onComplete) {
-        // Save original camera position and start zoom animation
-        cameraOriginalPosition.set(viewport.getCamera().position);
-        cameraZoomOriginal = ((OrthographicCamera) viewport.getCamera()).zoom;
-        cameraZoomCurrent = cameraZoomOriginal;
-
-        // Set zoom target (closer to enemy)
-        cameraZoomTarget = 0.7f; // Closer zoom
-        cameraTargetPosition.set(600, 550, 0); // Position near enemy
-
-        // Start zoom animation
-        isCameraZooming = true;
-        cameraZoomTimer = 0f;
-        cameraShakeIntensity = 0.1f; // Small shake for dramatic effect
 
         // Create attack card as before
         AttackCard card = new AttackCard(
@@ -163,12 +138,6 @@ public class GameplayController {
 
         // Extend onComplete to reset camera when animation finishes
         Runnable extendedComplete = () -> {
-            // Reset camera zoom
-            isCameraZooming = false;
-            cameraZoomTimer = 0f;
-            ((OrthographicCamera) viewport.getCamera()).zoom = cameraZoomOriginal;
-            viewport.getCamera().position.set(cameraOriginalPosition);
-
             // Call the original onComplete
             if (onComplete != null) onComplete.run();
         };
@@ -222,7 +191,7 @@ public class GameplayController {
                     AttackCard.CardType.HEALING,
                     "",
                     heal,
-                    830, 450, 460, 830, 450, 150
+                    830, 450, 830, 460, 830, 450
             );
             card.setSFXCallback(() -> effectManager.playClickSound());
         } else if (dmg < 0) {
@@ -230,7 +199,7 @@ public class GameplayController {
                     AttackCard.CardType.ATTACK,
                     "MISS",
                     0,
-                    600, 580, 250, 400, 250, 400
+                    1280, 720, 1280, 720, 1280, 720
             );
             card.setSFXCallback(() -> effectManager.playClickSound());
         } else {
@@ -309,7 +278,6 @@ public class GameplayController {
     public void update(float delta) {
         if (!active) return;
         cardAnimationManager.update(delta);
-        updateCardAnimation(delta);
 
         if (timerAction > 0) {
             timerAction -= delta;
@@ -399,16 +367,37 @@ public class GameplayController {
     }
 
     private void applyBossEffects() {
-        if (isEnemyBoss()) {
-            setGridSize(3);
-            disabledCells.clear();
-            int cellsToDisable = random.nextInt(2) + 1;
-            for (int i = 0; i < cellsToDisable; i++) {
-                int cellIndex;
-                do {
-                    cellIndex = random.nextInt(25);
-                } while (disabledCells.contains(cellIndex));
-                disabledCells.add(cellIndex);
+        switch (enemyName) {
+            case "Crystal Serpent Boss": {
+                disabledCells.clear();
+                int cellsToDisable = random.nextInt(2) + 1;
+                for (int i = 0; i < cellsToDisable; i++) {
+                    int cellIndex;
+                    do {
+                        cellIndex = random.nextInt(25);
+                    } while (disabledCells.contains(cellIndex));
+                    disabledCells.add(cellIndex);
+                }
+                addCombatLog("Crystal Serpent Boss đã làm vô hiệu hóa " + cellsToDisable + " ô!");
+                break;
+            }
+            case "Emerald Revenant Boss": {
+                setGridSize(4);
+                addCombatLog("Emerald Revenant Boss làm giảm kích thước lưới!");
+                break;
+            }
+            case "Sapphire Dragon Boss": {
+                if (enemyHealth == enemyMaxHealth) {
+                    return;
+                } else {
+                    enemyHealth = Math.min(enemyMaxHealth, enemyHealth + 3);
+                    addCombatLog("Sapphire Dragon Boss hồi phục liên tục!");
+                }
+                break;
+            }
+            default: {
+                // Log or handle unexpected enemy names
+                System.out.println("Unknown boss: " + enemyName);
             }
         }
     }
@@ -570,6 +559,7 @@ public class GameplayController {
             renderGameOver(batch);
         }
         cardAnimationManager.render(batch);
+        renderEnemyTooltip(batch);
 
     }
 
@@ -602,7 +592,8 @@ public class GameplayController {
             }
             regularFont.setColor(Color.YELLOW);
             regularFont.draw(batch, item.getItemName() + " x" + reward.getAmount(), panelX + 180, panelY + panelHeight / 2 + 30);
-            drawCenteredText(batch, regularFont, item.getItemDescription(), viewport.getWorldWidth() / 2, panelY + panelHeight - 50, Color.WHITE);
+            drawWrappedText(batch, regularFont, item.getItemDescription(),
+                    panelX + 150, panelY + panelHeight / 2, panelWidth - 200);
         }
 
         Rectangle continueButton = new Rectangle(viewport.getWorldWidth() / 2 - 100, panelY + 50, 200, 50);
@@ -639,15 +630,21 @@ public class GameplayController {
 
         final float PANEL_Y = 0;
         final float MAIN_PANEL_WIDTH = SCREEN_WIDTH * 0.6f;
+//        System.out.println("MAIN_PANEL_WIDTH: " + MAIN_PANEL_WIDTH);
         final float STATUS_PANEL_HEIGHT = UI_PANEL_HEIGHT * 0.6f;
         final float OPTION_PANEL_HEIGHT = UI_PANEL_HEIGHT * 0.4f;
 
         // Player status (top right)
         drawEnemyInfoPanel(batch, 300, 600, 400, 100);
-        drawPlayerInfo(batch, 750, PANEL_Y + OPTION_PANEL_HEIGHT + STATUS_PANEL_HEIGHT + 36,
+        drawPlayerInfo(batch, 720, PANEL_Y + OPTION_PANEL_HEIGHT + STATUS_PANEL_HEIGHT + 36,
                 400, STATUS_PANEL_HEIGHT);
 
         // Main action panel (left side - like Pokemon's text box)
+        // Right side panel (like a secondary info or options panel)
+        drawMainActionPanel2(batch, MAIN_PANEL_WIDTH + MARGIN, PANEL_Y + MARGIN + 90,
+                500 - 2 * MARGIN, UI_PANEL_HEIGHT - 2 * MARGIN - 90);
+
+        //another main action panel (right side - like Pokemon's text box)
         drawMainActionPanel(batch, MARGIN, PANEL_Y + MARGIN,
                 MAIN_PANEL_WIDTH - MARGIN, UI_PANEL_HEIGHT - 2 * MARGIN);
         // Draw overlays if active
@@ -668,8 +665,12 @@ public class GameplayController {
         batch.setColor(0.1f, 0.1f, 0.3f, 0.95f);
         batch.draw(whiteTexture, x, y, width, height);
 
+        regularFont.setColor(Color.GRAY);
+        regularFont.draw(batch, "Độ khó: " + difficultyText, x + 20, y + height - 15);
+
+
         // Title
-        drawCenteredText(batch, titleFont, "COMBAT LOG", x + width / 2, y + height - 25, Color.CYAN);
+//        drawCenteredText(batch, titleFont, "COMBAT LOG", x + width / 2, y + height - 25, Color.CYAN);
 
         // Combat log content
         String logText = getCombatLogText();
@@ -684,9 +685,23 @@ public class GameplayController {
         regularFont.draw(batch, timeText, x + width - 120, y + height - 15);
 
         // Turn indicator
-        String turnText = isPlayerTurn ? "YOUR TURN" : "ENEMY TURN";
+        String turnText = isPlayerTurn ? "LƯỢT NGƯỜI CHƠI" : "LƯỢT KẺ ĐỊCH";
         Color turnColor = isPlayerTurn ? Color.GREEN : Color.RED;
-        drawCenteredText(batch, regularFont, turnText, x + width / 2, y + 15, turnColor);
+        drawCenteredText(batch, titleFont, turnText, x + width / 2, y + height - 15, turnColor);
+    }
+
+
+    private void drawMainActionPanel2(SpriteBatch batch, float x, float y, float width, float height) {
+        // Pokemon-style main panel with rounded corners
+        batch.setColor(0.1f, 0.1f, 0.3f, 0.95f);
+        batch.draw(whiteTexture, x, y, width, height);
+        // Title
+//        drawCenteredText(batch, titleFont, "Chỉ số nhân vật", x + width / 2, y + height - 25, Color.CYAN);
+        // Player stats
+        regularFont.setColor(Color.WHITE);
+        regularFont.draw(batch, "Sức mạnh: " + gameController.getCharacter().getDamage(), x + 20, y + height - 15);
+        regularFont.draw(batch, "Phòng thủ: " + gameController.getCharacter().getDefend(), x + 20, y + height - 35);
+        regularFont.draw(batch, "Kinh nghiệm nhận được: " + (int) experienceGain, x + 20, y + height - 55);
     }
 
 
@@ -760,6 +775,65 @@ public class GameplayController {
         regularFont.draw(batch, (int) enemyHealth + "/" + (int) enemyMaxHealth, x + 80, y + 43);
     }
 
+    private boolean showEnemyTooltip = false;
+    private float tooltipX, tooltipY;
+    private String tooltipText = "";
+
+    Rectangle enemyHitArea = new Rectangle(830, 450, 150, 200);
+
+    public void handleEnemyHover(int mouseX, int mouseY) {
+        // Define enemy hit area (adjust coordinates to match your enemy sprite position)
+        mouseY = 720 - mouseY; // Invert Y coordinate for LibGDX
+
+        if (enemyHitArea.contains(mouseX, mouseY)) {
+            showEnemyTooltip = true;
+            tooltipX = mouseX + 20; // Offset to avoid cursor overlap
+            tooltipY = mouseY + 20;
+
+            // Build tooltip text with enemy stats
+            StringBuilder tooltip = new StringBuilder();
+            tooltip.append(enemy.getEnemyName()).append("\n");
+            tooltip.append("Level: ").append(currentLevel).append("\n");
+            tooltip.append("HP: ").append((int) enemyHealth).append("/").append((int) enemyMaxHealth).append("\n");
+            tooltip.append("Attack: ").append(enemy.getAttackPower()).append("\n");
+            tooltip.append("Defense: ").append(enemy.getDefensePower()).append("\n");
+
+            // Add enemy description if available
+            if (enemy.getEnemyDescription() != null) {
+                tooltip.append("\n").append(enemy.getEnemyDescription());
+            }
+
+            tooltipText = tooltip.toString();
+        } else {
+            showEnemyTooltip = false;
+        }
+    }
+
+    private void renderEnemyTooltip(SpriteBatch batch) {
+        if (!showEnemyTooltip || tooltipText.isEmpty()) return;
+
+        // Calculate tooltip dimensions
+        layout.setText(regularFont, tooltipText);
+        float tooltipWidth = layout.width + 20;
+        float tooltipHeight = layout.height + 20;
+
+        // Ensure tooltip stays within screen bounds
+        float finalX = Math.min(tooltipX, viewport.getWorldWidth() - tooltipWidth);
+        float finalY = Math.min(tooltipY, viewport.getWorldHeight() - tooltipHeight);
+
+        // Draw tooltip background
+        batch.setColor(0.1f, 0.1f, 0.1f, 0.9f);
+        batch.draw(whiteTexture, finalX, finalY, tooltipWidth, tooltipHeight);
+
+        // Draw tooltip border
+        batch.setColor(0.8f, 0.8f, 0.8f, 1);
+        drawBorder(batch, finalX, finalY, tooltipWidth, tooltipHeight, 2);
+
+        // Draw tooltip text
+        regularFont.setColor(Color.WHITE);
+        regularFont.draw(batch, tooltipText, finalX + 10, finalY + tooltipHeight - 10);
+    }
+
     private void drawPlayerInfo(SpriteBatch batch, float x, float y, float width, float height) {
         // Panel background
         batch.setColor(0.2f, 0.3f, 0.5f, 0.9f);
@@ -787,28 +861,34 @@ public class GameplayController {
 
     Rectangle spellButton = new Rectangle();
     Rectangle itemButton = new Rectangle();
+    Rectangle normalAttackButton = new Rectangle();
 
     public void createMainActionButtons() {
         float buttonWidth = 150;
-        float buttonHeight = 50;
-        float buttonY = 20;
+        float buttonHeight = 45;
+        float buttonY = 35;
         float spacing = 20;
 
         // Center the buttons
         float totalWidth = (buttonWidth * 2) + spacing;
-        float startX = (viewport.getWorldWidth() - totalWidth) - spacing * 4;
+        float startX = (viewport.getWorldWidth() - totalWidth) - spacing * 5;
 
         // Spell button (opens letter grid)
         spellButton.set(startX, buttonY, buttonWidth, buttonHeight);
 
         // Item button (opens inventory)
         itemButton.set(startX + buttonWidth + spacing, buttonY, buttonWidth, buttonHeight);
+        // Normal attack button (for quick attacks)
+        normalAttackButton.set(startX + buttonWidth + spacing, buttonY + 95, buttonWidth, buttonHeight);
     }
 
     private void drawActionButtons(SpriteBatch batch, float screenWidth, float screenHeight) {
+        batch.setColor(0.1f, 0.1f, 0.3f, 0.95f);
+        batch.draw(whiteTexture, 788, 20, 460, 75);
 
-        drawPokemonStyleButton(batch, spellButton, "SPELL", Color.CYAN);
-        drawPokemonStyleButton(batch, itemButton, "ITEM", Color.ORANGE);
+        drawPokemonStyleButton(batch, spellButton, "Kỹ Năng", Color.CYAN);
+        drawPokemonStyleButton(batch, itemButton, "Vật Phẩm", Color.ORANGE);
+        drawPokemonStyleButton(batch, normalAttackButton, "Tấn Công", Color.GRAY);
 
     }
 
@@ -1067,6 +1147,10 @@ public class GameplayController {
             currentOverlay = (currentOverlay == OverlayType.SPELL) ? OverlayType.NONE : OverlayType.SPELL;
         } else if (itemButton.contains(x, y)) {
             currentOverlay = (currentOverlay == OverlayType.INVENTORY) ? OverlayType.NONE : OverlayType.INVENTORY;
+        } else if (normalAttackButton.contains(x, y)) {
+            currentOverlay = OverlayType.NONE;
+            return normalAttack();
+
         }
 
 
@@ -1194,30 +1278,6 @@ public class GameplayController {
         if (percentage > 0.5f) return Color.GREEN;
         else if (percentage > 0.2f) return Color.YELLOW;
         else return Color.RED;
-    }
-
-    private void drawCombatLogSection(SpriteBatch batch, float x, float y, float width, float height) {
-        batch.setColor(0.1f, 0.1f, 0.2f, 0.9f);
-        batch.draw(whiteTexture, x, y, width, height);
-
-        drawCenteredText(batch, titleFont, "NHẬT KÝ GIAO CHIẾN", x + width / 2, y + height - 15, Color.CYAN);
-
-        // Improved scrollable text rendering
-        String logText = getCombatLogText();
-        if (!logText.isEmpty()) {
-            drawScrollableText(batch, regularFont, logText, x + 10, y + height - 40, width - 300, height - 50);
-        }
-
-        // Timer and turn indicator
-        float timeLeft = COMBAT_TIME_LIMIT - combatTimer;
-        String timeText = String.format("⏰ %02d:%02d", (int) (timeLeft / 60), (int) (timeLeft % 60));
-        drawCenteredText(batch, regularFont, timeText, x + width / 2 + 140, y + height - 20, timeLeft < 60 ? Color.RED : Color.WHITE);
-        regularFont.draw(batch, "Độ khó: " + difficultyText, x + width - 220, y + height - 15);
-
-
-        String turnText = "Lượt: " + (isPlayerTurn ? "Người Chơi" : enemyName);
-        regularFont.setColor(isPlayerTurn ? Color.GREEN : Color.RED);
-        regularFont.draw(batch, turnText, x + width - 220, y + height - 50);
     }
 
     private void drawScrollableText(SpriteBatch batch, BitmapFont font, String text, float x, float y, float width, float maxHeight) {
@@ -1364,12 +1424,14 @@ public class GameplayController {
         float heal = 0;
 
         if (action < 4) {
-            damage = (random.nextInt(10) + 1) + currentLevel + enemy.getAttackPower();
-            damage = Math.max(0, damage - gameController.getCharacter().getDefend());
+            damage = 5 + random.nextInt(6) + enemy.getAttackPower(); // ~5–10 + atk
+            damage -= gameController.getCharacter().getDefend();
+            damage = Math.max(0, damage);
             addCombatLog(enemyName + " tấn công gây " + (int) damage + " sát thương!");
         } else if (action < 8) {
-            damage = (random.nextInt(10) + 1) + (currentLevel * enemy.getAttackPower());
-            damage = Math.max(10, damage - gameController.getCharacter().getDefend());
+            damage = 10 + random.nextInt(6) + enemy.getAttackPower() * 1.2f + currentLevel * 0.5f;
+            damage -= gameController.getCharacter().getDefend(); // giảm kháng nhẹ
+            damage = Math.max(5, damage);
             addCombatLog(enemyName + " tấn công mạnh gây " + (int) damage + " sát thương!");
         } else if (action == 8) {
             heal = enemyMaxHealth * 0.2f;
@@ -1402,6 +1464,49 @@ public class GameplayController {
 
     float timerAction = 0;
 
+    public boolean normalAttack() {
+        if (isCombatMode && isPlayerTurn) {
+            float damage = currentLevel + wordDamageMultiplier;
+
+            if (isEnemyLord() && damage < 10) {
+                damage = 0;
+                addCombatLog("Lord " + enemyName + " chống chọi được đòn tấn công yếu!");
+            } else {
+                damage -= enemy.getDefensePower() * 0.7f;
+                damage = Math.max(1, damage);
+                addCombatLog("Tấn công thường gây " + (int) damage + " sát thương!");
+            }
+
+            letterGrid.clearWord();
+
+            if (damage > 0) {
+                playerAttack("", (int) damage, () -> {
+                    checkCombatEnd();
+                    if (isCombatMode && enemyHealth > 0) {
+                        isPlayerTurn = false;
+                        addCombatLog("---Đến lượt của " + enemyName + "!---");
+                    }
+                });
+                enemyHealth = Math.max(0, enemyHealth - damage);
+            } else {
+                checkCombatEnd();
+                if (isCombatMode && enemyHealth > 0) {
+                    isPlayerTurn = false;
+                    addCombatLog("---Đến lượt của " + enemyName + "!---");
+                }
+            }
+        }
+
+        timerAction = 5f;
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                isDrawingWordMeaning = false;
+            }
+        }, 2.4f);
+
+        return true;
+    }
 
     public boolean submitWord() {
         if (!active) return false;
@@ -1439,18 +1544,7 @@ public class GameplayController {
                 if (isCombatMode && isPlayerTurn) {
                     letterGrid.clearWord();
 
-                    if (damage > enemyHealth) {
-                        startCardAttackAnimation(word, (int) damage, () -> {
-                            checkCombatEnd();
-                            if (isCombatMode && enemyHealth > 0) {
-                                isPlayerTurn = false;
-                                addCombatLog("---Đến lượt của " + enemyName + "!---");
-
-                            }
-                        });
-                        enemyHealth = Math.max(0, enemyHealth - damage);
-
-                    } else if (damage > 0) {
+                    if (damage > 0) {
                         playerAttack(word, (int) damage, () -> {
                             checkCombatEnd();
                             if (isCombatMode && enemyHealth > 0) {
@@ -1493,134 +1587,6 @@ public class GameplayController {
     }
 
     private static final float MARGIN = 20;
-    private static final float SCREEN_WIDTH = 1280;
-    private static final float SCREEN_HEIGHT = 720;
-    private static final float ENEMY_SECTION_HEIGHT = 120;
-    private boolean isCardAnimating = false;
-    private float cardAnimX, cardAnimY, cardAnimScale, cardAnimRotation;
-    private float cardAnimStartX, cardAnimStartY;
-    private float cardAnimTargetX, cardAnimTargetY;
-    private float cardAnimDuration = 2.0f; // Longer for dramatic Yu-Gi-Oh effect
-    private float cardAnimTimer = 0;
-    private String animatingWord = "";
-    private Runnable cardAnimCallback;
-
-    // Yu-Gi-Oh style effects
-    private float screenShakeTimer = 0;
-    private boolean isSpellActivating = false;
-    private Color cardTintColor = Color.WHITE.cpy();
-
-    private void startCardAttackAnimation(String word, int damage, Runnable onComplete) {
-        animatingWord = word;
-        cardAnimCallback = onComplete;
-
-        // Yu-Gi-Oh style starting position (card rises from player deck)
-        cardAnimStartX = MARGIN + 140; // Center of player column
-        cardAnimStartY = MARGIN + 100;
-
-        // Target position (center screen for spell activation)
-        cardAnimTargetX = SCREEN_WIDTH / 2 - 100;
-        cardAnimTargetY = SCREEN_HEIGHT / 2 - 100;
-
-        // Reset animation state
-        cardAnimX = cardAnimStartX;
-        cardAnimY = cardAnimStartY;
-        cardAnimScale = 0.8f; // Start smaller
-        cardAnimRotation = 0;
-        cardAnimTimer = 0;
-        isCardAnimating = true;
-        isSpellActivating = false;
-
-        cardTintColor.set(Color.WHITE);
-
-        // Yu-Gi-Oh activation sound
-        effectManager.playClickSound();
-    }
-
-    private void updateCardAnimation(float delta) {
-        if (!isCardAnimating) return;
-
-        cardAnimTimer += delta;
-        float progress = Math.min(cardAnimTimer / cardAnimDuration, 1.0f);
-
-        // Phase 1: Card Rise & Flip (0-0.25)
-        if (progress < 0.25f) {
-            float phaseProgress = progress / 0.25f;
-
-            // Card giữ nguyên scale và rotation
-            cardAnimScale = 1.0f;
-            cardAnimRotation = 0f;
-
-            // Move to center position
-            cardAnimX = cardAnimStartX + (cardAnimTargetX - cardAnimStartX) * phaseProgress;
-            cardAnimY = cardAnimStartY + (cardAnimTargetY - cardAnimStartY) * phaseProgress;
-
-            // Building golden glow
-            cardTintColor.set(1, 1, 0.5f + phaseProgress * 0.5f, 1); // Golden tint
-        }
-        // Phase 2: Spell Activation Preparation (0.25-0.5)
-        else if (progress < 0.5f) {
-            float phaseProgress = (progress - 0.25f) / 0.25f;
-
-            // Card giữ nguyên tại center, không scale, không spin
-            cardAnimScale = 1.0f;
-            cardAnimRotation = 0f;
-            cardAnimX = cardAnimTargetX;
-            cardAnimY = cardAnimTargetY;
-
-        }
-        // Phase 3: SPELL ACTIVATION! (0.5-0.75)
-        else if (progress < 0.75f) {
-            float phaseProgress = (progress - 0.5f) / 0.25f;
-
-            if (!isSpellActivating) {
-                isSpellActivating = true;
-
-                screenShakeTimer = 0.5f;
-            }
-
-            // Không còn scale và rotation cho card
-            cardAnimScale = 1.0f;
-            cardAnimRotation = 0f;
-
-
-            // Intense white/golden flash
-            float flashIntensity = (float) Math.sin(phaseProgress * Math.PI * 20);
-            cardTintColor.set(2 - flashIntensity, 2 - flashIntensity, 1, 1);
-
-        }
-        // Phase 4: Spell Launch (0.75-1.0)
-        else {
-            float phaseProgress = (progress - 0.75f) / 0.25f;
-
-            // Card launches toward enemy
-            float launchProgress = (float) (1 - Math.pow(1 - phaseProgress, 3));
-            cardAnimX = cardAnimTargetX + (580 - cardAnimTargetX) * launchProgress;
-            cardAnimY = cardAnimTargetY + (SCREEN_HEIGHT - ENEMY_SECTION_HEIGHT - MARGIN - cardAnimTargetY) * launchProgress;
-
-            // Card grows then shrinks on impact
-            if (phaseProgress < 0.3f) {
-                cardAnimScale = 1.2f + (phaseProgress / 0.3f) * 0.8f; // Grow to 2.0
-            } else {
-                cardAnimScale = 2.0f * (1 - ((phaseProgress - 0.3f) / 0.7f)); // Shrink to 0
-            }
-
-
-            if (phaseProgress > 0.8f && screenShakeTimer <= 0) {
-                screenShakeTimer = 0.3f;
-            }
-        }
-
-        // Animation complete
-        if (progress >= 1.0f) {
-            isCardAnimating = false;
-            isSpellActivating = false;
-            if (cardAnimCallback != null) {
-                cardAnimCallback.run();
-            }
-        }
-    }
-
 
     private void checkCombatEnd() {
         if (playerHealth <= 0 || combatTimeUp) {
@@ -1631,6 +1597,7 @@ public class GameplayController {
             isGameOver = gameController.getCharacter().gameOver();
             gameController.getCharacter().resetWinStreak();
             timerAction = 0;
+            achievementManager.updateProgress(Achievement.AchievementType.FALLEN, 1);
         } else if (enemyHealth <= 0) {
             addCombatLog("Bạn đã hạ gục " + enemyName + "!");
             enemyHealth = 0;
@@ -1643,6 +1610,20 @@ public class GameplayController {
                 gameController.setCompletedEvent();
             }
 
+            switch (enemyName) {
+                case "Crystal Serpent Boss":
+                    achievementManager.updateProgress(Achievement.AchievementType.ENEMY_WIN_1, 1);
+                    break;
+                case "Sapphire Dragon Boss":
+                    achievementManager.updateProgress(Achievement.AchievementType.ENEMY_WIN_2, 1);
+                    break;
+                case "Emerald Revenant Boss":
+                    achievementManager.updateProgress(Achievement.AchievementType.ENEMY_WIN_3, 1);
+                    break;
+                case "Demon Lord Azrok":
+                    achievementManager.updateProgress(Achievement.AchievementType.ENEMY_WIN, 1);
+                    break;
+            }
             achievementManager.updateProgress(Achievement.AchievementType.COMBAT_WIN, 1);
             this.newLevel = gameController.getCharacter().addExperience(this.experienceGain);
         }
@@ -1704,8 +1685,13 @@ public class GameplayController {
             difficultyText = "Rất Khó";
         }
 
+        if (difficultyText.equals("Khó") || difficultyText.equals("Rất Khó")) {
+            addCombatLog("Cảnh báo: Trận chiến này có thể rất khó khăn!");
+        }
 
-        if (isEnemyBoss()) applyBossEffects();
+        if (isEnemyBoss()) {
+            applyBossEffects();
+        }
     }
 
     public void activate() {

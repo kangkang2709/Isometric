@@ -1,74 +1,114 @@
 [
   {
     "id": "first_victory",
-    "title": "Chiến Thắng Đầu Tiên",
-    "description": "Chiến thắng đầu tiên của bạn",
+    "title": "Chiến thắng đầu tiên",
     "type": "COMBAT_WIN",
-    "targetValue": 1
+    "targetValue": 1,
+    "description": "Thắng trận chiến đầu tiên"
+  },
+  {
+    "id": "victory_10",
+    "title": "Chiến binh kiên cường",
+    "type": "COMBAT_WIN",
+    "targetValue": 10,
+    "description": "Thắng 10 trận chiến"
+  },
+  {
+    "id": "victory_20",
+    "title": "Anh hùng thực thụ",
+    "type": "COMBAT_WIN",
+    "targetValue": 20,
+    "description": "Thắng 20 trận chiến"
   },
   {
     "id": "first_fallen",
-    "title": "Trận Thua Đầu Tiên",
-    "description": "Thất bại là mẹ thành công",
+    "title": "Trận thua đầu tiên",
     "type": "FALLEN",
-    "targetValue": 1
+    "targetValue": 1,
+    "description": "Nhân vật bị đánh bại lần đầu trong chiến đấu"
+  },
+  {
+    "id": "fallen_10",
+    "title": "Thất bại là mẹ thành công",
+    "type": "FALLEN",
+    "targetValue": 10,
+    "description": "Nhân vật bị đánh bại 10 lần trong chiến đấu"
+  },
+  {
+    "id": "word_1",
+    "title": "Từ đầu tiên được sử dụng",
+    "type": "WORD_COUNT",
+    "targetValue": 1,
+    "description": "Ghép đúng từ đầu tiên trong chiến đấu"
+  },
+  {
+    "id": "word_20",
+    "title": "Người học chăm chỉ",
+    "type": "WORD_COUNT",
+    "targetValue": 20,
+    "description": "Ghép đúng 20 từ trong chiến đấu"
+  },
+  {
+    "id": "word_50",
+    "title": "Người học siêng năng",
+    "type": "WORD_COUNT",
+    "targetValue": 50,
+    "description": "Ghép đúng 50 từ trong chiến đấu"
+  },
+  {
+    "id": "word_100",
+    "title": "Bậc thầy từ vựng",
+    "type": "WORD_COUNT",
+    "targetValue": 100,
+    "description": "Ghép đúng 100 từ trong chiến đấu"
   },
   {
     "id": "first_wrong",
-    "title": "Từ Sai Đầu Tiên",
-    "description": "Thất bại là mẹ thành công",
+    "title": "Sai sót đầu tiên",
     "type": "FAILED_WORD",
-    "targetValue": 1
-  },
-  {
-    "id": "first_victory_2",
-    "title": "Chiến Thắng",
-    "description": "Chiến thắng thu 5 của bạn",
-    "type": "COMBAT_WIN",
-    "targetValue": 5
-  },
-  {
-    "id": "first_victory_3",
-    "title": "Chiến Thắng",
-    "description": "Chiến thắng thu 5 của bạn",
-    "type": "COMBAT_WIN",
-    "targetValue": 10
-  },
-  {
-    "id": "first_victory_4",
-    "title": "Chiến Thắng",
-    "description": "Chiến thắng thu 5 của bạn",
-    "type": "COMBAT_WIN",
-    "targetValue": 15
-  },
-  {
-    "id": "word_master",
-    "title": "Bậc Thầy Từ Vựng",
-    "description": "Tìm thấy 10 từ khác nhau",
-    "type": "WORD_COUNT",
-    "targetValue": 10
-  },
-
-  {
-    "id": "word_master_2",
-    "title": "Bậc Thầy Từ Vựng",
-    "description": "Tìm thấy 20 từ khác nhau",
-    "type": "WORD_COUNT",
-    "targetValue": 20
-  },
-  {
-    "id": "word_master_2",
-    "title": "Bậc Thầy Từ Vựng",
-    "description": "Tìm thấy 20 từ khác nhau",
-    "type": "WORD_COUNT",
-    "targetValue": 30
-  },
-  {
-    "id": "dragon_slayer",
-    "title": "Người Diệt Rồng",
-    "description": "Đánh bại con rồng",
-    "type": "ENEMY_DEFEAT",
     "targetValue": 1,
-    "enemyId": "dragon_boss"
+    "description": "Sử dụng sai từ đầu tiên"
+  },
+  {
+    "id": "wrong_5",
+    "title": "Học từ sai",
+    "type": "FAILED_WORD",
+    "targetValue": 5,
+    "description": "Sử dụng sai 5 từ trong chiến đấu"
+  },
+  {
+    "id": "wrong_10",
+    "title": "Vấp ngã là học hỏi",
+    "type": "FAILED_WORD",
+    "targetValue": 10,
+    "description": "Sử dụng sai 10 từ trong chiến đấu"
+  },
+  {
+    "id": "mini_boss_1",
+    "title": "Đánh bại Crystal Serpent Boss",
+    "type": "ENEMY_WIN",
+    "targetValue": 1,
+    "description": "Chiến thắng trước Mini Boss Crystal Serpent"
+  },
+  {
+    "id": "mini_boss_2",
+    "title": "Đánh bại Sapphire Dragon Boss",
+    "type": "ENEMY_WIN",
+    "targetValue": 1,
+    "description": "Chiến thắng trước Mini Boss Frost Revenant"
+  },
+  {
+    "id": "mini_boss_3",
+    "title": "Đánh bại Emerald Revenant Boss",
+    "type": "ENEMY_WIN",
+    "targetValue": 1,
+    "description": "Chiến thắng trước Mini Boss Emerald Watcher"
+  },
+  {
+    "id": "final_boss",
+    "title": "Hạ gục trùm cuối",
+    "type": "ENEMY_WIN",
+    "targetValue": 1,
+    "description": "Đánh bại Final Boss và hoàn thành trò chơi"
   }
 ]

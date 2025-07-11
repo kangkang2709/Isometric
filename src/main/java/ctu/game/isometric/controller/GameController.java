@@ -779,7 +779,8 @@ public class GameController {
             hasActiveEvent = true;
             currentEventType = currentEvent.getEventType();
             if (currentEventType.equals("battle") && map.getMapName().equals("board")) {
-                isRenderCharacter = false; // Don't render character during battle events
+                isRenderCharacter = false;
+                mapRenderer.setRenderInfoCard(true);
             }
             currentEventId = currentEvent.getId();
             currentEventX = currentEvent.getGridX();

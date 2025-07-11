@@ -17,7 +17,11 @@ public class Achievement {
         SPECIFIC_WORD,   // Find specific word
         ENEMY_DEFEAT,
         FALLEN,
-        FAILED_WORD,// Defeat specific enemy
+        FAILED_WORD,
+        ENEMY_WIN_1,
+        ENEMY_WIN_2,
+        ENEMY_WIN_3,
+        ENEMY_WIN
     }
     public void update(int value) {
         this.currentValue = value;

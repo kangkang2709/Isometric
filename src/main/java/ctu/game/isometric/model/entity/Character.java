@@ -28,14 +28,13 @@ public class Character {
     private List<String> quests; // List of quests
     private Map<String, List<String>> status;
     private Map<String, Integer> ettempFlags;
-    // Status effects (e.g., buffs, debuffs)
 
 
     Map<String, Boolean> isTutorials; // Track if tutorials are completed
 
-    private float damage = 1; // Damage dealt by the character
+    private float damage = 5; // Damage dealt by the character
 
-    private float defend = 1;
+    private float defend = 5;
     private float mana = 20;
     private int level = 1;// Defense points of the character
     private float exp = 0; // Experience points
@@ -53,7 +52,7 @@ public class Character {
     public boolean levelUp(int level) {
         this.level += level; // Increase level
 
-        float scale = level * 0.4f;
+        float scale = level * 1.5f;
 
         this.maxHealth = this.maxHealth + 10;
         this.maxMana = this.maxMana + 10;

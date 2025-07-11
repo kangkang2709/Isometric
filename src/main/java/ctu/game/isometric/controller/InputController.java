@@ -368,6 +368,10 @@ public class InputController extends InputAdapter {
             }
             return true;
         }
+        if (state == GameState.GAMEPLAY) {
+            gameController.getGameplayController().handleEnemyHover(screenX, screenY);
+            return false;
+        }
         // Handle other states...
         return false;
     }
@@ -416,7 +420,14 @@ public class InputController extends InputAdapter {
             case Keys.F -> {
                 gameController.showNPCBackStory();
             }
-
+            case Keys.T -> {
+                mapRenderer.toggleRenderInfoCard();
+                if (mapRenderer.isRenderInfoCard()) {
+                    gameController.setRenderCharacter(false);
+                } else {
+                    gameController.setRenderCharacter(true);
+                }
+            }
 
             case Keys.V -> {
                 if (gameController.getInventoryUI().isVisible()) {

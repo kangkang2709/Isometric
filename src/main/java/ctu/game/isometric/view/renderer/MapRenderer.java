@@ -113,10 +113,6 @@ public class MapRenderer {
 
         animationManager.loadDiceAnimations("textures/dice_static.png", "textures/dice_rolling.png");
 
-        animationManager.loadDungeonEnemyAnimations("enemies/dungeons/up.png", "up");
-        animationManager.loadDungeonEnemyAnimations("enemies/dungeons/down.png", "down");
-        animationManager.loadDungeonEnemyAnimations("enemies/dungeons/left.png", "left");
-        animationManager.loadDungeonEnemyAnimations("enemies/dungeons/right.png", "right");
 
 
         setSlowMotion(true);
@@ -690,6 +686,21 @@ public class MapRenderer {
         this.animationManager = animationManager;
     }
 
+    boolean isRenderInfoCard = false;
+
+    public void setRenderInfoCard(boolean renderInfoCard) {
+        isRenderInfoCard = renderInfoCard;
+    }
+
+    public boolean isRenderInfoCard() {
+        return isRenderInfoCard;
+    }
+
+    public void toggleRenderInfoCard() {
+        isRenderInfoCard = !isRenderInfoCard;
+
+    }
+
     public void renderActionButton(SpriteBatch batch, String eventType, MapEvent event, float x, float y) {
         if (eventType == null || event == null) return;
 
@@ -703,8 +714,12 @@ public class MapRenderer {
         // Set text based on event type
         switch (eventType) {
             case "battle":
-                buttonText = "Comba";
                 drawEnemyInfoCard(batch, event);
+                if ("board".equals(map.getMapName())) {
+                    return;
+                } else {
+                    buttonText = "Combat";
+                }
                 break;
             case "dialog":
                 buttonText = "Talk";
@@ -729,7 +744,7 @@ public class MapRenderer {
                 break;
         }
 
-        if (buttonTexture != null && !map.getMapName().equals("board")) {
+        if (buttonTexture != null) {
             // Convert grid coordinates to isometric screen coordinates
             float[] isoPos = toIsometric(x, y);
             // Position the button above the tile
@@ -779,7 +794,8 @@ public class MapRenderer {
     boolean isZoomed = false;
 
     private void drawEnemyInfoCard(SpriteBatch batch, MapEvent event) {
-        if (!map.getMapName().equals("board")) return;
+        if (!map.getMapName().equals("board") || !isRenderInfoCard) return;
+
 
         if (!isAcceptingRoll) {
             centerX = 640;
