@@ -200,8 +200,7 @@ public class DarkestDungeon implements Screen {
         this.animState = AnimationState.IDLE;
         this.animationTimer = 0;
         this.idleAnimationTimer = 0;
-        this.currentPlayerTexture = playerIdleTextures[0];
-        this.currentEnemyTexture = enemyIdleTextures[0];
+
         this.currentEffectTexture = null;
         this.showEffect = false;
         this.effectOnPlayer = false;
@@ -211,6 +210,12 @@ public class DarkestDungeon implements Screen {
         this.playerCurrentY = playerStartY;
         this.enemyCurrentX = enemyStartX;
         this.enemyCurrentY = enemyStartY;
+
+
+
+        enemyIdleTextures = getEnemyIdleTextures(enemyName);
+        enemySkillTextures = getEnemySkillTextures(enemyName);
+
 
         this.combatLog = "Chiến đấu bắt đầu! Chọn hành động.";
 
@@ -619,10 +624,10 @@ public class DarkestDungeon implements Screen {
 //        enemySkillTextures[2] = new Texture("dungeon/enemy_3skill.png");
 
 
-        enemyIdleTextures = getEnemyIdleTextures("bringer-of-death");
+        enemyIdleTextures = getEnemyIdleTextures("frost");
 
 
-        enemySkillTextures = getEnemySkillTextures("bringer-of-death");
+        enemySkillTextures = getEnemySkillTextures("frost");
 
         // Skill button textures
         skillButtonTextures[0] = new Texture("dungeon/skill_attack.png");

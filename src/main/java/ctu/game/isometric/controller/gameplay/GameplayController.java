@@ -1598,6 +1598,7 @@ public class GameplayController {
             gameController.getCharacter().resetWinStreak();
             timerAction = 0;
             achievementManager.updateProgress(Achievement.AchievementType.FALLEN, 1);
+            gameController.getMusicController().playMusic("defeat");
         } else if (enemyHealth <= 0) {
             addCombatLog("Bạn đã hạ gục " + enemyName + "!");
             enemyHealth = 0;
@@ -1626,6 +1627,7 @@ public class GameplayController {
             }
             achievementManager.updateProgress(Achievement.AchievementType.COMBAT_WIN, 1);
             this.newLevel = gameController.getCharacter().addExperience(this.experienceGain);
+            gameController.getMusicController().playMusic("victory");
         }
     }
 
@@ -1690,8 +1692,12 @@ public class GameplayController {
         }
 
         if (isEnemyBoss()) {
+            gameController.getMusicController().playMusic("boss");
             applyBossEffects();
+        } else if (isEnemyLord()) {
+            gameController.getMusicController().playMusic("lord");
         }
+        else gameController.getMusicController().playMusic("main_theme");
     }
 
     public void activate() {

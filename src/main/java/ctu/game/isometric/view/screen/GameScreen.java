@@ -123,6 +123,7 @@ public class GameScreen implements Screen {
             mapRenderer.loadTextures();
             System.out.println("MapRenderer initialized with textures loaded.");
             gameController.setCreated(false);
+
         }
 
 

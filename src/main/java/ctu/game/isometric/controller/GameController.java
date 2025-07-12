@@ -113,7 +113,7 @@ public class GameController {
         this.game = game;
 
         this.map = new IsometricMap();
-        this.mapList.put(map.getMapName(), map);
+        this.mapList.put("board", map);
         this.eventManager = new EventManager(map, "board");
 
         this.mapList.put("main", new IsometricMap("maps/main.tmx"));
@@ -177,17 +177,18 @@ public class GameController {
 
     }
 
-
     public IsometricMap changeMap(String mapName) {
-        if (mapName.equals(getMap().getMapName()))
-            return null;
+
         IsometricMap newMap = this.mapList.get(mapName);
         if (newMap != null) {
-
+            System.out.println("Changing map to: " + mapName);
             transitionRenderer.startLoadingScreen(() -> {
-                if (newMap.getMapName().equals("board")) {
+
+                if (mapName.equalsIgnoreCase("board")) {
                     newMap.generateRandomMaze(getCharacter().getRun() / 2);
                     boardEventManager.randomBoardEveryRun();
+                    System.out.println("New run generated with run level: " + getCharacter().getRun());
+                    isNewRun = false;
                 }
 
                 this.map = newMap;
@@ -195,13 +196,35 @@ public class GameController {
                 this.pathfinder.setMap(newMap);
                 this.eventManager = this.eventManagerMap.get(mapName);
                 this.game.getGameScreen().getMapRenderer().changeTiledMapRenderer(this.map, this.eventManager);
-
             });
-            isNewRun = false;
+
             return newMap;
         } else {
             Gdx.app.error("GameController", "Map not found: " + mapName);
             return null;
+        }
+    }
+
+
+    public void changeBoard() {
+
+        IsometricMap newMap = this.mapList.get("board");
+        if (newMap != null) {
+
+            newMap.generateRandomMaze(getCharacter().getRun() / 2);
+            boardEventManager.randomBoardEveryRun();
+            System.out.println("New run generated with run level: " + getCharacter().getRun());
+
+            this.map = newMap;
+            this.character.setGameMap(map);
+            this.pathfinder.setMap(newMap);
+            this.eventManager = this.eventManagerMap.get("board");
+            this.game.getGameScreen().getMapRenderer().changeTiledMapRenderer(this.map, this.eventManager);
+
+            isNewRun = false;
+
+        } else {
+            Gdx.app.error("GameController", "Map not found: ");
         }
     }
 
@@ -583,6 +606,7 @@ public class GameController {
             previousState = oldState;
         }
 
+
         transitionRenderer.startLoadingScreen(() -> {
             // This code executes after the fade out, during loading
             currentState = newState;
@@ -593,6 +617,29 @@ public class GameController {
             }
         });
 
+    }
+
+    public void setState2(GameState newState) {
+        if (currentState == newState) return;
+
+        final GameState oldState = currentState;
+
+        if (newState != GameState.SETTINGS) {
+            previousState = oldState;
+        }
+
+        currentState = newState;
+
+        // Initialize UI components when changing to EXPLORING state
+        if (newState == GameState.EXPLORING && merchantUI == null) {
+            // Initialize merchantUI here
+            merchantUI = new MerchantUI(this);
+            // Add any other necessary initialization
+        }
+
+        if (musicController != null) {
+            musicController.playMusicForState(newState);
+        }
     }
 
     private void onStateChanged(GameState oldState, GameState newState) {
@@ -630,19 +677,6 @@ public class GameController {
         return Arrays.stream(npcManager.getNpcPositions())
                 .noneMatch(npcPos -> Math.abs(npcPos[0] - x) < 0.5f && Math.abs(npcPos[1] - y) < 0.5f);
     }
-
-//    // Add a method to change maps safely
-//    public void changeMap(IsometricMap newMap, int startX, int startY) {
-//        this.map = newMap;
-//
-//        // Ensure character is placed at a valid position on the new map
-//        if (isValidPosition(startX, startY)) {
-//            character.setPosition(startX, startY);
-//        } else {
-//            // Find a valid starting position if the provided one is invalid
-//            findValidStartPosition();
-//        }
-//    }
 
 
     public void moveCharacter(int dx, int dy) {
@@ -711,7 +745,6 @@ public class GameController {
         character = new Character(10, 0);
 
         resetEventsManager();
-        changeMap("board");
 
         // Reset controllers to initial state - make sure to reset character creation controller
         characterCreationController = null;
@@ -735,6 +768,7 @@ public class GameController {
             gameplayController = new GameplayController(this);
         }
 
+        transitionRenderer = new TransitionRenderer();
 
         createBoard();
         // Reset to main menu state

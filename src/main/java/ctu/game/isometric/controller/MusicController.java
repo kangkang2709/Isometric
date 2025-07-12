@@ -11,7 +11,7 @@ public class MusicController {
     private final Map<String, Music> musicTracks;
     private String currentTrackId;
     private float volume = 0.5f;
-    private boolean enabled = false;
+    private boolean enabled = true;
 
     public MusicController() {
         this.musicTracks = new HashMap<>();
@@ -19,12 +19,16 @@ public class MusicController {
     }
 
     public void initialize() {
-        loadMusic("exploring_theme", "audio/musics/exploring_theme.mp3");
-        loadMusic("main_theme", "audio/musics/main_theme.mp3");
-        loadMusic("menu_theme", "audio/musics/menu_theme.mp3");
+        loadMusic("exploring_theme", "audio/musics/village.mp3");
+        loadMusic("main_theme", "audio/musics/Menu.mp3");
+        loadMusic("menu_theme", "audio/musics/menu.mp3");
         loadMusic("setting_theme", "audio/musics/setting_theme.mp3");
         loadMusic("combat_theme", "audio/musics/combat_theme.mp3");
-        loadMusic("dialog_theme", "audio/musics/dialog_theme.mp3");
+        loadMusic("victory", "audio/musics/Victory.mp3");
+        loadMusic("defeat", "audio/musics/Defeat.mp3");
+        loadMusic("boss", "audio/musics/BOSS.mp3");
+        loadMusic("lord", "audio/musics/LORD.mp3");
+        loadMusic("dungeon", "audio/musics/dungeon1.mp3");
     }
 
     private void loadMusic(String id, String path) {
@@ -51,6 +55,7 @@ public class MusicController {
         if (track != null) {
             track.setVolume(volume);
             track.play();
+            System.out.println("Playing music: " + musicId);
             currentTrackId = musicId;
         }
     }
@@ -75,27 +80,42 @@ public class MusicController {
         }
     }
 
+
+    public void playDungeonMusic() {
+        if (!enabled) {
+            return;
+        }
+        playMusic("dungeon");
+    }
+
+
     public void playMusicForState(GameState state) {
         if (state == null) {
             return;
         }
+        if (!enabled) {
+            return;
+        }
         switch (state) {
-            case GAMEPLAY:
-                playMusic("combat_theme");
-                break;
             case EXPLORING:
                 playMusic("exploring_theme");
                 break;
-            case DIALOG:
-                playMusic("dialog_theme");
+            case LOAD_GAME:
+                break;
+            case GAMEPLAY:
                 break;
             case MAIN_MENU:
                 playMusic("main_theme");
                 break;
             case MENU:
-                playMusic("menu_theme");
+                playMusic("main_theme");
+                System.out.println("Playing menu theme music");
                 break;
-            case CUTSCENE:
+            case SETTINGS:
+                break;
+            case CHARACTER_CREATION:
+                break;
+            default:
                 stopCurrentTrack();
                 break;
         }

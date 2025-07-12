@@ -77,20 +77,7 @@ public class PauseMenu {
         this.buttonSelectedTexture = new TextureRegion(new Texture(Gdx.files.internal("ui/button_selected.png")));
 
         // Add default menu items
-        addMenuItem("Tiếp Tục", () -> gameController.returnToPreviousState());
-        //all tutorials in there
-        // gameController.setState(GameState.TUTORIAL);
-        addMenuItem("Xem Hướng Dẫn", this::showTutorialMenu);
-        addMenuItem("Xem Phím Tắt", () -> keyBindingDisplay.show());
-        addMenuItem("Tùy chỉnh Âm Thanh", () -> gameController.setState(GameState.SETTINGS));
-        addMenuItem("Lưu Tiến Trình", this::showSaveGameDialog);
-        addMenuItem("Quay Về Menu", () -> {
-            gameController.setCurrentState(GameState.MAIN_MENU);
-            gameController.setPreviousState(GameState.MAIN_MENU);
-            gameController.resetGame();
-        });
-
-        addMenuItem("Thoát", () -> Gdx.app.exit());
+        buildMainMenu();
 
         // Set menu position (center of screen)
         menuWidth = 400f;
@@ -172,8 +159,17 @@ public class PauseMenu {
         this.menuTitle = originalTitle;
 
         // Re-add all original menu items
+        buildMainMenu();
+
+        // Reset selection and update menu dimensions
+        selectedIndex = 0;
+        updateMenuDimensions();
+    }
+
+    private void buildMainMenu() {
         addMenuItem("Tiếp Tục", () -> gameController.returnToPreviousState());
         addMenuItem("Xem Hướng Dẫn", this::showTutorialMenu);
+        addMenuItem("Xem Phím Tắt", () -> keyBindingDisplay.show());
         addMenuItem("Tùy chỉnh Âm Thanh", () -> gameController.setState(GameState.SETTINGS));
         addMenuItem("Lưu Tiến Trình", this::showSaveGameDialog);
         addMenuItem("Quay Về Menu", () -> {
@@ -182,10 +178,6 @@ public class PauseMenu {
             gameController.resetGame();
         });
         addMenuItem("Thoát", () -> Gdx.app.exit());
-
-        // Reset selection and update menu dimensions
-        selectedIndex = 0;
-        updateMenuDimensions();
     }
 
     private void updateMenuDimensions() {
@@ -252,9 +244,11 @@ public class PauseMenu {
 
     public void activateSelectedItem() {
         if (selectedIndex >= 0 && selectedIndex < menuItems.size()) {
+            System.out.println("Activating item: " + menuItems.get(selectedIndex).getText());
             menuItems.get(selectedIndex).activate();
         }
     }
+
 
     public void render(SpriteBatch batch) {
         if (isTutorialShowing) return;

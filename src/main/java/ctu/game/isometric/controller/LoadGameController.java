@@ -38,20 +38,19 @@ public class LoadGameController {
 
 
     // Button rectangles
-     Rectangle[] fileButtonRects;
-     Rectangle backButtonRect;
+    Rectangle[] fileButtonRects;
+    Rectangle backButtonRect;
 
     // Button dimensions
-     final int BUTTON_WIDTH = 600;
-     final int BUTTON_HEIGHT = 60;
-     final int BACK_BUTTON_WIDTH = 200;
-     final int BACK_BUTTON_HEIGHT = 50;
-
+    final int BUTTON_WIDTH = 600;
+    final int BUTTON_HEIGHT = 60;
+    final int BACK_BUTTON_WIDTH = 200;
+    final int BACK_BUTTON_HEIGHT = 50;
 
 
     // Add these fields at the top of the class
     private final Texture deleteButtonTexture;
-    private  Rectangle[] deleteButtonRects;
+    private Rectangle[] deleteButtonRects;
 
     private boolean isConfirmationDialogActive = false;
     private String fileToDelete = null;
@@ -74,10 +73,10 @@ public class LoadGameController {
         // Load textures
         backgroundImage = new Texture(Gdx.files.internal("backgrounds/black.png"));
         buttonNormal = new Texture(Gdx.files.internal("ui/button.png"));
-        buttonSelected = new Texture(Gdx.files.internal("ui/button_selected.png"));
+        buttonSelected = new Texture(Gdx.files.internal("ui/button_selected4.png"));
         backButtonTexture = new Texture(Gdx.files.internal("ui/button.png"));
 // Load delete button texture
-        deleteButtonTexture = new Texture(Gdx.files.internal("ui/button_delete.png")); // Use an appropriate delete icon
+        deleteButtonTexture = new Texture(Gdx.files.internal("ui/panel-border-008.png")); // Use an appropriate delete icon
         // Back button position
         backButtonRect = new Rectangle(
                 screenWidth / 2 - BACK_BUTTON_WIDTH / 2,
@@ -88,6 +87,8 @@ public class LoadGameController {
         confirmNoButtonRect = new Rectangle(screenWidth / 2 + 50, screenHeight / 2 - 50, 100, 50);
         // Load save files
         refreshSaveFiles();
+
+
     }
 
     public void refreshSaveFiles() {
@@ -141,7 +142,7 @@ public class LoadGameController {
         GlyphLayout titleLayout = new GlyphLayout(titleFont, title);
         titleFont.draw(batch, title,
                 screenWidth / 2 - titleLayout.width / 2,
-                screenHeight - 100);
+                screenHeight - 80);
 
         // Draw save file buttons
         if (saveFiles.length == 0) {
@@ -161,7 +162,7 @@ public class LoadGameController {
                 String displayName = saveFiles[i];
                 GlyphLayout layout = new GlyphLayout(font, displayName);
                 font.draw(batch, displayName,
-                        rect.x + 20,
+                        rect.x + 50,
                         rect.y + rect.height - (rect.height - layout.height) / 2);
 
                 batch.draw(deleteButtonTexture,
@@ -208,7 +209,6 @@ public class LoadGameController {
             font.draw(batch, "No", confirmNoButtonRect.x + (confirmNoButtonRect.width - noText.width) / 2,
                     confirmNoButtonRect.y + confirmNoButtonRect.height - (confirmNoButtonRect.height - noText.height) / 2);
         }
-
 
 
         // Restore original matrix
@@ -324,26 +324,22 @@ public class LoadGameController {
                     Set<String> words = saveService.loadLearnedWords(save.getCharacter(), save.getWordFilePath());
 
                     // Set character data in game controller
-                    gameController.loadCharacter(save.getCharacter(),save.getSaveDate());
-
+                    gameController.loadCharacter(save.getCharacter(), save.getSaveDate());
 
 
                     gameController.getEventManagerMap().get("main").updateAfterLoadGame(save);
                     gameController.getEventManagerMap().get("board").updateAfterLoadGame(save);
 
 
-
-
-
                     gameController.getCharacter().setLearnedWords(words);
                     gameController.getBountyBoardController().updateQuestStatusFromQuestTracker(gameController.getCharacter().getQuestTracker());
 
-
                     // THIS IS CRUCIAL: Mark as created to initialize renderers
                     gameController.setCreated(true);
-
                     // Start the game
                     gameController.setState(GameState.EXPLORING);
+                    gameController.changeBoard();
+
 
                     if (!gameController.getCharacter().getFlags().contains("intro"))
                         gameController.startCutscene("intro");
@@ -355,12 +351,10 @@ public class LoadGameController {
                 }
             }
         } catch (Exception e) {
-                this.title = "Error loading save file";
-                System.out.println("Error loading save file: " + e.getMessage());
+            this.title = "Error loading save file";
+            System.out.println("Error loading save file: " + e.getMessage());
         }
     }
-
-
 
 
     public void dispose() {
