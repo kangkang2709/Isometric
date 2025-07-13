@@ -430,7 +430,7 @@ public class InputController extends InputAdapter {
             }
             case Keys.F8 -> {
 //                gameController.getGame().changeScreen("DUNGEON");
-                gameController.changeMap("tavern");
+                gameController.changeMap("forest");
             }
             case Keys.F9 -> {
                 gameController.changeMap("main");
@@ -756,7 +756,7 @@ public class InputController extends InputAdapter {
                 return gameController.getMenuController().handleKeyBindingScroll(amountY);
             }
             case EXPLORING -> {
-                if (gameController.getMap().getMapName().equals("board")) return false;
+                if (gameController.getMap().getMapName().equals("board") || gameController.getMap().getMapName().equals("forest")) return false;
                 float defaultZoom = 1.0f;
                 float minZoom = 0.5f;
                 float zoomStep = 0.1f;

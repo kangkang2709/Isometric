@@ -41,6 +41,8 @@ import ctu.game.isometric.view.view.QuestTrackerView;
 
 import java.util.*;
 
+import static ctu.game.isometric.IsometricGame.getGameController;
+
 public class GameController {
     private IsometricGame game;
     private Character character;
@@ -119,11 +121,13 @@ public class GameController {
         this.mapList.put("main", new IsometricMap("maps/main.tmx"));
         this.mapList.put("library", new IsometricMap("maps/library.tmx"));
         this.mapList.put("tavern", new IsometricMap("maps/tavern.tmx"));
+        this.mapList.put("forest", new IsometricMap("maps/forest.tmx"));
 
         this.eventManagerMap.put("board", eventManager);
         this.eventManagerMap.put("main", new EventManager(this.mapList.get("main"), "main"));
         this.eventManagerMap.put("library", new EventManager(this.mapList.get("library"), "library"));
         this.eventManagerMap.put("tavern", new EventManager(this.mapList.get("tavern"), "tavern"));
+        this.eventManagerMap.put("forest", new EventManager(this.mapList.get("forest"), "forest"));
 
 
         this.character = new Character(10, 0);
@@ -171,8 +175,16 @@ public class GameController {
 
         tutorialUI = new TutorialUI(this);
 
+
+        subtitles = new Array<>();
+        subtitles.add("Mình chỉ đang tìm tài liệu cho bài luận văn thôi...");
+        subtitles.add("Nhưng cuốn sách này... không tiêu đề, đầy bụi... có gì đó thu hút mình.");
+        subtitles.add("Khoảnh khắc chạm vào trang giấy, thế giới xung quanh dường như biến mất.");
+        subtitles.add("Tôi... đang bị kéo đi...");
+        subtitles.add("Mình đang ở đâu...? Đây không phải là thư viện... Cũng không phải là mơ.");
     }
 
+    Array<String> subtitles;
 
     public void createBoard() {
         boardEventManager = new BoardEventManager(this);
@@ -207,28 +219,29 @@ public class GameController {
         }
     }
 
+    public void changeSaveMap(String mapName) {
 
-    public void changeBoard() {
-
-        IsometricMap newMap = this.mapList.get("board");
+        IsometricMap newMap = this.mapList.get(mapName);
         if (newMap != null) {
+            System.out.println("Changing map to: " + mapName);
 
-            newMap.generateRandomMaze(getCharacter().getRun() / 2);
-            boardEventManager.randomBoardEveryRun();
-            System.out.println("New run generated with run level: " + getCharacter().getRun());
+            if (mapName.equalsIgnoreCase("board")) {
+                newMap.generateRandomMaze(getCharacter().getRun() / 2);
+                boardEventManager.randomBoardEveryRun();
+                System.out.println("New run generated with run level: " + getCharacter().getRun());
+                isNewRun = false;
+            }
+
 
             this.map = newMap;
             this.character.setGameMap(map);
             this.pathfinder.setMap(newMap);
-            this.eventManager = this.eventManagerMap.get("board");
+            this.eventManager = this.eventManagerMap.get(mapName);
             this.game.getGameScreen().getMapRenderer().changeTiledMapRenderer(this.map, this.eventManager);
 
-            isNewRun = false;
-
-        } else {
-            Gdx.app.error("GameController", "Map not found: ");
         }
     }
+
 
 
     boolean isLoadNPCs = false;
@@ -399,6 +412,8 @@ public class GameController {
             if (eventManager.getMapName().equals("board"))
                 this.boardEventManager.checkBoardPlayerPosition((int) targetX, (int) targetY);
             checkPositionEvents((int) targetX, (int) targetY);
+//
+
         }
     }
 
@@ -472,7 +487,7 @@ public class GameController {
         this.isCreated = true;
 
         // Re-initialize map and other references
-        this.character.setGameMap(this.getMap());
+//        this.character.setGameMap(this.getMap());
 
         // Now load the saved dictionary from file
         if (character.getWordFilePath() != null) {
@@ -493,6 +508,7 @@ public class GameController {
                 } else if (!merchantUI.isVisible()) {
                     inputController.updateCooldown(delta);
                     character.update(delta);
+                    checkingCharacterPos(character);
                     npcRenderer.update(delta);
                 }
 
@@ -533,15 +549,23 @@ public class GameController {
                 settingsMenu.update(delta);
                 break;
             case CUTSCENE:
-                if (character.getFlags() != null) {
-                    if (character.getFlags().isEmpty())
-                        startCutscene("intro");
-                }
+//                if (character.getFlags() != null) {
+//                    if (character.getFlags().isEmpty())
+//                        startMulBGSubTitleCutscene("intro", subtitles);
+//                }
                 cutsceneController.update(delta);
                 break;
 
         }
 
+    }
+
+    public Array<String> getSubtitles() {
+        return subtitles;
+    }
+
+    public void setSubtitles(Array<String> subtitles) {
+        this.subtitles = subtitles;
     }
 
     public void startMulChoiceQuiz(int numQuestions) {
@@ -618,7 +642,7 @@ public class GameController {
         });
 
     }
-    
+
 
     private void onStateChanged(GameState oldState, GameState newState) {
         // Notify relevant subsystems about state change
@@ -631,17 +655,17 @@ public class GameController {
         character.getFlags().add(cutsceneName);
     }
 
-    public void startSubTitleCutscene(String cutsceneName,Array<String> subtitles) {
+    public void startSubTitleCutscene(String cutsceneName, Array<String> subtitles) {
         setPreviousState(currentState);
         setState(GameState.CUTSCENE);
-        cutsceneController.loadBackgroundCutscene("intro", subtitles);
+        cutsceneController.loadBackgroundCutscene(cutsceneName, subtitles);
         character.getFlags().add(cutsceneName);
     }
 
-    public void startMulBGSubTitleCutscene(String cutsceneName,Array<String> subtitles) {
+    public void startMulBGSubTitleCutscene(String cutsceneName, Array<String> subtitles) {
         setPreviousState(currentState);
         setState(GameState.CUTSCENE);
-        cutsceneController.loadMultipleBackgroundsCutscene("intro", subtitles);
+        cutsceneController.loadMultipleBackgroundsCutscene(cutsceneName, subtitles);
         character.getFlags().add(cutsceneName);
     }
 
@@ -690,6 +714,49 @@ public class GameController {
             this.boardEventManager.checkBoardPlayerPosition((int) newX, (int) newY);
 
         checkPositionEvents(newX, newY);
+
+    }
+
+    private Set<String> activeEvents = new HashSet<>();
+
+    public void checkForestEvents(float x, float y) {
+        String positionKey = "forest_" + (int) x + "_" + (int) y;
+
+        // Prevent duplicate event triggers
+        if (activeEvents.contains(positionKey)) {
+            return;
+        }
+
+
+        if ((x == 0 && y == 14) || (x == 0 && y == 13)) {
+            activeEvents.add(positionKey);
+            character.clearPath();
+            dialogController.showMessageWithChoices(
+                    "Tiến về ngôi làng phía trước", "YES", "NO",
+                    () -> {
+                        activeEvents.remove(positionKey); // Clear after action
+                        changeMap("main");
+                        character.setPosition(15, 15);
+                    }, () -> {
+                        activeEvents.remove(positionKey); // Clear after action
+                        character.setPosition(x + 1, y);
+                    }
+            );
+
+        }
+    }
+
+    public void checkingCharacterPos(Character character) {
+        if (map.getMapName().equals("forest")) {
+            int x = (int) character.getGridX();
+            int y = (int) character.getGridY();
+            checkForestEvents(x, y);
+        } else {
+            activeEvents.removeIf(event -> event.startsWith("forest_"));
+            return;
+        }
+
+
     }
 
     public float[] toIsometric(float x, float y) {
@@ -714,11 +781,15 @@ public class GameController {
         this.isCreated = created;
 
         if (created && characterCreationController != null && currentState != GameState.MAIN_MENU) {
+
             setState(GameState.CUTSCENE);
+            if (!character.getFlags().contains("intro")) {
+                startMulBGSubTitleCutscene("intro", subtitles);
+//            changeForestMap();
+            }
+
         }
-
     }
-
     // Add to GameController.java
     // In GameController.java, enhance resetGame method
     // In GameController.java - update the resetGame method

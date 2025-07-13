@@ -20,7 +20,7 @@ public class CharacterRenderer {
 
     public CharacterRenderer(Character character, AssetManager assetManager, MapRenderer mapRenderer) {
         this.character = character;
-        character.setGameMap(mapRenderer.getMap());
+//        character.setGameMap(mapRenderer.getMap());
         this.assetManager = assetManager;
         this.mapRenderer = mapRenderer;
         this.animationManager = assetManager.getAnimationManager();

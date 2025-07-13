@@ -239,7 +239,7 @@ public class GameSaveController {
         copy.setName(original.getName());
         copy.setHealth(original.getHealth());
         copy.setGender(original.getGender());
-        copy.setDamage((float)original.getDamage());
+        copy.setDamage((float) original.getDamage());
         copy.setMoveSpeed(original.getMoveSpeed());
 
         // Copy position
@@ -253,7 +253,7 @@ public class GameSaveController {
         copy.setLevel(original.getLevel());
         copy.setExp(original.getExp());
         copy.setMana(original.getMana());
-
+        copy.setMapName(original.getMapName());
 
 
         // Copy any other essential character data
@@ -287,11 +287,11 @@ public class GameSaveController {
             copy.setAchievements(new HashSet<>(original.getAchievements()));
         }
 
-       if(original.getAttempFlags() != null) {
+        if (original.getAttempFlags() != null) {
             copy.setAttempFlags(new HashMap<>(original.getAttempFlags()));
         }
 
-       if (original.getIsTutorials() != null) {
+        if (original.getIsTutorials() != null) {
             copy.setIsTutorials(new HashMap<>(original.getIsTutorials()));
         }
 
@@ -302,7 +302,7 @@ public class GameSaveController {
         return copy;
     }
 
-    public Set<String> loadLearnedWords(Character character,String fileName) {
+    public Set<String> loadLearnedWords(Character character, String fileName) {
         try {
             if (character.getWordFilePath() == null) {
                 Gdx.app.error("GameSaveService", "Word file path is null. Cannot load dictionary.");

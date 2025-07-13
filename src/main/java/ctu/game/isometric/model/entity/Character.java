@@ -83,7 +83,6 @@ public class Character {
     }
 
 
-
     public void decreaseHealth(float amount) {
         if (amount < 0) {
             throw new IllegalArgumentException("Amount cannot be negative");
@@ -107,6 +106,8 @@ public class Character {
     private Set<String> learnedWords;
     private Set<String> newlearneWords;
 
+    String mapName = "forest";
+
     public Character() {
         this.flags = new ArrayList<>();
         this.quests = new ArrayList<>();
@@ -125,9 +126,8 @@ public class Character {
         this.ettempFlags.put("mulQuizAttempts", 0);
         this.ettempFlags.put("fallen", 0);
         this.ettempFlags.put("wrongWord", 0);
-        this.ettempFlags.put("run", 0);
         this.questTracker = new QuestTracker();
-
+        mapName = "forest";
         initialTutorial();
 
         addItem(ItemLoader.getItemByName("CCCD"), 1);
@@ -171,6 +171,7 @@ public class Character {
         }
         isTutorials.put(tutorialType, true);
     }
+
     public Character(float startX, float startY) {
         this.gridX = startX;
         this.gridY = startY;
@@ -194,8 +195,7 @@ public class Character {
         this.ettempFlags.put("run", 0);
         this.score = 0;
         this.questTracker = new QuestTracker();
-
-
+        mapName = "forest";
         initialTutorial();
     }
 
@@ -512,6 +512,7 @@ public class Character {
         }
         this.defend = Math.min(20, this.defend + value); // Cap defense at 100
     }
+
     public void upAttack(float value) {
         if (value < 0) {
             throw new IllegalArgumentException("Attack value cannot be negative");
@@ -524,7 +525,6 @@ public class Character {
     // In Character class
     public void update(float delta) {
         animationTime += delta;
-
 
         if (!isMoving) return;
 
@@ -600,6 +600,13 @@ public class Character {
             }
         }
 
+    }
+
+    public void clearPath() {
+        this.currentPath.clear();
+        this.currentPathIndex = 0;
+        this.isMoving = false;
+        this.animationTime = 0;
     }
 
     // Optimized updateDirection method
@@ -789,6 +796,9 @@ public class Character {
         this.gameMap = gameMap;
         this.gridX = gameMap.getStartX();
         this.gridY = gameMap.getStartY();
+        this.mapName = gameMap.getMapName();
+        System.out.println("Character set to map: " + gameMap.getMapName());
+        clearPath();
     }
 
     public List<String> getFlags() {
@@ -799,6 +809,13 @@ public class Character {
         this.flags = flags;
     }
 
+    public String getMapName() {
+        return mapName;
+    }
+
+    public void setMapName(String mapName) {
+        this.mapName = mapName;
+    }
 
     public Gender getGender() {
         return gender;
@@ -968,12 +985,15 @@ public class Character {
     public int getWinStreak() {
         return playerWinStreak;
     }
+
     public void incrementWinStreak() {
         this.playerWinStreak++;
     }
+
     public void resetWinStreak() {
         this.playerWinStreak = 0;
     }
+
     public void setNewlearneWords(Set<String> newlearneWords) {
         this.newlearneWords = newlearneWords;
     }

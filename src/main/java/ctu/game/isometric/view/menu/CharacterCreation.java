@@ -567,6 +567,8 @@ public class CharacterCreation {
         // Signal that character has been created
 
         gameController.setCreated(true);
+//        gameController.startMulBGSubTitleCutscene("intro",gameController.getSubtitles());
+//        gameController.changeMap("forest");
         gameController.getAchievementManager().setProgressForCharater();
     }
 

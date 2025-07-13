@@ -81,6 +81,10 @@ public class IsometricMap {
                 startX = 4;
                 startY = 1;
                 break;
+            case "forest":
+                startX = 10;
+                startY = 14;
+                break;
         }
 
         if (mapName.equals("board")) {

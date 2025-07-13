@@ -51,7 +51,7 @@ public class GameScreen implements Screen {
         originalMatrix = batch.getProjectionMatrix().cpy();
         originalColor = batch.getColor().cpy();
         // In GameScreen.java - when initializing MapRenderer
-        dialogUI = new DialogUI(gameController.getDialogController(),"MALE");
+        dialogUI = new DialogUI(gameController.getDialogController(), "MALE");
         gameController.getInputController().setDialogUI(dialogUI);
         // Set input processor
 
@@ -121,8 +121,15 @@ public class GameScreen implements Screen {
 
             mapRenderer.setDialogController(gameController.getDialogController());
             mapRenderer.loadTextures();
-            System.out.println("MapRenderer initialized with textures loaded.");
-            gameController.changeBoard();
+
+//            System.out.println("save map name: " + gameController.getCharacter().getMapName());
+            String saveMapName = gameController.getCharacter().getMapName();
+            if (saveMapName.equals("board")) {
+                gameController.changeSaveMap("main");
+            } else {
+                gameController.changeSaveMap(saveMapName);
+            }
+
 
             gameController.setCreated(false);
 

@@ -341,7 +341,7 @@ public class MapRenderer {
 //        }
 
 
-        if (isZoomed && map.getMapName().equals("board")) {
+        if (isZoomed && (map.getMapName().equals("board") ||map.getMapName().equals("forest") )) {
             camera.position.set(645, 25, 0);
             camera.zoom = 0.8f; // Set zoom level for the board
             camera.update();

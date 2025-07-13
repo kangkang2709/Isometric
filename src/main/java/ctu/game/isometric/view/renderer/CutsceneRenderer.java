@@ -11,6 +11,8 @@ import com.badlogic.gdx.utils.Timer;
 import ctu.game.isometric.controller.GameController;
 import ctu.game.isometric.model.game.GameState;
 
+import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
+
 public class CutsceneRenderer {
     private Array<Texture> pages;
     private Array<String> subtitles;
@@ -67,7 +69,7 @@ public class CutsceneRenderer {
         this.cutsceneType = CutsceneType.PAGES;
 
         // Initialize subtitle properties
-        this.subtitleFont = new BitmapFont();
+        this.subtitleFont = generateVietNameseFont("Roboto-Italic.ttf", 24);
         this.subtitleY = 100f;
         this.subtitleAlpha = 1.0f;
         this.glyphLayout = new GlyphLayout();
