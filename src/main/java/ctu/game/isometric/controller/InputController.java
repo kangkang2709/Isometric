@@ -12,6 +12,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Array;
 import ctu.game.isometric.controller.quiz.QuizController;
 import ctu.game.isometric.model.game.GameState;
 import ctu.game.isometric.model.world.IsometricMap;
@@ -104,6 +105,8 @@ public class InputController extends InputAdapter {
                 return handleDictionaryInput(keycode);
             case MENU:
                 return handleMenuInput(keycode);
+            case MAIN_MENU:
+                return gameController.getMainMenuController().handleKey(keycode);
             case SETTINGS:
                 return handleSettingsInput(keycode);
             case CUTSCENE:
@@ -207,7 +210,8 @@ public class InputController extends InputAdapter {
 
             case LOAD_GAME:
                 return gameController.getLoadGameController().handleMouseClick(screenX, screenY);
-
+            case MAIN_MENU:
+                return gameController.getMainMenuController().handleClick(screenX, screenY);
             case GAMEPLAY:
                 return gameController.getGameplayController().handleCombatClick(screenX, screenY);
 
@@ -354,6 +358,9 @@ public class InputController extends InputAdapter {
         if (state == GameState.MENU) {
             return gameController.getMenuController().handleMouseMove(screenX, screenY);
         }
+        if (state == GameState.MAIN_MENU) {
+            return gameController.getMainMenuController().handleMouseMove(screenX, screenY);
+        }
         if (state == GameState.LOAD_GAME) {
             return gameController.getLoadGameController().handleMouseMove(screenX, screenY);
         }
@@ -402,6 +409,24 @@ public class InputController extends InputAdapter {
                     mapRenderer.setWeather("snow", 0.4f);
                 }
 
+            }
+            case Keys.F5 -> {
+                Array<String> subtitles = new Array<>();
+                subtitles.add("Welcome to the adventure...");
+                subtitles.add("Your journey begins now.");
+                subtitles.add("Prepare for challenges ahead.");
+                gameController.startMulBGSubTitleCutscene("intro",subtitles);
+            }
+            case Keys.F6 -> {
+                Array<String> subtitles = new Array<>();
+                subtitles.add("Welcome to the adventure...");
+                subtitles.add("Your journey begins now.");
+                subtitles.add("Prepare for challenges ahead.");
+                gameController.startSubTitleCutscene("intro",subtitles);
+            }
+            case Keys.F7 -> {
+//                gameController.getGame().changeScreen("DUNGEON");
+                gameController.changeMap("library");
             }
             case Keys.F8 -> {
 //                gameController.getGame().changeScreen("DUNGEON");

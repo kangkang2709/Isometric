@@ -3,6 +3,7 @@ package ctu.game.isometric.view.menu;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
@@ -16,7 +17,6 @@ import ctu.game.isometric.controller.GameController;
 import ctu.game.isometric.controller.GameSaveController;
 import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.game.GameState;
-import ctu.game.isometric.view.ui.TutorialUI;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -67,6 +67,7 @@ public class PauseMenu {
         this.menuItems = new ArrayList<>();
 
         this.titleFont = generateVietNameseFont("GrenzeGotisch.ttf", 50);
+
         this.itemFont = generateVietNameseFont("GrenzeGotisch.ttf", 30);
 
         // Initialize rendering tools
@@ -84,16 +85,82 @@ public class PauseMenu {
         menuHeight = (menuItems.size() * (itemHeight + buttonPadding)) + (padding * 3) + 60; // Extra space for title
         menuX = Gdx.graphics.getWidth() / 2 - menuWidth / 2;
         menuY = Gdx.graphics.getHeight() / 2 - menuHeight / 2;
-
+        initializeParallaxBackground();
         this.keyBindingDisplay = new KeyBindingDisplay(gameController);
 
     }
 
+    private Texture[] backgroundLayers;
+    private float[] layerSpeeds;
+    private float[] layerOffsets;
+    private float[] layerPulsePhases;
+    private float[] layerPulseAmplitudes;
+    private Texture transparentPanel;
+    private void initializeParallaxBackground() {
+        backgroundLayers = new Texture[4];
+        layerSpeeds = new float[4];
+        layerOffsets = new float[4];
+        layerPulsePhases = new float[4];
+        layerPulseAmplitudes = new float[4];
+
+        backgroundLayers[0] = new Texture(Gdx.files.internal("backgrounds/bg_layer_1.png"));
+        backgroundLayers[0].setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+
+        backgroundLayers[1] = new Texture(Gdx.files.internal("backgrounds/bg_layer_2.png"));
+        backgroundLayers[1].setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+
+        backgroundLayers[2] = new Texture(Gdx.files.internal("backgrounds/bg_layer_3.png"));
+        backgroundLayers[2].setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+
+        backgroundLayers[3] = new Texture(Gdx.files.internal("backgrounds/bg_layer_4.png"));
+        backgroundLayers[3].setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+
+
+        layerSpeeds[0] = 1.0f;
+        layerSpeeds[1] = 0.5f;
+        layerSpeeds[2] = 0.5f;
+        layerSpeeds[3] = 1.0f;
+
+        // Điều chỉnh biên độ dao động theo trục X
+        layerPulseAmplitudes[0] = 10f;
+        layerPulseAmplitudes[1] = 5f;
+        layerPulseAmplitudes[2] = 5f;
+        layerPulseAmplitudes[3] = 5f;
+
+        for (int i = 0; i < layerOffsets.length; i++) {
+            layerOffsets[i] = 0f;
+            layerPulsePhases[i] = (float) (Math.random() * Math.PI * 2);
+        }
+
+        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(0, 0, 0, 0.3f); // Màu đen với alpha 0.5 (50% trong suốt)
+        pixmap.fill();
+        transparentPanel = new Texture(pixmap);
+        pixmap.dispose();
+    }
     public boolean handleKeyBindingInput(int keycode) {
         if (keyBindingDisplay.isVisible()) {
             return keyBindingDisplay.handleInput(keycode);
         }
         return false;
+    }
+
+    private void renderParallaxBackground(SpriteBatch batch) {
+        for (int i = 0; i < backgroundLayers.length; i++) {
+            Texture layer = backgroundLayers[i];
+
+            // Tạo hiệu ứng pulse ngang (trục X)
+            float xOffset = (float) Math.sin(layerOffsets[i] + layerPulsePhases[i]) * layerPulseAmplitudes[i];
+
+            // Không cần hiệu ứng dọc nữa
+            batch.draw(layer, xOffset -20, 0, 1400, 720);
+        }
+    }
+
+    private void updateParallaxBackground(float delta) {
+        for (int i = 0; i < layerOffsets.length; i++) {
+            layerOffsets[i] += layerSpeeds[i] * delta;
+        }
     }
 
     // Add this method to handle scrolling:
@@ -228,6 +295,8 @@ public class PauseMenu {
                 notificationMessage = null; // Clear the message when time is up
             }
         }
+        // Update parallax background
+        updateParallaxBackground(delta);
     }
 
     public void addMenuItem(String text, Runnable action) {
@@ -264,35 +333,20 @@ public class PauseMenu {
         batch.setProjectionMatrix(new Matrix4().setToOrtho2D(0, 0,
                 Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
 
-        // Shape rendering with the same projection
-        shapeRenderer.setProjectionMatrix(batch.getProjectionMatrix());
-
-        Gdx.gl.glEnable(GL20.GL_BLEND);
-        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-
-        // Draw darkened background overlay
-        shapeRenderer.setColor(0, 0, 0, 0.7f);
-        shapeRenderer.rect(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-
-        // Draw menu panel background
-        shapeRenderer.setColor(0.2f, 0.2f, 0.3f, 0.9f);
-        shapeRenderer.rect(menuX, menuY + 15, menuWidth, menuHeight - padding * 4);
-
-        shapeRenderer.end();
-        Gdx.gl.glDisable(GL20.GL_BLEND);
 
         batch.begin();
 
-        // Draw title
-        titleFont.draw(batch, menuTitle, menuX, menuY + menuHeight + 15,
-                menuWidth, Align.center, false);
-
+        renderParallaxBackground(batch);
 
         // Draw menu items with button backgrounds
         float buttonWidth = menuWidth - (padding * 2);
         float y = menuY + menuHeight - padding - 60;
+
+        batch.draw(transparentPanel, menuX - padding, menuY - padding,
+                menuWidth + padding * 2, menuHeight + padding * 2);
+
+        titleFont.draw(batch, menuTitle, menuX, menuY + menuHeight,
+                menuWidth, Align.center, false);
 
         for (int i = 0; i < menuItems.size(); i++) {
             MenuItem item = menuItems.get(i);
@@ -317,6 +371,8 @@ public class PauseMenu {
 
             y -= (itemHeight + buttonPadding);
         }
+
+
 
         if (notificationMessage != null) {
             itemFont.draw(batch, notificationMessage, 0, Gdx.graphics.getHeight() - 30,

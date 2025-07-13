@@ -1,24 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="isometric" renderorder="right-down" width="15" height="15" tilewidth="64" tileheight="32" infinite="0" nextlayerid="5" nextobjectid="70">
- <tileset firstgid="1" name="dirt_W" tilewidth="64" tileheight="32" tilecount="1" columns="1">
-  <properties>
-   <property name="walkable" type="bool" value="false"/>
-  </properties>
-  <image source="tiles/dirt_W.png" trans="ff00ff" width="64" height="32"/>
- </tileset>
- <tileset firstgid="2" name="stoneWallCorner_S" tilewidth="256" tileheight="239" tilecount="1" columns="1">
+<map version="1.10" tiledversion="1.11.2" orientation="isometric" renderorder="right-down" width="15" height="15" tilewidth="64" tileheight="32" infinite="0" nextlayerid="5" nextobjectid="75">
+ <tileset firstgid="1" name="stoneWallCorner_S" tilewidth="256" tileheight="239" tilecount="1" columns="1">
   <image source="tiles/stoneWallCorner_S.png" trans="ff00ff" width="256" height="239"/>
  </tileset>
- <tileset firstgid="3" name="stoneWallGateOpen_S" tilewidth="158" tileheight="238" tilecount="1" columns="1">
+ <tileset firstgid="2" name="stoneWallGateOpen_S" tilewidth="158" tileheight="238" tilecount="1" columns="1">
   <image source="tiles/stoneWallGateOpen_S.png" trans="ff00ff" width="158" height="238"/>
  </tileset>
- <tileset firstgid="4" name="stoneWall_E" tilewidth="158" tileheight="237" tilecount="1" columns="1">
+ <tileset firstgid="3" name="stoneWall_E" tilewidth="158" tileheight="237" tilecount="1" columns="1">
   <image source="tiles/stoneWall_E.png" trans="ff00ff" width="158" height="237"/>
  </tileset>
- <tileset firstgid="5" name="stoneWallCorner" tilewidth="128" tileheight="237" tilecount="1" columns="1">
+ <tileset firstgid="4" name="stoneWallCorner" tilewidth="128" tileheight="237" tilecount="1" columns="1">
   <image source="tiles/stoneWallCorner.png" trans="ff00ff" width="128" height="239"/>
  </tileset>
- <tileset firstgid="6" name="table_21" tilewidth="81" tileheight="81" tilecount="1" columns="1">
+ <tileset firstgid="5" name="table_21" tilewidth="81" tileheight="81" tilecount="1" columns="1">
   <image source="tiles/table_21.png" trans="ff00ff" width="84" height="81"/>
   <tile id="0">
    <properties>
@@ -26,85 +20,92 @@
    </properties>
   </tile>
  </tileset>
- <tileset firstgid="7" name="table_76" tilewidth="127" tileheight="195" tilecount="1" columns="1">
+ <tileset firstgid="6" name="table_76" tilewidth="127" tileheight="195" tilecount="1" columns="1">
   <image source="tiles/table_76.png" trans="ff00ff" width="127" height="195"/>
  </tileset>
- <tileset firstgid="8" name="table_7" tilewidth="103" tileheight="104" tilecount="1" columns="1">
+ <tileset firstgid="7" name="table_7" tilewidth="103" tileheight="104" tilecount="1" columns="1">
   <image source="tiles/table_7.png" trans="ff00ff" width="103" height="104"/>
  </tileset>
- <tileset firstgid="9" name="table_4" tilewidth="144" tileheight="164" tilecount="1" columns="1">
+ <tileset firstgid="8" name="table_4" tilewidth="144" tileheight="164" tilecount="1" columns="1">
   <image source="tiles/table_4.png" trans="ff00ff" width="144" height="164"/>
  </tileset>
- <tileset firstgid="10" name="table_5" tilewidth="183" tileheight="173" tilecount="1" columns="1">
+ <tileset firstgid="9" name="table_5" tilewidth="183" tileheight="173" tilecount="1" columns="1">
   <image source="tiles/table_5.png" trans="ff00ff" width="183" height="173"/>
  </tileset>
- <tileset firstgid="11" name="table_8" tilewidth="144" tileheight="149" tilecount="1" columns="1">
+ <tileset firstgid="10" name="table_8" tilewidth="144" tileheight="149" tilecount="1" columns="1">
   <image source="tiles/table_8.png" trans="ff00ff" width="144" height="149"/>
  </tileset>
- <tileset firstgid="12" name="table_6" tilewidth="126" tileheight="176" tilecount="1" columns="1">
+ <tileset firstgid="11" name="table_6" tilewidth="126" tileheight="176" tilecount="1" columns="1">
   <image source="tiles/table_6.png" trans="ff00ff" width="126" height="176"/>
  </tileset>
- <tileset firstgid="13" name="table_3" tilewidth="118" tileheight="86" tilecount="1" columns="1">
+ <tileset firstgid="12" name="table_3" tilewidth="118" tileheight="86" tilecount="1" columns="1">
   <image source="tiles/table_3.png" trans="ff00ff" width="118" height="86"/>
+ </tileset>
+ <tileset firstgid="13" name="dirt_W" tilewidth="64" tileheight="32" tilecount="1" columns="1">
+  <image source="tiles/dirt_W.png" trans="ff00ff" width="64" height="32"/>
+ </tileset>
+ <tileset firstgid="14" name="stoneWall_e2" tilewidth="158" tileheight="237" tilecount="1" columns="1">
+  <tileoffset x="0" y="15"/>
+  <image source="tiles/stoneWall_e2.png" trans="ff00ff" width="158" height="237"/>
  </tileset>
  <layer id="1" name="ground_layer" width="15" height="15">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,
-0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,
-0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,
-0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,
-0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,
-0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,
-0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,
-0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-0,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+0,13,13,13,13,13,13,13,13,13,13,13,13,13,0,
+0,13,13,13,13,13,13,13,13,13,13,13,13,13,0,
+0,13,13,13,13,13,13,13,13,13,13,13,13,13,0,
+0,13,13,13,13,13,13,13,13,13,13,13,13,13,0,
+0,13,13,13,13,13,13,13,13,13,13,13,13,13,13,
+0,13,13,13,13,13,13,13,13,13,13,13,13,13,13,
+0,13,13,13,13,13,13,13,13,13,13,13,13,13,0,
+0,13,13,13,13,13,13,13,13,13,13,13,13,13,13,
+0,0,13,13,13,13,13,13,13,13,13,13,13,13,13,
+0,13,13,13,13,13,13,13,13,13,13,13,13,13,13,
+0,13,13,13,13,13,13,13,13,13,13,13,13,13,13,
+0,13,13,13,13,13,13,13,13,13,13,13,13,13,13,
+0,13,13,13,13,13,13,13,13,13,13,13,13,13,13,
+0,13,13,13,13,13,13,13,13,13,13,13,13,13,13
 </data>
  </layer>
- <layer id="3" name="terrain_layer" width="15" height="15" opacity="0.79">
+ <layer id="3" name="terrain_layer" width="15" height="15">
   <properties>
    <property name="id" value="tavern_13"/>
   </properties>
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,1,0,5,0,5,0,1,5,0,0,5,0,5,0,
-0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,
-2,1,0,0,0,0,1,1,0,0,0,0,0,0,4,
-0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,13,0,0,0,14,0,0,0,14,0,0,14,0,0,
+0,13,0,0,0,0,0,13,0,0,0,0,0,0,0,
+1,13,0,0,0,13,13,13,0,0,0,0,0,0,3,
+0,13,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,
-0,1,0,0,1,0,0,1,0,0,0,1,0,0,0,
-0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,
-4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,1,0,0,1,0,0,0,1,0,0,0,
+3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,
+0,13,0,0,13,0,0,13,0,0,0,13,0,0,0,
+0,13,0,0,0,0,0,0,0,0,0,0,0,0,0,
+3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,13,0,0,13,0,0,0,13,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-4,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+3,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
  <objectgroup id="4" name="object">
-  <object id="1" gid="7" x="64" y="320" width="71.5392" height="96.3545" rotation="357.189"/>
-  <object id="7" gid="8" x="64" y="448" width="37.0578" height="32.0012" rotation="359.344">
+  <object id="1" gid="6" x="64" y="320" width="71.5392" height="96.3545" rotation="357.189"/>
+  <object id="7" gid="7" x="64" y="448" width="37.0578" height="32.0012" rotation="359.344">
    <properties>
     <property name="event" value="treasure"/>
     <property name="id" value="tavern_22"/>
    </properties>
   </object>
   <object id="9" x="320" y="576"/>
-  <object id="21" gid="10" x="64" y="96" width="115.438" height="112"/>
-  <object id="31" gid="9" x="224" y="128" width="72.6231" height="80.5371" rotation="0.982778"/>
-  <object id="34" gid="11" x="250.688" y="101.313" width="85.25" height="80"/>
-  <object id="40" gid="6" x="256" y="288" width="45.0625" height="49"/>
-  <object id="42" gid="12" x="64" y="160" width="55.75" height="80"/>
-  <object id="45" gid="6" x="160" y="288" width="45.0625" height="49"/>
-  <object id="46" gid="6" x="160" y="384" width="45.0625" height="49"/>
-  <object id="47" gid="6" x="256" y="384" width="45.0625" height="49"/>
+  <object id="21" gid="9" x="64" y="96" width="115.438" height="112"/>
+  <object id="31" gid="8" x="224" y="128" width="72.6231" height="80.5371" rotation="0.982778"/>
+  <object id="34" gid="10" x="250.688" y="101.313" width="85.25" height="80"/>
+  <object id="40" gid="5" x="256" y="288" width="45.0625" height="49"/>
+  <object id="42" gid="11" x="64" y="160" width="55.75" height="80"/>
+  <object id="45" gid="5" x="160" y="288" width="45.0625" height="49"/>
+  <object id="46" gid="5" x="160" y="384" width="45.0625" height="49"/>
+  <object id="47" gid="5" x="256" y="384" width="45.0625" height="49"/>
   <object id="48" x="384" y="32" width="32" height="32">
    <properties>
     <property name="amount" type="int" value="1"/>
@@ -149,7 +150,7 @@
     <property name="one_time" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="68" gid="13" x="384" y="288" width="61.5" height="48"/>
-  <object id="69" gid="13" x="384" y="384" width="61.5" height="48"/>
+  <object id="68" gid="12" x="384" y="288" width="61.5" height="48"/>
+  <object id="69" gid="12" x="384" y="384" width="61.5" height="48"/>
  </objectgroup>
 </map>

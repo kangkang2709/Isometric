@@ -1,41 +1,137 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="isometric" renderorder="right-down" width="15" height="15" tilewidth="64" tileheight="32" infinite="0" nextlayerid="3" nextobjectid="1">
- <layer id="1" name="ground_layer" width="15" height="15">
-  <data encoding="csv">
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-</data>
- </layer>
+<map version="1.10" tiledversion="1.11.2" orientation="isometric" renderorder="right-down" width="15" height="15" tilewidth="64" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="7">
+ <tileset firstgid="1" name="stone_E" tilewidth="64" tileheight="48" tilecount="1" columns="1">
+  <image source="tiles/lib/stone_E.png" trans="ff00ff" width="64" height="48"/>
+ </tileset>
+ <tileset firstgid="2" name="stoneWall_E" tilewidth="158" tileheight="237" tilecount="1" columns="1">
+  <image source="tiles/stoneWall_E.png" trans="ff00ff" width="158" height="237"/>
+ </tileset>
+ <tileset firstgid="3" name="stoneWallCorner_S" tilewidth="256" tileheight="239" tilecount="1" columns="1">
+  <image source="tiles/stoneWallCorner_S.png" trans="ff00ff" width="256" height="239"/>
+ </tileset>
+ <tileset firstgid="4" name="stoneWall_e2" tilewidth="158" tileheight="237" tilecount="1" columns="1">
+  <tileoffset x="0" y="15"/>
+  <image source="tiles/stoneWall_e2.png" trans="ff00ff" width="158" height="237"/>
+ </tileset>
+ <tileset firstgid="5" name="bookcaseBooks_E" tilewidth="86" tileheight="98" tilecount="1" columns="1">
+  <tileoffset x="0" y="-15"/>
+  <image source="tiles/lib/bookcaseBooks_E.png" trans="ff00ff" width="86" height="98"/>
+ </tileset>
+ <tileset firstgid="6" name="bookcaseWideBooks_E" tilewidth="101" tileheight="113" tilecount="1" columns="1">
+  <image source="tiles/lib/bookcaseWideBooks_E.png" trans="ff00ff" width="101" height="113"/>
+ </tileset>
+ <tileset firstgid="7" name="bookcaseWideEmptyLadder_S" tilewidth="111" tileheight="112" tilecount="1" columns="1">
+  <image source="tiles/lib/bookcaseWideEmptyLadder_S.png" trans="ff00ff" width="111" height="112"/>
+ </tileset>
+ <tileset firstgid="8" name="bookcaseWideBooks_E2" tilewidth="101" tileheight="113" tilecount="1" columns="1">
+  <tileoffset x="-5" y="17"/>
+  <image source="tiles/lib/bookcaseWideBooks_E2.png" trans="ff00ff" width="101" height="113"/>
+ </tileset>
+ <tileset firstgid="9" name="bookcaseWideBooksDesk_S" tilewidth="111" tileheight="115" tilecount="1" columns="1">
+  <tileoffset x="20" y="0"/>
+  <image source="tiles/lib/bookcaseWideBooksDesk_S.png" trans="ff00ff" width="111" height="115"/>
+ </tileset>
+ <tileset firstgid="10" name="displayCaseBooks_S" tilewidth="84" tileheight="75" tilecount="1" columns="1">
+  <tileoffset x="-15" y="15"/>
+  <image source="tiles/lib/displayCaseBooks_S.png" trans="ff00ff" width="84" height="75"/>
+ </tileset>
+ <tileset firstgid="11" name="floorCarpetSmall_S" tilewidth="97" tileheight="50" tilecount="1" columns="1">
+  <image source="tiles/lib/floorCarpetSmall_S.png" trans="ff00ff" width="97" height="50"/>
+ </tileset>
+ <tileset firstgid="12" name="displayCaseOpen_W" tilewidth="84" tileheight="69" tilecount="1" columns="1">
+  <tileoffset x="11" y="-5"/>
+  <image source="tiles/lib/displayCaseOpen_W.png" trans="ff00ff" width="84" height="69"/>
+ </tileset>
+ <tileset firstgid="13" name="floorCarpet_W" tilewidth="96" tileheight="49" tilecount="1" columns="1">
+  <image source="tiles/lib/floorCarpet_W.png" trans="ff00ff" width="96" height="49"/>
+ </tileset>
+ <tileset firstgid="14" name="bookcaseWideBooksLadder_E" tilewidth="101" tileheight="111" tilecount="1" columns="1">
+  <image source="tiles/lib/bookcaseWideBooksLadder_E.png" trans="ff00ff" width="101" height="111"/>
+ </tileset>
+ <tileset firstgid="15" name="bookStand_W" tilewidth="33" tileheight="40" tilecount="1" columns="1">
+  <tileoffset x="-22" y="11"/>
+  <image source="tiles/lib/bookStand_W.png" trans="ff00ff" width="33" height="40"/>
+ </tileset>
+ <tileset firstgid="16" name="longTableDecoratedChairsBooks_S" tilewidth="79" tileheight="61" tilecount="1" columns="1">
+  <image source="tiles/lib/longTableDecoratedChairsBooks_S.png" trans="ff00ff" width="79" height="61"/>
+ </tileset>
+ <tileset firstgid="17" name="stone_E2" tilewidth="32" tileheight="32" tilecount="1" columns="1">
+  <tileoffset x="19" y="-15"/>
+  <image source="tiles/lib/stone_E2.png" trans="ff00ff" width="32" height="32"/>
+ </tileset>
  <layer id="2" name="terrain_layer" width="15" height="15">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+0,17,17,17,17,4,0,17,0,4,17,17,4,0,17,
+0,17,0,0,17,0,0,17,0,0,0,0,0,0,0,
+3,17,0,0,0,0,0,0,0,0,0,0,0,0,0,
+2,17,0,0,17,0,0,17,0,0,17,0,17,0,0,
+0,17,0,0,17,0,0,17,0,0,17,0,17,0,0,
+0,17,0,0,0,0,0,0,0,0,0,0,17,0,0,
+0,17,0,0,17,0,0,17,0,0,17,0,17,0,0,
+2,17,0,0,17,0,0,17,0,0,17,0,0,0,0,
+0,17,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,17,0,0,17,0,0,17,0,17,17,0,0,0,0,
+0,17,0,0,0,0,0,0,0,17,17,0,0,0,0,
+2,17,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,17,0,0,0,0,0,0,0,0,0,0,17,17,0,
+2,17,0,0,0,0,0,0,0,0,0,0,17,17,17
 </data>
  </layer>
+ <layer id="1" name="ground_layer" width="15" height="15">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,
+0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+0,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+</data>
+ </layer>
+ <layer id="3" name="layer3" width="15" height="15">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,10,0,10,0,0,
+0,6,0,0,6,0,0,14,0,0,0,0,2147483663,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,6,0,0,0,0,0,0,0,0,2147483664,0,0,0,0,
+0,0,0,0,6,0,0,6,0,0,2147483664,0,13,0,0,
+0,14,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,2147483664,0,13,0,0,
+0,6,0,0,6,0,0,6,0,0,2147483664,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,6,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,5,0,0,5,0,9,0,0,0,0,0,
+0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,12,0,0,11,0,0,0,0,0,0,0,0,2147483660,0
+</data>
+ </layer>
+ <objectgroup id="4" name="object">
+  <object id="1" x="128" y="448" width="32" height="32">
+   <properties>
+    <property name="event" value="tele"/>
+    <property name="id" value="library_1"/>
+    <property name="map" value="main"/>
+   </properties>
+  </object>
+  <object id="2" x="128" y="416"/>
+  <object id="4" x="96" y="352"/>
+  <object id="6" x="128" y="416" width="32" height="32">
+   <properties>
+    <property name="event" value="tele"/>
+    <property name="id" value="library_2"/>
+    <property name="map" value="main"/>
+   </properties>
+  </object>
+ </objectgroup>
 </map>

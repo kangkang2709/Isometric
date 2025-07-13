@@ -122,6 +122,8 @@ public class GameScreen implements Screen {
             mapRenderer.setDialogController(gameController.getDialogController());
             mapRenderer.loadTextures();
             System.out.println("MapRenderer initialized with textures loaded.");
+            gameController.changeBoard();
+
             gameController.setCreated(false);
 
         }

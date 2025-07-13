@@ -37,7 +37,7 @@ public class DialogUI {
     private static final int DIALOG_BOX_WIDTH = 1280;
     private static final int DIALOG_BOX_HEIGHT = 200;
 
-    private static final int CHARACTER_IMAGE_SIZE = 80;
+    private static final int CHARACTER_IMAGE_SIZE = 120;
 
     // Text typing effect variables
     private String currentFullText = "";

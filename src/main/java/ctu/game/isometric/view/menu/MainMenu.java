@@ -32,7 +32,7 @@ public class MainMenu {
     private final int screenWidth = 1280;
     private final int screenHeight = 720;
 
-    private String[] menuOptions = {"Game Mới", "Tải Game", "Tùy Chỉnh", "Thoát"};
+    private String[] menuOptions = {"Chơi mới", "Tiếp Tục", "Tùy Chỉnh", "Thoát"};
     private int selectedOption = 0;
 
     private Rectangle[] buttonRects;
@@ -42,6 +42,12 @@ public class MainMenu {
 
     private float inputCooldown = 0;
     private final float INPUT_DELAY = 0.2f;
+
+    private Texture titleTexture;
+    private float titleY;
+    private float titleTargetY;
+    private boolean titleAnimationComplete = false;
+    private final float TITLE_ANIMATION_SPEED = 100f; // pixels per second
 
     public MainMenu(GameController gameController) {
         this.font = generateVietNameseFont("GrenzeGotisch.ttf", 35);
@@ -56,15 +62,21 @@ public class MainMenu {
         buttonRects = new Rectangle[menuOptions.length];
         int menuX = (screenWidth - BUTTON_WIDTH) / 2;
         int totalMenuHeight = (menuOptions.length * BUTTON_HEIGHT) + ((menuOptions.length - 1) * 20);
+
         int startY = (screenHeight + totalMenuHeight) / 2 -170;
         int spacing = 80;
+
+        // Thêm vào constructor sau dòng khởi tạo buttonRects
+        titleTexture = new Texture(Gdx.files.internal("ui/title.png")); // Thay đổi đường dẫn texture của bạn
+        titleY = screenHeight + 100; // Bắt đầu từ ngoài màn hình
+        titleTargetY = startY + 150; // Vị trí cuối cùng của title
 
         for (int i = 0; i < menuOptions.length; i++) {
             buttonRects[i] = new Rectangle(menuX, startY - (i * spacing), BUTTON_WIDTH, BUTTON_HEIGHT);
         }
 
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        pixmap.setColor(0, 0, 0, 0.5f); // Màu đen với alpha 0.5 (50% trong suốt)
+        pixmap.setColor(0, 0, 0, 0.3f); // Màu đen với alpha 0.5 (50% trong suốt)
         pixmap.fill();
         transparentPanel = new Texture(pixmap);
         pixmap.dispose();
@@ -77,30 +89,47 @@ public class MainMenu {
         }
 
         updateParallaxBackground(delta);
-        handleInput();
+        updateTitleAnimation(delta);
+//        handleInput();
     }
 
-
+    private void updateTitleAnimation(float delta) {
+        if (!titleAnimationComplete) {
+            titleY -= TITLE_ANIMATION_SPEED * delta;
+            if (titleY <= titleTargetY) {
+                titleY = titleTargetY;
+                titleAnimationComplete = true;
+            }
+        }
+    }
     public void render(SpriteBatch batch) {
         Matrix4 originalMatrix = new Matrix4(batch.getProjectionMatrix());
 
         batch.setProjectionMatrix(new Matrix4().setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
         renderParallaxBackground(batch);
 
+        // Vẽ title
+        float titleX = (screenWidth - titleTexture.getWidth()) / 2;
+        batch.draw(titleTexture, titleX, titleY);
+
+
         float padding = 20f;
         float panelX = buttonRects[0].x - padding;
         float panelY = buttonRects[buttonRects.length - 1].y - padding;
         float panelWidth = buttonRects[0].width + padding * 2;
         float panelHeight = (buttonRects[0].y + buttonRects[0].height - buttonRects[buttonRects.length - 1].y) + padding * 2;
-
         batch.draw(transparentPanel, panelX, panelY, panelWidth, panelHeight);
 
         GlyphLayout layout = new GlyphLayout();
         for (int i = 0; i < menuOptions.length; i++) {
             Rectangle buttonRect = buttonRects[i];
 
-            Texture buttonTexture = (i == selectedOption) ? buttonSelected : buttonNormal;
-            batch.draw(buttonTexture, buttonRect.x, buttonRect.y, buttonRect.width, buttonRect.height);
+
+            if (i == selectedOption) {
+                batch.draw(buttonSelected, buttonRect.x, buttonRect.y, buttonRect.width, buttonRect.height);
+
+            }
+//            Texture buttonTexture = (i == selectedOption) ? buttonSelected : buttonNormal;
 
             layout.setText(font, menuOptions[i]);
             float textWidth = layout.width;
@@ -120,16 +149,16 @@ public class MainMenu {
         layerPulsePhases = new float[4];
         layerPulseAmplitudes = new float[4];
 
-        backgroundLayers[0] = new Texture(Gdx.files.internal("backgrounds/bg_layer_1.png"));
+        backgroundLayers[0] = new Texture(Gdx.files.internal("backgrounds/pause/bg_layer_1.png"));
         backgroundLayers[0].setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
-        backgroundLayers[1] = new Texture(Gdx.files.internal("backgrounds/bg_layer_2.png"));
+        backgroundLayers[1] = new Texture(Gdx.files.internal("backgrounds/pause/bg_layer_2.png"));
         backgroundLayers[1].setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
-        backgroundLayers[2] = new Texture(Gdx.files.internal("backgrounds/bg_layer_3.png"));
+        backgroundLayers[2] = new Texture(Gdx.files.internal("backgrounds/pause/bg_layer_3.png"));
         backgroundLayers[2].setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
-        backgroundLayers[3] = new Texture(Gdx.files.internal("backgrounds/bg_layer_4.png"));
+        backgroundLayers[3] = new Texture(Gdx.files.internal("backgrounds/pause/bg_layer_4.png"));
         backgroundLayers[3].setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
 
@@ -168,43 +197,53 @@ public class MainMenu {
         }
     }
 
-    public void handleInput() {
-        int mouseX = Gdx.input.getX();
-        int mouseY = screenHeight - Gdx.input.getY();
+    public boolean handleClick(int mouseX, int mouseY) {
+        mouseY = screenHeight - mouseY;
 
         for (int i = 0; i < buttonRects.length; i++) {
             if (buttonRects[i].contains(mouseX, mouseY)) {
                 selectedOption = i;
+                selectOption(i);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean handleKey(int keyCode) {
+        if (inputCooldown > 0) return false;
+
+        if (keyCode == Input.Keys.UP || keyCode == Input.Keys.W) {
+            selectedOption = (selectedOption - 1 + menuOptions.length) % menuOptions.length;
+            inputCooldown = INPUT_DELAY;
+            return true;
+        } else if (keyCode == Input.Keys.DOWN || keyCode == Input.Keys.S) {
+            selectedOption = (selectedOption + 1) % menuOptions.length;
+            inputCooldown = INPUT_DELAY;
+            return true;
+        } else if (keyCode == Input.Keys.ENTER || keyCode == Input.Keys.SPACE) {
+            selectOption(selectedOption);
+            inputCooldown = INPUT_DELAY;
+            return true;
+        }
+
+        return false;
+    }
+    public boolean handleMouseMove(int mouseX, int mouseY) {
+        mouseY = screenHeight - mouseY;
+
+        for (int i = 0; i < buttonRects.length; i++) {
+            if (buttonRects[i].contains(mouseX, mouseY)) {
+                if (selectedOption != i) {
+                    selectedOption = i;
+                    return true; // Có thay đổi lựa chọn do di chuột
+                }
                 break;
             }
         }
-
-        if (inputCooldown <= 0) {
-            if (Gdx.input.isKeyJustPressed(Input.Keys.UP) || Gdx.input.isKeyJustPressed(Input.Keys.W)) {
-                selectedOption = (selectedOption - 1 + menuOptions.length) % menuOptions.length;
-                inputCooldown = INPUT_DELAY;
-            }
-
-            if (Gdx.input.isKeyJustPressed(Input.Keys.DOWN) || Gdx.input.isKeyJustPressed(Input.Keys.S)) {
-                selectedOption = (selectedOption + 1) % menuOptions.length;
-                inputCooldown = INPUT_DELAY;
-            }
-
-            if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
-                selectOption(selectedOption);
-                inputCooldown = INPUT_DELAY;
-            }
-        }
-
-        if (Gdx.input.justTouched()) {
-            for (int i = 0; i < buttonRects.length; i++) {
-                if (buttonRects[i].contains(mouseX, mouseY)) {
-                    selectOption(i);
-                    break;
-                }
-            }
-        }
+        return false;
     }
+
 
     private void selectOption(int option) {
         switch (option) {
@@ -233,6 +272,7 @@ public class MainMenu {
 
         font.dispose();
         buttonNormal.dispose();
+        titleTexture.dispose();
         buttonSelected.dispose();
     }
 }

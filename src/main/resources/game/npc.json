@@ -60,8 +60,8 @@
     "npcImage": "gambler.png",
     "npcBackStory": "Lucy travels from town to town entertaining locals with her games of chance.",
     "behaviorState": "idle",
-    "xPosition": 15,
-    "yPosition": 15,
+    "xPosition": 12,
+    "yPosition": 11,
     "mapName": "library"
   },
   {
@@ -73,8 +73,8 @@
     "npcImage": "gambler.png",
     "npcBackStory": "Lucy travels from town to town entertaining locals with her games of chance.",
     "behaviorState": "idle",
-    "xPosition": 19,
-    "yPosition": 20,
+    "xPosition": 4,
+    "yPosition": 5,
     "mapName": "library"
   },
   {

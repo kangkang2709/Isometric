@@ -72,9 +72,14 @@ public class IsometricMap {
                 startY = 15;
                 break;
             case "tavern":
-                tileId = 1;
+                tileId = 13;
                 startX = 5;
                 startY = 5;
+                break;
+            case "library":
+                tileId = 1;
+                startX = 4;
+                startY = 1;
                 break;
         }
 

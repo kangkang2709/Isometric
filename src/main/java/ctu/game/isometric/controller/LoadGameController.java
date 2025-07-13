@@ -338,7 +338,7 @@ public class LoadGameController {
                     gameController.setCreated(true);
                     // Start the game
                     gameController.setState(GameState.EXPLORING);
-                    gameController.changeBoard();
+//                    gameController.changeBoard();
 
 
                     if (!gameController.getCharacter().getFlags().contains("intro"))

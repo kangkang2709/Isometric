@@ -113,14 +113,16 @@ public class GameController {
         this.game = game;
 
         this.map = new IsometricMap();
-        this.mapList.put("board", map);
         this.eventManager = new EventManager(map, "board");
 
+        this.mapList.put("board", map);
         this.mapList.put("main", new IsometricMap("maps/main.tmx"));
+        this.mapList.put("library", new IsometricMap("maps/library.tmx"));
         this.mapList.put("tavern", new IsometricMap("maps/tavern.tmx"));
-        this.eventManagerMap.put("board", eventManager);
 
+        this.eventManagerMap.put("board", eventManager);
         this.eventManagerMap.put("main", new EventManager(this.mapList.get("main"), "main"));
+        this.eventManagerMap.put("library", new EventManager(this.mapList.get("library"), "library"));
         this.eventManagerMap.put("tavern", new EventManager(this.mapList.get("tavern"), "tavern"));
 
 
@@ -534,8 +536,6 @@ public class GameController {
                 if (character.getFlags() != null) {
                     if (character.getFlags().isEmpty())
                         startCutscene("intro");
-                    tutorialUI.show("movement");
-                    getCharacter().setTutorialCompleted("movement");
                 }
                 cutsceneController.update(delta);
                 break;
@@ -618,29 +618,7 @@ public class GameController {
         });
 
     }
-
-    public void setState2(GameState newState) {
-        if (currentState == newState) return;
-
-        final GameState oldState = currentState;
-
-        if (newState != GameState.SETTINGS) {
-            previousState = oldState;
-        }
-
-        currentState = newState;
-
-        // Initialize UI components when changing to EXPLORING state
-        if (newState == GameState.EXPLORING && merchantUI == null) {
-            // Initialize merchantUI here
-            merchantUI = new MerchantUI(this);
-            // Add any other necessary initialization
-        }
-
-        if (musicController != null) {
-            musicController.playMusicForState(newState);
-        }
-    }
+    
 
     private void onStateChanged(GameState oldState, GameState newState) {
         // Notify relevant subsystems about state change
@@ -652,6 +630,21 @@ public class GameController {
         cutsceneController.loadCutscene(cutsceneName);
         character.getFlags().add(cutsceneName);
     }
+
+    public void startSubTitleCutscene(String cutsceneName,Array<String> subtitles) {
+        setPreviousState(currentState);
+        setState(GameState.CUTSCENE);
+        cutsceneController.loadBackgroundCutscene("intro", subtitles);
+        character.getFlags().add(cutsceneName);
+    }
+
+    public void startMulBGSubTitleCutscene(String cutsceneName,Array<String> subtitles) {
+        setPreviousState(currentState);
+        setState(GameState.CUTSCENE);
+        cutsceneController.loadMultipleBackgroundsCutscene("intro", subtitles);
+        character.getFlags().add(cutsceneName);
+    }
+
 
     public CutsceneRenderer getCutsceneController() {
         return cutsceneController;

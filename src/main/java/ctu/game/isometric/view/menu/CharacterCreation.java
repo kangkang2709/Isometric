@@ -567,7 +567,6 @@ public class CharacterCreation {
         // Signal that character has been created
 
         gameController.setCreated(true);
-        gameController.changeBoard();
         gameController.getAchievementManager().setProgressForCharater();
     }
 

@@ -383,13 +383,6 @@ public class MapRenderer {
 
             renderObjectLayer(batch, "object");
             renderPressurePlate(batch);
-//                renderDice(batch);
-//                renderHighlight(batch);
-
-
-//            tiledMapRenderer.getBatch().begin();
-//            tiledMapRenderer.renderTileLayer(map.getTerrianLayer());
-//            tiledMapRenderer.getBatch().end();
 
             if (map.getMapName().equals("board")) {
                 renderBoard(batch);
