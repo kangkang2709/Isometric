@@ -114,7 +114,6 @@ public class MapRenderer {
         animationManager.loadDiceAnimations("textures/dice_static.png", "textures/dice_rolling.png");
 
 
-
         setSlowMotion(true);
         setSpeedMultiplier(0.01f);
         smoothSlowMotion(true);
@@ -341,11 +340,11 @@ public class MapRenderer {
 //        }
 
 
-        if (isZoomed && (map.getMapName().equals("board") ||map.getMapName().equals("forest") )) {
+        if (isZoomed && map.getMapName().equals("board")) {
             camera.position.set(645, 25, 0);
             camera.zoom = 0.8f; // Set zoom level for the board
             camera.update();
-        } else if (!isZoomed && map.getMapName().equals("board")) {
+        } else if (!isZoomed && map.getMapName().equals("board") || map.getMapName().equals("forest")) {
             float[] isoPos = toIsometric(character.getGridX(), character.getGridY());
             camera.position.set(isoPos[0], isoPos[1], 0);
             camera.zoom = 0.5f;

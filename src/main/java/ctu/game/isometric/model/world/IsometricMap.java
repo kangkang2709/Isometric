@@ -23,6 +23,7 @@ public class IsometricMap {
     private int mapHeight;
     private TiledMapTileLayer baseLayer;
     private TiledMapTileLayer terrianLayer;
+    private TiledMapTileLayer layer3;
     private boolean[][] walkableCache;
     private int[][] mapData;
     private String mapName; // Default map name
@@ -63,18 +64,20 @@ public class IsometricMap {
         // Assume the first layer is the base layer
         baseLayer = (TiledMapTileLayer) tiledMap.getLayers().get("ground_layer");
         terrianLayer = (TiledMapTileLayer) tiledMap.getLayers().get("terrain_layer");
+        if (mapName.equals("main"))
+            layer3 = (TiledMapTileLayer) tiledMap.getLayers().get("layer3");
 
-
+        else layer3 = null;
         switch (mapName) {
             case "main":
-                tileId = 213;
+                tileId = 6;
                 startX = 15;
-                startY = 15;
+                startY = 10;
                 break;
             case "tavern":
                 tileId = 13;
-                startX = 5;
-                startY = 5;
+                startX = 10;
+                startY = 7;
                 break;
             case "library":
                 tileId = 1;
@@ -318,12 +321,13 @@ public class IsometricMap {
         }
 
 
-        if (baseLayer != null && mapName.equals("main")) {
-            TiledMapTileLayer.Cell cell2 = baseLayer.getCell(x, y);
-            if (cell2 != null && cell2.getTile() != null) {
-                return cell.getTile().getId() == tileId;
-            }
-        }
+//        if (baseLayer != null && mapName.equals("main")) {
+//            TiledMapTileLayer.Cell cell2 = baseLayer.getCell(x, y);
+//            if (cell2 != null && cell2.getTile() != null) {
+//                return cell.getTile().getId() == tileId;
+//            }
+//        }
+
 
         if (terrianLayer != null) {
             TiledMapTileLayer.Cell cell2 = terrianLayer.getCell(x, y);

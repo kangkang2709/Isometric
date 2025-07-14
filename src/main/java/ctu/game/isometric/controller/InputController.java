@@ -430,7 +430,7 @@ public class InputController extends InputAdapter {
             }
             case Keys.F8 -> {
 //                gameController.getGame().changeScreen("DUNGEON");
-                gameController.changeMap("forest");
+                gameController.changeMap("tavern");
             }
             case Keys.F9 -> {
                 gameController.changeMap("main");

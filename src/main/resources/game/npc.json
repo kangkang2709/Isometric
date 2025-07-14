@@ -22,7 +22,7 @@
     "npcBackStory": "Elara studied ancient healing arts in the mystical forest before settling in this village.",
     "behaviorState": "idle",
     "xPosition": 1,
-    "yPosition": 9,
+    "yPosition": 6,
     "mapName": "tavern"
   },
   {
@@ -35,7 +35,7 @@
     "npcBackStory": "A veteran soldier who now protects the village from various threats.",
     "behaviorState": "idle",
     "xPosition": 5,
-    "yPosition": 13,
+    "yPosition": 10,
     "mapName": "tavern"
   },
   {

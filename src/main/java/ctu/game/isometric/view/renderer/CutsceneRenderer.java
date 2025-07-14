@@ -52,6 +52,7 @@ public class CutsceneRenderer {
     }
 
     private Array<Texture> backgroundTextures;
+
     public CutsceneRenderer(GameController gameController) {
         this.gameController = gameController;
         this.pages = new Array<>();
@@ -62,7 +63,7 @@ public class CutsceneRenderer {
 
         // Initialize new auto progression properties
         this.autoProgressEnabled = true;
-        this.pageDisplayDuration = 1.0f;
+        this.pageDisplayDuration = 3.0f;
         this.pageDisplayTimer = 0f;
         this.fadeAlpha = 1.0f;
         this.transitionType = TransitionType.FADE;
@@ -200,7 +201,7 @@ public class CutsceneRenderer {
     }
 
     public void render(SpriteBatch batch) {
-        float screenWidth = 1280;
+        float screenWidth = 1280; // Assuming a fixed screen width for simplicity
         float screenHeight = 720;
 
         Matrix4 originalMatrix = batch.getProjectionMatrix().cpy();
@@ -245,12 +246,13 @@ public class CutsceneRenderer {
                 case NONE:
                     if (currentPage < pages.size) {
                         Texture currentTexture = pages.get(currentPage);
-                        batch.draw(currentTexture, 0, 0, screenWidth, screenHeight);
+                        batch.draw(currentTexture, 0, 0, 1280, screenHeight);
                     }
                     break;
             }
         }
     }
+
     private void renderSlideVerticalTransition(SpriteBatch batch, float progress, float screenWidth, float screenHeight) {
         float offsetY = progress * screenHeight;
 
@@ -288,8 +290,11 @@ public class CutsceneRenderer {
             batch.draw(currentTexture, x, y, scaledWidth, scaledHeight);
         }
     }
+
     private void renderBackgroundCutscene(SpriteBatch batch, float screenWidth, float screenHeight) {
         // Draw background based on cutscene type
+        screenWidth = 1024;
+
         if (cutsceneType == CutsceneType.BACKGROUND_WITH_SUBTITLES) {
             // Single background for all subtitles
             if (backgroundTexture != null) {
@@ -300,7 +305,7 @@ public class CutsceneRenderer {
             // Different background for each subtitle
             if (currentPage < backgroundTextures.size && backgroundTextures.get(currentPage) != null) {
                 batch.setColor(1, 1, 1, 1);
-                batch.draw(backgroundTextures.get(currentPage), 0, 0, screenWidth, screenHeight);
+                batch.draw(backgroundTextures.get(currentPage), 128, 0, screenWidth, screenHeight);
             }
         }
 
@@ -311,10 +316,11 @@ public class CutsceneRenderer {
                 subtitleFont.setColor(1, 1, 1, subtitleAlpha);
                 glyphLayout.setText(subtitleFont, currentSubtitle);
                 float x = (screenWidth - glyphLayout.width) / 2;
-                subtitleFont.draw(batch, currentSubtitle, x, subtitleY);
+                subtitleFont.draw(batch, currentSubtitle, x+128, subtitleY);
             }
         }
     }
+
     private void disposeBackgrounds() {
         for (Texture bg : backgroundTextures) {
             if (bg != null) {
@@ -327,6 +333,7 @@ public class CutsceneRenderer {
         }
         backgroundTextures.clear();
     }
+
     private void renderSlideTransition(SpriteBatch batch, float progress, float screenWidth, float screenHeight) {
         float offsetX = progress * screenWidth;
 

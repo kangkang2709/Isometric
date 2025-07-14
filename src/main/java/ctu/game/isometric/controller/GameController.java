@@ -174,13 +174,12 @@ public class GameController {
         questTrackerView = new QuestTrackerView(this);
 
         tutorialUI = new TutorialUI(this);
-
-
         subtitles = new Array<>();
+
         subtitles.add("Mình chỉ đang tìm tài liệu cho bài luận văn thôi...");
         subtitles.add("Nhưng cuốn sách này... không tiêu đề, đầy bụi... có gì đó thu hút mình.");
         subtitles.add("Khoảnh khắc chạm vào trang giấy, thế giới xung quanh dường như biến mất.");
-        subtitles.add("Tôi... đang bị kéo đi...");
+        subtitles.add("Mình... đang bị kéo đi...");
         subtitles.add("Mình đang ở đâu...? Đây không phải là thư viện... Cũng không phải là mơ.");
     }
 
@@ -241,7 +240,6 @@ public class GameController {
 
         }
     }
-
 
 
     boolean isLoadNPCs = false;
@@ -393,6 +391,16 @@ public class GameController {
     public void moveCharacterAlongPath(int targetX, int targetY) {
         float startX = character.getGridX();
         float startY = character.getGridY();
+
+        if (map.getMapName().equals("forest")) {
+            if (!character.getFlags().contains("forest_info")) {
+                dialogController.showSimpleMessage("Đây là đâu vậy? Mình không nhớ gì cả.\n " +
+                        "Có vẻ như mình đang ở trong một khu rừng, Nhưng....\n" +
+                        "Trước tiên mình cần phải tìm đường rời khỏi đây đã.");
+                character.getFlags().add("forest_info");
+                return;
+            }
+        }
 
         // Find path with a reasonable maximum length
         Array<int[]> path = pathfinder.findPath((int) startX, (int) startY, targetX, targetY, 30);
@@ -702,6 +710,15 @@ public class GameController {
         if (!canMove(dx, dy)) {
             return; // Skip this move if it's invalid
         }
+        if (map.getMapName().equals("forest")) {
+            if (!character.getFlags().contains("forest_info")) {
+                dialogController.showSimpleMessage("Đây là đâu vậy? Mình không nhớ gì cả.\n " +
+                        "Có vẻ như mình đang ở trong một khu rừng, Nhưng....\n" +
+                        "Trước tiên mình cần phải tìm đường rời khỏi đây đã.");
+                character.getFlags().add("forest_info");
+                return;
+            }
+        }
 
         float newX = character.getGridX() + dx;
         float newY = character.getGridY() + dy;
@@ -714,6 +731,7 @@ public class GameController {
             this.boardEventManager.checkBoardPlayerPosition((int) newX, (int) newY);
 
         checkPositionEvents(newX, newY);
+
 
     }
 
@@ -755,7 +773,6 @@ public class GameController {
             activeEvents.removeIf(event -> event.startsWith("forest_"));
             return;
         }
-
 
     }
 

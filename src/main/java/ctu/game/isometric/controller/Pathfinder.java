@@ -105,7 +105,7 @@ public class Pathfinder {
         openSet.add(startNode);
         openMap.put(packCoords(startX, startY), startNode);
 
-        final int MAX_NODE_EXPANSION = 30; // Limit the number of nodes explored
+        final int MAX_NODE_EXPANSION = 100; // Limit the number of nodes explored
         int expandedCount = 0;
 
         // Determine how many directions to check based on map name
