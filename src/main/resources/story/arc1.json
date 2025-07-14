@@ -8,7 +8,9 @@
         {
           "id": "scene_01",
           "music": "ominous.mp3",
-          "sound_effects": ["door_creak.mp3"],
+          "sound_effects": [
+            "door_creak.mp3"
+          ],
           "dialogues": [
             {
               "character": "MC",
@@ -46,7 +48,9 @@
         {
           "id": "scene_02",
           "music": "suspense.mp3",
-          "sound_effects": ["door_creak.mp3"],
+          "sound_effects": [
+            "door_creak.mp3"
+          ],
           "dialogues": [
             {
               "character": "MC",
@@ -78,7 +82,9 @@
         {
           "id": "scene_03",
           "music": "mystery.mp3",
-          "sound_effects": ["door_creak.mp3"],
+          "sound_effects": [
+            "door_creak.mp3"
+          ],
           "dialogues": [
             {
               "character": "MC",
@@ -110,7 +116,9 @@
         {
           "id": "scene_04",
           "music": "mystery.mp3",
-          "sound_effects": ["footsteps.mp3"],
+          "sound_effects": [
+            "footsteps.mp3"
+          ],
           "dialogues": [
             {
               "character": "MC",
@@ -137,7 +145,9 @@
         {
           "id": "scene_hidden",
           "music": "eerie_whispers.mp3",
-          "sound_effects": ["whispering.mp3"],
+          "sound_effects": [
+            "whispering.mp3"
+          ],
           "dialogues": [
             {
               "character": "Shadow",
@@ -154,7 +164,9 @@
         {
           "id": "scene_end",
           "music": "sad_piano.mp3",
-          "sound_effects": ["door_creak.mp3"],
+          "sound_effects": [
+            "door_creak.mp3"
+          ],
           "dialogues": [
             {
               "character": "MC",
@@ -164,12 +176,12 @@
           ],
           "choices": []
         },
-
-
         {
           "id": "scene_not_enough_item",
           "music": "sad_piano.mp3",
-          "sound_effects": ["door_creak.mp3"],
+          "sound_effects": [
+            "door_creak.mp3"
+          ],
           "dialogues": [
             {
               "character": "MC",
@@ -190,7 +202,9 @@
         {
           "id": "scene_01",
           "music": "ominous.mp3",
-          "sound_effects": ["door_creak.mp3"],
+          "sound_effects": [
+            "door_creak.mp3"
+          ],
           "dialogues": [
             {
               "character": "MC",
@@ -228,7 +242,9 @@
         {
           "id": "scene_02",
           "music": "suspense.mp3",
-          "sound_effects": ["door_creak.mp3"],
+          "sound_effects": [
+            "door_creak.mp3"
+          ],
           "dialogues": [
             {
               "character": "MC",
@@ -260,7 +276,9 @@
         {
           "id": "scene_03",
           "music": "mystery.mp3",
-          "sound_effects": ["door_creak.mp3"],
+          "sound_effects": [
+            "door_creak.mp3"
+          ],
           "dialogues": [
             {
               "character": "MC",
@@ -292,7 +310,9 @@
         {
           "id": "scene_04",
           "music": "mystery.mp3",
-          "sound_effects": ["footsteps.mp3"],
+          "sound_effects": [
+            "footsteps.mp3"
+          ],
           "dialogues": [
             {
               "character": "MC",
@@ -319,7 +339,9 @@
         {
           "id": "scene_hidden",
           "music": "eerie_whispers.mp3",
-          "sound_effects": ["whispering.mp3"],
+          "sound_effects": [
+            "whispering.mp3"
+          ],
           "dialogues": [
             {
               "character": "Shadow",
@@ -336,7 +358,9 @@
         {
           "id": "scene_end",
           "music": "sad_piano.mp3",
-          "sound_effects": ["door_creak.mp3"],
+          "sound_effects": [
+            "door_creak.mp3"
+          ],
           "dialogues": [
             {
               "character": "MC",
@@ -348,8 +372,176 @@
         }
       ]
     },
-
-
+    {
+      "id": "god_intro",
+      "title": "Chương 2: Lời Gọi Từ Trên Cao",
+      "description": "Sau khi rời khỏi khu rừng lạ, nhân vật nghe thấy một giọng nói vang vọng từ bầu trời – lời nhắn nhủ của một vị thần cổ xưa.",
+      "conditions": "",
+      "scenes": [
+        {
+          "id": "scene_01",
+          "music": "mystic_voice.mp3",
+          "sound_effects": [
+            "wind_chime.mp3"
+          ],
+          "dialogues": [
+            {
+              "character": "MC",
+              "characterImage": "mc_ready.png",
+              "text": "Cuối cùng mình cũng thoát khỏi khu rừng kỳ lạ đó... Nhưng... tại sao bầu trời lại sáng chói như vậy?"
+            },
+            {
+              "character": "???",
+              "characterImage": "divine_glow.png",
+              "text": "[Giọng nói vang vọng] Kẻ lữ hành từ thế giới khác... Cuối cùng ngươi cũng đã đến được nơi khởi đầu thực sự."
+            },
+            {
+              "character": "MC",
+              "characterImage": "mc_ready.png",
+              "text": "Ai... ai đang nói vậy?"
+            },
+            {
+              "character": "Thần Linh Vô Danh",
+              "characterImage": "divine_glow.png",
+              "text": "Ta là người đã gọi linh hồn ngươi đến Elaria. Không phải là ngẫu nhiên – mà là định mệnh."
+            },
+            {
+              "character": "Thần Linh Vô Danh",
+              "characterImage": "divine_glow.png",
+              "text": "Thế giới này đang dần bị lãng quên – và chỉ những ai sở hữu ‘Tri Thức Thuần Khiết’ mới có thể cứu rỗi nó."
+            },
+            {
+              "character": "Thần Linh Vô Danh",
+              "characterImage": "divine_glow.png",
+              "text": "Hãy đến Tòa Tháp Ngữ Cổ ở trong ngôi làng này – nơi Cleric Quyêến giả của ta đang chờ đợi. Người đó sẽ chỉ đường cho ngươi."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Nhận lấy minh chứng này và lên đường đến Tòa Tháp.",
+              "next_scene": "scene_02",
+              "required_item": null,
+              "reward_item": "CCCD"
+            },
+            {
+              "text": "Hỏi thêm về thân phận của vị thần.",
+              "next_scene": "scene_03",
+              "required_item": null,
+              "reward_item": null
+            }
+          ],
+          "conditions": {}
+        },
+        {
+          "id": "scene_02",
+          "music": "hopeful_journey.mp3",
+          "sound_effects": [
+            "footsteps_grass.mp3"
+          ],
+          "dialogues": [
+            {
+              "character": "MC",
+              "characterImage": "mc_ready.png",
+              "text": "Một Tòa Tháp phía Bắc... Có lẽ đó là nơi bắt đầu câu trả lời cho tất cả mọi thứ."
+            }
+          ],
+          "choices": []
+        },
+        {
+          "id": "scene_03",
+          "music": "divine_theme.mp3",
+          "sound_effects": [
+            "divine_whisper.mp3"
+          ],
+          "dialogues": [
+            {
+              "character": "Thần Linh Vô Danh",
+              "characterImage": "divine_glow.png",
+              "text": "Danh tính của ta... không còn quan trọng. Chỉ cần nhớ: ngươi là chiếc chìa khóa cuối cùng trước khi mọi tri thức tan biến."
+            },
+            {
+              "character": "MC",
+              "characterImage": "mc_ready.png",
+              "text": "Mình không hiểu hết... nhưng mình sẽ tìm Cleric đó để biết thêm."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Nhận lấy minh chứng này và lên đường đến Tòa Tháp.",
+              "next_scene": "scene_02",
+              "required_item": null,
+              "reward_item": "CCCD"
+            },
+            {
+              "text": "Tôi muốn trở về thế giới của mình.",
+              "next_scene": "scene_ending2",
+              "required_item": null,
+              "reward_item": null
+            }
+          ],
+          "conditions": {}
+        },
+        {
+          "id": "scene_ending2",
+          "music": "farewell.mp3",
+          "sound_effects": [
+            "wind_blows.mp3",
+            "soft_flash.mp3"
+          ],
+          "dialogues": [
+            {
+              "character": "Thần Linh Vô Danh",
+              "characterImage": "god_silhouette.png",
+              "text": "Ngươi chọn quay về, dù chưa biết toàn bộ sự thật..."
+            },
+            {
+              "character": "MC",
+              "characterImage": "mc_ready.png",
+              "text": "Tôi chưa sẵn sàng cho một thế giới mới... Tôi chỉ muốn trở về nơi mình thuộc về."
+            },
+            {
+              "character": "Thần Linh Vô Danh",
+              "characterImage": "god_silhouette.png",
+              "text": "Ta tôn trọng quyết định đó. Nhưng hãy nhớ: con đường định mệnh luôn mở lối... nếu ngươi muốn quay lại."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Tôi thật sự muốn trở về. [YES]",
+              "next_scene": "scene_ending",
+              "required_item": null,
+              "reward_item": null
+            },
+            {
+              "text": "Tôi cần suy nghĩ lại.",
+              "next_scene": "scene_01",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_ending",
+          "music": "homecoming.mp3",
+          "sound_effects": [
+            "portal_open.mp3"
+          ],
+          "dialogues": [
+            {
+              "character": "MC",
+              "characterImage": "mc_ready.png",
+              "text": "Cảm ơn vì đã cho tôi cơ hội này. Tôi sẽ trở về và sống cuộc sống của mình."
+            },
+            {
+              "character": "Thần Linh Vô Danh",
+              "characterImage": "god_silhouette.png",
+              "text": "Hãy nhớ: mọi quyết định đều có giá trị. Ta sẽ luôn ở đây, nếu ngươi cần ta một lần nữa."
+            }
+          ],
+          "choices": []
+        }
+      ]
+    },
     {
       "id": "healer_backstory",
       "title": "Ký Ức Mùi Khói Bếp",
@@ -359,7 +551,10 @@
           "id": "scene_intro",
           "background": "transparent.png",
           "music": "soft_fireplace.mp3",
-          "sound_effects": ["clinking_glasses.wav", "murmur.wav"],
+          "sound_effects": [
+            "clinking_glasses.wav",
+            "murmur.wav"
+          ],
           "dialogues": [
             {
               "character": "MC",
@@ -567,7 +762,6 @@
               "next_scene": "scene_end",
               "required_item": null,
               "reward_item": null
-
             }
           ]
         },
@@ -626,7 +820,10 @@
           "id": "scene_intro",
           "background": "village_central_square.png",
           "music": "calm_village_day.mp3",
-          "sound_effects": ["birds_chirping.wav", "wind_breeze.wav"],
+          "sound_effects": [
+            "birds_chirping.wav",
+            "wind_breeze.wav"
+          ],
           "dialogues": [
             {
               "character": "MC",
@@ -645,8 +842,7 @@
               "next_scene": "scene_start",
               "required_item": null,
               "reward_item": null
-            }
-            ,
+            },
             {
               "text": "Tôi chỉ muốn xem bảng nhiệm vụ.",
               "next_scene": "scene_end",
@@ -655,7 +851,6 @@
             }
           ]
         },
-
         {
           "id": "scene_not_enough_item",
           "background": "transparent.png",
@@ -693,7 +888,6 @@
               "character": "Elden",
               "characterImage": "npc_village_master.png",
               "text": "Nhiều người chỉ xem bounty như cách kiếm vàng. Nhưng với ta, nó là lời thề – giữ cho ngôi làng này an toàn.\n Ngươi muốn biết tại sao ta tin vào hệ thống này đến vậy không?"
-
             }
           ],
           "choices": [
@@ -835,8 +1029,6 @@
             }
           ]
         },
-
-
         {
           "id": "scene_end",
           "background": "village_board_unlocked.png",
@@ -875,7 +1067,9 @@
           "id": "scene_intro",
           "background": "market_corner.png",
           "music": "suspicious_bazaar.mp3",
-          "sound_effects": ["coin_jingle.wav"],
+          "sound_effects": [
+            "coin_jingle.wav"
+          ],
           "dialogues": [
             {
               "character": "MC",
@@ -969,8 +1163,6 @@
         }
       ]
     },
-
-
     {
       "id": "lorekeeper_tian_backstory",
       "title": "Kho Tàng Bị Lãng Quên",
@@ -980,7 +1172,9 @@
           "id": "scene_intro",
           "background": "library_interior.png",
           "music": "mystic_library.mp3",
-          "sound_effects": ["pages_flipping.wav"],
+          "sound_effects": [
+            "pages_flipping.wav"
+          ],
           "dialogues": [
             {
               "character": "MC",
@@ -1097,7 +1291,6 @@
           ],
           "choices": []
         },
-
         {
           "id": "scene_unlock_cloze",
           "background": "library_focus_room.png",
@@ -1113,7 +1306,6 @@
         }
       ]
     },
-
     {
       "id": "wordseer_kang_backstory",
       "title": "Giữa Những Dòng Nghĩa",
@@ -1225,7 +1417,6 @@
           ],
           "choices": []
         },
-
         {
           "id": "scene_not_enough_item",
           "background": "transparent.png",
@@ -1255,8 +1446,8 @@
         }
       ]
     },
-
-    {"id": "teleporting_background",
+    {
+      "id": "teleporting_background",
       "title": "Cổng Phép Thuật Cổ Đại",
       "description": "Khám phá bí mật của cổng phép thuật cổ đại, nơi có thể đưa bạn đến bất kỳ đâu trong thế giới.",
       "scenes": [
@@ -1283,7 +1474,6 @@
               "required_item": "Ruby Omega",
               "reward_item": "Location_Home"
             },
-
             {
               "text": "Location 2 [Saphire Alpha]",
               "next_scene": "scene_end",
@@ -1305,17 +1495,17 @@
           ]
         },
         {
-            "id": "scene_end",
-            "background": "black.png",
-            "music": "village_theme.mp3",
-            "dialogues": [
-                {
-                "character": "Teleport Gate",
-                "characterImage": "teleport.png",
-                "text": "Hãy nhắm mắt lại và ngươi sẽ đến được nơi cần đến."
-                }
-            ],
-            "choices": []
+          "id": "scene_end",
+          "background": "black.png",
+          "music": "village_theme.mp3",
+          "dialogues": [
+            {
+              "character": "Teleport Gate",
+              "characterImage": "teleport.png",
+              "text": "Hãy nhắm mắt lại và ngươi sẽ đến được nơi cần đến."
+            }
+          ],
+          "choices": []
         },
         {
           "id": "scene_end2",
@@ -1331,18 +1521,18 @@
           "choices": []
         },
         {
-            "id": "scene_not_enough_item",
-            "background": "transparent.png",
-            "music": "sad_piano.mp3",
-            "dialogues": [
-                {
-                "character": "Teleport Gate",
-                "characterImage": "teleport.png",
-                "text": "Ngươi chưa đủ sức mạnh để dịch chuyển đến nơi này. Tạm biệt, lữ khách."
-                }
-            ],
-            "choices": [
-            ]
+          "id": "scene_not_enough_item",
+          "background": "transparent.png",
+          "music": "sad_piano.mp3",
+          "dialogues": [
+            {
+              "character": "Teleport Gate",
+              "characterImage": "teleport.png",
+              "text": "Ngươi chưa đủ sức mạnh để dịch chuyển đến nơi này. Tạm biệt, lữ khách."
+            }
+          ],
+          "choices": [
+          ]
         }
       ]
     }

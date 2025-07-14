@@ -515,8 +515,8 @@ public class GameController {
                     npcRenderer.update(delta);
                 } else if (!merchantUI.isVisible()) {
                     inputController.updateCooldown(delta);
-                    character.update(delta);
                     checkingCharacterPos(character);
+                    character.update(delta);
                     npcRenderer.update(delta);
                 }
 
@@ -745,36 +745,57 @@ public class GameController {
             return;
         }
 
-
         if ((x == 0 && y == 14) || (x == 0 && y == 13)) {
             activeEvents.add(positionKey);
             character.clearPath();
             dialogController.showMessageWithChoices(
                     "Tiến về ngôi làng phía trước", "YES", "NO",
                     () -> {
-                        activeEvents.remove(positionKey); // Clear after action
                         changeMap("main");
                         character.setPosition(15, 15);
                     }, () -> {
-                        activeEvents.remove(positionKey); // Clear after action
                         character.setPosition(x + 1, y);
                     }
             );
+            activeEvents.remove(positionKey); // Ensure removal after processing
+        }
+    }
 
+    public void checkMainEvents(float x, float y) {
+        String positionKey = "main_" + (int) x + "_" + (int) y;
+
+        // Prevent duplicate event triggers
+        if (activeEvents.contains(positionKey)) {
+            return;
+        }
+
+        if (!character.getFlags().contains("god_intro") && ((x == 31 && y == 4) || (x == 32 && y == 4))) {
+            activeEvents.add(positionKey);
+            character.clearPath();
+            dialogController.setOnDialogFinishedAction(() -> {
+                game.changeScreen("GAME_OVER");
+            });
+            dialogController.startDialog("god_intro", "scene_01");
+            character.getFlags().add("god_intro");
+            character.setPosition(31, 5);
+            activeEvents.remove(positionKey); // Ensure removal after processing
+        }
+    }
+
+    private void checkEvents(String mapName, int x, int y) {
+        if (mapName.equals("forest")) {
+            checkForestEvents(x, y);
+        } else if (mapName.equals("main")) {
+            checkMainEvents(x, y);
         }
     }
 
     public void checkingCharacterPos(Character character) {
-        if (map.getMapName().equals("forest")) {
-            int x = (int) character.getGridX();
-            int y = (int) character.getGridY();
-            checkForestEvents(x, y);
-        } else {
-            activeEvents.removeIf(event -> event.startsWith("forest_"));
-            return;
-        }
-
+        int x = (int) character.getGridX();
+        int y = (int) character.getGridY();
+        checkEvents(map.getMapName(), x, y);
     }
+
 
     public float[] toIsometric(float x, float y) {
         float isoX = (x + y) * (map.getTileWidth() / 2.0f);
@@ -807,9 +828,9 @@ public class GameController {
 
         }
     }
-    // Add to GameController.java
-    // In GameController.java, enhance resetGame method
-    // In GameController.java - update the resetGame method
+// Add to GameController.java
+// In GameController.java, enhance resetGame method
+// In GameController.java - update the resetGame method
 
     public void initMap() {
 

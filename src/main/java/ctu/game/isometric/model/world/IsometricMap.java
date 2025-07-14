@@ -71,8 +71,8 @@ public class IsometricMap {
         switch (mapName) {
             case "main":
                 tileId = 6;
-                startX = 15;
-                startY = 10;
+                startX = 31;
+                startY = 0;
                 break;
             case "tavern":
                 tileId = 13;

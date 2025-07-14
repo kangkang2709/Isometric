@@ -450,7 +450,7 @@ public class DialogController {
                     // If player doesn't have the required item, redirect to scene_not_enough_item
                     startDialog(currentArcId, "scene_not_enough_item");
                 }
-            } else if (choice.getText().equals("YES")) {
+            } else if (choice.getText().contains("YES")) {
                 performAction = true;
                 isCancelAction = false;
                 if (choice.getNext_scene() != null) {
@@ -458,7 +458,7 @@ public class DialogController {
                 } else {
                     endDialog();
                 }
-            } else if (choice.getText().equals("NO")) {
+            } else if (choice.getText().contains("NO")) {
                 performAction = false;
                 isCancelAction = true;
                 if (choice.getNext_scene() != null) {
@@ -469,19 +469,15 @@ public class DialogController {
             } else {
                 if (itemName != null && !itemName.isEmpty()) {
                     Items item = ItemLoader.getItemByName(itemName);
-                    System.out.println("Item selected: " + itemName);
                     if (item != null) {
                         if (item.getItemEffect().equals("N/A") && gameController.getCharacter().getItems().get(itemName) != null) {
-                            System.out.println("Item already exists, not adding again: " + itemName);
-                            startDialog(currentArcId, "scene_haved_item");
-                            return;
                         } else {
                             gameController.getCharacter().addItem(item, 1);
                         }
                     }
                 }
                 // No item required, proceed normally
-                if (choice.getNext_scene() != null) {
+                if (choice.getNext_scene() != null && !choice.getNext_scene().isEmpty()) {
                     if (choice.getNext_scene().equals("scene_end")) {
                         performAction = false;
                         isCancelAction = true;

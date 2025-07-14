@@ -111,6 +111,7 @@ public class GameScreen implements Screen {
                 gameController.getDictionaryView().dispose();
             }
 
+
             gameController.resetLearnedWords();
             gameController.setDictionaryView(new DictionaryView(gameController, gameController.getDictionary(), gameController.getWordNetValidator()));
             gameController.setCharacterDisplay();
@@ -314,6 +315,7 @@ public class GameScreen implements Screen {
 
     @Override
     public void dispose() {
+        System.out.println("GameScreen disposed");
         batch.dispose();
         gameController.dispose();
         if (dialogUI != null) {

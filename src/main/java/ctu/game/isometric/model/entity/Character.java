@@ -130,7 +130,7 @@ public class Character {
         mapName = "forest";
         initialTutorial();
 
-        addItem(ItemLoader.getItemByName("CCCD"), 1);
+//        addItem(ItemLoader.getItemByName("CCCD"), 1);
     }
 
 
@@ -147,7 +147,7 @@ public class Character {
         this.isTutorials.put("npc & dialog", false);
 
 
-        addItem(ItemLoader.getItemByName("CCCD"), 1);
+//        addItem(ItemLoader.getItemByName("CCCD"), 1);
 
     }
 

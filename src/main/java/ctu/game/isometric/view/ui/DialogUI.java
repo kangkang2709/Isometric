@@ -60,12 +60,12 @@ public class DialogUI {
         this.nameFont = generateVietNameseFont("GrenzeGotisch.ttf", 18);
         this.promptFont = generateVietNameseFont("GrenzeGotisch.ttf", 18);
         if (gender.equalsIgnoreCase("MALE")) {
-            Texture avatarTexture = new Texture(Gdx.files.internal("characters/male.png"));
+            Texture avatarTexture = new Texture(Gdx.files.internal("characters/male2.png"));
             avatarTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
             this.mainCharacterImage = avatarTexture;
 
         } else {
-            Texture avatarTexture = new Texture(Gdx.files.internal("characters/female.png"));
+            Texture avatarTexture = new Texture(Gdx.files.internal("characters/female2.png"));
             avatarTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
             this.mainCharacterImage = avatarTexture;
         }
