@@ -1,6 +1,5 @@
 {
   "arcs": [
-
     {
       "id": "god_intro",
       "title": "Chương 2: Lời Gọi Từ Trên Cao",
@@ -171,131 +170,227 @@
         }
       ]
     },
-
     {
-      "id": "cleric_intro",
-      "title": "Chương 3: Hành Trình Đến Tòa Tháp",
-      "description": "Theo lời Thần Linh Vô Danh, MC lên đường đến Tòa Tháp Ngữ Cổ để gặp Klein Aeliana.",
+      "id": "klein_meet",
+      "title": "Chương 2: Lời Gọi Từ Trên Cao",
+      "description": "Sau khi rời khỏi khu rừng lạ, nhân vật nghe thấy một giọng nói vang vọng từ bầu trời – lời nhắn nhủ của một vị thần cổ xưa.",
       "conditions": "",
       "scenes": [
         {
-          "id": "scene_travel_01",
-          "music": "journey_theme.mp3",
-          "sound_effects": ["footsteps_path.mp3", "wind_forest.mp3"],
+          "id": "scene_meet_cleric",
+          "music": "cleric_grand_entrance.mp3",
+          "sound_effects": [
+            "tower_gate_heavy.mp3",
+            "footsteps_marble.mp3",
+            "magic_chime.mp3"
+          ],
+          "dialogues": [
+            {
+              "character": "Cleric Klein",
+              "characterImage": "cleric_Klein.png",
+              "text": "Chào mừng ngươi đến Tòa Tháp Ngữ Cổ, lữ khách. Ta là Klein. Nếu giọng nói ấy đã đưa ngươi đến đây, hẳn là ngươi đã nghe thấy lời gọi của Đấng Tối Cao?"
+            },
+            {
+              "character": "MC",
+              "characterImage": "mc_ready.png",
+              "text": "Phải… Một giọng nói vang lên từ hư vô, khi tôi rời khỏi khu rừng. Hắn nói… tôi được chọn. Nhưng vì lý do gì?"
+            },
+            {
+              "character": "Cleric Klein",
+              "characterImage": "cleric_Klein.png",
+              "text": "Đấng Vô Danh đã chọn ngươi vì thế giới này đang suy tàn. Ngôn từ – thứ từng là trụ cột của phép thuật – đang bị lãng quên. Quái vật và Hư Vô lan tràn, vì không còn ai đủ sức tạo nên những câu chữ thiêng liêng để chống lại chúng."
+            },
+            {
+              "character": "Cleric Klein",
+              "characterImage": "cleric_Klein.png",
+              "text": "Ngươi mang trong mình một khả năng hiếm có: khả năng tạo nghĩa từ hỗn loạn, sức mạnh để xâu chuỗi những từ ngữ, khơi lại dòng chảy cổ xưa. Đó là lý do ngươi có Dấu Ấn Ngữ Cổ."
+            },
+            {
+              "character": "MC",
+              "characterImage": "mc_ready.png",
+              "text": "Vậy… tôi không chỉ đơn thuần bị đưa đến đây bởi số phận, mà là vì tôi có thể sửa chữa điều gì đó?"
+            },
+            {
+              "character": "Cleric Klein",
+              "characterImage": "cleric_Klein.png",
+              "text": "Chính xác. Ngươi không chỉ là khách qua đường. Ngươi là Sứ Giả Ngôn Từ – người sẽ khai phá lại những Căn Hầm Ký Ức, đánh thức các Biểu Đồ Ngữ Huyền, và cuối cùng đối mặt với chính Hư Vô bằng sức mạnh câu chữ."
+            },
+            {
+              "character": "System",
+              "characterImage": "mc_ready.png",
+              "text": "[Bạn nhận được nhiệm vụ chính: \"Khôi Phục Dòng Chảy Ngôn Từ\"]"
+            },
+            {
+              "character": "Cleric Klein",
+              "characterImage": "cleric_Klein.png",
+              "text": "Bắt đầu từ hôm nay, mỗi chữ cái bạn chọn, mỗi từ bạn ghép, đều sẽ là một nhát chém vào bóng tối. Hãy học cách sử dụng nó đúng lúc, đúng cách. Và ta sẽ là người dẫn đường cho ngươi."
+            },
+            {
+              "character": "MC",
+              "characterImage": "mc_ready.png",
+              "text": "Tôi sẽ bắt đầu từ đâu?"
+            },
+            {
+              "character": "Cleric Klein",
+              "characterImage": "cleric_Klein.png",
+              "text": "Tầng dưới Tòa Tháp có một cánh cổng dẫn vào Dungeon Đầu Tiên – nơi lưu giữ ký ức của ngôn từ cổ đại. Bên trong đó là những sinh vật bị vặn xoắn bởi Hư Vô. Chúng sẽ tấn công linh hồn bạn, nhưng bạn sẽ chống trả bằng ngôn từ."
+            },
+            {
+              "character": "Cleric Klein",
+              "characterImage": "cleric_Klein.png",
+              "text": "Ta sẽ dạy ngươi cách chiến đấu – mỗi trận là một trò chơi ngôn ngữ. Ghép các từ để tạo sát thương, kết hợp từ hiếm để thi triển kỹ năng. Khi sẵn sàng, hãy bước qua cánh cổng phía sau."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Tôi sẵn sàng học cách chiến đấu bằng từ ngữ.",
+              "next_scene": "scene_training_intro",
+              "required_item": null,
+              "reward_item": null
+            },
+            {
+              "text": "Tôi vẫn còn nhiều câu hỏi về vị Thần và lý do tôi được chọn.",
+              "next_scene": "scene_cleric_deepdive",
+              "required_item": null,
+              "reward_item": null
+            },
+            {
+              "text": "Nếu tôi từ chối sứ mệnh này thì sao? [NO]",
+              "next_scene": "scene_ending_reject",
+              "required_item": null,
+              "reward_item": null
+            }
+          ],
+          "conditions": {}
+        },
+        {
+          "id": "scene_cleric_deepdive",
+          "music": "divine_questions.mp3",
           "dialogues": [
             {
               "character": "MC",
               "characterImage": "mc_ready.png",
-              "text": "Tòa Tháp Ngữ Cổ ở phía Bắc… Tôi phải đi qua khu rừng và những đồng cỏ rộng lớn."
+              "text": "Tôi vẫn chưa hiểu rõ về Đấng Vô Danh… Hắn thực sự là ai?"
+            },
+            {
+              "character": "Cleric Klein",
+              "characterImage": "cleric_Klein.png",
+              "text": "Không ai biết rõ gương mặt hay tên thật của Ngài. Nhưng trong hàng ngàn năm, giọng nói ấy luôn vang lên khi thế giới đứng bên bờ vực. Ngài là hiện thân của Ý Niệm – sức mạnh đằng sau mọi từ ngữ."
+            },
+            {
+              "character": "MC",
+              "characterImage": "mc_ready.png",
+              "text": "Và tôi chỉ là… một người bình thường. Sao tôi lại được chọn?"
+            },
+            {
+              "character": "Cleric Klein",
+              "characterImage": "cleric_Klein.png",
+              "text": "Chính vì ngươi không thuộc về thế giới này. Ngươi không bị giới hạn bởi những lề luật đã mục nát nơi đây. Đó là điều khiến ngươi trở nên phù hợp hơn bất kỳ ai."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Tôi đã sẵn sàng bước tiếp.",
+              "next_scene": "scene_training_intro",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_ending_reject",
+          "music": "fate_sealed.mp3",
+          "dialogues": [
+            {
+              "character": "MC",
+              "characterImage": "mc_ready.png",
+              "text": "Tôi… không nghĩ mình là người phù hợp cho sứ mệnh này. Tôi chỉ muốn quay trở về."
+            },
+            {
+              "character": "Cleric Klein",
+              "characterImage": "cleric_Klein.png",
+              "text": "Ta hiểu. Không phải ai cũng sẵn lòng mang gánh nặng của thế giới. Nhưng hãy nhớ – lựa chọn từ chối cũng là một hành động mang theo hậu quả."
             },
             {
               "character": "System",
-              "characterImage": "icon_notification.png",
-              "text": "[Bạn nhận được “Dấu Ấn Ngữ Cổ” – vật phẩm giúp nhận biết lối đi ma thuật.]"
+              "characterImage": "mc_ready.png",
+              "text": "[Nếu đã từ chối Sứ Mệnh Chính. Trò chơi kết thúc sớm.]"
             }
           ],
           "choices": [
             {
-              "text": "Sử dụng Dấu Ấn để xác định hướng đi.",
-              "next_scene": "scene_travel_02",
-              "required_item": "divine_token",
+              "text": "Tôi thật sự muốn trở về. [NO]",
+              "next_scene": "scene_ending",
+              "required_item": null,
               "reward_item": null
             }
+          ]
+        },
+
+        {
+          "id": "scene_training_intro",
+          "music": "training_theme.mp3",
+          "sound_effects": [
+            "magic_chime.mp3"
           ],
-          "conditions": {}
+          "dialogues": [
+            {
+              "character": "Cleric Klein",
+              "characterImage": "cleric_Klein.png",
+              "text": "Tốt. Hãy bắt đầu với những điều cơ bản. Mỗi từ bạn chọn sẽ là một phần của vũ khí – hãy học cách kết hợp chúng để tạo ra sức mạnh."
+            },
+            {
+              "character": "Cleric Klein",
+              "characterImage": "cleric_Klein.png",
+              "text": "Ta sẽ hướng dẫn ngươi qua từng bước. Hãy nhớ: mỗi trận chiến là một bài học, và mỗi bài học sẽ giúp ngươi mạnh mẽ hơn."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Bắt đầu huấn luyện. [YES]",
+              "next_scene": "scene_training_battle",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
         },
         {
-          "id": "scene_travel_02",
-          "music": "forest_ambience.mp3",
-          "sound_effects": ["branches_rustle.mp3"],
+          "id": "scene_training_battle",
+          "music": "battle_theme.mp3",
+          "sound_effects": [
+            "battle_start.mp3"
+          ],
+          "dialogues": [
+            {
+              "character": "Cleric Klein",
+              "characterImage": "cleric_Klein.png",
+              "text": "[Trận chiến bắt đầu] Hãy sử dụng từ ngữ để tấn công. Mỗi từ đều có sức mạnh riêng – hãy tìm cách kết hợp chúng để đánh bại kẻ thù."
+            }
+          ],
+          "choices": []
+        },
+        {
+          "id": "scene_ending",
+          "music": "homecoming.mp3",
+          "sound_effects": [
+            "portal_open.mp3"
+          ],
           "dialogues": [
             {
               "character": "MC",
-              "characterImage": "mc_alert.png",
-              "text": "Có tiếng động lạ… như có ai đang theo dõi."
+              "characterImage": "mc_ready.png",
+              "text": "Cảm ơn vì đã cho tôi cơ hội này. Tôi sẽ trở về và sống cuộc sống của mình."
             },
             {
-              "character": "Mysterious Figure",
-              "characterImage": "shadow.png",
-              "text": "Ngươi đi tìm Klein? Đừng để bị lạc lối giữa rừng ma thuật này."
+              "character": "Thần Linh Vô Danh",
+              "characterImage": "god_silhouette.png",
+              "text": "Hãy nhớ: mọi quyết định đều có giá trị. Mọi người sẽ luôn ở đây, nếu ngươi cần ta một lần nữa."
             }
           ],
-          "choices": [
-            {
-              "text": "Hỏi xem hướng đến Tòa Tháp.",
-              "next_scene": "scene_travel_03",
-              "required_item": null,
-              "reward_item": null
-            },
-            {
-              "text": "Phớt lờ bóng dáng đó và tiếp tục.",
-              "next_scene": "scene_meet_Klein",
-              "required_item": null,
-              "reward_item": null
-            }
-          ],
-          "conditions": {}
-        },
-        {
-          "id": "scene_travel_03",
-          "music": "mystic_whisper.mp3",
-          "sound_effects": ["whispering.mp3"],
-          "dialogues": [
-            {
-              "character": "Mysterious Figure",
-              "characterImage": "shadow.png",
-              "text": "Đi thẳng qua cây đại thụ rồi quẹo phải. Đó là con đường dẫn đến chân tháp."
-            },
-            {
-              "character": "MC",
-              "characterImage": "mc_thoughtful.png",
-              "text": "Cảm ơn... dù tôi không biết mình nên tin hay không."
-            }
-          ],
-          "choices": [
-            {
-              "text": "Theo chỉ dẫn và tiếp tục hành trình.",
-              "next_scene": "scene_meet_Klein",
-              "required_item": null,
-              "reward_item": null
-            }
-          ],
-          "conditions": {}
-        },
-        {
-          "id": "scene_meet_Klein",
-          "music": "Klein_entrance.mp3",
-          "sound_effects": ["tower_gate.mp3", "footsteps_stone.mp3"],
-          "dialogues": [
-            {
-              "character": "Klein Aeliana",
-              "characterImage": "Klein_aeliana.png",
-              "text": "Chào đón ngươi, lữ khách. Ta là Aeliana – truyền nhân của Tòa Tháp Ngữ Cổ."
-            },
-            {
-              "character": "MC",
-              "characterImage": "mc_surprised.png",
-              "text": "Klein Aeliana? Thần nói tôi phải đến gặp ngươi..."
-            },
-            {
-              "character": "Klein Aeliana",
-              "characterImage": "Klein_aeliana.png",
-              "text": "Đúng vậy. Ta sẽ dạy ngươi những câu khắc Cổ Khởi đầu tiên, và giúp ngươi chuẩn bị vượt Dungeon."
-            }
-          ],
-          "choices": [
-            {
-              "text": "Sẵn sàng học phép thuật ngôn từ.",
-              "next_scene": "scene_Klein_training",
-              "required_item": null,
-              "reward_item": null
-            }
-          ],
-          "conditions": {}
+          "choices": []
         }
       ]
     },
-
     {
       "id": "healer_backstory",
       "title": "Ký Ức Mùi Khói Bếp",

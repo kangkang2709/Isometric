@@ -164,7 +164,7 @@ public class MapRenderer {
 
             if (success) {
                 dialogController.showMessageWithChoices(
-                        "You want to skip this event", "YES", "NO",
+                        "You want to skip this event", "Vâng [YES]", " Không[NO]",
                         () -> {
                             setShouldRenderCharacter(false);
                             getGameController().setEndEvent();
@@ -178,7 +178,7 @@ public class MapRenderer {
                     public void run() {
                         if (diceRenderer.getBonusCount() > 0) {
                             dialogController.showMessageWithChoices(
-                                    "You rolled a " + currentFaceValue + ", which is not enough to succeed.\n You can retry with bonus roll!!!", "YES", "NO",
+                                    "You rolled a " + currentFaceValue + ", which is not enough to succeed.\n You can retry with bonus roll!!!", "Vâng [YES]", " Không[NO]",
                                     () -> {
                                         isAcceptingRoll = true;
                                         diceRenderer.activeBonusRoll();

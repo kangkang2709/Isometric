@@ -17,6 +17,8 @@ import ctu.game.isometric.model.entity.Character;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
+import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
+
 public class ExploringUI {
     private Stage stage;
     private Skin skin;
@@ -85,23 +87,10 @@ public class ExploringUI {
     private void createSkin() {
         skin = new Skin();
         // Load custom font
-        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/Tektur-Bold.ttf"));
-        FreeTypeFontGenerator.FreeTypeFontParameter params = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        params.size = 16;
-        params.color = Color.WHITE;
-        params.borderWidth = 1;
-        params.borderColor = Color.BLACK;
-        BitmapFont customFont = generator.generateFont(params);
 
-        // Create another font for different purposes if needed
-        FreeTypeFontGenerator.FreeTypeFontParameter titleParams = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        titleParams.size = 20;
-        titleParams.color = Color.WHITE;
-        titleParams.borderWidth = 1.5f;
-        titleParams.borderColor = Color.BLACK;
-        BitmapFont titleFont = generator.generateFont(titleParams);
+        BitmapFont customFont = generateVietNameseFont("Roboto-Italic.ttf", 16);
+        BitmapFont titleFont = generateVietNameseFont("Roboto-Black.ttf", 16);
 
-        generator.dispose();
 
         skin.add("default-font", customFont);
         skin.add("title-font", titleFont);
@@ -286,20 +275,20 @@ public class ExploringUI {
     }
 
     private void setupTopRight() {
-//        topRightTable = new Table();
-//
-//        // Quest box with quest text
-//        questBoxImage = new Image(new TextureRegionDrawable(questBoxTexture));
-//        questLabel = new Label("Current Quest", skin, "quest");
-//
-//        // Stack quest label on quest box
-//        Stack questStack = new Stack();
-//        questStack.add(questBoxImage);
-//        Table questLabelTable = new Table();
-//        questLabelTable.add(questLabel).center();
-//        questStack.add(questLabelTable);
-//
-//        topRightTable.add(questStack).right().top();
+        topRightTable = new Table();
+
+        // Quest box with quest text
+        questBoxImage = new Image(new TextureRegionDrawable(questBoxTexture));
+        questLabel = new Label(character.getCurrentObject(), skin, "quest");
+
+        // Stack quest label on quest box
+        Stack questStack = new Stack();
+        questStack.add(questBoxImage);
+        Table questLabelTable = new Table();
+        questLabelTable.add(questLabel).center();
+        questStack.add(questLabelTable);
+
+        topRightTable.add(questStack).right().top();
     }
 
     public void update() {
@@ -391,6 +380,12 @@ public class ExploringUI {
             healthPixmap.dispose();
             manaPixmap.dispose();
             expPixmap.dispose();
+        }
+    }
+
+    public void updateQuest() {
+        if (questLabel != null) {
+            questLabel.setText(character.getCurrentObject());
         }
     }
 

@@ -46,6 +46,8 @@ public class Character {
     // Quest tracking
     private QuestTracker questTracker;
 
+    private String currentObject = "Rời khỏi khu rừng";
+
     private float score;
     // Score for the character
 
@@ -797,7 +799,12 @@ public class Character {
         this.gridX = gameMap.getStartX();
         this.gridY = gameMap.getStartY();
         this.mapName = gameMap.getMapName();
-        System.out.println("Character set to map: " + gameMap.getMapName());
+        clearPath();
+    }
+
+    public void setGameMap2(IsometricMap gameMap) {
+        this.gameMap = gameMap;
+        this.mapName = gameMap.getMapName();
         clearPath();
     }
 
@@ -994,8 +1001,12 @@ public class Character {
         this.playerWinStreak = 0;
     }
 
-    public void setNewlearneWords(Set<String> newlearneWords) {
-        this.newlearneWords = newlearneWords;
+    public String getCurrentObject() {
+        return currentObject;
+    }
+
+    public void setCurrentObject(String currentObject) {
+        this.currentObject = currentObject;
     }
 }
 

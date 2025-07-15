@@ -112,6 +112,32 @@ public class GameController {
     private MapRenderer mapRenderer;
 
 
+    Map<String, String> mainObjectiveDescriptions = new HashMap<>();
+
+    public void createMainObjectiveDescriptions() {
+        mainObjectiveDescriptions.put("intro", "Mình cần tìm đường rời khỏi khu rừng này trước tiên.");
+        mainObjectiveDescriptions.put("forest_done", "Có vẻ như mình đã đến một ngôi làng nhỏ, mình nên khám phá xung quanh.");
+        mainObjectiveDescriptions.put("god_intro", "Cleric Klein có thể giúp mình hiểu rõ hơn về thế giới này.");
+        mainObjectiveDescriptions.put("klein_meet", "Mình cần hoàn thành nhiệm vụ mà Cleric Klein giao cho để tiến xa hơn.");
+        mainObjectiveDescriptions.put("Khám phá quán rượu và thư viện trong làng", "Có nhiều điều thú vị đang chờ đợi mình trong quán rượu và thư viện.");
+        mainObjectiveDescriptions.put("Tiến đến hầm ngục và tìm hiểu bí mật của thế giới này", "Hầm ngục có thể chứa đựng những bí mật quan trọng về thế giới này.");
+    }
+
+
+    public void addFlag(String flag) {
+        if (character.getFlags() == null) {
+            character.setFlags(new ArrayList<>());
+        }
+        if (!character.getFlags().contains(flag)) {
+            character.getFlags().add(flag);
+            if (mainObjectiveDescriptions.containsKey(flag)) {
+                character.setCurrentObject(mainObjectiveDescriptions.get(flag));
+                exploringUI.updateQuest();
+            }
+        }
+
+    }
+
     public GameController(IsometricGame game) {
         this.game = game;
 
@@ -183,6 +209,7 @@ public class GameController {
         subtitles.add("Khoảnh khắc chạm vào trang giấy, thế giới xung quanh dường như biến mất.");
         subtitles.add("Mình... đang bị kéo đi...");
         subtitles.add("Mình đang ở đâu...? Đây không phải là thư viện... Cũng không phải là mơ.");
+        createMainObjectiveDescriptions();
     }
 
     Array<String> subtitles;
@@ -235,7 +262,7 @@ public class GameController {
 
 
             this.map = newMap;
-            this.character.setGameMap(map);
+            this.character.setGameMap2(map);
             this.pathfinder.setMap(newMap);
             this.eventManager = this.eventManagerMap.get(mapName);
             this.game.getGameScreen().getMapRenderer().changeTiledMapRenderer(this.map, this.eventManager);
@@ -309,7 +336,28 @@ public class GameController {
                 case "Teleporter":
                     dialogController.startDialog("teleporting_background", "scene_intro");
                 case "Cleric Klein":
-                    dialogController.startDialog("cleric_intro", "scene_travel_01");
+                    if (!getCharacter().getFlags().contains("klein_meet")) {
+                        dialogController.setOnDialogFinishedAction(() -> {
+                            Enemy enemy = EnemyLoader.getEnemyById(4);
+
+                            setState(GameState.GAMEPLAY);
+
+                            if (!character.isTutorialCompleted("combat"))
+                                tutorialUI.show("combat");
+                            gameplayController.activate();
+                            gameplayController.startCombat(enemy);
+                        });
+
+                        dialogController.setOnCanncelFinishedAction(() -> {
+                            game.changeScreen("GAME_OVER");
+                        });
+
+                        dialogController.startDialog("klein_meet", "scene_meet_cleric");
+                        addFlag("klein_meet");
+                        System.out.println("Cleric Klein dialog started");
+                    } else {
+                        dialogController.showSimpleMessage("Mình đã gặp Cleric Klein rồi.");
+                    }
                 default:
                     break;
             }
@@ -335,7 +383,8 @@ public class GameController {
             float npcY = npc.getYPosition();
             // Check if the NPC is within a 1 tile distance
             if (Math.abs(npcX - x) <= 1f && Math.abs(npcY - y) <= 1f) {
-                return npc; // Return the first NPC found in range
+                if (map.getMapName().equals(npc.getMapName()))
+                    return npc; // Return the first NPC found in range
             }
         }
         return null; // No NPC found in range
@@ -629,21 +678,21 @@ public class GameController {
         setPreviousState(currentState);
         setState(GameState.CUTSCENE);
         cutsceneController.loadCutscene(cutsceneName);
-        character.getFlags().add(cutsceneName);
+        addFlag(cutsceneName);
     }
 
     public void startSubTitleCutscene(String cutsceneName, Array<String> subtitles) {
         setPreviousState(currentState);
         setState(GameState.CUTSCENE);
         cutsceneController.loadBackgroundCutscene(cutsceneName, subtitles);
-        character.getFlags().add(cutsceneName);
+        addFlag(cutsceneName);
     }
 
     public void startMulBGSubTitleCutscene(String cutsceneName, Array<String> subtitles) {
         setPreviousState(currentState);
         setState(GameState.CUTSCENE);
         cutsceneController.loadMultipleBackgroundsCutscene(cutsceneName, subtitles);
-        character.getFlags().add(cutsceneName);
+        addFlag(cutsceneName);
     }
 
 
@@ -684,7 +733,7 @@ public class GameController {
                 dialogController.showSimpleMessage("Đây là đâu vậy? Mình không nhớ gì cả.\n " +
                         "Có vẻ như mình đang ở trong một khu rừng, Nhưng....\n" +
                         "Trước tiên mình cần phải tìm đường rời khỏi đây đã.");
-                character.getFlags().add("forest_info");
+                addFlag("forest_info");
                 return;
             }
         }
@@ -722,6 +771,7 @@ public class GameController {
                     () -> {
                         changeMap("main");
                         character.setPosition(15, 15);
+                        addFlag("forest_done");
                     }, () -> {
                         character.setPosition(x + 1, y);
                     }
@@ -755,7 +805,7 @@ public class GameController {
                 }, 1.8f);
             });
             dialogController.startDialog("god_intro", "scene_01");
-            character.getFlags().add("god_intro");
+            addFlag("god_intro");
             character.setPosition(31, 5);
             activeEvents.remove(positionKey); // Ensure removal after processing
         }
@@ -784,7 +834,7 @@ public class GameController {
                 dialogController.showSimpleMessage("Đây là đâu vậy? Mình không nhớ gì cả.\n " +
                         "Có vẻ như mình đang ở trong một khu rừng, Nhưng....\n" +
                         "Trước tiên mình cần phải tìm đường rời khỏi đây đã.");
-                character.getFlags().add("forest_info");
+                addFlag("forest_info");
                 return;
             }
         }
@@ -1005,7 +1055,6 @@ public class GameController {
                 if (eventManager.isEnemyDefeated(enemyId) &&
                         eventManager.getBooleanProperty(properties, "one_time", true)) {
                     eventManager.completeEvent(currentEvent.getId());
-
                 } else {
                     Enemy enemy = EnemyLoader.getEnemyById(enemyId);
 
