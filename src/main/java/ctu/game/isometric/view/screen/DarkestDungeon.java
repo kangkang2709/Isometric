@@ -64,7 +64,7 @@ public class DarkestDungeon implements Screen {
     private boolean escKeyPressed = false;
 
     // Character stats - Enhanced with ATK and DEF
-    private int playerHP = 20, playerMaxHP = 60;
+    private int playerHP = 2, playerMaxHP = 60;
     private int playerMana = 25, playerMaxMana = 50;
     private int playerATK = 15, playerDEF = 8;
     private int enemyHP = 20, enemyMaxHP = 40;
@@ -212,16 +212,16 @@ public class DarkestDungeon implements Screen {
         this.enemyCurrentY = enemyStartY;
 
 
-
         enemyIdleTextures = getEnemyIdleTextures(enemyName);
         enemySkillTextures = getEnemySkillTextures(enemyName);
-
 
         this.combatLog = "Chiến đấu bắt đầu! Chọn hành động.";
 
         this.victory = false;
         isPaused = false;
         defeated = false;
+        isEnded = false;
+
 
         currentLevel = gameController.getCharacter().getLevel();
         newLevel = currentLevel;
@@ -369,10 +369,20 @@ public class DarkestDungeon implements Screen {
                     return true;
 
                 } else if (defeated) {
+
                     if (continueButtonBounds != null && continueButtonBounds.contains(screenX, screenY)) {
-                        gameController.setState(GameState.MAIN_MENU);
-                        game.changeScreen("GAME_OVER");
-                        return true;
+                        if (!isEnded) {
+                            game.changeScreen("GAME");
+                            gameController.setState(GameState.EXPLORING);
+                            gameController.setPreviousState(GameState.EXPLORING);
+                            gameController.returnToTower();
+                            gameController.setRenderCharacter(true);
+                            return true;
+                        } else {
+                            gameController.setState(GameState.MAIN_MENU);
+                            game.changeScreen("GAME_OVER");
+                            return true;
+                        }
                     }
 
                     return true; // Ngăn xử lý các input khác khi đã thua
@@ -790,6 +800,11 @@ public class DarkestDungeon implements Screen {
         titleFont.setColor(Color.RED);
         titleFont.draw(batch, "Bạn đã bị hạ gục!", panelX + 210, panelY + panelHeight - 40);
 
+        // Draw defeat message
+        if (!isEnded) {
+            font.setColor(Color.WHITE);
+            font.draw(batch, "Bạn còn cơ hội, Cleric Klein đã đưa bạn về để chữa trị.", panelX + 100, panelY + panelHeight / 2 + 30);
+        }
         // Draw continue button
         float buttonWidth = 200, buttonHeight = 50;
         float buttonX = 1280 / 2 - buttonWidth / 2;
@@ -831,6 +846,9 @@ public class DarkestDungeon implements Screen {
         slowMotionTimer = duration;
     }
 
+
+    private boolean isEnded = false;
+
     private void updateCombat(float delta) {
         float scaledDelta = delta * timeScale;
 
@@ -859,17 +877,23 @@ public class DarkestDungeon implements Screen {
             if (combatEndDelayTimer >= 2.0f) { // Delay 1.5 seconds
                 pendingCombatEnd = false;
                 combatEndDelayTimer = 0f;
-
                 if (playerHP <= 0) {
+                    gameController.getMusicController().playMusic("defeat");
                     combatState = CombatState.COMBAT_END;
                     combatLog = "THẤT BẠI! Bạn đã thua trong chiến đấu.";
                     victory = false;
                     defeated = true;
+
+                    isEnded = gameController.getCharacter().gameOver();
+
+
                 } else if (enemyHP <= 0) {
                     combatState = CombatState.COMBAT_END;
                     combatLog = "CHIẾN THẮNG! Kẻ địch đã bị hạ gục!";
+                    gameController.getMusicController().playMusic("victory");
                     victory = true;
                     defeated = false;
+                    isEnded = false;
                     reward = RewardLoader.getRewardById(this.rewardId);
                     item = ItemLoader.getItemById(reward.getItemID());
                 }

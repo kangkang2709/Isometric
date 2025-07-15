@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="isometric" renderorder="right-down" width="10" height="10" tilewidth="64" tileheight="32" infinite="0" nextlayerid="8" nextobjectid="8">
+<map version="1.10" tiledversion="1.11.2" orientation="isometric" renderorder="right-down" width="10" height="10" tilewidth="64" tileheight="32" infinite="0" nextlayerid="8" nextobjectid="17">
  <tileset firstgid="1" name="stoneWallRound_E" tilewidth="252" tileheight="199" tilecount="1" columns="1">
   <image source="tiles/tower/stoneWallRound_E.png" trans="ff00ff" width="252" height="199"/>
  </tileset>
@@ -64,7 +64,7 @@
   <image source="tiles/tower/magic.png" trans="ff00ff" width="74" height="119"/>
  </tileset>
  <tileset firstgid="18" name="floorCarpetSmall_S2" tilewidth="97" tileheight="50" tilecount="1" columns="1">
-  <tileoffset x="10" y="-28"/>
+  <tileoffset x="-20" y="-10"/>
   <image source="tiles/lib/floorCarpetSmall_S2.png" trans="ff00ff" width="97" height="50"/>
  </tileset>
  <layer id="2" name="terrain_layer" width="10" height="10">
@@ -101,8 +101,8 @@
 0,0,0,0,0,7,16,16,0,11,
 6,0,0,0,0,0,0,0,0,9,
 1,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,18,
+0,0,0,0,0,0,0,0,0,0,
 2,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,
@@ -124,19 +124,30 @@
 </data>
  </layer>
  <objectgroup id="5" name="object">
-  <object id="1" x="256" y="128" width="32" height="32">
+  <object id="9" x="288" y="96"/>
+  <object id="12" x="288" y="128" width="32" height="32">
    <properties>
-    <property name="event" value="tele"/>
-    <property name="id" value="tower_1"/>
-    <property name="map" value="main"/>
+    <property name="event" value="return"/>
+    <property name="id" value="tower_4"/>
+    <property name="map" value="tower"/>
    </properties>
   </object>
-  <object id="5" x="256" y="96" width="32" height="32">
+  <object id="13" x="288" y="96" width="32" height="32">
    <properties>
-    <property name="event" value="tele"/>
-    <property name="id" value="tower_2"/>
-    <property name="map" value="main"/>
+    <property name="event" value="return"/>
+    <property name="id" value="tower_3"/>
+    <property name="map" value="tower"/>
    </properties>
   </object>
+  <object id="14" x="64" y="256" width="32" height="32">
+   <properties>
+    <property name="amount" type="int" value="2"/>
+    <property name="event" value="treasure"/>
+    <property name="id" value="tower_5"/>
+    <property name="item" value="1"/>
+    <property name="one_time" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="15" x="64" y="384"/>
  </objectgroup>
 </map>

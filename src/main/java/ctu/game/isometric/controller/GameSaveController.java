@@ -238,6 +238,9 @@ public class GameSaveController {
         // Copy basic properties
         copy.setName(original.getName());
         copy.setHealth(original.getHealth());
+        copy.setMaxHealth(original.getMaxHealth());
+        copy.setMana(original.getMana());
+        copy.setMaxMana(original.getMaxMana());
         copy.setGender(original.getGender());
         copy.setDamage((float) original.getDamage());
         copy.setMoveSpeed(original.getMoveSpeed());

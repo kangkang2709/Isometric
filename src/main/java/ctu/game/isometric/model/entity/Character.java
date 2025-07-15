@@ -19,10 +19,12 @@ public class Character {
     private String direction = "down";
     private String name = "player"; // Character name
     private Gender gender = Gender.MALE;
-    private float health = 20; // Health points
+    private float health = 30; // Health points
     private float gridX, gridY;
-    private float maxHealth = 20; // Maximum health points
-    private float maxMana = 20;
+    private float maxHealth = 30; // Maximum health points
+    private float maxMana = 30;
+    private float mana = 30;
+
     private Map<String, Integer> items; // Inventory of items
     private List<String> flags; // Flags for events
     private List<String> quests; // List of quests
@@ -35,7 +37,6 @@ public class Character {
     private float damage = 5; // Damage dealt by the character
 
     private float defend = 5;
-    private float mana = 20;
     private int level = 1;// Defense points of the character
     private float exp = 0; // Experience points
     private IsometricMap gameMap;
@@ -249,11 +250,11 @@ public class Character {
     }
 
     public boolean gameOver() {
-        int amount = (items != null) ? items.getOrDefault("Potion of Healing", 0) : 0;
+        int amount = (items != null) ? items.getOrDefault("Elixir", 0) : 0;
         if (amount <= 0) {
             return true; // Game over if no healing or mana potions left
         } else {
-            Items healingPotion = ItemLoader.getItemByName("Potion of Healing");
+            Items healingPotion = ItemLoader.getItemByName("Elixir");
             if (healingPotion != null) {
                 this.mana = healingPotion.getManaCost();
                 useItem(healingPotion);
@@ -798,6 +799,11 @@ public class Character {
         this.gameMap = gameMap;
         this.gridX = gameMap.getStartX();
         this.gridY = gameMap.getStartY();
+        this.mapName = gameMap.getMapName();
+        clearPath();
+    }
+    public void setGameMap3(IsometricMap gameMap) {
+        this.gameMap = gameMap;
         this.mapName = gameMap.getMapName();
         clearPath();
     }

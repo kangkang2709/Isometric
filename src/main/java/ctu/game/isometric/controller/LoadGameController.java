@@ -328,7 +328,12 @@ public class LoadGameController {
 
 
                     gameController.getEventManagerMap().get("main").updateAfterLoadGame(save);
+                    gameController.getEventManagerMap().get("tower").updateAfterLoadGame(save);
+                    gameController.getEventManagerMap().get("library").updateAfterLoadGame(save);
+                    gameController.getEventManagerMap().get("tavern").updateAfterLoadGame(save);
+
                     gameController.getEventManagerMap().get("board").updateAfterLoadGame(save);
+
 
 
                     gameController.getCharacter().setLearnedWords(words);

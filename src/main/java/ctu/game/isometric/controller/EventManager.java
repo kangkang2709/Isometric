@@ -38,15 +38,15 @@ public class EventManager {
                     int objGridX = (int) (rect.x / map.getTileHeight());
                     int objGridY = (int) (rect.y / map.getTileHeight());
 
-                    if (map.getMapName().equals("main")){
+                    if (map.getMapName().equals("main")) {
                         System.out.println("Loading event at grid position: " + objGridX + ", " + objGridY);
                     }
 
                     MapProperties props = object.getProperties();
                     if (props.containsKey("event")) {
                         String eventType = getStringProperty(props, "event", "");
-                        if (map.getMapName().equals("main")){
-                            System.out.println("Loading event at grid position: " + eventType+ " :" + objGridX + ", " + objGridY);
+                        if (map.getMapName().equals("main")) {
+                            System.out.println("Loading event at grid position: " + eventType + " :" + objGridX + ", " + objGridY);
                         }
                         String eventId = props.containsKey("id") ?
                                 getStringProperty(props, "id", "") :
@@ -70,7 +70,7 @@ public class EventManager {
     }
 
     public void addEnemyEvent(String eventId, int x, int y, Enemy enemy) {
-        MapEvent event = new MapEvent(eventId, "battle", x, y,enemy.getEnemyName(), String.valueOf(enemy.getEnemyID()));
+        MapEvent event = new MapEvent(eventId, "battle", x, y, enemy.getEnemyName(), String.valueOf(enemy.getEnemyID()));
         addEvent(event);
     }
 
@@ -100,6 +100,21 @@ public class EventManager {
 
     public List<Integer> getListIdDefeatedEnemies() {
         return new ArrayList<>(defeatedEnemies.keySet());
+    }
+
+
+    public void restoreCompletedEvents(List<String> completedEvents, List<Integer> defeatedEnemies,
+                                       Map<String, EventManager> eventManagerMap) {
+        if (completedEvents != null) {
+            for (EventManager manager : eventManagerMap.values()) {
+                if (!manager.getMapName().equals("board")) {
+                    // Restore completed events to each manager
+                    for (String eventId : completedEvents) {
+                        manager.completeEvent(eventId);
+                    }
+                }
+            }
+        }
     }
 
     public void updateAfterLoadGame(GameSave save) {

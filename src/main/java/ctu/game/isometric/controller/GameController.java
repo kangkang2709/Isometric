@@ -156,7 +156,7 @@ public class GameController {
         this.eventManagerMap.put("library", new EventManager(this.mapList.get("library"), "library"));
         this.eventManagerMap.put("tavern", new EventManager(this.mapList.get("tavern"), "tavern"));
         this.eventManagerMap.put("forest", new EventManager(this.mapList.get("forest"), "forest"));
-        this.eventManagerMap.put("tower", new EventManager(this.mapList.get("forest"), "tower"));
+        this.eventManagerMap.put("tower", new EventManager(this.mapList.get("tower"), "tower"));
 
         this.character = new Character(10, 0);
         this.inputController = new InputController(this);
@@ -247,6 +247,48 @@ public class GameController {
         }
     }
 
+    public IsometricMap changeMapInVillage(String mapName) {
+
+        IsometricMap newMap = this.mapList.get("main");
+
+        if (newMap != null) {
+            transitionRenderer.startLoadingScreen(() -> {
+
+                this.map = newMap;
+                this.character.setGameMap(map);
+
+                switch (mapName) {
+                    case "tavern":
+                        this.character.setPosition(35, 19);
+                        break;
+                    case "library":
+                        this.character.setPosition(28, 9);
+                        break;
+                    case "main":
+                        this.character.setPosition(31, 15);
+                        break;
+                    case "tower":
+                        this.character.setPosition(28, 36);
+                        break;
+                    case "unknown":
+                        this.character.setPosition(28, 22);
+                        break;
+                    case "forest":
+                        this.character.setPosition(10, 14);
+                        break;
+                }
+                this.pathfinder.setMap(newMap);
+                this.eventManager = this.eventManagerMap.get("main");
+                this.game.getGameScreen().getMapRenderer().changeTiledMapRenderer(this.map, this.eventManager);
+            });
+
+            return newMap;
+        } else {
+            Gdx.app.error("GameController", "Map not found: " + mapName);
+            return null;
+        }
+    }
+
     public void changeSaveMap(String mapName) {
 
         IsometricMap newMap = this.mapList.get(mapName);
@@ -267,6 +309,28 @@ public class GameController {
             this.eventManager = this.eventManagerMap.get(mapName);
             this.game.getGameScreen().getMapRenderer().changeTiledMapRenderer(this.map, this.eventManager);
 
+        }
+    }
+    public void returnToTower() {
+        IsometricMap newMap = this.mapList.get("tower");
+        if (newMap != null) {
+            this.map = newMap;
+            this.character.setGameMap(map);
+            this.character.setPosition(5, 7);
+            this.pathfinder.setMap(newMap);
+            this.eventManager = this.eventManagerMap.get("tower");
+            this.game.getGameScreen().getMapRenderer().changeTiledMapRenderer(this.map, this.eventManager);
+
+
+            Timer.schedule(new Timer.Task() {
+                @Override
+                public void run() {
+                    dialogController.showSimpleMessage("Mình đã thất bại, may mà Cleric Klein đã cứu mình.\n");
+                }
+            },1.5f);
+
+        } else {
+            Gdx.app.error("GameController", "Tower map not found.");
         }
     }
 
@@ -338,7 +402,7 @@ public class GameController {
                 case "Cleric Klein":
                     if (!getCharacter().getFlags().contains("klein_meet")) {
                         dialogController.setOnDialogFinishedAction(() -> {
-                            Enemy enemy = EnemyLoader.getEnemyById(4);
+                            Enemy enemy = EnemyLoader.getEnemyById(3);
 
                             setState(GameState.GAMEPLAY);
 
@@ -468,15 +532,7 @@ public class GameController {
         if (character == null) {
             throw new IllegalArgumentException("Character cannot be null");
         }
-        System.out.println("Attempt flags before initialization: " + character.getAttempFlags());
-//        if(character.getAttempFlags() == null) {
-//            character.setAttempFlags(new HashMap<>());
-//            character.getAttempFlags().put("quizAttempts", 0);
-//            character.getAttempFlags().put("mulQuizAttempts", 0);
-//            character.getAttempFlags().put("fallen", 0);
-//            character.getAttempFlags().put("wrongWord", 0);
-//            System.out.println("Character attempt flags initialized.");
-//        }
+
         this.character = character;
         this.character.setLastSaveTime(lastSaveTime);
 
@@ -513,11 +569,11 @@ public class GameController {
 
         // Re-initialize map and other references
 //        this.character.setGameMap(this.getMap());
-
-        // Now load the saved dictionary from file
-        if (character.getWordFilePath() != null) {
-
-        }
+//
+//        // Now load the saved dictionary from file
+//        if (character.getWordFilePath() != null) {
+//
+//        }
     }
 
 
@@ -767,7 +823,7 @@ public class GameController {
             activeEvents.add(positionKey);
             character.clearPath();
             dialogController.showMessageWithChoices(
-                    "Tiến về ngôi làng phía trước", "YES", "NO",
+                    "Tiến về ngôi làng phía trước", "Đi tiếp [YES]", "Dừng lại [NO]",
                     () -> {
                         changeMap("main");
                         character.setPosition(15, 15);
@@ -779,6 +835,7 @@ public class GameController {
             activeEvents.remove(positionKey); // Ensure removal after processing
         }
     }
+
 
     public void checkMainEvents(float x, float y) {
         String positionKey = "main_" + (int) x + "_" + (int) y;
@@ -1123,6 +1180,13 @@ public class GameController {
                     if (!mapName.equals(map.getMapName())) {
                         changeMap(mapName);
                     }
+                }
+                break;
+            case "return":
+                if (properties != null) {
+                    String mapName = properties.get("map", String.class);
+                    System.out.println(mapName);
+                    changeMapInVillage(mapName);
                 }
                 break;
             case "quiz":

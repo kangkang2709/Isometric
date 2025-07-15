@@ -233,6 +233,7 @@ public class DialogUI {
                     dialogFont.setColor(Color.WHITE);
                 }
                 String choiceText = (i == selectedIndex ? "> " : "  ") + choices.get(i).getText();
+                choiceText = choiceText.replace("[YES]", "").replace("[NO]", "");
                 dialogFont.draw(batch, choiceText, DIALOG_BOX_X + 150, DIALOG_BOX_Y + 120 - (i * 30));
             }
             dialogFont.setColor(Color.WHITE); // Reset after loop

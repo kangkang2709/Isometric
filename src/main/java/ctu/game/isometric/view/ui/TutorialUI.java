@@ -121,7 +121,7 @@ public class TutorialUI implements Disposable {
         contentLayout = new GlyphLayout();
 
         // Set up hit detection areas
-        float buttonSize = 60;
+        float buttonSize = 50;
         nextBtnRect = new Rectangle(x + width - padding - buttonSize + 23, y + padding - 22, buttonSize, buttonSize);
         prevBtnRect = new Rectangle(x + padding - 23, y + padding - 22, buttonSize, buttonSize);
         closeBtnRect = new Rectangle(x + width - padding - 40, y + height - padding - 40, 40, 40);
@@ -140,7 +140,7 @@ public class TutorialUI implements Disposable {
 
         titleFont = generateVietNameseFont("Roboto-Black.ttf", 30);
 
-        contentFont = generateVietNameseFont("Roboto-Black.ttf", 20);
+        contentFont = generateVietNameseFont("Roboto-Black.ttf", 18);
 
         buttonFont = generateVietNameseFont("Roboto-Black.ttf", 20);
 

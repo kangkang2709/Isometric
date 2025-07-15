@@ -588,7 +588,7 @@ public class GameplayController {
             Texture itemTexture = getTexture(item.getTexturePath());
             if (itemTexture != null) {
                 batch.setColor(Color.WHITE);
-                batch.draw(itemTexture, panelX + 100, panelY + panelHeight / 2 - 32, 64, 64);
+                batch.draw(itemTexture, panelX + 90, panelY + panelHeight / 2 - 32, 64, 64);
             }
             regularFont.setColor(Color.YELLOW);
             regularFont.draw(batch, item.getItemName() + " x" + reward.getAmount(), panelX + 180, panelY + panelHeight / 2 + 30);
@@ -886,9 +886,9 @@ public class GameplayController {
         batch.setColor(0.1f, 0.1f, 0.3f, 0.95f);
         batch.draw(whiteTexture, 788, 20, 460, 75);
 
-        drawPokemonStyleButton(batch, spellButton, "Kỹ Năng", Color.CYAN);
+        drawPokemonStyleButton(batch, spellButton, "Tấn công", Color.CYAN);
         drawPokemonStyleButton(batch, itemButton, "Vật Phẩm", Color.ORANGE);
-        drawPokemonStyleButton(batch, normalAttackButton, "Tấn Công", Color.GRAY);
+        drawPokemonStyleButton(batch, normalAttackButton, "Tấn Công Thường", Color.GRAY);
 
     }
 
@@ -1595,6 +1595,15 @@ public class GameplayController {
             playerHealth = 0;
             endCombat(false);
             isGameOver = gameController.getCharacter().gameOver();
+
+            gameController.getMusicController().playMusic("defeat");
+
+            if (!isGameOver) {
+                gameController.returnToTower();
+                gameController.getEventManager().completeEvent(currentEvent.getId());
+                gameController.setCompletedEvent();
+                gameController.setRenderCharacter(true);
+            }
             gameController.getCharacter().resetWinStreak();
             timerAction = 0;
             achievementManager.updateProgress(Achievement.AchievementType.FALLEN, 1);
@@ -1610,7 +1619,7 @@ public class GameplayController {
                 gameController.getEventManager().completeEvent(currentEvent.getId());
                 gameController.setCompletedEvent();
             }
-
+            gameController.getMusicController().playMusic("victory");
             switch (enemyName) {
                 case "Crystal Serpent Boss":
                     achievementManager.updateProgress(Achievement.AchievementType.ENEMY_WIN_1, 1);
@@ -1625,6 +1634,7 @@ public class GameplayController {
                     achievementManager.updateProgress(Achievement.AchievementType.ENEMY_WIN, 1);
                     break;
             }
+            gameController.setRenderCharacter(true);
             achievementManager.updateProgress(Achievement.AchievementType.COMBAT_WIN, 1);
             this.newLevel = gameController.getCharacter().addExperience(this.experienceGain);
             gameController.getMusicController().playMusic("victory");
@@ -1696,8 +1706,7 @@ public class GameplayController {
             applyBossEffects();
         } else if (isEnemyLord()) {
             gameController.getMusicController().playMusic("lord");
-        }
-        else gameController.getMusicController().playMusic("main_theme");
+        } else gameController.getMusicController().playMusic("main_theme");
     }
 
     public void activate() {
