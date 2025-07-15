@@ -1,377 +1,6 @@
 {
   "arcs": [
-    {
-      "id": "chapter_01",
-      "title": "Chương 1: Bóng Tối Sau Cánh Cửa",
-      "description": "MC nhận được một tin nhắn bí ẩn yêu cầu đến căn hộ số 404, nơi bị bỏ hoang từ lâu.",
-      "scenes": [
-        {
-          "id": "scene_01",
-          "music": "ominous.mp3",
-          "sound_effects": [
-            "door_creak.mp3"
-          ],
-          "dialogues": [
-            {
-              "character": "MC",
-              "characterImage": "mc_default.png",
-              "text": "Mình đã nhận được tin nhắn kỳ lạ... Người gửi yêu cầu mình đến căn hộ số 404 ngay lập tức."
-            },
-            {
-              "character": "MC",
-              "characterImage": "mc_default2.png",
-              "text": "Không hiểu sao, nhưng mình có linh cảm không lành..."
-            }
-          ],
-          "choices": [
-            {
-              "text": "Tiếp tục tiến về căn hộ.",
-              "next_scene": "scene_02",
-              "required_item": "tone",
-              "reward_item": null
-            },
-            {
-              "text": " tiến về căn hộ.",
-              "next_scene": "scene_02",
-              "required_item": null,
-              "reward_item": null
-            },
-            {
-              "text": "Dừng lại và kiểm tra tin nhắn lần nữa.",
-              "next_scene": "scene_03",
-              "required_item": null,
-              "reward_item": null
-            }
-          ],
-          "conditions": {}
-        },
-        {
-          "id": "scene_02",
-          "music": "suspense.mp3",
-          "sound_effects": [
-            "door_creak.mp3"
-          ],
-          "dialogues": [
-            {
-              "character": "MC",
-              "characterImage": "mc_default.png",
-              "text": "Cửa căn hộ 404... đã mở sẵn?"
-            },
-            {
-              "character": "MC",
-              "characterImage": "mc_default2.png",
-              "text": "Nó đã bị bỏ hoang từ lâu, nhưng tại sao lại như thế này?"
-            }
-          ],
-          "choices": [
-            {
-              "text": "Bước vào trong căn hộ.",
-              "next_scene": "scene_end",
-              "required_item": null,
-              "reward_item": null
-            },
-            {
-              "text": "Gõ cửa gọi thử.",
-              "next_scene": "scene_05",
-              "required_item": null,
-              "reward_item": null
-            }
-          ],
-          "conditions": {}
-        },
-        {
-          "id": "scene_03",
-          "music": "mystery.mp3",
-          "sound_effects": [
-            "door_creak.mp3"
-          ],
-          "dialogues": [
-            {
-              "character": "MC",
-              "characterImage": "mc_default2.png",
-              "text": "Tin nhắn này không có số điện thoại, cũng không có người gửi..."
-            },
-            {
-              "character": "MC",
-              "characterImage": "mc_default.png",
-              "text": "Có khi nào đây là một cái bẫy?"
-            }
-          ],
-          "choices": [
-            {
-              "text": "Quay về nhà, không muốn dính vào rắc rối.",
-              "next_scene": "scene_end",
-              "required_item": null,
-              "reward_item": null
-            },
-            {
-              "text": "Tiếp tục đến căn hộ 404.",
-              "next_scene": "scene_02",
-              "required_item": null,
-              "reward_item": null
-            }
-          ],
-          "conditions": {}
-        },
-        {
-          "id": "scene_04",
-          "music": "mystery.mp3",
-          "sound_effects": [
-            "footsteps.mp3"
-          ],
-          "dialogues": [
-            {
-              "character": "MC",
-              "characterImage": "mc_default.png",
-              "text": "Trong này tối quá, mình cần tìm công tắc đèn."
-            }
-          ],
-          "choices": [
-            {
-              "text": "Tìm công tắc đèn.",
-              "next_scene": "scene_06",
-              "required_item": null,
-              "reward_item": null
-            },
-            {
-              "text": "Dùng đèn pin.",
-              "next_scene": "scene_07",
-              "required_item": "flashlight",
-              "reward_item": null
-            }
-          ],
-          "conditions": {}
-        },
-        {
-          "id": "scene_hidden",
-          "music": "eerie_whispers.mp3",
-          "sound_effects": [
-            "whispering.mp3"
-          ],
-          "dialogues": [
-            {
-              "character": "Shadow",
-              "characterImage": "shadow.png",
-              "text": "Cậu không nên đến đây..."
-            }
-          ],
-          "choices": [],
-          "conditions": {
-            "min_sanity": 5,
-            "required_item": "mysterious_note"
-          }
-        },
-        {
-          "id": "scene_end",
-          "music": "sad_piano.mp3",
-          "sound_effects": [
-            "door_creak.mp3"
-          ],
-          "dialogues": [
-            {
-              "character": "MC",
-              "characterImage": "mc_default.png",
-              "text": "Có lẽ mình đã bỏ lỡ điều gì đó quan trọng..."
-            }
-          ],
-          "choices": []
-        },
-        {
-          "id": "scene_not_enough_item",
-          "music": "sad_piano.mp3",
-          "sound_effects": [
-            "door_creak.mp3"
-          ],
-          "dialogues": [
-            {
-              "character": "MC",
-              "characterImage": "mc_default.png",
-              "text": "Có lẽ mình đã bỏ lỡ điều gì đó quan trọng..."
-            }
-          ],
-          "choices": []
-        }
-      ]
-    },
-    {
-      "id": "chapter_02",
-      "title": "Chương 1: Bóng Tối Sau Cánh Cửa",
-      "description": "MC nhận được một tin nhắn bí ẩn yêu cầu đến căn hộ số 404, nơi bị bỏ hoang từ lâu.",
-      "conditions": "",
-      "scenes": [
-        {
-          "id": "scene_01",
-          "music": "ominous.mp3",
-          "sound_effects": [
-            "door_creak.mp3"
-          ],
-          "dialogues": [
-            {
-              "character": "MC",
-              "characterImage": "mc_default.png",
-              "text": "Mình đã nhận được tin nhắn kỳ lạ... Người gửi yêu cầu mình đến căn hộ số 404 ngay lập tức."
-            },
-            {
-              "character": "MC",
-              "characterImage": "mc_default2.png",
-              "text": "Không hiểu sao, nhưng mình có linh cảm không lành..."
-            }
-          ],
-          "choices": [
-            {
-              "text": "Tiếp tục tiến về căn hộ.",
-              "next_scene": "scene_02",
-              "required_item": "slow",
-              "reward_item": null
-            },
-            {
-              "text": " tiến về căn hộ.",
-              "next_scene": "scene_02",
-              "required_item": null,
-              "reward_item": null
-            },
-            {
-              "text": "Dừng lại và kiểm tra tin nhắn lần nữa.",
-              "next_scene": "scene_03",
-              "required_item": null,
-              "reward_item": null
-            }
-          ],
-          "conditions": {}
-        },
-        {
-          "id": "scene_02",
-          "music": "suspense.mp3",
-          "sound_effects": [
-            "door_creak.mp3"
-          ],
-          "dialogues": [
-            {
-              "character": "MC",
-              "characterImage": "mc_default.png",
-              "text": "Cửa căn hộ 404... đã mở sẵn?"
-            },
-            {
-              "character": "MC",
-              "characterImage": "mc_default2.png",
-              "text": "Nó đã bị bỏ hoang từ lâu, nhưng tại sao lại như thế này?"
-            }
-          ],
-          "choices": [
-            {
-              "text": "Bước vào trong căn hộ.",
-              "next_scene": "scene_end",
-              "required_item": null,
-              "reward_item": null
-            },
-            {
-              "text": "Gõ cửa gọi thử.",
-              "next_scene": "scene_05",
-              "required_item": null,
-              "reward_item": null
-            }
-          ],
-          "conditions": {}
-        },
-        {
-          "id": "scene_03",
-          "music": "mystery.mp3",
-          "sound_effects": [
-            "door_creak.mp3"
-          ],
-          "dialogues": [
-            {
-              "character": "MC",
-              "characterImage": "mc_default2.png",
-              "text": "Tin nhắn này không có số điện thoại, cũng không có người gửi..."
-            },
-            {
-              "character": "MC",
-              "characterImage": "mc_default.png",
-              "text": "Có khi nào đây là một cái bẫy?"
-            }
-          ],
-          "choices": [
-            {
-              "text": "Quay về nhà, không muốn dính vào rắc rối.",
-              "next_scene": "scene_end",
-              "required_item": null,
-              "reward_item": null
-            },
-            {
-              "text": "Tiếp tục đến căn hộ 404.",
-              "next_scene": "scene_02",
-              "required_item": null,
-              "reward_item": null
-            }
-          ],
-          "conditions": {}
-        },
-        {
-          "id": "scene_04",
-          "music": "mystery.mp3",
-          "sound_effects": [
-            "footsteps.mp3"
-          ],
-          "dialogues": [
-            {
-              "character": "MC",
-              "characterImage": "mc_default.png",
-              "text": "Trong này tối quá, mình cần tìm công tắc đèn."
-            }
-          ],
-          "choices": [
-            {
-              "text": "Tìm công tắc đèn.",
-              "next_scene": "scene_06",
-              "required_item": null,
-              "reward_item": null
-            },
-            {
-              "text": "Dùng đèn pin.",
-              "next_scene": "scene_07",
-              "required_item": "flashlight",
-              "reward_item": null
-            }
-          ],
-          "conditions": {}
-        },
-        {
-          "id": "scene_hidden",
-          "music": "eerie_whispers.mp3",
-          "sound_effects": [
-            "whispering.mp3"
-          ],
-          "dialogues": [
-            {
-              "character": "Shadow",
-              "characterImage": "shadow.png",
-              "text": "Cậu không nên đến đây..."
-            }
-          ],
-          "choices": [],
-          "conditions": {
-            "min_sanity": 5,
-            "required_item": "mysterious_note"
-          }
-        },
-        {
-          "id": "scene_end",
-          "music": "sad_piano.mp3",
-          "sound_effects": [
-            "door_creak.mp3"
-          ],
-          "dialogues": [
-            {
-              "character": "MC",
-              "characterImage": "mc_default.png",
-              "text": "Có lẽ mình đã bỏ lỡ điều gì đó quan trọng..."
-            }
-          ],
-          "choices": []
-        }
-      ]
-    },
+
     {
       "id": "god_intro",
       "title": "Chương 2: Lời Gọi Từ Trên Cao",
@@ -413,12 +42,12 @@
             {
               "character": "Thần Linh Vô Danh",
               "characterImage": "divine_glow.png",
-              "text": "Hãy đến Tòa Tháp Ngữ Cổ ở trong ngôi làng này – nơi Cleric Quyêến giả của ta đang chờ đợi. Người đó sẽ chỉ đường cho ngươi."
+              "text": "Hãy đến Tòa Tháp Ngữ Cổ ở trong ngôi làng này – nơi Klein Quyến giả của ta đang chờ đợi. Người đó sẽ chỉ đường cho ngươi."
             }
           ],
           "choices": [
             {
-              "text": "Nhận lấy minh chứng này và lên đường đến Tòa Tháp.",
+              "text": "Nhận lấy minh chứng này và lên đường đến Tòa Tháp. [YES]",
               "next_scene": "scene_02",
               "required_item": null,
               "reward_item": "CCCD"
@@ -462,12 +91,12 @@
             {
               "character": "MC",
               "characterImage": "mc_ready.png",
-              "text": "Mình không hiểu hết... nhưng mình sẽ tìm Cleric đó để biết thêm."
+              "text": "Mình không hiểu hết... nhưng mình sẽ tìm Klein đó để biết thêm."
             }
           ],
           "choices": [
             {
-              "text": "Nhận lấy minh chứng này và lên đường đến Tòa Tháp.",
+              "text": "Nhận lấy minh chứng này và lên đường đến Tòa Tháp. [YES]",
               "next_scene": "scene_02",
               "required_item": null,
               "reward_item": "CCCD"
@@ -507,7 +136,7 @@
           ],
           "choices": [
             {
-              "text": "Tôi thật sự muốn trở về. [YES]",
+              "text": "Tôi thật sự muốn trở về. [NO]",
               "next_scene": "scene_ending",
               "required_item": null,
               "reward_item": null
@@ -542,6 +171,131 @@
         }
       ]
     },
+
+    {
+      "id": "cleric_intro",
+      "title": "Chương 3: Hành Trình Đến Tòa Tháp",
+      "description": "Theo lời Thần Linh Vô Danh, MC lên đường đến Tòa Tháp Ngữ Cổ để gặp Klein Aeliana.",
+      "conditions": "",
+      "scenes": [
+        {
+          "id": "scene_travel_01",
+          "music": "journey_theme.mp3",
+          "sound_effects": ["footsteps_path.mp3", "wind_forest.mp3"],
+          "dialogues": [
+            {
+              "character": "MC",
+              "characterImage": "mc_ready.png",
+              "text": "Tòa Tháp Ngữ Cổ ở phía Bắc… Tôi phải đi qua khu rừng và những đồng cỏ rộng lớn."
+            },
+            {
+              "character": "System",
+              "characterImage": "icon_notification.png",
+              "text": "[Bạn nhận được “Dấu Ấn Ngữ Cổ” – vật phẩm giúp nhận biết lối đi ma thuật.]"
+            }
+          ],
+          "choices": [
+            {
+              "text": "Sử dụng Dấu Ấn để xác định hướng đi.",
+              "next_scene": "scene_travel_02",
+              "required_item": "divine_token",
+              "reward_item": null
+            }
+          ],
+          "conditions": {}
+        },
+        {
+          "id": "scene_travel_02",
+          "music": "forest_ambience.mp3",
+          "sound_effects": ["branches_rustle.mp3"],
+          "dialogues": [
+            {
+              "character": "MC",
+              "characterImage": "mc_alert.png",
+              "text": "Có tiếng động lạ… như có ai đang theo dõi."
+            },
+            {
+              "character": "Mysterious Figure",
+              "characterImage": "shadow.png",
+              "text": "Ngươi đi tìm Klein? Đừng để bị lạc lối giữa rừng ma thuật này."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Hỏi xem hướng đến Tòa Tháp.",
+              "next_scene": "scene_travel_03",
+              "required_item": null,
+              "reward_item": null
+            },
+            {
+              "text": "Phớt lờ bóng dáng đó và tiếp tục.",
+              "next_scene": "scene_meet_Klein",
+              "required_item": null,
+              "reward_item": null
+            }
+          ],
+          "conditions": {}
+        },
+        {
+          "id": "scene_travel_03",
+          "music": "mystic_whisper.mp3",
+          "sound_effects": ["whispering.mp3"],
+          "dialogues": [
+            {
+              "character": "Mysterious Figure",
+              "characterImage": "shadow.png",
+              "text": "Đi thẳng qua cây đại thụ rồi quẹo phải. Đó là con đường dẫn đến chân tháp."
+            },
+            {
+              "character": "MC",
+              "characterImage": "mc_thoughtful.png",
+              "text": "Cảm ơn... dù tôi không biết mình nên tin hay không."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Theo chỉ dẫn và tiếp tục hành trình.",
+              "next_scene": "scene_meet_Klein",
+              "required_item": null,
+              "reward_item": null
+            }
+          ],
+          "conditions": {}
+        },
+        {
+          "id": "scene_meet_Klein",
+          "music": "Klein_entrance.mp3",
+          "sound_effects": ["tower_gate.mp3", "footsteps_stone.mp3"],
+          "dialogues": [
+            {
+              "character": "Klein Aeliana",
+              "characterImage": "Klein_aeliana.png",
+              "text": "Chào đón ngươi, lữ khách. Ta là Aeliana – truyền nhân của Tòa Tháp Ngữ Cổ."
+            },
+            {
+              "character": "MC",
+              "characterImage": "mc_surprised.png",
+              "text": "Klein Aeliana? Thần nói tôi phải đến gặp ngươi..."
+            },
+            {
+              "character": "Klein Aeliana",
+              "characterImage": "Klein_aeliana.png",
+              "text": "Đúng vậy. Ta sẽ dạy ngươi những câu khắc Cổ Khởi đầu tiên, và giúp ngươi chuẩn bị vượt Dungeon."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Sẵn sàng học phép thuật ngôn từ.",
+              "next_scene": "scene_Klein_training",
+              "required_item": null,
+              "reward_item": null
+            }
+          ],
+          "conditions": {}
+        }
+      ]
+    },
+
     {
       "id": "healer_backstory",
       "title": "Ký Ức Mùi Khói Bếp",

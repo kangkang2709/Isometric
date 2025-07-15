@@ -340,21 +340,22 @@ public class MapRenderer {
 //        }
 
 
-        if (isZoomed && map.getMapName().equals("board")) {
-            camera.position.set(645, 25, 0);
-            camera.zoom = 0.8f; // Set zoom level for the board
-            camera.update();
-        } else if (!isZoomed && map.getMapName().equals("board") || map.getMapName().equals("forest")) {
-            float[] isoPos = toIsometric(character.getGridX(), character.getGridY());
-            camera.position.set(isoPos[0], isoPos[1], 0);
-            camera.zoom = 0.5f;
-            camera.update();
-        } else {
-            float[] isoPos = toIsometric(character.getGridX(), character.getGridY());
-            camera.position.set(isoPos[0], isoPos[1], 0);
-            camera.update();
+        if (!isCameraTransitioning) {
+            if (isZoomed && map.getMapName().equals("board")) {
+                camera.position.set(645, 25, 0);
+                camera.zoom = 0.8f;
+                camera.update();
+            } else if (!isZoomed && map.getMapName().equals("board") || map.getMapName().equals("forest") || map.getMapName().equals("main")) {
+                float[] isoPos = toIsometric(character.getGridX(), character.getGridY());
+                camera.position.set(isoPos[0], isoPos[1], 0);
+                camera.zoom = 0.5f;
+                camera.update();
+            } else {
+                float[] isoPos = toIsometric(character.getGridX(), character.getGridY());
+                camera.position.set(isoPos[0], isoPos[1], 0);
+                camera.update();
+            }
         }
-
 
         // End batch if currently drawing to use renderer
         boolean batchWasDrawing = batch.isDrawing();
@@ -594,12 +595,129 @@ public class MapRenderer {
         }
     }
 
+    private Vector3 originalCameraPosition;
+    private float originalCameraZoom;
+    private Vector3 targetCameraPosition;
+    private float targetCameraZoom;
+    private float cameraTransitionDuration = 2.0f; // Duration to move to target
+    private float cameraHoldDuration = 3.0f; // Duration to hold at target
+    private float cameraReturnDuration = 2.0f; // Duration to return to original
+    private float cameraTransitionTimer = 0f;
+    private boolean isCameraTransitioning = false;
+    private CameraState cameraState = CameraState.NORMAL;
 
+    private enum CameraState {
+        NORMAL,
+        MOVING_TO_TARGET,
+        HOLDING_AT_TARGET,
+        RETURNING_TO_ORIGINAL
+    }
+    public void moveCameraToTarget(float targetX, float targetY, float targetZoom,
+                                   float moveDuration, float holdDuration, float returnDuration) {
+        // Store original camera state
+        originalCameraPosition = new Vector3(camera.position);
+        originalCameraZoom = camera.zoom;
+
+        // Set target state
+        targetCameraPosition = new Vector3(targetX, targetY, 0);
+        targetCameraZoom = targetZoom;
+
+        // Set durations
+        this.cameraTransitionDuration = moveDuration;
+        this.cameraHoldDuration = holdDuration;
+        this.cameraReturnDuration = returnDuration;
+
+        // Start transition
+        cameraState = CameraState.MOVING_TO_TARGET;
+        cameraTransitionTimer = 0f;
+        isCameraTransitioning = true;
+    }
+    public void printCurrentPosition() {
+        System.out.println("Camera Position: " + camera.position);
+        System.out.println("Camera Zoom: " + camera.zoom);
+    }
+    public void updateCameraTransition(float deltaTime) {
+        if (!isCameraTransitioning) return;
+
+        cameraTransitionTimer += deltaTime;
+
+        switch (cameraState) {
+            case MOVING_TO_TARGET:
+                if (cameraTransitionTimer >= cameraTransitionDuration) {
+                    // Transition complete, start holding
+                    camera.position.set(targetCameraPosition);
+                    camera.zoom = targetCameraZoom;
+                    cameraState = CameraState.HOLDING_AT_TARGET;
+                    cameraTransitionTimer = 0f;
+                } else {
+                    // Interpolate to target
+                    float progress = cameraTransitionTimer / cameraTransitionDuration;
+                    progress = easeInOutQuad(progress); // Smooth easing
+
+                    camera.position.x = lerp(originalCameraPosition.x, targetCameraPosition.x, progress);
+                    camera.position.y = lerp(originalCameraPosition.y, targetCameraPosition.y, progress);
+                    camera.zoom = lerp(originalCameraZoom, targetCameraZoom, progress);
+                }
+                break;
+
+            case HOLDING_AT_TARGET:
+                if (cameraTransitionTimer >= cameraHoldDuration) {
+                    // Hold complete, start returning
+                    cameraState = CameraState.RETURNING_TO_ORIGINAL;
+                    cameraTransitionTimer = 0f;
+                }
+                // Camera stays at target position
+                break;
+
+            case RETURNING_TO_ORIGINAL:
+                if (cameraTransitionTimer >= cameraReturnDuration) {
+                    // Return complete
+                    camera.position.set(originalCameraPosition);
+                    camera.zoom = originalCameraZoom;
+                    cameraState = CameraState.NORMAL;
+                    isCameraTransitioning = false;
+                    cameraTransitionTimer = 0f;
+                } else {
+                    // Interpolate back to original
+                    float progress = cameraTransitionTimer / cameraReturnDuration;
+                    progress = easeInOutQuad(progress); // Smooth easing
+
+                    camera.position.x = lerp(targetCameraPosition.x, originalCameraPosition.x, progress);
+                    camera.position.y = lerp(targetCameraPosition.y, originalCameraPosition.y, progress);
+                    camera.zoom = lerp(targetCameraZoom, originalCameraZoom, progress);
+                }
+                break;
+        }
+
+        camera.update();
+    }
+    private float lerp(float start, float end, float progress) {
+        return start + (end - start) * progress;
+    }
+
+    /**
+     * Smooth easing function for natural camera movement
+     */
+    private float easeInOutQuad(float t) {
+        return t < 0.5f ? 2 * t * t : -1 + (4 - 2 * t) * t;
+    }
+    public void cancelCameraTransition() {
+        if (isCameraTransitioning) {
+            camera.position.set(originalCameraPosition);
+            camera.zoom = originalCameraZoom;
+            camera.update();
+            isCameraTransitioning = false;
+            cameraState = CameraState.NORMAL;
+        }
+    }
+    public boolean isCameraTransitioning() {
+        return isCameraTransitioning;
+    }
     public void update(float delta) {
         weatherRenderer.update(delta);
         diceRenderer.update(delta);
         updateCardAnimation(delta);
-
+        updateCameraTransition(delta); // Add this line
     }
 
     public void setWeather(String type, float intensity) {

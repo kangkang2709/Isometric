@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.2" orientation="isometric" renderorder="right-down" width="10" height="10" tilewidth="64" tileheight="32" infinite="0" nextlayerid="8" nextobjectid="8">
+ <tileset firstgid="1" name="stoneWallRound_E" tilewidth="252" tileheight="199" tilecount="1" columns="1">
+  <image source="tiles/tower/stoneWallRound_E.png" trans="ff00ff" width="252" height="199"/>
+ </tileset>
+ <tileset firstgid="2" name="stoneWallWindow_W" tilewidth="161" tileheight="237" tilecount="1" columns="1">
+  <image source="tiles/tower/stoneWallWindow_W.png" trans="ff00ff" width="161" height="237"/>
+ </tileset>
+ <tileset firstgid="3" name="stoneWall_E" tilewidth="158" tileheight="237" tilecount="1" columns="1">
+  <image source="tiles/stoneWall_E.png" trans="ff00ff" width="158" height="237"/>
+ </tileset>
+ <tileset firstgid="4" name="stoneWall_e2" tilewidth="158" tileheight="237" tilecount="1" columns="1">
+  <tileoffset x="0" y="50"/>
+  <image source="tiles/stoneWall_e2.png" trans="ff00ff" width="158" height="237"/>
+ </tileset>
+ <tileset firstgid="5" name="bag" tilewidth="28" tileheight="55" tilecount="1" columns="1">
+  <image source="tiles/tower/bag.png" trans="ff00ff" width="28" height="55"/>
+ </tileset>
+ <tileset firstgid="6" name="book" tilewidth="24" tileheight="24" tilecount="1" columns="1">
+  <tileoffset x="30" y="-15"/>
+  <image source="tiles/tower/book.png" trans="ff00ff" width="24" height="24"/>
+ </tileset>
+ <tileset firstgid="7" name="book2" tilewidth="29" tileheight="30" tilecount="1" columns="1">
+  <tileoffset x="19" y="-5"/>
+  <image source="tiles/tower/book2.png" trans="ff00ff" width="29" height="30"/>
+ </tileset>
+ <tileset firstgid="8" name="candle" tilewidth="10" tileheight="34" tilecount="1" columns="1">
+  <tileoffset x="15" y="-10"/>
+  <image source="tiles/tower/candle.png" trans="ff00ff" width="10" height="34"/>
+ </tileset>
+ <tileset firstgid="9" name="chair" tilewidth="24" tileheight="28" tilecount="1" columns="1">
+  <tileoffset x="20" y="-10"/>
+  <image source="tiles/tower/chair.png" trans="ff00ff" width="24" height="28"/>
+ </tileset>
+ <tileset firstgid="10" name="shell" tilewidth="44" tileheight="79" tilecount="1" columns="1">
+  <tileoffset x="15" y="0"/>
+  <image source="tiles/tower/shell.png" trans="ff00ff" width="44" height="79"/>
+ </tileset>
+ <tileset firstgid="11" name="shell2" tilewidth="45" tileheight="92" tilecount="1" columns="1">
+  <image source="tiles/tower/shell2.png" trans="ff00ff" width="45" height="92"/>
+ </tileset>
+ <tileset firstgid="12" name="table2" tilewidth="55" tileheight="45" tilecount="1" columns="1">
+  <image source="tiles/tower/table2.png" trans="ff00ff" width="55" height="45"/>
+ </tileset>
+ <tileset firstgid="13" name="stone_E" tilewidth="64" tileheight="48" tilecount="1" columns="1">
+  <image source="tiles/lib/stone_E.png" trans="ff00ff" width="64" height="48"/>
+  <tile id="0">
+   <properties>
+    <property name="walkable" type="bool" value="false"/>
+   </properties>
+  </tile>
+ </tileset>
+ <tileset firstgid="14" name="ruby" tilewidth="52" tileheight="141" tilecount="1" columns="1">
+  <image source="tiles/tower/ruby.png" trans="ff00ff" width="52" height="141"/>
+ </tileset>
+ <tileset firstgid="15" name="tham" tilewidth="100" tileheight="90" tilecount="1" columns="1">
+  <image source="tiles/tower/tham.png" trans="ff00ff" width="100" height="90"/>
+ </tileset>
+ <tileset firstgid="16" name="candle2" tilewidth="30" tileheight="25" tilecount="1" columns="1">
+  <tileoffset x="20" y="-10"/>
+  <image source="tiles/tower/candle2.png" trans="ff00ff" width="30" height="25"/>
+ </tileset>
+ <tileset firstgid="17" name="magic" tilewidth="74" tileheight="119" tilecount="1" columns="1">
+  <image source="tiles/tower/magic.png" trans="ff00ff" width="74" height="119"/>
+ </tileset>
+ <tileset firstgid="18" name="floorCarpetSmall_S2" tilewidth="97" tileheight="50" tilecount="1" columns="1">
+  <tileoffset x="10" y="-28"/>
+  <image source="tiles/lib/floorCarpetSmall_S2.png" trans="ff00ff" width="97" height="50"/>
+ </tileset>
+ <layer id="2" name="terrain_layer" width="10" height="10">
+  <data encoding="csv">
+13,13,13,13,13,13,13,13,13,13,
+13,13,13,0,0,13,13,13,13,13,
+13,13,0,0,0,0,0,0,0,13,
+13,13,0,0,0,0,0,0,0,0,
+13,13,0,0,0,0,0,0,0,0,
+13,13,0,0,0,13,13,0,0,0,
+13,13,0,0,0,13,13,13,0,0,
+13,0,0,0,0,0,13,0,0,0,
+13,0,0,0,0,0,0,0,0,0,
+13,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="1" name="ground_layer" width="10" height="10">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,
+0,13,13,13,13,13,13,13,13,13,
+0,13,13,13,13,13,13,13,13,13,
+0,13,13,13,13,13,13,13,13,13,
+0,13,13,13,13,13,13,13,13,13,
+0,13,13,13,13,13,13,13,13,13,
+0,13,13,13,13,13,13,13,13,13,
+0,13,13,13,13,13,13,13,13,13,
+0,13,13,13,13,13,13,13,13,13,
+0,13,13,13,13,13,13,13,13,13
+</data>
+ </layer>
+ <layer id="3" name="layer3" width="10" height="10">
+  <data encoding="csv">
+0,0,0,0,4,0,4,0,0,0,
+0,0,0,0,0,7,16,16,0,11,
+6,0,0,0,0,0,0,0,0,9,
+1,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,18,
+2,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+3,0,15,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="7" name="layer4" width="10" height="10" offsetx="0" offsety="-64">
+  <data encoding="csv">
+14,0,0,0,0,0,0,0,0,0,
+0,0,0,0,5,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+8,0,0,0,0,0,0,0,0,0,
+0,0,0,12,0,0,0,0,0,0,
+0,0,0,7,0,0,0,0,0,0,
+0,0,0,6,0,0,0,0,0,6,
+0,0,0,2147483658,0,0,0,0,17,0,
+0,0,0,0,0,0,0,0,9,0
+</data>
+ </layer>
+ <objectgroup id="5" name="object">
+  <object id="1" x="256" y="128" width="32" height="32">
+   <properties>
+    <property name="event" value="tele"/>
+    <property name="id" value="tower_1"/>
+    <property name="map" value="main"/>
+   </properties>
+  </object>
+  <object id="5" x="256" y="96" width="32" height="32">
+   <properties>
+    <property name="event" value="tele"/>
+    <property name="id" value="tower_2"/>
+    <property name="map" value="main"/>
+   </properties>
+  </object>
+  <object id="6" x="288" y="128" width="32" height="32">
+   <properties>
+    <property name="event" value="tele"/>
+    <property name="id" value="tower_1"/>
+    <property name="map" value="main"/>
+   </properties>
+  </object>
+  <object id="7" x="288" y="96" width="32" height="32">
+   <properties>
+    <property name="event" value="tele"/>
+    <property name="id" value="tower_2"/>
+    <property name="map" value="main"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>

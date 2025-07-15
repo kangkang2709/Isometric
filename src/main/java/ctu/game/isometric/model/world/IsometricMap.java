@@ -88,6 +88,10 @@ public class IsometricMap {
                 startX = 10;
                 startY = 14;
                 break;
+            case "tower":
+                startX = 9;
+                startY = 5;
+                break;
         }
 
         if (mapName.equals("board")) {

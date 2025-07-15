@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.maps.MapProperties;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Timer;
 import ctu.game.isometric.IsometricGame;
@@ -122,13 +123,14 @@ public class GameController {
         this.mapList.put("library", new IsometricMap("maps/library.tmx"));
         this.mapList.put("tavern", new IsometricMap("maps/tavern.tmx"));
         this.mapList.put("forest", new IsometricMap("maps/forest.tmx"));
+        this.mapList.put("tower", new IsometricMap("maps/tower.tmx"));
 
         this.eventManagerMap.put("board", eventManager);
         this.eventManagerMap.put("main", new EventManager(this.mapList.get("main"), "main"));
         this.eventManagerMap.put("library", new EventManager(this.mapList.get("library"), "library"));
         this.eventManagerMap.put("tavern", new EventManager(this.mapList.get("tavern"), "tavern"));
         this.eventManagerMap.put("forest", new EventManager(this.mapList.get("forest"), "forest"));
-
+        this.eventManagerMap.put("tower", new EventManager(this.mapList.get("forest"), "tower"));
 
         this.character = new Character(10, 0);
         this.inputController = new InputController(this);
@@ -306,12 +308,15 @@ public class GameController {
                     break;
                 case "Teleporter":
                     dialogController.startDialog("teleporting_background", "scene_intro");
+                case "Cleric Klein":
+                    dialogController.startDialog("cleric_intro", "scene_travel_01");
                 default:
                     break;
             }
 
         } else {
-            dialogController.showSimpleMessage("No NPC nearby to interact with.");
+            dialogController.showSimpleMessage("Ta không thấy ai ở gần đây cả.\n" +
+                    "Có lẽ ta nên đi tìm một người nào đó để trò chuyện.");
         }
     }
 
@@ -386,43 +391,6 @@ public class GameController {
         dictionary.setLearnedWords(learnedWordList);
         dictionary.getNewWords().clear();
 
-    }
-
-    public void moveCharacterAlongPath(int targetX, int targetY) {
-        float startX = character.getGridX();
-        float startY = character.getGridY();
-
-        if (map.getMapName().equals("forest")) {
-            if (!character.getFlags().contains("forest_info")) {
-                dialogController.showSimpleMessage("Đây là đâu vậy? Mình không nhớ gì cả.\n " +
-                        "Có vẻ như mình đang ở trong một khu rừng, Nhưng....\n" +
-                        "Trước tiên mình cần phải tìm đường rời khỏi đây đã.");
-                character.getFlags().add("forest_info");
-                return;
-            }
-        }
-
-        // Find path with a reasonable maximum length
-        Array<int[]> path = pathfinder.findPath((int) startX, (int) startY, targetX, targetY, 30);
-
-        if (path.size > 0) {
-            // Remove the first point if it's the current position
-            if (path.size > 1 && path.get(0)[0] == (int) startX && path.get(0)[1] == (int) startY) {
-                path.removeIndex(0);
-            }
-
-            character.setPath(path);
-            effectManager.playClickSound();
-
-            // Set the target indicator position
-            inputController.showTargetIndicator(targetX, targetY);
-
-            if (eventManager.getMapName().equals("board"))
-                this.boardEventManager.checkBoardPlayerPosition((int) targetX, (int) targetY);
-            checkPositionEvents((int) targetX, (int) targetY);
-//
-
-        }
     }
 
 
@@ -502,6 +470,7 @@ public class GameController {
 
         }
     }
+
 
     public void update(float delta) {
 
@@ -772,8 +741,18 @@ public class GameController {
         if (!character.getFlags().contains("god_intro") && ((x == 31 && y == 4) || (x == 32 && y == 4))) {
             activeEvents.add(positionKey);
             character.clearPath();
-            dialogController.setOnDialogFinishedAction(() -> {
+            dialogController.setOnCanncelFinishedAction(() -> {
                 game.changeScreen("GAME_OVER");
+            });
+            dialogController.setOnDialogFinishedAction(() -> {
+                mapRenderer.moveCameraToTarget(2048, 128, 0.5f, 2.5f, 1.5f, 1.0f);
+                Timer.schedule(new Timer.Task() {
+                    @Override
+                    public void run() {
+                        dialogController.showSimpleMessage("Có lẽ đó là tòa tháp của Cleric mà vị thần nhắc tới");
+
+                    }
+                }, 1.8f);
             });
             dialogController.startDialog("god_intro", "scene_01");
             character.getFlags().add("god_intro");
@@ -796,6 +775,43 @@ public class GameController {
         checkEvents(map.getMapName(), x, y);
     }
 
+    public void moveCharacterAlongPath(int targetX, int targetY) {
+        float startX = character.getGridX();
+        float startY = character.getGridY();
+
+        if (map.getMapName().equals("forest")) {
+            if (!character.getFlags().contains("forest_info")) {
+                dialogController.showSimpleMessage("Đây là đâu vậy? Mình không nhớ gì cả.\n " +
+                        "Có vẻ như mình đang ở trong một khu rừng, Nhưng....\n" +
+                        "Trước tiên mình cần phải tìm đường rời khỏi đây đã.");
+                character.getFlags().add("forest_info");
+                return;
+            }
+        }
+
+
+        // Find path with a reasonable maximum length
+        Array<int[]> path = pathfinder.findPath((int) startX, (int) startY, targetX, targetY, 30);
+
+        if (path.size > 0) {
+            // Remove the first point if it's the current position
+            if (path.size > 1 && path.get(0)[0] == (int) startX && path.get(0)[1] == (int) startY) {
+                path.removeIndex(0);
+            }
+
+            character.setPath(path);
+            effectManager.playClickSound();
+
+            // Set the target indicator position
+            inputController.showTargetIndicator(targetX, targetY);
+
+            if (eventManager.getMapName().equals("board"))
+                this.boardEventManager.checkBoardPlayerPosition((int) targetX, (int) targetY);
+            checkPositionEvents((int) targetX, (int) targetY);
+//
+
+        }
+    }
 
     public float[] toIsometric(float x, float y) {
         float isoX = (x + y) * (map.getTileWidth() / 2.0f);
@@ -1035,7 +1051,27 @@ public class GameController {
             case "tele":
                 if (properties != null) {
                     String mapName = properties.get("map", String.class);
-                    if (mapName != null && !mapName.equals(map.getMapName())) {
+
+                    if (mapName == null || mapName.isEmpty()) {
+                        getDialogController().showSimpleMessage("!!!!KHÔNG THỂ TIẾN VÀO NƠI NÀY!!!!");
+                        return;
+                    }
+
+                    if (mapName.equals("unknown") && !character.getFlags().contains("klein_unlock")) {
+                        getDialogController().showSimpleMessage("Ngôi nhà này đã bị khóa, có lẽ Cleric Klein sẽ mở khóa nó cho ta sau này.");
+                        return;
+                    } else if (mapName.equals("unknown") && character.getFlags().contains("klein_unlock")) {
+                        changeMap("unknown");
+                        Timer.schedule(new Timer.Task() {
+                            @Override
+                            public void run() {
+                                dialogController.showSimpleMessage("Tại sao trong ngôi nhà này lại có một cánh cổng đá kì lạ như vậy?\n" +
+                                        "Có lẽ ta nên tiến lên tìm hiểu thêm về nó.");
+                            }
+                        }, 2f);
+                        return;
+                    }
+                    if (!mapName.equals(map.getMapName())) {
                         changeMap(mapName);
                     }
                 }

@@ -108,9 +108,7 @@ public class Pathfinder {
         final int MAX_NODE_EXPANSION = 100; // Limit the number of nodes explored
         int expandedCount = 0;
 
-        // Determine how many directions to check based on map name
-        int directionsToCheck = "board".equals(map.getMapName()) ? 4 : DIRECTIONS.length;
-
+//
         while (!openSet.isEmpty()) {
             if (expandedCount++ > MAX_NODE_EXPANSION) {
                 Array<int[]> fallbackPath = new Array<>();
@@ -130,12 +128,23 @@ public class Pathfinder {
             closedSet.add(currentKey);
 
             // Check neighbors - only 4 directions for "board" map, all 8 for others
-            for (int i = 0; i < directionsToCheck; i++) {
+            for (int i = 0; i < DIRECTIONS.length; i++) {
                 int nx = current.x + DIRECTIONS[i][0];
                 int ny = current.y + DIRECTIONS[i][1];
 
                 // Skip if outside map, unwalkable, or has NPC
                 if (!map.isWalkable(nx, ny) || isNPCHere(nx, ny)) continue;
+                // Add diagonal movement check
+                // Check if this is a diagonal move (i >= 4 for diagonal directions)
+                if (i >= 4) {  // Diagonal directions
+                    int dx = DIRECTIONS[i][0];
+                    int dy = DIRECTIONS[i][1];
+                    // Check adjacent tiles to prevent corner cutting
+                    if (!map.isWalkable(current.x + dx, current.y) ||
+                            !map.isWalkable(current.x, current.y + dy)) {
+                        continue;  // Skip this diagonal direction
+                    }
+                }
 
                 long neighborKey = packCoords(nx, ny);
                 if (closedSet.contains(neighborKey)) continue;
@@ -169,7 +178,15 @@ public class Pathfinder {
         fallbackPath.add(new int[]{startX, startY}); // Return starting position as fallback
         return fallbackPath;
     }
-
+    private boolean canMoveDiagonally(int fromX, int fromY, int toX, int toY) {
+        // Check if this is a diagonal move
+        if (Math.abs(toX - fromX) == 1 && Math.abs(toY - fromY) == 1) {
+            // For diagonal movement, check if both adjacent tiles are walkable
+            // This prevents "cutting corners" through walls
+            return map.isWalkable(fromX, toY) && map.isWalkable(toX, fromY);
+        }
+        return true; // Non-diagonal moves don't need this check
+    }
     private int[] findClosestWalkable(int x, int y, int startX, int startY) {
         // Check if the current tile is walkable
 //        if (map.isWalkable(x, y) && !isNPCHere(x, y)) {
