@@ -211,10 +211,6 @@ public class BoardEventManager {
     }
 
 
-
-
-
-
     private void placeSpecificEvents(String eventType, int count, String displayType) {
         try {
             for (int i = 0; i < count && totalEventsPlaced < EXACT_TOTAL_EVENTS; i++) {
@@ -373,7 +369,7 @@ public class BoardEventManager {
                     usedPositions.add(fakePositionKey);
 //                    totalEventsPlaced++;
 
-                    MapEvent fakeEvent = new MapEvent(fakePositionKey, "new_run_event", pos[0], pos[1], "Fake Event", "0");
+                    MapEvent fakeEvent = new MapEvent(fakePositionKey, "dungeon", pos[0], pos[1], "Fake Event", "0");
                     eventManager.addEvent(fakeEvent);
                 }
 

@@ -16,43 +16,43 @@
             {
               "character": "MC",
               "characterImage": "mc_ready.png",
-              "text": "Cuối cùng mình cũng thoát khỏi khu rừng kỳ lạ đó... Nhưng... tại sao bầu trời lại sáng chói như vậy?"
+              "text": "Cuối cùng mình cũng thoát khỏi khu rừng kỳ lạ đó... Nhưng kia là gì? Một ngôi làng ư?"
             },
             {
               "character": "???",
               "characterImage": "divine_glow.png",
-              "text": "[Giọng nói vang vọng] Kẻ lữ hành từ thế giới khác... Cuối cùng ngươi cũng đã đến được nơi khởi đầu thực sự."
+              "text": "[Giọng nói vang vọng] Lữ khách từ thế giới khác... Hãy dừng chân tại ngôi làng này. Đây là nơi ngươi sẽ bắt đầu hành trình của mình."
             },
             {
               "character": "MC",
               "characterImage": "mc_ready.png",
-              "text": "Ai... ai đang nói vậy?"
+              "text": "Ai đang nói vậy? Tại sao tôi lại nghe thấy giọng nói này trong đầu mình?"
             },
             {
               "character": "Thần Linh Vô Danh",
               "characterImage": "divine_glow.png",
-              "text": "Ta là người đã gọi linh hồn ngươi đến Elaria. Không phải là ngẫu nhiên – mà là định mệnh."
+              "text": "Ta là người đã đưa linh hồn ngươi tới Elaria. Vận mệnh của ngươi được khắc ghi từ lâu. Đi đi, vào ngôi làng đó, nơi Klein - Quyến giả của ta - đang chờ đợi để dẫn dắt ngươi."
             },
             {
               "character": "Thần Linh Vô Danh",
               "characterImage": "divine_glow.png",
-              "text": "Thế giới này đang dần bị lãng quên – và chỉ những ai sở hữu ‘Tri Thức Thuần Khiết’ mới có thể cứu rỗi nó."
+              "text": "Thế giới này chìm sâu trong lãng quên. Chỉ có người mang 'Tri Thức Thuần Khiết' mới có thể cứu rỗi nó. Cánh cửa của định mệnh đang mở ra trước mắt ngươi."
             },
             {
-              "character": "Thần Linh Vô Danh",
-              "characterImage": "divine_glow.png",
-              "text": "Hãy đến Tòa Tháp Ngữ Cổ ở trong ngôi làng này – nơi Klein Quyến giả của ta đang chờ đợi. Người đó sẽ chỉ đường cho ngươi."
+              "character": "MC",
+              "characterImage": "mc_confused.png",
+              "text": "Tòa Tháp Ngữ Cổ... Quyến giả Klein? Tôi không hiểu, nhưng có lẽ tôi không còn lựa chọn nào khác."
             }
           ],
           "choices": [
             {
-              "text": "Nhận lấy minh chứng này và lên đường đến Tòa Tháp. [YES]",
+              "text": "Đi vào làng và tìm Quyến giả Klein. [YES]",
               "next_scene": "scene_02",
               "required_item": null,
               "reward_item": "CCCD"
             },
             {
-              "text": "Hỏi thêm về thân phận của vị thần.",
+              "text": "Nghe thêm về lý do tại sao Thần Linh đưa mình đến đây.",
               "next_scene": "scene_03",
               "required_item": null,
               "reward_item": null
@@ -172,8 +172,8 @@
     },
     {
       "id": "klein_meet",
-      "title": "Chương 2: Lời Gọi Từ Trên Cao",
-      "description": "Sau khi rời khỏi khu rừng lạ, nhân vật nghe thấy một giọng nói vang vọng từ bầu trời – lời nhắn nhủ của một vị thần cổ xưa.",
+      "title": "Chương 3: Gặp vị Quyến Giả",
+      "description": "Nhân vật chính gặp Klein tại Tòa Tháp Ngữ Cổ và được giao nhiệm vụ khôi phục dòng chảy ngôn từ để cứu lấy thế giới.",
       "conditions": "",
       "scenes": [
         {
@@ -188,32 +188,32 @@
             {
               "character": "Cleric Klein",
               "characterImage": "cleric_Klein.png",
-              "text": "Chào mừng ngươi đến Tòa Tháp Ngữ Cổ, lữ khách. Ta là Klein. Nếu giọng nói ấy đã đưa ngươi đến đây, hẳn là ngươi đã nghe thấy lời gọi của Đấng Tối Cao?"
+              "text": "Chào mừng ngươi đến Tòa Tháp Ngữ Cổ, lữ khách. Ta là Klein, Quyến Giả của Đấng Vô Danh. Nếu ngươi đã đến đây, nghĩa là ngươi đã nghe thấy \n lời gọi của Ngài."
             },
             {
               "character": "MC",
               "characterImage": "mc_ready.png",
-              "text": "Phải… Một giọng nói vang lên từ hư vô, khi tôi rời khỏi khu rừng. Hắn nói… tôi được chọn. Nhưng vì lý do gì?"
+              "text": "Phải… Một giọng nói vang lên từ hư vô, khi tôi rời khỏi khu rừng. Nhưng tôi vẫn chưa rõ, tại sao tôi lại được chọn?"
             },
             {
               "character": "Cleric Klein",
               "characterImage": "cleric_Klein.png",
-              "text": "Đấng Vô Danh đã chọn ngươi vì thế giới này đang suy tàn. Ngôn từ – thứ từng là trụ cột của phép thuật – đang bị lãng quên. Quái vật và Hư Vô lan tràn, vì không còn ai đủ sức tạo nên những câu chữ thiêng liêng để chống lại chúng."
+              "text": "Ngươi được chọn vì ngươi mang trong mình một khả năng hiếm có: khả năng tái tạo và củng cố dòng chảy ngôn từ. Sứ mệnh của ngươi không chỉ là cứu \n thế giới này, mà còn là khôi phục sức mạnh của ngôn từ – thứ đã từng là phép thuật mạnh nhất ở Elaria."
             },
             {
               "character": "Cleric Klein",
               "characterImage": "cleric_Klein.png",
-              "text": "Ngươi mang trong mình một khả năng hiếm có: khả năng tạo nghĩa từ hỗn loạn, sức mạnh để xâu chuỗi những từ ngữ, khơi lại dòng chảy cổ xưa. Đó là lý do ngươi có Dấu Ấn Ngữ Cổ."
+              "text": "Thế giới này đang suy tàn. Hư Vô lan tràn, phá hủy mọi thứ. Những sinh vật bị vặn xoắn bởi bóng tối đang chiếm lĩnh các tầng sâu của Căn Hầm Ký Ức.\n Chỉ có người mang Dấu Ấn Ngữ Cổ như ngươi mới có thể đối mặt với chúng."
             },
             {
               "character": "MC",
               "characterImage": "mc_ready.png",
-              "text": "Vậy… tôi không chỉ đơn thuần bị đưa đến đây bởi số phận, mà là vì tôi có thể sửa chữa điều gì đó?"
+              "text": "Dấu Ấn Ngữ Cổ? Sức mạnh của ngôn từ? Làm thế nào tôi có thể sử dụng nó để chiến đấu?"
             },
             {
               "character": "Cleric Klein",
               "characterImage": "cleric_Klein.png",
-              "text": "Chính xác. Ngươi không chỉ là khách qua đường. Ngươi là Sứ Giả Ngôn Từ – người sẽ khai phá lại những Căn Hầm Ký Ức, đánh thức các Biểu Đồ Ngữ Huyền, và cuối cùng đối mặt với chính Hư Vô bằng sức mạnh câu chữ."
+              "text": "Ta sẽ dạy ngươi. Mỗi trận chiến là một bài kiểm tra ngôn ngữ. Hãy tìm cách ghép từ, sử dụng chúng như vũ khí, và kết hợp chúng để tạo ra \n sát thương cho kẻ địch. Ngươi sẽ học cách sử dụng ngôn từ như một thanh kiếm và một lá chắn."
             },
             {
               "character": "System",
@@ -223,22 +223,7 @@
             {
               "character": "Cleric Klein",
               "characterImage": "cleric_Klein.png",
-              "text": "Bắt đầu từ hôm nay, mỗi chữ cái bạn chọn, mỗi từ bạn ghép, đều sẽ là một nhát chém vào bóng tối. Hãy học cách sử dụng nó đúng lúc, đúng cách. Và ta sẽ là người dẫn đường cho ngươi."
-            },
-            {
-              "character": "MC",
-              "characterImage": "mc_ready.png",
-              "text": "Tôi sẽ bắt đầu từ đâu?"
-            },
-            {
-              "character": "Cleric Klein",
-              "characterImage": "cleric_Klein.png",
-              "text": "Tầng dưới Tòa Tháp có một cánh cổng dẫn vào Dungeon Đầu Tiên – nơi lưu giữ ký ức của ngôn từ cổ đại. Bên trong đó là những sinh vật bị vặn xoắn bởi Hư Vô. Chúng sẽ tấn công linh hồn bạn, nhưng bạn sẽ chống trả bằng ngôn từ."
-            },
-            {
-              "character": "Cleric Klein",
-              "characterImage": "cleric_Klein.png",
-              "text": "Ta sẽ dạy ngươi cách chiến đấu – mỗi trận là một trò chơi ngôn ngữ. Ghép các từ để tạo sát thương, kết hợp từ hiếm để thi triển kỹ năng. Khi sẵn sàng, hãy bước qua cánh cổng phía sau."
+              "text": "Trước hết, chúng ta bắt đầu với trận chiến cơ bản trước."
             }
           ],
           "choices": [
@@ -249,13 +234,13 @@
               "reward_item": null
             },
             {
-              "text": "Tôi vẫn còn nhiều câu hỏi về vị Thần và lý do tôi được chọn.",
+              "text": "Tôi cần biết thêm về Đấng Vô Danh và ý nghĩa của Dấu Ấn Ngữ Cổ.",
               "next_scene": "scene_cleric_deepdive",
               "required_item": null,
               "reward_item": null
             },
             {
-              "text": "Nếu tôi từ chối sứ mệnh này thì sao? [NO]",
+              "text": "Nếu tôi từ chối sứ mệnh này thì sao?",
               "next_scene": "scene_ending_reject",
               "required_item": null,
               "reward_item": null
@@ -275,17 +260,17 @@
             {
               "character": "Cleric Klein",
               "characterImage": "cleric_Klein.png",
-              "text": "Không ai biết rõ gương mặt hay tên thật của Ngài. Nhưng trong hàng ngàn năm, giọng nói ấy luôn vang lên khi thế giới đứng bên bờ vực. Ngài là hiện thân của Ý Niệm – sức mạnh đằng sau mọi từ ngữ."
+              "text": "Ngài là hiện thân của Ý Niệm – sức mạnh cốt lõi đằng sau mọi từ ngữ và phép thuật. Không ai biết rõ gương mặt hay tên thật của Ngài, \nnhưng giọng nói của Ngài luôn vang lên khi thế giới đứng bên bờ vực."
             },
             {
               "character": "MC",
               "characterImage": "mc_ready.png",
-              "text": "Và tôi chỉ là… một người bình thường. Sao tôi lại được chọn?"
+              "text": "Vậy tại sao tôi, một người bình thường từ một thế giới khác, lại được chọn?"
             },
             {
               "character": "Cleric Klein",
               "characterImage": "cleric_Klein.png",
-              "text": "Chính vì ngươi không thuộc về thế giới này. Ngươi không bị giới hạn bởi những lề luật đã mục nát nơi đây. Đó là điều khiến ngươi trở nên phù hợp hơn bất kỳ ai."
+              "text": "Chính vì ngươi không thuộc về thế giới này. Ngươi không bị ràng buộc bởi những lề luật đã hư hỏng nơi đây. Đó là điều khiến ngươi trở nên đặc biệt và \nphù hợp hơn bất kỳ ai."
             }
           ],
           "choices": [
@@ -323,10 +308,30 @@
               "next_scene": "scene_ending",
               "required_item": null,
               "reward_item": null
+            },
+            {
+              "text": "Tôi muốn suy nghĩ lại.",
+              "next_scene": "scene_meet_cleric",
+              "required_item": null,
+              "reward_item": null
             }
           ]
         },
-
+        {
+          "id": "scene_ending",
+          "music": "homecoming.mp3",
+          "sound_effects": [
+            "portal_open.mp3"
+          ],
+          "dialogues": [
+            {
+              "character": "Cleric Klein",
+              "characterImage": "cleric_Klein.png",
+              "text": "Tạm biệt người xa lạ. Có lẽ ta sẽ gặp mặt lại nhau sớm thôi"
+            }
+          ],
+          "choices": []
+        },
         {
           "id": "scene_training_intro",
           "music": "training_theme.mp3",
@@ -351,6 +356,12 @@
               "next_scene": "scene_training_battle",
               "required_item": null,
               "reward_item": null
+            },
+            {
+              "text": "Quay lại.",
+              "next_scene": "scene_meet_cleric",
+              "required_item": null,
+              "reward_item": null
             }
           ]
         },
@@ -368,26 +379,246 @@
             }
           ],
           "choices": []
+        }
+      ]
+    },
+    {
+      "id": "dungeon_call",
+      "title": "Chương 4: Tiếng gọi từ hầm ngục",
+      "description": "Nhân vật chính nhận được lời chỉ dẫn từ Klein về lý do cần vào hầm ngục và mục tiêu quay về thế giới cũ.",
+      "conditions": "",
+      "scenes": [
+        {
+          "id": "scene_prepare_for_dungeon",
+          "music": "preparation_theme.mp3",
+          "sound_effects": [
+            "magic_chime.mp3",
+            "pages_flipping.mp3"
+          ],
+          "dialogues": [
+            {
+              "character": "Cleric Klein",
+              "characterImage": "cleric_Klein.png",
+              "text": "Ngươi đã hiểu nhiệm vụ của mình, nhưng trước khi bước vào hầm ngục, ta cần nói rõ lý do tại sao ngươi phải thực hiện điều này."
+            },
+            {
+              "character": "MC",
+              "characterImage": "mc_ready.png",
+              "text": "Tôi hiểu rằng tôi cần làm điều gì đó để quay về thế giới của mình, nhưng tại sao lại là hầm ngục này?"
+            },
+            {
+              "character": "Cleric Klein",
+              "characterImage": "cleric_Klein.png",
+              "text": "Căn Hầm Ký Ức là nơi lưu giữ sức mạnh cổ xưa của ngôn từ. Nhưng nó đã bị bóng tối của Hư Vô xâm chiếm. Chỉ khi ngươi đánh bại những thực thể canh giữ và thu thập ba viên ngọc kỳ bí, ngươi mới có thể kích hoạt quyển sách cổ và quay về thế giới của mình."
+            },
+            {
+              "character": "MC",
+              "characterImage": "mc_ready.png",
+              "text": "Ba viên ngọc kỳ bí? Chúng quan trọng đến mức nào?"
+            },
+            {
+              "character": "Cleric Klein",
+              "characterImage": "cleric_Klein.png",
+              "text": "Ba viên ngọc tượng trưng cho Ý Niệm, Biểu Đồ và Dòng Chảy – ba yếu tố cốt lõi để vận hành phép thuật ngôn từ. Khi kết hợp chúng với quyển sách cổ,\n ngươi sẽ mở ra cánh cổng quay về thế giới của mình."
+            },
+            {
+              "character": "MC",
+              "characterImage": "mc_ready.png",
+              "text": "Vậy tôi cần phải làm gì để thu thập các viên ngọc đó?"
+            },
+            {
+              "character": "Cleric Klein",
+              "characterImage": "cleric_Klein.png",
+              "text": "Ba viên ngọc được canh giữ bởi những sinh vật mạnh mẽ ở các tầng 4, 6, và 8 của hầm ngục. Đây là thử thách kiểm tra sự xứng đáng của ngươi. \nNếu thất bại, ngươi có thể bị mắc kẹt trong bóng tối mãi mãi."
+            },
+            {
+              "character": "System",
+              "characterImage": "mc_ready.png",
+              "text": "[Bạn nhận được nhiệm vụ chính: \"Khám phá Căn Hầm Ký Ức\"]"
+            },
+            {
+              "character": "Cleric Klein",
+              "characterImage": "cleric_Klein.png",
+              "text": "Khi ngươi đã sẵn sàng, hãy bước qua cánh cổng phía sau. Nhưng hãy nhớ: đây sẽ là hành trình đầy gian nan, không có đường quay lại cho đến khi ngươi \n hoàn thành nhiệm vụ."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Tôi đã hiểu và sẵn sàng bước vào hầm ngục. [YES]",
+              "next_scene": "scene_enter_dungeon_intro",
+              "required_item": null,
+              "reward_item": null
+            },
+            {
+              "text": "Tôi cần thêm thời gian để suy nghĩ. [NO]",
+              "next_scene": "scene_prepare_more",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
         },
         {
-          "id": "scene_ending",
-          "music": "homecoming.mp3",
+          "id": "scene_enter_dungeon_intro",
+          "music": "dungeon_intro.mp3",
           "sound_effects": [
-            "portal_open.mp3"
+            "portal_open.mp3",
+            "wind_whisper.mp3"
           ],
+          "dialogues": [
+            {
+              "character": "Cleric Klein",
+              "characterImage": "cleric_Klein.png",
+              "text": "Tốt, hãy bước vào cánh cổng này. Nó sẽ dẫn ngươi đến Căn Hầm Ký Ức – nơi bắt đầu hành trình của ngươi."
+            },
+            {
+              "character": "MC",
+              "characterImage": "mc_ready.png",
+              "text": "Tôi đã sẵn sàng. Tôi sẽ làm mọi cách để tìm ra ba viên ngọc và quay về thế giới của mình."
+            }
+          ],
+          "choices": []
+        },
+        {
+          "id": "scene_prepare_more",
+          "music": "preparation_theme.mp3",
           "dialogues": [
             {
               "character": "MC",
               "characterImage": "mc_ready.png",
-              "text": "Cảm ơn vì đã cho tôi cơ hội này. Tôi sẽ trở về và sống cuộc sống của mình."
+              "text": "Tôi cần thêm thời gian để chuẩn bị trước khi bước vào hầm ngục."
             },
             {
-              "character": "Thần Linh Vô Danh",
-              "characterImage": "god_silhouette.png",
-              "text": "Hãy nhớ: mọi quyết định đều có giá trị. Mọi người sẽ luôn ở đây, nếu ngươi cần ta một lần nữa."
+              "character": "Cleric Klein",
+              "characterImage": "cleric_Klein.png",
+              "text": "Rất tốt. Hãy trở lại khi ngươi đã sẵn sàng. Nhưng hãy nhớ: thời gian của thế giới này đang dần cạn kiệt."
             }
           ],
           "choices": []
+        }
+      ]
+    },
+
+    {
+      "id": "dungeon_book",
+      "title": "Sách Cổ Về Căn Hầm Ký Ức",
+      "description": "Một quyển sách cổ xưa chứa đựng những bí mật về Căn Hầm Ký Ức và cách sử dụng ngôn từ như vũ khí.",
+      "conditions": "",
+      "scenes": [
+        {
+          "id": "scene_dungeon_overview",
+          "music": "dungeon_overview.mp3",
+          "sound_effects": [
+            "pages_rustle.mp3",
+            "distant_echo.mp3"
+          ],
+          "dialogues": [
+            {
+              "character": "Ancient Book",
+              "characterImage": "book_glow.png",
+              "text": "Hỡi người đọc, nếu ngươi đang cầm quyển sách này trong tay, thì ngươi đã sẵn sàng khám phá bí mật của Căn Hầm Ký Ức – nơi ngôn từ cổ xưa vẫn còn vang vọng."
+            },
+            {
+              "character": "Ancient Book",
+              "characterImage": "book_glow.png",
+              "text": "Căn Hầm Ký Ức không chỉ là một mê cung thể chất, mà là bài kiểm tra ý chí và trí tuệ. Từng tầng của nó được dệt nên từ những ký ức cổ xưa, nơi mà mỗi bước đi đều có thể là một thử thách mới."
+            },
+            {
+              "character": "Ancient Book",
+              "characterImage": "book_glow.png",
+              "text": "Ngươi sẽ đối mặt với những lối đi chính, ngõ cụt, và cả những lối đi giả tạo được thiết kế để đánh lừa tâm trí. Chỉ có sự kiên trì và trí thông minh mới dẫn ngươi đến lối ra thật sự."
+            },
+            {
+              "character": "Ancient Book",
+              "characterImage": "book_glow.png",
+              "text": "Những sự kiện bắt buộc sẽ xuất hiện trên đường đi – từ chiến đấu với những thực thể bị bóp méo bởi Hư Vô, đến giải các câu đố ngôn ngữ, hoặc vượt qua các trò chơi ngữ nghĩa. Chúng là những cánh cửa khóa mà ngươi buộc phải vượt qua để tiếp tục hành trình."
+            },
+            {
+              "character": "Ancient Book",
+              "characterImage": "book_glow.png",
+              "text": "Hãy tìm kiếm các rương vật phẩm, nằm ẩn mình giữa những ngõ cụt hoặc dọc theo các lối phụ. Bên trong chúng, ngươi có thể tìm thấy những món đồ hồi phục, nâng cấp sức mạnh, hoặc các mảnh ghép ngôn từ cổ xưa."
+            },
+            {
+              "character": "Ancient Book",
+              "characterImage": "book_glow.png",
+              "text": "Nhưng hãy cẩn thận, vì không phải mọi phần thưởng đều miễn phí. Kẻ địch và những cái bẫy luôn rình rập giữa các dòng ký ức. Một bước sai lầm, và ngươi có thể bị lạc mãi mãi trong bóng tối của mê cung."
+            },
+            {
+              "character": "Ancient Book",
+              "characterImage": "book_glow.png",
+              "text": "Cuối mỗi tầng, ngươi sẽ đến một điểm kiểm tra. Đây là nơi ngươi có thể hồi phục, nâng cấp, hoặc quyết định quay lại ngôi làng để nghỉ ngơi. Nhưng nếu ngươi chọn tiếp tục, hãy nhớ rằng không có đường quay lại cho đến khi ngươi hoàn thành tầng đó."
+            },
+            {
+              "character": "Ancient Book",
+              "characterImage": "book_glow.png",
+              "text": "Tầng 10 là nơi Quỷ Vương Kharzen cư ngụ. Hắn là hiện thân của ngôn từ lạc lối, kẻ canh giữ bí mật sâu nhất của mê cung. Chỉ khi ngươi đánh bại hắn, ngươi mới có thể tiến đến tầng cuối cùng – nơi mà lời hứa quay về thế giới cũ được thực hiện."
+            },
+            {
+              "character": "Ancient Book",
+              "characterImage": "book_glow.png",
+              "text": "Nhớ kỹ, hỡi người đọc. Chỉ những ngôn từ mạnh nhất, ý chí kiên định nhất mới có thể vượt qua thử thách này. Cánh cửa trở về mở ra cho những ai dám đối mặt với bóng tối và chiến thắng chính mình."
+            }
+          ],
+          "choices": []
+        }
+      ]
+    },
+    {
+      "id": "dungeon_entry",
+      "title": "Sách Cổ Về Căn Hầm Ký Ức",
+      "description": "Một quyển sách cổ xưa chứa đựng những bí mật về Căn Hầm Ký Ức và cách sử dụng ngôn từ như vũ khí.",
+      "conditions": "",
+      "scenes": [
+        {
+          "id": "scene_dungeon_overview",
+          "music": "dungeon_overview.mp3",
+          "sound_effects": [
+            "pages_rustle.mp3",
+            "distant_echo.mp3"
+          ],
+          "dialogues": [
+            {
+              "character": "Cleric Klein",
+              "characterImage": "cleric_Klein.png",
+              "text": "Khoan đã, Sứ Giả. Trước khi ngươi đặt chân vào mê cung của Dòng Chảy Ngôn Từ, hãy hiểu rõ nơi ngươi sắp đối mặt: Dungeon không chỉ là mê cung\n thể chất – mà là mê cung ký ức, bẫy ngữ pháp và ý chí."
+            },
+            {
+              "character": "Cleric Klein",
+              "characterImage": "cleric_Klein.png",
+              "text": "Mỗi tầng Dungeon là một mê cung được tạo ra từ ký ức cổ xưa. Có đường chính, ngõ cụt, và cả lối giả đánh lừa linh hồn yếu đuối. Lối ra thật sự sẽ dẫn \nngươi về căn cứ hoặc tiến sâu vào Dungeon."
+            },
+            {
+              "character": "Cleric Klein",
+              "characterImage": "cleric_Klein.png",
+              "text": "Một số sự kiện trong mê cung là *bắt buộc*. Chúng khóa đường đi cho đến khi ngươi hoàn thành thử thách: chiến đấu, đố chữ, hoặc vượt qua các trò chơi\n ngữ nghĩa."
+            },
+            {
+              "character": "Cleric Klein",
+              "characterImage": "cleric_Klein.png",
+              "text": "Rương vật phẩm nằm rải rác trong mê cung – ẩn giữa lối phụ hoặc sát cạnh ngõ cụt. Mỗi chiếc rương là một cơ hội để hồi phục, nâng cấp."
+            },
+            {
+              "character": "Cleric Klein",
+              "characterImage": "cleric_Klein.png",
+              "text": "Tuy nhiên, hãy cẩn thận – kẻ địch và bẫy ẩn nấp giữa những dòng ký ức. Một bước sai, và ngươi có thể bị lạc trong mê cung vĩnh viễn."
+            },
+            {
+              "character": "Cleric Klein",
+              "characterImage": "cleric_Klein.png",
+              "text": "Cuối mỗi tầng là một điểm kiểm tra. Hoàn thành một tầng, ngươi có thể quay về ngôi làng để nghỉ ngơi. Hoàn thành cả 10 tầng, ngươi sẽ đối mặt với \n*Quỷ Vương Kharzen – nơi chỉ những từ ngữ mạnh nhất mới có thể tiến đến."
+            },
+            {
+              "character": "Cleric Klein",
+              "characterImage": "cleric_Klein.png",
+              "text": "Vị thần đã dặn dò ta rằng: ở tầng thứ 11 của hầm ngục, ngươi có thể tìm thấy cách để quay về thế giới cũ. Nhưng trước hết, hãy tập trung vào việc vượt qua \ntừng tầng một."
+            },
+            {
+              "character": "Cleric Klein",
+              "characterImage": "cleric_Klein.png",
+              "text": "Ta sẽ tặng ngươi một bình 'Elixir' – nó sẽ giúp ngươi hồi máu. Nhưng hãy nhớ, chỉ sử dụng khi thật sự cần thiết. Mỗi bình chỉ có thể dùng một lần.\n Bên cạnh đó, nếu ngươi cảm thấy sẽ thất bại trong trận chiến, hãy giữ lại bình thuốc này, ta sẽ cố gắng mang ngươi về hồi phục.\n  **Nhấn phím [I] để mở túi đồ, và có thể ghép 2 Healing Herb thành 1 bình Elixir.**"
+            }
+          ],
+          "choices": [
+          ]
         }
       ]
     },

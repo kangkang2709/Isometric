@@ -118,9 +118,9 @@ public class GameController {
         mainObjectiveDescriptions.put("intro", "Mình cần tìm đường rời khỏi khu rừng này trước tiên.");
         mainObjectiveDescriptions.put("forest_done", "Có vẻ như mình đã đến một ngôi làng nhỏ, mình nên khám phá xung quanh.");
         mainObjectiveDescriptions.put("god_intro", "Cleric Klein có thể giúp mình hiểu rõ hơn về thế giới này.");
-        mainObjectiveDescriptions.put("klein_meet", "Mình cần hoàn thành nhiệm vụ mà Cleric Klein giao cho để tiến xa hơn.");
-        mainObjectiveDescriptions.put("Khám phá quán rượu và thư viện trong làng", "Có nhiều điều thú vị đang chờ đợi mình trong quán rượu và thư viện.");
-        mainObjectiveDescriptions.put("Tiến đến hầm ngục và tìm hiểu bí mật của thế giới này", "Hầm ngục có thể chứa đựng những bí mật quan trọng về thế giới này.");
+        mainObjectiveDescriptions.put("klein_meet", "Nói chuyện với Cleric Klein\n");
+        mainObjectiveDescriptions.put("dungeon_call", "Tiến đến hầm ngục thông qua cổng dịch chuyển theo lời chỉ dẫn của Cleric Klein.\n");
+        mainObjectiveDescriptions.put("dungeon_entry", "Vượt qua hầm ngục và tìm hiểu bí mật của thế giới này.\n");
     }
 
 
@@ -132,7 +132,9 @@ public class GameController {
             character.getFlags().add(flag);
             if (mainObjectiveDescriptions.containsKey(flag)) {
                 character.setCurrentObject(mainObjectiveDescriptions.get(flag));
-                exploringUI.updateQuest();
+                if (exploringUI != null) {
+                    exploringUI.updateQuest();
+                }
             }
         }
 
@@ -229,8 +231,9 @@ public class GameController {
                 if (mapName.equalsIgnoreCase("board")) {
                     newMap.generateRandomMaze(getCharacter().getRun() / 2);
                     boardEventManager.randomBoardEveryRun();
-                    System.out.println("New run generated with run level: " + getCharacter().getRun());
                     isNewRun = false;
+                    if (!character.isTutorialCompleted("maze"))
+                        tutorialUI.show("maze");
                 }
 
                 this.map = newMap;
@@ -311,6 +314,7 @@ public class GameController {
 
         }
     }
+
     public void returnToTower() {
         IsometricMap newMap = this.mapList.get("tower");
         if (newMap != null) {
@@ -327,7 +331,7 @@ public class GameController {
                 public void run() {
                     dialogController.showSimpleMessage("Mình đã thất bại, may mà Cleric Klein đã cứu mình.\n");
                 }
-            },1.5f);
+            }, 1.5f);
 
         } else {
             Gdx.app.error("GameController", "Tower map not found.");
@@ -400,9 +404,10 @@ public class GameController {
                 case "Teleporter":
                     dialogController.startDialog("teleporting_background", "scene_intro");
                 case "Cleric Klein":
+
                     if (!getCharacter().getFlags().contains("klein_meet")) {
                         dialogController.setOnDialogFinishedAction(() -> {
-                            Enemy enemy = EnemyLoader.getEnemyById(3);
+                            Enemy enemy = EnemyLoader.getEnemyById(4);
 
                             setState(GameState.GAMEPLAY);
 
@@ -419,9 +424,23 @@ public class GameController {
                         dialogController.startDialog("klein_meet", "scene_meet_cleric");
                         addFlag("klein_meet");
                         System.out.println("Cleric Klein dialog started");
-                    } else {
-                        dialogController.showSimpleMessage("Mình đã gặp Cleric Klein rồi.");
-                    }
+                    } else if (getCharacter().getFlags().contains("klein_meet") && !getCharacter().getFlags().contains("dungeon_call")) {
+                        dialogController.setOnDialogFinishedAction(() -> {
+                            addFlag("dungeon_call");
+
+                            character.addItem(ItemLoader.getItemById(1), 2);
+
+                            Timer.schedule(new Timer.Task() {
+                                @Override
+                                public void run() {
+                                    dialogController.startDialog("dungeon_entry", "scene_dungeon_overview");
+                                }
+                            }, 1f);
+                        });
+                        dialogController.startDialog("dungeon_call", "scene_prepare_for_dungeon");
+                    } else
+                        dialogController.showSimpleMessage("Nếu ngươi muốn biết thêm thông tin về hầm ngục, hãy đọc quyển sách trên tủ sách bên cạnh tấm thảm kia.");
+
                 default:
                     break;
             }
@@ -786,8 +805,8 @@ public class GameController {
         }
         if (map.getMapName().equals("forest")) {
             if (!character.getFlags().contains("forest_info")) {
-                dialogController.showSimpleMessage("Đây là đâu vậy? Mình không nhớ gì cả.\n " +
-                        "Có vẻ như mình đang ở trong một khu rừng, Nhưng....\n" +
+                dialogController.showSimpleMessage("Mình đang ở đâu? Đây không phải là thế giới của mình...\n " +
+                        "Giọng nói trong đầu mình trước đó là ai.\n" +
                         "Trước tiên mình cần phải tìm đường rời khỏi đây đã.");
                 addFlag("forest_info");
                 return;
@@ -888,8 +907,8 @@ public class GameController {
 
         if (map.getMapName().equals("forest")) {
             if (!character.getFlags().contains("forest_info")) {
-                dialogController.showSimpleMessage("Đây là đâu vậy? Mình không nhớ gì cả.\n " +
-                        "Có vẻ như mình đang ở trong một khu rừng, Nhưng....\n" +
+                dialogController.showSimpleMessage("Mình đang ở đâu? Đây không phải là thế giới của mình...\n " +
+                        "Giọng nói trong đầu mình trước đó là ai.\n" +
                         "Trước tiên mình cần phải tìm đường rời khỏi đây đã.");
                 addFlag("forest_info");
                 return;
@@ -967,7 +986,7 @@ public class GameController {
 
     public void resetGame() {
         // Reset character with a new instance
-        character = new Character(10, 0);
+        character = new Character(10, 14);
 
         resetEventsManager();
 
@@ -1115,18 +1134,11 @@ public class GameController {
                 } else {
                     Enemy enemy = EnemyLoader.getEnemyById(enemyId);
 
-                    Random random = new Random();
-//                    boolean randomBoolean = random.nextBoolean();
-                    boolean randomBoolean = false;
-                    if (randomBoolean) {
-                        game.getDarkestDungeonScreen().startCombat(enemy);
-                        game.changeScreen("DARK_DUNGEON");
-                    } else {
-                        setState(GameState.GAMEPLAY);
-                        gameplayController.activate();
-                        gameplayController.startCombat(enemy);
-                        gameplayController.setCurrentEvent(currentEvent);
-                    }
+                    setState(GameState.GAMEPLAY);
+                    gameplayController.activate();
+                    gameplayController.startCombat(enemy);
+                    gameplayController.setCurrentEvent(currentEvent);
+
                 }
                 break;
             case "treasure":
@@ -1150,10 +1162,19 @@ public class GameController {
                 if (properties != null) {
                     String arcId = properties.get("arc", String.class);
                     String sceneId = properties.get("scene", String.class);
+                    if (arcId == null || sceneId == null) {
+                        getDialogController().showSimpleMessage("!!!!KHÔNG THỂ TIẾN VÀO NƠI NÀY!!!!");
+                        return;
+                    }
+                    if (arcId.equals("dungeon_book") && !getCharacter().getFlags().contains("dungeon_call")) {
+                        getDialogController().showSimpleMessage("Quyển sách này thật kì lạ, làm sao để đọc được nó.");
+                        return;
+                    }
                     this.dialogController.startDialog(arcId, sceneId);
 
                 }
                 break;
+
             case "tele":
                 if (properties != null) {
                     String mapName = properties.get("map", String.class);
@@ -1162,7 +1183,11 @@ public class GameController {
                         getDialogController().showSimpleMessage("!!!!KHÔNG THỂ TIẾN VÀO NƠI NÀY!!!!");
                         return;
                     }
-
+                    if (mapName.equals("board") && !getCharacter().getFlags().contains("dungeon_call")) {
+                        getDialogController().showSimpleMessage("Cánh cổng thật kì lạ, nó dẫn đến đâu vậy?\n" +
+                                "Ta nên hỏi ngài Klein về tác dụng của nó.");
+                        return;
+                    }
                     if (mapName.equals("unknown") && !character.getFlags().contains("klein_unlock")) {
                         getDialogController().showSimpleMessage("Ngôi nhà này đã bị khóa, có lẽ Cleric Klein sẽ mở khóa nó cho ta sau này.");
                         return;
@@ -1241,9 +1266,21 @@ public class GameController {
                 break;
             case "new_run_event":
                 getCharacter().updateRun();
-                getCharacter().setTutorialCompleted("board");
                 changeMap("main");
                 this.boardEventManager.randomBoardEveryRun();
+                isNewRun = true;
+                setEndEvent();
+                break;
+            case "dungeon":
+                getCharacter().updateRun();
+                Random random = new Random();
+                boolean isDungeon = random.nextBoolean();
+
+                if (isDungeon) {
+                    changeMap("dungeon");
+                } else
+                    changeMap("dungeon2");
+
                 isNewRun = true;
                 setEndEvent();
                 break;

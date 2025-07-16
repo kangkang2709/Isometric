@@ -428,6 +428,26 @@ public class Character {
         this.mana = Math.max(0, this.mana - item.getManaCost());
     }
 
+    public void descreaseItemAmount(String itemName, int amount) {
+        if (itemName == null || itemName.isEmpty()) {
+            throw new IllegalArgumentException("Item name cannot be null or empty");
+        }
+        if (items == null || !items.containsKey(itemName)) {
+            throw new IllegalArgumentException("Item not found in inventory");
+        }
+
+        int currentCount = items.get(itemName);
+        if (currentCount < amount) {
+            throw new IllegalArgumentException("Not enough items to decrease");
+        }
+
+        if (currentCount > amount) {
+            items.put(itemName, currentCount - amount);
+        } else {
+            items.remove(itemName);
+        }
+    }
+
     public void deleteItem(Items item) {
         if (item == null || item.getItemName() == null) {
             throw new IllegalArgumentException("Item or item name cannot be null");
@@ -802,6 +822,7 @@ public class Character {
         this.mapName = gameMap.getMapName();
         clearPath();
     }
+
     public void setGameMap3(IsometricMap gameMap) {
         this.gameMap = gameMap;
         this.mapName = gameMap.getMapName();
@@ -812,6 +833,12 @@ public class Character {
         this.gameMap = gameMap;
         this.mapName = gameMap.getMapName();
         clearPath();
+    }
+
+    // Add this method to your Character class
+    public int getItemCount(String itemName) {
+        Integer count = items.get(itemName);
+        return count != null ? count : 0;
     }
 
     public List<String> getFlags() {

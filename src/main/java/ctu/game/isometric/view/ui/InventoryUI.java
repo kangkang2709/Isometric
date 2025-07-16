@@ -123,6 +123,7 @@ public class InventoryUI {
 
         uiMatrix = new Matrix4().setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         // Preload common textures
+        craftButton = new Rectangle(buttonX, buttonY + (buttonHeight + PADDING) * 2, buttonWidth, buttonHeight);
         preloadCommonTextures();
     }
 
@@ -132,6 +133,27 @@ public class InventoryUI {
      * @param batch The SpriteBatch used for rendering.
      */
 
+    private static final Map<String, CraftingRecipe> CRAFTING_RECIPES = new HashMap<>();
+
+    private Rectangle craftButton;
+    private boolean hoverCraftButton = false;
+
+    private static class CraftingRecipe {
+        String ingredient;
+        int ingredientCount;
+        String result;
+
+        CraftingRecipe(String ingredient, int ingredientCount, String result) {
+            this.ingredient = ingredient;
+            this.ingredientCount = ingredientCount;
+            this.result = result;
+        }
+    }
+
+    static {
+        CRAFTING_RECIPES.put("Healing Herb", new CraftingRecipe("Healing Herb", 2, "Elixir"));
+        CRAFTING_RECIPES.put("Mana Blossom", new CraftingRecipe("Mana Blossom", 2, "Arcane Essence"));
+    }
 
     String errorMessage = "";
 
@@ -209,6 +231,13 @@ public class InventoryUI {
                     batch.setColor(hoverDiscardButton ? buttonHoverColor : buttonColor);
                     batch.draw(buttonTexture, discardButton.x, discardButton.y, discardButton.width, discardButton.height);
                 }
+                // Add this in the button drawing section after the discard button:
+                if (item != null && item.getItemEffect().equals("craft")) {
+                    // Craft button
+                    batch.setColor(hoverCraftButton ? buttonHoverColor : buttonColor);
+                    batch.draw(buttonTexture, craftButton.x, craftButton.y, craftButton.width, craftButton.height);
+                    batch.setColor(Color.WHITE); // Reset color
+                }
             }
 
             // Use a red tint for the close button
@@ -236,12 +265,15 @@ public class InventoryUI {
 
                 batch.draw(itemTexture, centerX, centerY, itemSize, itemSize);
 
-                // Draw quantity
-                int quantity = items.get(itemName);
-                if (quantity > 1) {
-                    font.draw(batch, String.valueOf(quantity),
-                            itemSlots[index].x + SLOT_SIZE - 20,
-                            itemSlots[index].y + 20);
+                // Draw quantity - Add null check here
+                Integer quantityObj = items.get(itemName);
+                if (quantityObj != null) {
+                    int quantity = quantityObj.intValue();
+                    if (quantity > 1) {
+                        font.draw(batch, String.valueOf(quantity),
+                                itemSlots[index].x + SLOT_SIZE - 20,
+                                itemSlots[index].y + 20);
+                    }
                 }
             }
             index++;
@@ -259,7 +291,7 @@ public class InventoryUI {
                 font.draw(batch, "Năng lượng tiêu hao: " + item.getManaCost(), detailsX, detailsY - 90);
                 font.draw(batch, item.getItemDescription(), detailsX, detailsY - 120,
                         detailsWidth, -1, true);
-                font.draw(batch, errorMessage,inventoryBounds.x + 10, inventoryBounds.y + 80);
+                font.draw(batch, errorMessage, inventoryBounds.x + 10, inventoryBounds.y + 80);
 
                 switch (item.getItemEffect()) {
                     case "heal":
@@ -277,6 +309,14 @@ public class InventoryUI {
                     case "N/A":
                         font.draw(batch, "*Vật phẩm cốt truyện.\n Không có hiệu ứng trực tiếp trong chiến đấu.", inventoryBounds.x + 10, inventoryBounds.y + 50);
                         break;
+                    case "craft":
+                        font.draw(batch, "*Nguyên liệu dùng để chế tạo vật phẩm khác.", inventoryBounds.x + 10, inventoryBounds.y + 40);
+                        CraftingRecipe recipe = CRAFTING_RECIPES.get(item.getItemName());
+                        if (recipe != null) {
+                            font.draw(batch, "Chế tạo: " + recipe.ingredientCount + " " + recipe.ingredient + " → 1 " + recipe.result,
+                                    inventoryBounds.x + 10, inventoryBounds.y + 20);
+                        }
+                        break;
                     default:
                         font.draw(batch, "*No specific effect.", inventoryBounds.x + 10, inventoryBounds.y + 40);
                 }
@@ -291,7 +331,10 @@ public class InventoryUI {
                     font.draw(batch, "VỨT", discardButton.x + discardButton.width / 2 - 22,
                             discardButton.y + discardButton.height / 2 + 7);
                 }
-
+                if (item.getItemEffect().equals("craft")) {
+                    font.draw(batch, "CHẾ TẠO", craftButton.x + craftButton.width / 2 - 35,
+                            craftButton.y + craftButton.height / 2 + 7);
+                }
             }
         }
 
@@ -339,28 +382,29 @@ public class InventoryUI {
         itemList.clear();
         Character character = gameController.getCharacter();
         if (character.getItems() != null) {
-            itemList.addAll(character.getItems().keySet());
+            // Only add items that have a quantity > 0
+            for (Map.Entry<String, Integer> entry : character.getItems().entrySet()) {
+                if (entry.getValue() != null && entry.getValue() > 0) {
+                    itemList.add(entry.getKey());
+                }
+            }
         }
     }
 
     public boolean handleClick(int screenX, int screenY) {
         if (!visible) return false;
 
-        // Convert to UI coordinates (origin at bottom-left)
         float uiY = Gdx.graphics.getHeight() - screenY;
 
-        // Check if click is inside inventory bounds
         if (!inventoryBounds.contains(screenX, uiY)) {
             return false;
         }
 
-        // Check close button
         if (closeButton.contains(screenX, uiY)) {
             visible = false;
             return true;
         }
 
-        // Check item slots - only iterate through actual items
         int itemCount = Math.min(MAX_SLOTS, itemList.size());
         for (int i = 0; i < itemCount; i++) {
             if (itemSlots[i].contains(screenX, uiY)) {
@@ -369,24 +413,78 @@ public class InventoryUI {
             }
         }
 
-        // Check action buttons when item is selected and has valid effect
         if (selectedItemIndex >= 0 && selectedItemIndex < itemList.size()) {
-            // Retrieve the item only once instead of potentially twice
             String itemName = itemList.get(selectedItemIndex);
             Items item = ItemLoader.getItemByName(itemName);
 
-            if (item != null && !item.getItemEffect().equals("N/A")) {
-                if (useButton.contains(screenX, uiY)) {
-                    useSelectedItem();
-                    return true;
-                } else if (discardButton.contains(screenX, uiY)) {
-                    discardSelectedItem();
-                    return true;
+            if (item != null) {
+                if (!item.getItemEffect().equals("N/A") && !item.getItemEffect().equals("quest") && !item.getItemEffect().equals("debuff")) {
+                    if (useButton.contains(screenX, uiY)) {
+                        useSelectedItem();
+                        return true;
+                    }
+                }
+
+                if (!item.getItemEffect().equals("N/A") && !item.getItemEffect().equals("quest")) {
+                    if (discardButton.contains(screenX, uiY)) {
+                        discardSelectedItem();
+                        return true;
+                    }
+                }
+
+                if (item.getItemEffect().equals("craft")) {
+                    if (craftButton.contains(screenX, uiY)) {
+                        craftSelectedItem();
+                        return true;
+                    }
                 }
             }
         }
 
         return true;
+    }
+
+    private void craftSelectedItem() {
+        if (selectedItemIndex < 0 || selectedItemIndex >= itemList.size()) return;
+
+        String itemName = itemList.get(selectedItemIndex);
+        Items item = ItemLoader.getItemByName(itemName);
+
+        if (item != null && item.getItemEffect().equals("craft")) {
+            CraftingRecipe recipe = CRAFTING_RECIPES.get(itemName);
+            if (recipe != null) {
+                Character character = gameController.getCharacter();
+
+                // Check if player has enough ingredients
+                if (character.getItemCount(recipe.ingredient) >= recipe.ingredientCount) {
+                    try {
+                        // Remove ingredients
+                        Items ingredientItem = ItemLoader.getItemByName(recipe.ingredient);
+
+                        if (ingredientItem != null) {
+//                            for (int i = 0; i < recipe.ingredientCount; i++) {
+//                                character.deleteItem(ingredientItem);  // Delete the ingredient
+//                            }
+
+                            // Add crafted item
+                            Items craftedItem = ItemLoader.getItemByName(recipe.result);
+                            if (craftedItem != null) {
+                                character.addItem(craftedItem, 1);
+                                character.descreaseItemAmount(ingredientItem.getItemName(), recipe.ingredientCount);  // Delete the ingredient
+
+                                errorMessage = "Đã chế tạo thành công " + recipe.result + "!";
+                            }
+                        }
+
+                        inventoryDirty = true;
+                    } catch (Exception e) {
+                        errorMessage = "Lỗi khi chế tạo: " + e.getMessage();
+                    }
+                } else {
+                    errorMessage = "Cần " + recipe.ingredientCount + " " + recipe.ingredient + " để chế tạo!";
+                }
+            }
+        }
     }
 
     // Button hover states
@@ -401,30 +499,35 @@ public class InventoryUI {
     public boolean handleMouseMove(int screenX, int screenY) {
         if (!visible) return false;
 
-        // Convert to UI coordinates (origin at bottom-left)
         float uiY = Gdx.graphics.getHeight() - screenY;
 
-        // Reset hover states
         hoverUseButton = false;
         hoverDiscardButton = false;
         hoverCloseButton = false;
+        hoverCraftButton = false;
 
-        // Check if mouse is inside inventory bounds
         if (!inventoryBounds.contains(screenX, uiY)) {
             return false;
         }
 
-        // Check close button
         hoverCloseButton = closeButton.contains(screenX, uiY);
 
-        // Check action buttons when an item is selected
         if (selectedItemIndex >= 0 && selectedItemIndex < itemList.size()) {
             String itemName = itemList.get(selectedItemIndex);
             Items item = ItemLoader.getItemByName(itemName);
 
-            if (item != null && !item.getItemEffect().equals("N/A")) {
-                hoverUseButton = useButton.contains(screenX, uiY);
-                hoverDiscardButton = discardButton.contains(screenX, uiY);
+            if (item != null) {
+                if (!item.getItemEffect().equals("N/A") && !item.getItemEffect().equals("quest") && !item.getItemEffect().equals("debuff")) {
+                    hoverUseButton = useButton.contains(screenX, uiY);
+                }
+
+                if (!item.getItemEffect().equals("N/A") && !item.getItemEffect().equals("quest")) {
+                    hoverDiscardButton = discardButton.contains(screenX, uiY);
+                }
+
+                if (item.getItemEffect().equals("craft")) {
+                    hoverCraftButton = craftButton.contains(screenX, uiY);
+                }
             }
         }
 
