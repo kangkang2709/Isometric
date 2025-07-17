@@ -428,13 +428,13 @@ public class InputController extends InputAdapter {
             }
             case Keys.F7 -> {
 //                gameController.getGame().changeScreen("DUNGEON");
-                gameController.changeMap("library");
+                gameController.changeMap("dungeon2");
             }
             case Keys.PAUSE -> {
                 mapRenderer.printCurrentPosition();
             }
             case Keys.F8 -> {
-                Enemy enemy = EnemyLoader.getEnemyById(9);
+                Enemy enemy = EnemyLoader.getEnemyById(2);
 
                 gameController.setState(GameState.GAMEPLAY);
 

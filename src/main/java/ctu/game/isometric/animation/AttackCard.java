@@ -199,8 +199,11 @@ public class AttackCard {
                     impactEffects.add(new HealGlowEffect(endX, endY, width, height, glassShardTexture));
                 }
                 break;
-            case POISON,FIRE,MISS,SPECIAL,MANA,HEALING:
+            case POISON,MISS,SPECIAL,MANA,HEALING:
                 impactEffects.add(new HealGlowEffect(endX, endY, width, height, glowTexture));
+                break;
+            case FIRE:
+                impactEffects.add(new HealGlowEffect(endX, endY, width/scale, height/scale, glowTexture));
                 break;
         }
     }

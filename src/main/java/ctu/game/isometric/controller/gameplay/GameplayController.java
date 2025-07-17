@@ -184,21 +184,21 @@ public class GameplayController {
     }
 
     public void playerToxic(int buff, Runnable onComplete) {
-        AttackCard card = new AttackCard(AttackCard.CardType.POISON, "POISON", buff, 316, 336, 830, 470, 830, 450);
+        AttackCard card = new AttackCard(AttackCard.CardType.POISON, "POSION", buff, 316, 336, 830, 470, 830, 450);
         card.setSFXCallback(() -> effectManager.playClickSound());
         card.setOnComplete(onComplete);
         cardAnimationManager.addCard(card);
     }
 
     public void enemyToxic(int buff, Runnable onComplete) {
-        AttackCard card = new AttackCard(AttackCard.CardType.POISON, "TOXIC", buff, 830, 450, 316, 316, 316, 286);
+        AttackCard card = new AttackCard(AttackCard.CardType.POISON, "", buff, 830, 450, 800, 450, 316, 286);
         card.setSFXCallback(() -> effectManager.playClickSound());
         card.setOnComplete(onComplete);
         cardAnimationManager.addCard(card);
     }
 
     public void enemyFire(int buff, Runnable onComplete) {
-        AttackCard card = new AttackCard(AttackCard.CardType.FIRE, "FIRE", buff, 830, 450, 316, 316, 316, 286);
+        AttackCard card = new AttackCard(AttackCard.CardType.FIRE, "", buff, 830, 450, 800, 450, 316, 286);
         card.setSFXCallback(() -> effectManager.playClickSound());
         card.setOnComplete(onComplete);
         cardAnimationManager.addCard(card);
@@ -362,7 +362,7 @@ public class GameplayController {
 
                 if (random.nextFloat() < 0.1f && !playerStatusDuration.containsKey("TOXIC") && !enemyStatusDuration.containsKey("FREEZE")) {
                     enemyToxic(0, () -> {
-                        addCombatLog("Bạn đã bị trúng lửa bởi Emerald Revenant Boss!");
+                        addCombatLog("Bạn đã bị trúng độc bởi Emerald Revenant Boss!");
                         playerStatusDuration.put("TOXIC", 1);
                     });
                 }
@@ -371,7 +371,7 @@ public class GameplayController {
             case "Sapphire Dragon Boss": {
                 if (random.nextFloat() < 0.1f && !playerStatusDuration.containsKey("BURN") && !enemyStatusDuration.containsKey("FREEZE")) {
                     enemyFire(0, () -> {
-                        addCombatLog("Bạn đã bị trúng độc bởi Emerald Revenant Boss!");
+                        addCombatLog("Bạn đã bị đốt cháy bởi Emerald Revenant Boss!");
                         playerStatusDuration.put("BURN", 1);
                     });
                 }
@@ -1474,6 +1474,7 @@ public class GameplayController {
 
                 // Draw effect on enemy
                 Texture effectTexture = getTexture("ui/" + statusName.toLowerCase() + "_effect.png");
+                Texture enemyTexture = getTexture(enemy.getTexturePath());
                 if (effectTexture != null) {
                     switch (statusName) {
                         case "REGEN":
@@ -1483,8 +1484,11 @@ public class GameplayController {
                             batch.draw(effectTexture, 800, 430, 200, 200);
                             break;
                         case "BURN":
+                            batch.setColor(1f, 0.4f, 0f, alpha); // Orange-red glow
+                            batch.draw(enemyTexture, 830, 450, 150, 200);
+                            break;
                         case "TOXIC":
-                            batch.draw(effectTexture, 850 + (duration * 10), 450 + (duration * 10), 64, 64);
+                            batch.draw(effectTexture, 805, 460, 200, 170);
                             break;
                     }
                 }
@@ -1567,7 +1571,7 @@ public class GameplayController {
         if (enemyStatusDuration.containsKey("TOXIC") && enemyName.contains("Emerald Revenant Boss")) {
             // Sapphire Dragon Boss không bị bỏng
             addCombatLog(enemyName + " không thể bị độc!");
-            enemyStatusDuration.remove("BURN");
+            enemyStatusDuration.remove("TOXIC");
         }
 
 
@@ -1578,7 +1582,7 @@ public class GameplayController {
             addCombatLog(enemyName + " mất " + burnDamage + " HP do bỏng và giảm 20% sát thương!");
 
             int remaining = enemyStatusDuration.get("BURN") - 1;
-            if (remaining <= 1) {
+            if (remaining <= 0) {
                 enemyStatusDuration.remove("BURN");
                 addCombatLog(enemyName + " không còn bị bỏng!");
             } else {
@@ -1706,8 +1710,8 @@ public class GameplayController {
         if (isCombatMode && isPlayerTurn) {
             float damage = currentLevel + (wordDamageMultiplier - playerNerf + attackBuff) - enemy.getDefensePower() * 0.5f;
             damage = Math.max(1, damage);
-            if (isEnemyLord() && damage < 15) {
-                damage = 0;
+            if (isEnemyLord()) {
+
                 if (random.nextFloat() < 0.1f && !playerStatusDuration.containsKey("TOXIC") && !enemyStatusDuration.containsKey("FREEZE")) {
                     playerStatusDuration.put("TOXIC", 2);
                 } else if (random.nextFloat() < 0.2f && !playerStatusDuration.containsKey("BURN") && !enemyStatusDuration.containsKey("FREEZE")) {
@@ -1772,9 +1776,9 @@ public class GameplayController {
             String stats = "";
             String wordLower = word.toLowerCase();
 
-            boolean isBurn = wordLower.contains("fire") || wordLower.contains("burn") || wordLower.contains("flame");
+            boolean isBurn = wordLower.contains("it") || wordLower.contains("burn") || wordLower.contains("flame");
             boolean isPoison = wordLower.contains("poison") || wordLower.contains("toxic") || wordLower.contains("venom");
-            boolean isFreeze = wordLower.contains("ice") || wordLower.contains("frost") || wordLower.contains("freeze");
+            boolean isFreeze = wordLower.contains("ice") || wordLower.contains("id") || wordLower.contains("freeze");
             boolean isBuff = wordLower.contains("god") || wordLower.contains("world") || wordLower.contains("return");
 
             if (isBurn) {

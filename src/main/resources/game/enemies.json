@@ -1,36 +1,6 @@
 [
   {
     "enemyID": 1,
-    "enemyName": "Crystal Serpent Boss",
-    "enemyDescription": "Mini-Boss – Canh giữ Hồng Ngọc, Linh hồn cổ đại làm giảm số lượng ký tự.",
-    "texturePath": "enemies/stone.png",
-    "health": 30,
-    "attackPower": 8,
-    "defensePower": 5,
-    "rewardId": 7
-  },
-  {
-    "enemyID": 2,
-    "enemyName": "Sapphire Dragon Boss",
-    "enemyDescription": "Mini-Boss – Canh giữ Lam Ngọc, Con rồng có khả năng hồi phục liên tục bởi ngọn lửa và không thể bị bỏng nhưng dễ bị trúng độc.",
-    "texturePath": "enemies/dragon.png",
-    "health": 28,
-    "attackPower": 7,
-    "defensePower": 4,
-    "rewardId": 8
-  },
-  {
-    "enemyID": 3,
-    "enemyName": "Emerald Revenant Boss",
-    "enemyDescription": "Mini-Boss – Bảo vệ Lục Ngọc, Linh hồn có thể làm biến mất một số ký tự trong từ vựng và không thể bị độc.",
-    "texturePath": "enemies/undead.png",
-    "health": 23,
-    "attackPower": 5,
-    "defensePower": 3,
-    "rewardId": 9
-  },
-  {
-    "enemyID": 4,
     "enemyName": "Feral Fungus",
     "enemyDescription": "Kẻ địch cấp thấp, di chuyển chậm nhưng dai dẳng.",
     "texturePath": "enemies/mushroom.png",
@@ -40,7 +10,7 @@
     "rewardId": 10
   },
   {
-    "enemyID": 5,
+    "enemyID": 2,
     "enemyName": "Twisted Tree",
     "enemyDescription": "Thực vật đột biến, khả năng phòng thủ cao.",
     "texturePath": "enemies/tree.png",
@@ -50,7 +20,7 @@
     "rewardId": 11
   },
   {
-    "enemyID": 6,
+    "enemyID": 3,
     "enemyName": "Leonine Beast",
     "enemyDescription": "Thú dữ hoang dã, tấn công mạnh nhưng dễ bị tổn thương.",
     "texturePath": "enemies/beast.png",
@@ -60,7 +30,7 @@
     "rewardId": 14
   },
   {
-    "enemyID": 7,
+    "enemyID": 4,
     "enemyName": "Armored Snake",
     "enemyDescription": "Sinh vật có lớp da dày, chống chịu khá tốt.",
     "texturePath": "enemies/snake.png",
@@ -70,7 +40,7 @@
     "rewardId": 13
   },
   {
-    "enemyID": 8,
+    "enemyID": 5,
     "enemyName": "Goblin Brute",
     "enemyDescription": "Goblin khổng lồ, dùng sức mạnh cơ bắp để chiến đấu.",
     "texturePath": "enemies/goblin.png",
@@ -78,6 +48,36 @@
     "attackPower": 4,
     "defensePower": 3,
     "rewardId": 12
+  },
+  {
+    "enemyID": 6,
+    "enemyName": "Crystal Serpent Boss",
+    "enemyDescription": "Mini-Boss – Canh giữ Hồng Ngọc, Linh hồn cổ đại làm giảm số lượng ký tự.",
+    "texturePath": "enemies/stone.png",
+    "health": 30,
+    "attackPower": 8,
+    "defensePower": 5,
+    "rewardId": 7
+  },
+  {
+    "enemyID": 7,
+    "enemyName": "Sapphire Dragon Boss",
+    "enemyDescription": "Mini-Boss – Canh giữ Lam Ngọc, Con rồng có khả năng hồi phục liên tục bởi ngọn lửa và không thể bị bỏng nhưng dễ bị trúng độc.",
+    "texturePath": "enemies/dragon.png",
+    "health": 28,
+    "attackPower": 7,
+    "defensePower": 4,
+    "rewardId": 8
+  },
+  {
+    "enemyID": 8,
+    "enemyName": "Emerald Revenant Boss",
+    "enemyDescription": "Mini-Boss – Bảo vệ Lục Ngọc, Linh hồn có thể làm biến mất một số ký tự trong từ vựng và không thể bị độc.",
+    "texturePath": "enemies/undead.png",
+    "health": 23,
+    "attackPower": 5,
+    "defensePower": 3,
+    "rewardId": 9
   },
   {
     "enemyID": 9,

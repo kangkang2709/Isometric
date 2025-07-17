@@ -152,6 +152,7 @@ public class GameController {
         this.mapList.put("tavern", new IsometricMap("maps/tavern.tmx"));
         this.mapList.put("forest", new IsometricMap("maps/forest.tmx"));
         this.mapList.put("tower", new IsometricMap("maps/tower.tmx"));
+        this.mapList.put("dungeon2", new IsometricMap("maps/dungeon2.tmx"));
 
         this.eventManagerMap.put("board", eventManager);
         this.eventManagerMap.put("main", new EventManager(this.mapList.get("main"), "main"));
@@ -159,6 +160,7 @@ public class GameController {
         this.eventManagerMap.put("tavern", new EventManager(this.mapList.get("tavern"), "tavern"));
         this.eventManagerMap.put("forest", new EventManager(this.mapList.get("forest"), "forest"));
         this.eventManagerMap.put("tower", new EventManager(this.mapList.get("tower"), "tower"));
+        this.eventManagerMap.put("dungeon2", new EventManager(this.mapList.get("dungeon2"), "dungeon2"));
 
         this.character = new Character(10, 0);
         this.inputController = new InputController(this);

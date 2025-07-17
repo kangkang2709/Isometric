@@ -331,6 +331,7 @@ public class LoadGameController {
                     gameController.getEventManagerMap().get("tower").updateAfterLoadGame(save);
                     gameController.getEventManagerMap().get("library").updateAfterLoadGame(save);
                     gameController.getEventManagerMap().get("tavern").updateAfterLoadGame(save);
+                    gameController.getEventManagerMap().get("dungeon2").updateAfterLoadGame(save);
 
                     gameController.getEventManagerMap().get("board").updateAfterLoadGame(save);
 
