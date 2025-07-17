@@ -12,7 +12,7 @@
   {
     "enemyID": 2,
     "enemyName": "Sapphire Dragon Boss",
-    "enemyDescription": "Mini-Boss – Canh giữ Lam Ngọc, Con rồng có khả năng hồi phục liên tục.",
+    "enemyDescription": "Mini-Boss – Canh giữ Lam Ngọc, Con rồng có khả năng hồi phục liên tục bởi ngọn lửa và không thể bị bỏng nhưng dễ bị trúng độc.",
     "texturePath": "enemies/dragon.png",
     "health": 28,
     "attackPower": 7,
@@ -22,10 +22,10 @@
   {
     "enemyID": 3,
     "enemyName": "Emerald Revenant Boss",
-    "enemyDescription": "Mini-Boss – Bảo vệ Lục Ngọc, Linh hồn có thể làm biến mất một số ký tự trong từ vựng.",
+    "enemyDescription": "Mini-Boss – Bảo vệ Lục Ngọc, Linh hồn có thể làm biến mất một số ký tự trong từ vựng và không thể bị độc.",
     "texturePath": "enemies/undead.png",
-    "health": 26,
-    "attackPower": 7,
+    "health": 23,
+    "attackPower": 5,
     "defensePower": 3,
     "rewardId": 9
   },
@@ -82,7 +82,7 @@
   {
     "enemyID": 9,
     "enemyName": "Demon Lord Azrok",
-    "enemyDescription": "Final Boss – Miễn nhiễm sát thương dưới 15, điều khiển bóng tối ngôn từ.",
+    "enemyDescription": "Final Boss – Điều khiển bóng tối ngôn từ. Miễn nhiễm với sát thương dưới 15, và gây phản độc hoặc bỏng.",
     "texturePath": "enemies/demon_king.png",
     "health": 60,
     "attackPower": 15,

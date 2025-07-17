@@ -49,12 +49,15 @@ public class AssetManager implements Disposable {
 
 
         loadTexture("card_bg_attack", "textures/card_bg_attack.png");
-        loadTexture("card_bg_heal", "textures/health.png");
+        loadTexture("card_bg_heal", "textures/heal_3.png");
         loadTexture("card_bg_mana", "textures/mana_3.png");
-        loadTexture("card_bg_special", "textures/halo.png");
+        loadTexture("card_bg_special", "textures/buff_3.png");
         loadTexture("glass", "textures/glass.png");
         loadTexture("glass_shard", "textures/glass_shard.png");
         loadTexture("glow", "textures/glow.png");
+        loadTexture("miss", "textures/miss_attack.png");
+        loadTexture("poison", "textures/poison.png");
+        loadTexture("fire", "textures/fire.png");
 
         AttackCard.setTextures(
                 textures.get("card_bg_attack"),
@@ -63,7 +66,10 @@ public class AssetManager implements Disposable {
                 textures.get("card_bg_special"),
                 textures.get("glass"),
                 textures.get("glass_shard"),
-                textures.get("glow")
+                textures.get("glow"),
+                textures.get("miss"),
+                textures.get("poison"),
+                textures.get("fire")
         );
     }
 

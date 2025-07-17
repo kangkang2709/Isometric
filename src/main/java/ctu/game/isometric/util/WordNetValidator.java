@@ -62,21 +62,43 @@ public class WordNetValidator {
 //        }
 //    }
 
-    //    for dev
+
     public synchronized void loadDictionary() {
         if (dictionaryLoaded) return;
 
         try {
-            String wordNetPath = "src/main/resources/game/dict";
-            URL url = new File(wordNetPath).toURI().toURL();
+            File dictDir = new File("dict"); // dict nằm cùng thư mục với jar
+            if (!dictDir.exists() || !dictDir.isDirectory()) {
+                Gdx.app.error("WordNet", "Không tìm thấy thư mục dict bên cạnh jar");
+                return;
+            }
+
+            URL url = dictDir.toURI().toURL();
             dictionary = new Dictionary(url);
             dictionary.open();
             dictionaryLoaded = true;
-            Gdx.app.log("WordNetValidator", "WordNet dictionary loaded");
+            Gdx.app.log("WordNetValidator", "WordNet dictionary loaded from external folder");
+
         } catch (IOException e) {
             Gdx.app.error("WordNetValidator", "Failed to load WordNet dictionary", e);
         }
     }
+
+    //    for dev
+//    public synchronized void loadDictionary() {
+//        if (dictionaryLoaded) return;
+//
+//        try {
+//            String wordNetPath = "src/main/resources/game/dict";
+//            URL url = new File(wordNetPath).toURI().toURL();
+//            dictionary = new Dictionary(url);
+//            dictionary.open();
+//            dictionaryLoaded = true;
+//            Gdx.app.log("WordNetValidator", "WordNet dictionary loaded");
+//        } catch (IOException e) {
+//            Gdx.app.error("WordNetValidator", "Failed to load WordNet dictionary", e);
+//        }
+//    }
 
 
     public boolean isValidWord(String word) {

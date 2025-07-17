@@ -59,10 +59,35 @@ public class TutorialManager {
         addTutorial("combat", new Tutorial("3", "Lượt đấu - Kẻ địch ", "Kẻ địch có các hành vi khác nhau như tấn công hoặc hồi máu. Sức mạnh của kẻ địch được điều chỉnh dựa vào cấp độ của nhân vật. Di chuột vào kẻ địch để xem chỉ số kẻ địch để chuẩn bị cho trận chiến.", "turn-enemy.png", "combat", false));
         addTutorial("combat", new Tutorial("4", "Máu & Năng lượng", "Thanh máu (HP) thể hiện sức khỏe của bạn. Nếu HP giảm về 0, bạn sẽ thua. Thanh năng lượng (Mana) được sử dụng để kích hoạt vật phẩm hỗ trợ.", "combat_health_mana.png", "combat", false));
         addTutorial("combat", new Tutorial("5", "Vật phẩm", "Trong lượt của bản thân, Nhấn vào nút \"Vật phẩm\" để mở túi đồ, có thể click vào để sử dụng vật phẩm: hồi máu, tăng sức mạnh, hoặc gây sát thương đặc biệt. Sử dụng vật phẩm xong sẽ chuyển lượt cho kẻ địch.", "combat_items.png", "combat", false));
-        addTutorial("combat", new Tutorial("6", "Cơ chế từ vựng", "Từ càng dài và phức tạp, sát thương gây ra càng cao. Các nguyên âm (A, E, I, O, U) và ký tự hiếm (Z, Q, X, J, K) sẽ tăng điểm sát thương.", "", "combat", false));
-        addTutorial("combat", new Tutorial("7", "Chiến thắng & Thất bại", "Đánh bại kẻ địch để nhận phần thưởng và kinh nghiệm. Nếu bạn thua, trò chơi sẽ kết thúc hoặc bạn sẽ phải bắt đầu lại từ điểm lưu gần nhất.", "combat_victory_defeat.png", "combat", false));
-        addTutorial("combat", new Tutorial("8", "Cơ chế Boss", "Khi đối đầu với Boss, chúng sẽ có sức mạnh và phòng thủ cao hơn. Một số Boss có hiệu ứng đặc biệt như vô hiệu hóa ô chữ, giảm kích thước lưới hoặc hồi máu liên tục.", "combat_boss_mechanics.png", "combat", false));
-        addTutorial("combat", new Tutorial("9", "Chú thích ", "Nhật ký giao chiến hiển thị các hành động và thời gian còn lại của trận đấu. Sử dụng thanh cuộn để xem lại các lượt trước đó. Nếu hết thời gian sẽ tính là bạn thua.", "combat_log.png", "combat", false));
+        addTutorial("combat", new Tutorial("6", "Cơ chế từ vựng", "Từ càng dài và phức tạp, sát thương gây ra càng cao. Các nguyên âm (A, E, I, O, U) và ký tự hiếm (Z, Q, X, J, K) sẽ tăng điểm sát thương.\n Các từ vựng đặc biệt sẽ áp dụng hiệu ứng đặc biệt cho kẻ địch và bản thân.", "", "combat", false));
+        addTutorial("combat", new Tutorial(
+                "7",
+                "Hiệu ứng đặc biệt 1",
+                "Các từ vựng hoặc vật phẩm sẽ tạo ra hiệu ứng đặc biệt như Buff, Burn, Freeze, Toxic kèm theo số lượt tác dụng (chỉ tính lượt bản thân).",
+                "special_effect.png",
+                "combat",
+                false
+        ));
+
+        addTutorial("combat", new Tutorial(
+                "8",
+                "Hiệu ứng đặc biệt 2",
+                "- Buff Attack: Tăng 5 điểm tấn công.\n" +
+                        "- Buff Defend: Tăng 5 điểm phòng thủ.\n" +
+                        "- Buff Regen: Hồi phục một lượng máu mỗi lượt.\n" +
+                        "- Debuff Freeze: Đóng băng kẻ địch, khiến chúng không thể hành động trong lượt. Có 50% cơ hội phá băng mỗi lượt.\n" +
+                        "- Debuff Burn: Gây bỏng, trừ 2% máu mỗi lượt và giảm 20% tấn công của kẻ địch.\n" +
+                        "- Debuff Toxic: Gây độc, trừ 5% hơn mỗi lượt.\n\n" +
+                        "**Lưu ý:** Freeze và Burn không thể tồn tại đồng thời. Nếu kẻ địch đang bị Freeze mà bị dính Burn, cả hai hiệu ứng sẽ bị triệt tiêu và ngược lại.\n" +
+                        "**Mẹo:** Một số từ vựng đặc biệt có khả năng gây hiệu ứng. Hãy tận dụng !",
+                "",
+                "combat",
+                false
+        ));
+
+        addTutorial("combat", new Tutorial("8", "Chiến thắng & Thất bại", "Đánh bại kẻ địch để nhận phần thưởng và kinh nghiệm. Nếu bạn thua, trò chơi sẽ kết thúc hoặc bạn sẽ phải bắt đầu lại từ điểm lưu gần nhất.", "combat_victory_defeat.png", "combat", false));
+        addTutorial("combat", new Tutorial("9", "Cơ chế Boss", "Khi đối đầu với Boss, chúng sẽ có sức mạnh và phòng thủ cao hơn. Một số Boss có hiệu ứng đặc biệt như vô hiệu hóa ô chữ, giảm kích thước lưới hoặc hồi máu liên tục.", "combat_boss_mechanics.png", "combat", false));
+        addTutorial("combat", new Tutorial("10", "Chú thích ", "Nhật ký giao chiến hiển thị các hành động và thời gian còn lại của trận đấu. Sử dụng thanh cuộn để xem lại các lượt trước đó. Nếu hết thời gian sẽ tính là bạn thua.", "combat_log.png", "combat", false));
 
         addTutorial("damage", new Tutorial("1", "Tổng quan Tính Sát Thương", "Sát thương trong chiến đấu được tính dựa trên từ bạn tạo và chỉ số của kẻ địch. Hiểu rõ cơ chế sẽ giúp bạn tối ưu hóa lượng sát thương gây ra.", "", "damage", false));
         addTutorial("damage", new Tutorial("2", "Cách Tính Sát Thương của Người Chơi", "Sát thương của bạn được tính theo từ bạn tạo ra:\n- Mỗi chữ cái: +1 điểm\n- Mỗi nguyên âm (A, E, I, O, U): +2 điểm\n- Từ dài hơn 5 chữ cái: +2 điểm\n- Chữ hiếm (Z, Q, X, J, K): +2 điểm mỗi chữ\n- Danh từ (noun): +1 điểm\n- Động từ (verb): +2 điểm\n- Tính từ (adjective): +2 điểm\n- Trạng từ (adverb): +3 điểm\nSát thương cuối cùng = tổng điểm của từ + tấn công + cấp độ - phòng thủ kẻ địch." +

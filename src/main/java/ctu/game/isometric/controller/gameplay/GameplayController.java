@@ -6,8 +6,10 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.*;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.TimeUtils;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -86,6 +88,7 @@ public class GameplayController {
     private String enemyName = "Enemy";
     private Enemy enemy;
 
+
     // Button areas
     private Rectangle submitButtonRect, clearButtonRect;
 
@@ -129,12 +132,23 @@ public class GameplayController {
     public void playerAttack(String word, int dmg, Runnable onComplete) {
 
         // Create attack card as before
-        AttackCard card = new AttackCard(
-                AttackCard.CardType.ATTACK,
-                word,
-                dmg,
-                830, 600, 830, 600, 830, 470
-        );
+        AttackCard card = new AttackCard(AttackCard.CardType.ATTACK, word, dmg, 830, 600, 830, 600, 830, 470);
+
+        // Extend onComplete to reset camera when animation finishes
+        Runnable extendedComplete = () -> {
+            // Call the original onComplete
+            if (onComplete != null) onComplete.run();
+        };
+
+        card.setSFXCallback(() -> effectManager.playClickSound());
+        card.setOnComplete(extendedComplete);
+        cardAnimationManager.addCard(card);
+    }
+
+    public void playerMiss(String word, int dmg, Runnable onComplete) {
+
+        // Create attack card as before
+        AttackCard card = new AttackCard(AttackCard.CardType.MISS, word, dmg, 316, 366, 316, 376, 316, 386);
 
         // Extend onComplete to reset camera when animation finishes
         Runnable extendedComplete = () -> {
@@ -148,24 +162,14 @@ public class GameplayController {
     }
 
     public void playerHealing(int heal, Runnable onComplete) {
-        AttackCard card = new AttackCard(
-                AttackCard.CardType.HEALING,
-                "",
-                heal,
-                326, 266, 326, 276, 326, 266
-        );
+        AttackCard card = new AttackCard(AttackCard.CardType.HEALING, "", heal, 316, 346, 316, 356, 316, 366);
         card.setSFXCallback(() -> effectManager.playClickSound());
         card.setOnComplete(onComplete);
         cardAnimationManager.addCard(card);
     }
 
     public void playerHealingMana(int mana, Runnable onComplete) {
-        AttackCard card = new AttackCard(
-                AttackCard.CardType.MANA,
-                "",
-                mana,
-                326, 266, 326, 276, 326, 266
-        );
+        AttackCard card = new AttackCard(AttackCard.CardType.MANA, "", mana, 316, 346, 316, 356, 316, 366);
         card.setSFXCallback(() -> effectManager.playClickSound());
         card.setOnComplete(onComplete);
         cardAnimationManager.addCard(card);
@@ -173,12 +177,28 @@ public class GameplayController {
 
 
     public void playerBuff(int buff, Runnable onComplete) {
-        AttackCard card = new AttackCard(
-                AttackCard.CardType.SPECIAL,
-                "",
-                buff,
-                326, 266, 326, 276, 326, 266
-        );
+        AttackCard card = new AttackCard(AttackCard.CardType.SPECIAL, "", buff, 316, 346, 316, 356, 316, 366);
+        card.setSFXCallback(() -> effectManager.playClickSound());
+        card.setOnComplete(onComplete);
+        cardAnimationManager.addCard(card);
+    }
+
+    public void playerToxic(int buff, Runnable onComplete) {
+        AttackCard card = new AttackCard(AttackCard.CardType.POISON, "POISON", buff, 316, 336, 830, 470, 830, 450);
+        card.setSFXCallback(() -> effectManager.playClickSound());
+        card.setOnComplete(onComplete);
+        cardAnimationManager.addCard(card);
+    }
+
+    public void enemyToxic(int buff, Runnable onComplete) {
+        AttackCard card = new AttackCard(AttackCard.CardType.POISON, "TOXIC", buff, 830, 450, 316, 316, 316, 286);
+        card.setSFXCallback(() -> effectManager.playClickSound());
+        card.setOnComplete(onComplete);
+        cardAnimationManager.addCard(card);
+    }
+
+    public void enemyFire(int buff, Runnable onComplete) {
+        AttackCard card = new AttackCard(AttackCard.CardType.FIRE, "FIRE", buff, 830, 450, 316, 316, 316, 286);
         card.setSFXCallback(() -> effectManager.playClickSound());
         card.setOnComplete(onComplete);
         cardAnimationManager.addCard(card);
@@ -187,36 +207,15 @@ public class GameplayController {
     public void enemyAttack(int dmg, int action, int heal, Runnable onComplete) {
         AttackCard card;
         if (dmg == 0) {
-            card = new AttackCard(
-                    AttackCard.CardType.HEALING,
-                    "",
-                    heal,
-                    830, 450, 830, 460, 830, 450
-            );
+            card = new AttackCard(AttackCard.CardType.HEALING, "", heal, 830, 600, 830, 600, 830, 470);
             card.setSFXCallback(() -> effectManager.playClickSound());
         } else if (dmg < 0) {
-            card = new AttackCard(
-                    AttackCard.CardType.ATTACK,
-                    "MISS",
-                    0,
-                    1280, 720, 1280, 720, 1280, 720
-            );
+            card = new AttackCard(AttackCard.CardType.MISS, "", 0, 840, 550, 840, 560, 840, 570);
             card.setSFXCallback(() -> effectManager.playClickSound());
         } else {
             if (action < 8 && action > 4)
-                card = new AttackCard(
-                        AttackCard.CardType.STRONG,
-                        "",
-                        dmg,
-                        316, 416, 316, 416, 316, 286
-                );
-            else
-                card = new AttackCard(
-                        AttackCard.CardType.ATTACK,
-                        "",
-                        dmg,
-                        316, 416, 316, 416, 316, 286
-                );
+                card = new AttackCard(AttackCard.CardType.STRONG, "", dmg, 316, 416, 316, 416, 316, 286);
+            else card = new AttackCard(AttackCard.CardType.ATTACK, "", dmg, 316, 416, 316, 416, 316, 286);
             card.setSFXCallback(() -> effectManager.playClickSound());
         }
 
@@ -285,36 +284,12 @@ public class GameplayController {
                 timerAction = 0;
             }
         }
-//
-//        // Update camera zoom animation
-//        if (isCameraZooming) {
-//            cameraZoomTimer += delta;
-//            float progress = Math.min(cameraZoomTimer / cameraZoomDuration, 1.0f);
-//
-//            // Smooth interpolation
-//            float smoothProgress = (float) (1 - Math.pow(1 - progress, 3));
-//
-//            // Update camera zoom
-//            OrthographicCamera camera = (OrthographicCamera) viewport.getCamera();
-//            camera.zoom = cameraZoomOriginal + (cameraZoomTarget - cameraZoomOriginal) * smoothProgress;
-//
-//            // Move camera position
-//            camera.position.x = cameraOriginalPosition.x +
-//                    (cameraTargetPosition.x - cameraOriginalPosition.x) * smoothProgress;
-//            camera.position.y = cameraOriginalPosition.y +
-//                    (cameraTargetPosition.y - cameraOriginalPosition.y) * smoothProgress;
-//
-//            // Add camera shake if needed
-//            if (cameraShakeIntensity > 0) {
-//                camera.position.x += (Math.random() - 0.5) * cameraShakeIntensity * 2;
-//                camera.position.y += (Math.random() - 0.5) * cameraShakeIntensity * 2;
-//                cameraShakeIntensity *= 0.95f; // Decay shake intensity
-//            }
-//
-//            camera.update();
-//        }
+        if (isCombatMode) {
+            updateCombat(delta);
+            updateFlicker(delta);
 
-        if (isCombatMode) updateCombat(delta);
+        }
+
         // Rest of your update method...
     }
 
@@ -358,7 +333,7 @@ public class GameplayController {
     }
 
     private boolean isEnemyLord() {
-        return enemyName.toLowerCase().contains("lord");
+        return enemyName.contains("Lord") || enemyName.contains("Azrok");
     }
 
     public void setGridSize(int size) {
@@ -384,14 +359,21 @@ public class GameplayController {
             case "Emerald Revenant Boss": {
                 setGridSize(4);
                 addCombatLog("Emerald Revenant Boss làm giảm kích thước lưới!");
+
+                if (random.nextFloat() < 0.1f && !playerStatusDuration.containsKey("TOXIC") && !enemyStatusDuration.containsKey("FREEZE")) {
+                    enemyToxic(0, () -> {
+                        addCombatLog("Bạn đã bị trúng lửa bởi Emerald Revenant Boss!");
+                        playerStatusDuration.put("TOXIC", 1);
+                    });
+                }
                 break;
             }
             case "Sapphire Dragon Boss": {
-                if (enemyHealth == enemyMaxHealth) {
-                    return;
-                } else {
-                    enemyHealth = Math.min(enemyMaxHealth, enemyHealth + 3);
-                    addCombatLog("Sapphire Dragon Boss hồi phục liên tục!");
+                if (random.nextFloat() < 0.1f && !playerStatusDuration.containsKey("BURN") && !enemyStatusDuration.containsKey("FREEZE")) {
+                    enemyFire(0, () -> {
+                        addCombatLog("Bạn đã bị trúng độc bởi Emerald Revenant Boss!");
+                        playerStatusDuration.put("BURN", 1);
+                    });
                 }
                 break;
             }
@@ -481,9 +463,10 @@ public class GameplayController {
                     break;
                 case "Draught of Fury":
                     playerBuff(1, () -> {
-                        addCombatLog("Đã tăng 1 sức mạnh!");
+                        addCombatLog("Đã tăng 5 sức mạnh!");
                         wordDamageMultiplier += item.getValue();
                         gameController.getCharacter().upAttack(item.getValue());
+                        playerStatusDuration.put("BUFF_ATK", 2);
 
 
                         checkCombatEnd();
@@ -495,9 +478,9 @@ public class GameplayController {
                     break;
                 case "Aegis Brew":
                     playerBuff(1, () -> {
-                        addCombatLog("Đã tăng 2 phòng thủ!");
+                        addCombatLog("Đã tăng 5 phòng thủ!");
                         gameController.getCharacter().upDefend(item.getValue());
-
+                        playerStatusDuration.put("BUFF_DEF", 5);
 
                         checkCombatEnd();
                         if (isCombatMode && enemyHealth > 0) {
@@ -506,13 +489,18 @@ public class GameplayController {
                         }
                     });
                     break;
-                case "Toxic Poiton":
-                    playerAttack("Toxic", (int) item.getValue(), () -> {
-                        addCombatLog("Kẻ địch đã bị trúng độc, mất " + item.getValue() + " máu!");
-                        enemyHealth = Math.max(0, enemyHealth - item.getValue());
+                case "Toxic Potion":
+                    playerToxic(20, () -> {
 
+                        addCombatLog("Kẻ địch đã bị trúng độc, mất " + item.getValue() + " máu! Bị độc trong 3 lượt tiếp theo!");
+                        enemyHealth = Math.max(0, enemyHealth - item.getValue());
                         checkCombatEnd();
+
                         if (isCombatMode && enemyHealth > 0) {
+                            if (enemyName.equals("Sapphire Dragon Boss"))
+                                enemyStatusDuration.put("TOXIC", 5);
+                            else enemyStatusDuration.put("TOXIC", 3);
+
                             isPlayerTurn = false;
                             addCombatLog("---Đến lượt của " + enemyName + "!---");
                         }
@@ -592,8 +580,7 @@ public class GameplayController {
             }
             regularFont.setColor(Color.YELLOW);
             regularFont.draw(batch, item.getItemName() + " x" + reward.getAmount(), panelX + 180, panelY + panelHeight / 2 + 30);
-            drawWrappedText(batch, regularFont, item.getItemDescription(),
-                    panelX + 150, panelY + panelHeight / 2, panelWidth - 200);
+            drawWrappedText(batch, regularFont, item.getItemDescription(), panelX + 150, panelY + panelHeight / 2, panelWidth - 200);
         }
 
         Rectangle continueButton = new Rectangle(viewport.getWorldWidth() / 2 - 100, panelY + 50, 200, 50);
@@ -635,18 +622,17 @@ public class GameplayController {
         final float OPTION_PANEL_HEIGHT = UI_PANEL_HEIGHT * 0.4f;
 
         // Player status (top right)
-        drawEnemyInfoPanel(batch, 300, 600, 400, 100);
-        drawPlayerInfo(batch, 720, PANEL_Y + OPTION_PANEL_HEIGHT + STATUS_PANEL_HEIGHT + 36,
-                400, STATUS_PANEL_HEIGHT);
+        drawEnemyInfoPanel(batch, 300, 580, 400, 120);
+        drawEnemyStatusEffects(batch, 335, 597);
+
+        drawPlayerInfo(batch, 720, PANEL_Y + OPTION_PANEL_HEIGHT + STATUS_PANEL_HEIGHT + 36, 400, STATUS_PANEL_HEIGHT + 20);
 
         // Main action panel (left side - like Pokemon's text box)
         // Right side panel (like a secondary info or options panel)
-        drawMainActionPanel2(batch, MAIN_PANEL_WIDTH + MARGIN, PANEL_Y + MARGIN + 90,
-                500 - 2 * MARGIN, UI_PANEL_HEIGHT - 2 * MARGIN - 90);
+        drawMainActionPanel2(batch, MAIN_PANEL_WIDTH + MARGIN, PANEL_Y + MARGIN + 90, 500 - 2 * MARGIN, UI_PANEL_HEIGHT - 2 * MARGIN - 90);
 
         //another main action panel (right side - like Pokemon's text box)
-        drawMainActionPanel(batch, MARGIN, PANEL_Y + MARGIN,
-                MAIN_PANEL_WIDTH - MARGIN, UI_PANEL_HEIGHT - 2 * MARGIN);
+        drawMainActionPanel(batch, MARGIN, PANEL_Y + MARGIN, MAIN_PANEL_WIDTH - MARGIN, UI_PANEL_HEIGHT - 2 * MARGIN);
         // Draw overlays if active
         if (currentOverlay == OverlayType.SPELL) {
             drawLetterGridOverlay(batch, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -699,8 +685,10 @@ public class GameplayController {
 //        drawCenteredText(batch, titleFont, "Chỉ số nhân vật", x + width / 2, y + height - 25, Color.CYAN);
         // Player stats
         regularFont.setColor(Color.WHITE);
-        regularFont.draw(batch, "Sức mạnh: " + gameController.getCharacter().getDamage(), x + 20, y + height - 15);
-        regularFont.draw(batch, "Phòng thủ: " + gameController.getCharacter().getDefend(), x + 20, y + height - 35);
+        float attack = gameController.getCharacter().getDamage() + attackBuff - playerNerf;
+        float defend = gameController.getCharacter().getDefend() + playerDef;
+        regularFont.draw(batch, "Sức mạnh: " + (int) attack, x + 20, y + height - 15);
+        regularFont.draw(batch, "Phòng thủ: " + (int) defend, x + 20, y + height - 35);
         regularFont.draw(batch, "Kinh nghiệm nhận được: " + (int) experienceGain, x + 20, y + height - 55);
     }
 
@@ -726,8 +714,7 @@ public class GameplayController {
         Texture playerTexture;
         if (gender.equalsIgnoreCase("MALE"))
             playerTexture = getTexture("characters/male.png"); // Back sprite like Pokemon
-        else
-            playerTexture = getTexture("characters/female.png");
+        else playerTexture = getTexture("characters/female.png");
 
         if (playerTexture != null) {
             batch.setColor(Color.WHITE);
@@ -743,10 +730,7 @@ public class GameplayController {
         if (enemyTexture != null) {
             batch.setColor(Color.WHITE);
 
-            batch.draw(enemyTexture,
-                    830,
-                    450,
-                    150, 200);
+            batch.draw(enemyTexture, 830, 450, 150, 200);
         }
     }
 
@@ -769,10 +753,11 @@ public class GameplayController {
         regularFont.draw(batch, levelText, x + width - layout.width - 10, y + height - 15);
 
         // HP bar (Pokemon style)
-        drawPokemonStyleHPBar(batch, enemyHealth, enemyMaxHealth, x + 40, y + 30, width - 60, 20);
+        drawPokemonStyleHPBar(batch, enemyHealth, enemyMaxHealth, x + 40, y + 45, width - 60, 20);
 
         regularFont.setColor(Color.WHITE);
-        regularFont.draw(batch, (int) enemyHealth + "/" + (int) enemyMaxHealth, x + 80, y + 43);
+        regularFont.draw(batch, String.format("%.2f", enemyHealth) + "/" + (int) enemyMaxHealth, x + 80, y + 58);
+
     }
 
     private boolean showEnemyTooltip = false;
@@ -853,10 +838,14 @@ public class GameplayController {
 
         // HP bar (Pokemon style)
         regularFont.setColor(Color.WHITE);
-        drawPokemonStyleHPBar(batch, playerHealth, playerMaxHealth, x + 40, y + 60, width - 60, 20);
-        drawPokemonStyleMPBar(batch, playerMana, playerMaxMana, x + 40, y + 30, width - 60, 20);
-        regularFont.draw(batch, (int) playerHealth + "/" + (int) playerMaxHealth, x + 80, y + 73);
-        regularFont.draw(batch, (int) playerMana + "/" + (int) playerMaxMana, x + 80, y + 43);
+        drawPokemonStyleHPBar(batch, playerHealth, playerMaxHealth, x + 40, y + 80, width - 60, 20);
+        drawPokemonStyleMPBar(batch, playerMana, playerMaxMana, x + 40, y + 50, width - 60, 20);
+        regularFont.draw(batch, String.format("%.2f", playerHealth) + "/" + (int) playerMaxHealth, x + 80, y + 93);
+        regularFont.draw(batch, (int) playerMana + "/" + (int) playerMaxMana, x + 80, y + 63);
+
+        drawStatusEffects(batch, x + 30, y + height - 133);
+
+        // Player status effects
     }
 
     Rectangle spellButton = new Rectangle();
@@ -952,7 +941,7 @@ public class GameplayController {
 
         // Main overlay panel
         float panelWidth = screenWidth * 0.7f;
-        float panelHeight = screenHeight * 0.7f;
+        float panelHeight = screenHeight * 0.7f - 150;
         float panelX = (screenWidth - panelWidth) / 2;
         float panelY = (screenHeight - panelHeight) / 2;
 
@@ -978,7 +967,7 @@ public class GameplayController {
 
     private void drawBeautifulItemGrid(SpriteBatch batch, float x, float y, float width, float height) {
         itemRectMap.clear();
-        Map<String, Integer> characterItems = gameController.getCharacter().getBuffItems();
+        Map<String, Integer> characterItems = gameController.getCharacter().getBuffItems2();
 
         if (characterItems == null || characterItems.isEmpty()) {
             drawCenteredText(batch, regularFont, "No items available", x + width / 2, y + height / 2, Color.GRAY);
@@ -1053,9 +1042,7 @@ public class GameplayController {
         // Text
         layout.setText(regularFont, text);
         regularFont.setColor(Color.BLACK);
-        regularFont.draw(batch, text,
-                buttonRect.x + (buttonRect.width - layout.width) / 2,
-                buttonRect.y + (buttonRect.height + layout.height) / 2);
+        regularFont.draw(batch, text, buttonRect.x + (buttonRect.width - layout.width) / 2, buttonRect.y + (buttonRect.height + layout.height) / 2);
     }
 
     private void drawPokemonStyleHPBar(SpriteBatch batch, float current, float max, float x, float y, float width, float height) {
@@ -1131,9 +1118,7 @@ public class GameplayController {
     }
 
     enum OverlayType {
-        NONE,
-        SPELL,
-        INVENTORY
+        NONE, SPELL, INVENTORY
     }
 
     OverlayType currentOverlay = OverlayType.NONE;
@@ -1257,9 +1242,7 @@ public class GameplayController {
         batch.begin();
 
         font.setColor(color);
-        font.draw(batch, text,
-                x - layout.width / 2,
-                y + layout.height / 2);
+        font.draw(batch, text, x - layout.width / 2, y + layout.height / 2);
     }
 
     String difficultyText = "";
@@ -1354,22 +1337,16 @@ public class GameplayController {
                 boolean isVowel = VOWELS.indexOf(Character.toUpperCase(letter)) != -1;
                 boolean isDisabled = isCellDisabled(x, y);
 
-                Texture cellTexture = isDisabled ? disabledCellTexture :
-                        isSelected ? wordCellTexture :
-                                isVowel ? vowelCellTexture : this.cellTexture;
+                Texture cellTexture = isDisabled ? disabledCellTexture : isSelected ? wordCellTexture : isVowel ? vowelCellTexture : this.cellTexture;
 
                 batch.setColor(Color.WHITE);
                 batch.draw(cellTexture, screenX, screenY, cellSize, cellSize);
 
-                Color letterColor = isDisabled ? Color.GRAY :
-                        isSelected ? Color.RED :
-                                isVowel ? Color.BLUE : Color.BLACK;
+                Color letterColor = isDisabled ? Color.GRAY : isSelected ? Color.RED : isVowel ? Color.BLUE : Color.BLACK;
 
                 layout.setText(regularFont, String.valueOf(letter));
                 regularFont.setColor(letterColor);
-                regularFont.draw(batch, String.valueOf(letter),
-                        screenX + (cellSize - layout.width) / 2,
-                        screenY + cellSize - (cellSize - layout.height) / 2);
+                regularFont.draw(batch, String.valueOf(letter), screenX + (cellSize - layout.width) / 2, screenY + cellSize - (cellSize - layout.height) / 2);
             }
         }
     }
@@ -1395,9 +1372,7 @@ public class GameplayController {
 
                 layout.setText(regularFont, String.valueOf(Character.toUpperCase(letter)));
                 regularFont.setColor(isVowel ? Color.BLUE : Color.BLACK);
-                regularFont.draw(batch, String.valueOf(Character.toUpperCase(letter)),
-                        cellX + (CELL_SIZE - layout.width) / 2,
-                        y + (CELL_SIZE + layout.height) / 2);
+                regularFont.draw(batch, String.valueOf(Character.toUpperCase(letter)), cellX + (CELL_SIZE - layout.width) / 2, y + (CELL_SIZE + layout.height) / 2);
             }
         }
     }
@@ -1408,29 +1383,291 @@ public class GameplayController {
         boolean isSelected = buttonRect.contains(mousePos.x, mousePos.y);
 
         batch.setColor(Color.WHITE);
-        batch.draw(isSelected ? buttonSelectedTexture : buttonTexture,
-                buttonRect.x, buttonRect.y, buttonRect.width, buttonRect.height);
+        batch.draw(isSelected ? buttonSelectedTexture : buttonTexture, buttonRect.x, buttonRect.y, buttonRect.width, buttonRect.height);
 
         layout.setText(regularFont, text);
         regularFont.setColor(Color.WHITE);
-        regularFont.draw(batch, text,
-                buttonRect.x + (buttonRect.width - layout.width) / 2,
-                buttonRect.y + (buttonRect.height + layout.height) / 2);
+        regularFont.draw(batch, text, buttonRect.x + (buttonRect.width - layout.width) / 2, buttonRect.y + (buttonRect.height + layout.height) / 2);
     }
+
+
+    private Map<String, Integer> playerStatusDuration = new HashMap<>();
+    private Map<String, Integer> enemyStatusDuration = new HashMap<>();
+
+    private void drawStatusEffects(SpriteBatch batch, float x, float y) {
+        float iconSize = 24;
+        float spacing = 30;
+        int iconIndex = 0;
+
+
+        if (playerStatusDuration != null && !playerStatusDuration.isEmpty()) {
+            for (Map.Entry<String, Integer> status : playerStatusDuration.entrySet()) {
+                String statusName = status.getKey();
+                int duration = status.getValue();
+
+                // Draw status icon below enemy info bar
+                Texture statusIcon = getTexture("ui/" + statusName.toLowerCase() + ".png");
+                if (statusIcon != null) {
+                    batch.setColor(Color.WHITE);
+                    batch.draw(statusIcon, x + iconIndex * spacing, y, iconSize, iconSize);
+                }
+
+                // Draw duration text
+                regularFont.setColor(Color.WHITE);
+                regularFont.draw(batch, String.valueOf(duration), x + iconIndex * spacing + iconSize - 10, y);
+
+                iconIndex++;
+            }
+
+
+            float phase = effectAlphaPhase.getOrDefault("REGEN", 0f);
+            float alpha = 0.5f + 0.5f * MathUtils.sin(phase);
+            batch.setColor(1f, 1f, 1f, alpha);
+
+            // Draw flickering effect for player status effects
+            if (playerStatusDuration.containsKey("BUFF_ATK") || playerStatusDuration.containsKey("BUFF_DEF")) {
+                Texture effectTexture = getTexture("ui/regen_effect.png");
+                batch.draw(effectTexture, 286, 256, 200, 150);
+                batch.setColor(Color.WHITE); // Reset color
+            }
+        }
+    }
+
+    private Map<String, Float> effectAlphaPhase = new HashMap<>();
+
+    public void updateFlicker(float delta) {
+        if (enemyStatusDuration != null) {
+            for (String statusName : enemyStatusDuration.keySet()) {
+                float phase = effectAlphaPhase.getOrDefault(statusName, 0f);
+                phase += delta * 2f; // tốc độ flicker, bạn có thể điều chỉnh
+                if (phase > MathUtils.PI2) phase -= MathUtils.PI2;
+                effectAlphaPhase.put(statusName, phase);
+            }
+        }
+    }
+
+    private void drawEnemyStatusEffects(SpriteBatch batch, float x, float y) {
+        float iconSize = 24;
+        float spacing = 30;
+        int iconIndex = 0;
+
+        if (enemyStatusDuration != null) {
+            for (Map.Entry<String, Integer> status : enemyStatusDuration.entrySet()) {
+                String statusName = status.getKey();
+                int duration = status.getValue();
+
+                // Draw status icon
+                Texture statusIcon = getTexture("ui/" + statusName.toLowerCase() + ".png");
+                if (statusIcon != null) {
+                    batch.setColor(Color.WHITE);
+                    batch.draw(statusIcon, x + iconIndex * spacing, y, iconSize, iconSize);
+                }
+
+                // Draw duration text
+                regularFont.setColor(Color.WHITE);
+                regularFont.draw(batch, String.valueOf(duration), x + iconIndex * spacing + iconSize - 10, y);
+
+                // Compute flicker alpha
+                float phase = effectAlphaPhase.getOrDefault(statusName, 0f);
+                float alpha = 0.5f + 0.5f * MathUtils.sin(phase);
+                batch.setColor(1f, 1f, 1f, alpha);
+
+                // Draw effect on enemy
+                Texture effectTexture = getTexture("ui/" + statusName.toLowerCase() + "_effect.png");
+                if (effectTexture != null) {
+                    switch (statusName) {
+                        case "REGEN":
+                            batch.draw(effectTexture, 805, 430, 200, 150);
+                            break;
+                        case "FREEZE":
+                            batch.draw(effectTexture, 800, 430, 200, 200);
+                            break;
+                        case "BURN":
+                        case "TOXIC":
+                            batch.draw(effectTexture, 850 + (duration * 10), 450 + (duration * 10), 64, 64);
+                            break;
+                    }
+                }
+
+                batch.setColor(Color.WHITE); // Reset after each effect
+                iconIndex++;
+            }
+        }
+    }
+
+
+    private int playerDef = 0;
+    private int attackBuff = 0;
+    private int playerNerf = 0;
+
+    private void checkPlayerStatusEffects() {
+        if (playerStatusDuration.containsKey("BURN")) {
+            int burnDamage = Math.max(1, (int) (playerMaxHealth * 0.02f));
+            playerHealth = Math.max(0, playerHealth - burnDamage);
+            addCombatLog("Bạn mất " + burnDamage + " HP do bỏng!Và giảm 20% sát thương!");
+            playerNerf = (int) (enemy.getAttackPower() * 0.2f);
+            int remaining = playerStatusDuration.get("BURN") - 1;
+            if (remaining <= 0) {
+                playerNerf = 0; // Reset nerf
+                playerStatusDuration.remove("BURN");
+                addCombatLog("Bạn không còn bị bỏng!");
+            } else {
+                playerStatusDuration.put("BURN", remaining);
+            }
+        }
+
+        if (playerStatusDuration.containsKey("TOXIC")) {
+            int toxicDamage = Math.max(1, (int) (playerMaxHealth * 0.05f));
+            playerHealth = Math.max(0, playerHealth - toxicDamage);
+            addCombatLog("Bạn mất " + toxicDamage + " HP do độc tố!");
+
+            int remaining = playerStatusDuration.get("TOXIC") - 1;
+            if (remaining <= 0) {
+                playerStatusDuration.remove("TOXIC");
+                addCombatLog("Bạn không còn bị độc tố!");
+            } else {
+                playerStatusDuration.put("TOXIC", remaining);
+            }
+        }
+
+        if (playerStatusDuration.containsKey("BUFF_ATK")) {
+            int buffDuration = playerStatusDuration.get("BUFF_ATK");
+            if (buffDuration > 1) {
+                attackBuff = 5; // Tăng sát thương tấn công
+                addCombatLog("Bạn được tăng 5 sát thương tấn công!");
+                playerStatusDuration.put("BUFF_ATK", buffDuration - 1);
+            } else {
+                playerStatusDuration.remove("BUFF_ATK");
+                attackBuff = 0; // Reset buff
+                addCombatLog("Hiệu ứng BUFF ATK đã hết hạn!");
+            }
+        }
+        if (playerStatusDuration.containsKey("BUFF_DEF")) {
+            int buffDuration = playerStatusDuration.get("BUFF_DEF");
+            if (buffDuration > 1) {
+                playerDef = 5; // Tăng phòng thủ
+                addCombatLog("Bạn được tăng 5 phòng thủ!");
+                playerStatusDuration.put("BUFF_DEF", buffDuration - 1);
+            } else {
+                playerStatusDuration.remove("BUFF_DEF");
+                playerDef = 0; // Reset buff
+                addCombatLog("Hiệu ứng BUFF DEF đã hết hạn!");
+            }
+        }
+
+    }
+
+    private void checkStatusEffects() {
+        // Enemy status effects
+        if (enemyStatusDuration.containsKey("BURN") && enemyName.contains("Sapphire Dragon Boss")) {
+            addCombatLog(enemyName + " không thể bị bỏng!");
+            enemyStatusDuration.remove("BURN");
+        }
+
+        if (enemyStatusDuration.containsKey("TOXIC") && enemyName.contains("Emerald Revenant Boss")) {
+            // Sapphire Dragon Boss không bị bỏng
+            addCombatLog(enemyName + " không thể bị độc!");
+            enemyStatusDuration.remove("BURN");
+        }
+
+
+        if (enemyStatusDuration.containsKey("BURN")) {
+            int burnDamage = Math.max(1, (int) (enemyMaxHealth * 0.02f));
+            enemyHealth = Math.max(0, enemyHealth - burnDamage);
+            atkNerf = enemy.getAttackPower() * 0.2f;
+            addCombatLog(enemyName + " mất " + burnDamage + " HP do bỏng và giảm 20% sát thương!");
+
+            int remaining = enemyStatusDuration.get("BURN") - 1;
+            if (remaining <= 1) {
+                enemyStatusDuration.remove("BURN");
+                addCombatLog(enemyName + " không còn bị bỏng!");
+            } else {
+                enemyStatusDuration.put("BURN", remaining);
+            }
+        }
+
+
+        if (enemyStatusDuration.containsKey("TOXIC")) {
+            int toxicDamage = Math.max(1, (int) (enemyMaxHealth * 0.05f));
+            enemyHealth = Math.max(0, enemyHealth - toxicDamage);
+            addCombatLog(enemyName + " mất " + toxicDamage + " HP do độc tố!");
+
+            int remaining = enemyStatusDuration.get("TOXIC") - 1;
+            if (remaining <= 0) {
+                enemyStatusDuration.remove("TOXIC");
+                addCombatLog(enemyName + " không còn bị độc tố!");
+            } else {
+                enemyStatusDuration.put("TOXIC", remaining);
+            }
+        }
+
+        if (enemyStatusDuration.containsKey("REGEN")) {
+            int regenHeal = Math.max(1, (int) (enemyMaxHealth * 0.05f));
+            enemyHealth = Math.min(enemyMaxHealth, enemyHealth + regenHeal);
+            addCombatLog(enemyName + " hồi phục " + regenHeal + " liên tục!");
+
+            int remaining = enemyStatusDuration.get("REGEN") - 1;
+            if (remaining <= 0) {
+                enemyStatusDuration.remove("REGEN");
+                addCombatLog(enemyName + " không còn  khả năng hồi phục!");
+            } else {
+                enemyStatusDuration.put("REGEN", remaining);
+            }
+        }
+
+    }
+
+    private float atkNerf = 0;
 
     private void performEnemyAction() {
         int action = random.nextInt(10);
         float damage = 0;
         float heal = 0;
 
+
+        if (enemyStatusDuration.containsKey("FREEZE")) {
+            boolean isBroke = new Random().nextBoolean();
+            if (isBroke) {
+                enemyStatusDuration.remove("FREEZE");
+                addCombatLog(enemyName + " đã phá vỡ hiệu ứng đóng băng và có thể tấn công!");
+            } else {
+                int freezeDuration = enemyStatusDuration.get("FREEZE");
+                if (freezeDuration > 1) {
+                    addCombatLog(enemyName + " bị đóng băng và không thể tấn công!");
+                    enemyStatusDuration.put("FREEZE", freezeDuration - 1);
+                    isPlayerTurn = true;
+                    enemyAttack(-1, action, (int) heal, () -> {
+                        checkCombatEnd();
+                        if (isCombatMode) {
+                            letterGrid.regenerateGrid();
+                            addCombatLog("---Đến lượt của bạn!---");
+                            checkPlayerStatusEffects();
+                            if (isEnemyBoss()) applyBossEffects();
+                        }
+                    });
+                    return;
+                } else {
+                    enemyStatusDuration.remove("FREEZE");
+                    addCombatLog(enemyName + " đã hết hiệu ứng đóng băng!");
+                }
+            }
+
+        }
+
+        if (!enemyStatusDuration.isEmpty()) {
+            checkStatusEffects();
+            checkCombatEnd();
+        }
+
+
         if (action < 4) {
             damage = 5 + random.nextInt(6) + enemy.getAttackPower(); // ~5–10 + atk
-            damage -= gameController.getCharacter().getDefend();
+            damage -= (gameController.getCharacter().getDefend() + playerDef); // giảm kháng nhẹ
             damage = Math.max(0, damage);
             addCombatLog(enemyName + " tấn công gây " + (int) damage + " sát thương!");
         } else if (action < 8) {
-            damage = 10 + random.nextInt(6) + enemy.getAttackPower() * 1.2f + currentLevel * 0.5f;
-            damage -= gameController.getCharacter().getDefend(); // giảm kháng nhẹ
+            damage = 10 + random.nextInt(6) + (enemy.getAttackPower() - atkNerf) * 1.2f + currentLevel * 0.5f;
+            damage -= (gameController.getCharacter().getDefend() + playerDef); // giảm kháng nhẹ
             damage = Math.max(5, damage);
             addCombatLog(enemyName + " tấn công mạnh gây " + (int) damage + " sát thương!");
         } else if (action == 8) {
@@ -1451,6 +1688,7 @@ public class GameplayController {
             if (isCombatMode) {
                 letterGrid.regenerateGrid();
                 addCombatLog("---Đến lượt của bạn!---");
+                checkPlayerStatusEffects();
                 if (isEnemyBoss()) applyBossEffects();
             }
         });
@@ -1466,14 +1704,18 @@ public class GameplayController {
 
     public boolean normalAttack() {
         if (isCombatMode && isPlayerTurn) {
-            float damage = currentLevel + wordDamageMultiplier;
-
-            if (isEnemyLord() && damage < 10) {
+            float damage = currentLevel + (wordDamageMultiplier - playerNerf + attackBuff) - enemy.getDefensePower() * 0.5f;
+            damage = Math.max(1, damage);
+            if (isEnemyLord() && damage < 15) {
                 damage = 0;
+                if (random.nextFloat() < 0.1f && !playerStatusDuration.containsKey("TOXIC") && !enemyStatusDuration.containsKey("FREEZE")) {
+                    playerStatusDuration.put("TOXIC", 2);
+                } else if (random.nextFloat() < 0.2f && !playerStatusDuration.containsKey("BURN") && !enemyStatusDuration.containsKey("FREEZE")) {
+                    playerStatusDuration.put("BURN", 2);
+                }
+
                 addCombatLog("Lord " + enemyName + " chống chọi được đòn tấn công yếu!");
             } else {
-                damage -= enemy.getDefensePower() * 0.7f;
-                damage = Math.max(1, damage);
                 addCombatLog("Tấn công thường gây " + (int) damage + " sát thương!");
             }
 
@@ -1517,6 +1759,7 @@ public class GameplayController {
             return false;
         }
 
+
         if (gameController.getCharacter().getLearnedWords().contains(word.toUpperCase()) || wordValidator.isValidWord(word)) {
             int points = wordValidator.getTotalScore(word.trim());
             this.experienceGain += points;
@@ -1524,21 +1767,66 @@ public class GameplayController {
             isDrawingWordMeaning = true;
             lastSubmittedWord = word;
 
-            if (gameController.getCharacter().updateDict(word))
-                gameController.getDictionaryView().addNewWord(word);
+
+            String effectLog = "";
+            String stats = "";
+            String wordLower = word.toLowerCase();
+
+            boolean isBurn = wordLower.contains("fire") || wordLower.contains("burn") || wordLower.contains("flame");
+            boolean isPoison = wordLower.contains("poison") || wordLower.contains("toxic") || wordLower.contains("venom");
+            boolean isFreeze = wordLower.contains("ice") || wordLower.contains("frost") || wordLower.contains("freeze");
+            boolean isBuff = wordLower.contains("god") || wordLower.contains("world") || wordLower.contains("return");
+
+            if (isBurn) {
+                if (enemyStatusDuration.containsKey("FREEZE")) {
+                    stats = "";
+                    enemyStatusDuration.remove("FREEZE");
+                    enemyStatusDuration.remove("BURN");
+                    addCombatLog("Băng làm mất hiệu ứng bỏng!");
+                } else {
+                    stats = "BURN";
+                    effectLog = enemyName + " bị bỏng!";
+                }
+            } else if (isPoison) {
+                stats = "POISON";
+                effectLog = enemyName + " bị trúng độc!";
+            } else if (isFreeze) {
+                if (enemyStatusDuration.containsKey("BURN")) {
+                    stats = "";
+                    enemyStatusDuration.remove("FREEZE");
+                    enemyStatusDuration.remove("BURN");
+                    addCombatLog("Bỏng làm mất hiệu ứng đóng băng!");
+                } else {
+                    stats = "FREEZE";
+                    effectLog = enemyName + " bị đóng băng!";
+                }
+            } else if (isBuff) {
+                stats = "BUFF";
+                effectLog = "Vị thần sẽ phù hộ bạn!";
+            } else {
+                stats = "";
+            }
+
+
+            if (gameController.getCharacter().updateDict(word)) gameController.getDictionaryView().addNewWord(word);
 
             if (isCombatMode && isPlayerTurn) {
-                float damage = points + wordDamageMultiplier;
+                float damage = points + (wordDamageMultiplier - playerNerf) + attackBuff - enemy.getDefensePower() * 0.7f;
+                damage = Math.max(1, damage);
 
-                if (isEnemyLord() && damage < 10) {
+                if (isEnemyLord() && damage < 15) {
                     damage = 0;
-                    addCombatLog("Lord " + enemyName + " chống chọi được đòn tấn công yếu!");
+                    // 20% chance to apply TOXIC or BURN status, but not if enemy is frozen
+                    if (random.nextFloat() < 0.2f && !playerStatusDuration.containsKey("TOXIC") && !enemyStatusDuration.containsKey("FREEZE")) {
+                        playerStatusDuration.put("TOXIC", 2);
+                        addCombatLog("Bạn bị Lord phản đòn, bị trúng độc nhẹ!");
+                    } else if (random.nextFloat() < 0.4f && !playerStatusDuration.containsKey("BURN") && !enemyStatusDuration.containsKey("FREEZE")) {
+                        playerStatusDuration.put("BURN", 2);
+                        addCombatLog("Bạn bị Lord phản đòn, bị bỏng nhẹ!");
+                    }
                 } else {
-                    damage -= enemy.getDefensePower() * 0.7f;
                     addCombatLog("Từ '" + word + "' gây " + (int) damage + " sát thương!");
                 }
-
-                addCombatLog("+" + points + " điểm!");
 
                 // Replace the playerAttack call with this:
                 if (isCombatMode && isPlayerTurn) {
@@ -1549,10 +1837,26 @@ public class GameplayController {
                             checkCombatEnd();
                             if (isCombatMode && enemyHealth > 0) {
                                 isPlayerTurn = false;
+
                                 addCombatLog("---Đến lượt của " + enemyName + "!---");
 
                             }
                         });
+
+                        if (!stats.isEmpty() && !stats.equals("BUFF")) {
+                            if (!enemyStatusDuration.containsKey(stats)) {
+                                enemyStatusDuration.put(stats, 2); // 4 lượt hiệu ứng
+                            } else {
+                                enemyStatusDuration.put(stats, enemyStatusDuration.get(stats) + 1);
+                                addCombatLog(effectLog);
+                            }
+                        } else if (stats.equals("BUFF")) {
+                            if (!playerStatusDuration.containsKey("BUFF_ATK") && !playerStatusDuration.containsKey("BUFF_DEF")) {
+                                playerStatusDuration.put("BUFF_ATK", 2);
+                                playerStatusDuration.put("BUFF_DEF", 2);
+                                addCombatLog(effectLog);
+                            }
+                        }
                         enemyHealth = Math.max(0, enemyHealth - damage);
                     } else {
                         checkCombatEnd();
@@ -1578,10 +1882,14 @@ public class GameplayController {
             timerAction = 5f;
             addCombatLog("Từ '" + word + "' không hợp lệ!");
             gameController.getCharacter().updateWrongWordCount();
-            if (isCombatMode && enemyHealth > 0) {
-                isPlayerTurn = false;
-                addCombatLog("---Đến lượt của " + enemyName + "!---");
-            }
+            playerMiss("", 0, () -> {
+                checkCombatEnd();
+                if (isCombatMode && enemyHealth > 0) {
+                    isPlayerTurn = false;
+
+                    addCombatLog("---Đến lượt của " + enemyName + "!---");
+                }
+            });
             return false;
         }
     }
@@ -1600,10 +1908,12 @@ public class GameplayController {
 
             if (!isGameOver) {
                 gameController.returnToTower();
+                String eventId = currentEvent != null ? currentEvent.getId() : gameController.getCurrentEventId();
                 gameController.getEventManager().completeEvent(currentEvent.getId());
                 gameController.setCompletedEvent();
                 gameController.setRenderCharacter(true);
             }
+
             gameController.getCharacter().resetWinStreak();
             timerAction = 0;
             achievementManager.updateProgress(Achievement.AchievementType.FALLEN, 1);
@@ -1636,9 +1946,32 @@ public class GameplayController {
             }
             gameController.setRenderCharacter(true);
             achievementManager.updateProgress(Achievement.AchievementType.COMBAT_WIN, 1);
-            this.newLevel = gameController.getCharacter().addExperience(this.experienceGain);
+
+            this.newLevel = gameController.getCharacter().addExperience(calculateCombatRewards());
+
             gameController.getMusicController().playMusic("victory");
         }
+    }
+
+    private float calculateCombatRewards() {
+        // Base XP from enemy
+        float baseXP = this.experienceGain * (1 + currentLevel * 0.1f);
+
+        // Performance bonuses
+        float timeBonus = (COMBAT_TIME_LIMIT - combatTimer) / COMBAT_TIME_LIMIT;
+        float healthBonus = playerHealth / playerMaxHealth;
+        float wordBonus = experienceGain / 10f;
+
+        float totalXP = baseXP * (1 + timeBonus * 0.5f + healthBonus * 0.3f + wordBonus * 0.2f);
+
+        // Gold calculation
+        int goldReward = (int) (this.experienceGain * (1 + random.nextFloat() * 0.5f));
+
+        addCombatLog("Nhận được " + (int) totalXP + " XP và " + goldReward + " vàng!");
+
+        gameController.getCharacter().addScore(goldReward);
+
+        return totalXP;
     }
 
     private void cleanupCombatState() {
@@ -1649,6 +1982,11 @@ public class GameplayController {
         combatLogLines.clear();
         isDrawingWordMeaning = false;
         lastSubmittedWord = "";
+
+        playerStatusDuration.clear();
+        enemyStatusDuration.clear();
+        this.attackBuff = 0;
+        this.playerDef = 0;
     }
 
     private void endCombat(boolean victory) {
@@ -1676,7 +2014,10 @@ public class GameplayController {
         this.enemyMaxHealth = enemy.getHealth() + currentLevel * 5;
         this.enemyHealth = enemy.getHealth() + currentLevel * 5;
         this.gender = gameController.getCharacter().getGender().toString();
-
+        this.playerDef = 0;
+        this.attackBuff = 0;
+        this.atkNerf = 0;
+        this.playerNerf = 0;
         addCombatLog("Bắt đầu chiến đấu với " + enemyName + "!");
         letterGrid.regenerateGrid();
 
@@ -1701,9 +2042,12 @@ public class GameplayController {
             addCombatLog("Cảnh báo: Trận chiến này có thể rất khó khăn!");
         }
 
+
         if (isEnemyBoss()) {
             gameController.getMusicController().playMusic("boss");
+            if (enemyName.equals("Sapphire Dragon Boss")) enemyStatusDuration.put("REGEN", 10);
             applyBossEffects();
+
         } else if (isEnemyLord()) {
             gameController.getMusicController().playMusic("lord");
         } else gameController.getMusicController().playMusic("main_theme");

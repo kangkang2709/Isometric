@@ -258,7 +258,7 @@ public class Character {
             if (healingPotion != null) {
                 this.mana = healingPotion.getManaCost();
                 useItem(healingPotion);
-                this.exp = Math.max(0, this.exp - this.exp * 0.1f); // Reset exp to 0 after using potion
+                this.exp = Math.max(0, this.exp - this.exp * 0.2f); // Reset exp to 0 after using potion
                 this.ettempFlags.put("fallen", this.ettempFlags.getOrDefault("fallen", 0) + 1);
             }
         }
@@ -463,6 +463,14 @@ public class Character {
                 .filter(entry -> {
                     Items item = ItemLoader.getItemByName(entry.getKey());
                     return item != null && item.getItemEffect().equals("buff") || item.getItemEffect().equals("heal");
+                })
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+    public Map<String, Integer> getBuffItems2() {
+        return items.entrySet().stream()
+                .filter(entry -> {
+                    Items item = ItemLoader.getItemByName(entry.getKey());
+                    return item != null && item.getItemEffect().equals("buff") || item.getItemEffect().equals("heal") || item.getItemEffect().equals("debuff");
                 })
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }

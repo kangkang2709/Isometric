@@ -22,20 +22,20 @@
   {
     "itemID": 3,
     "itemName": "Draught of Fury",
-    "itemDescription": "Tăng chỉ số tấn công thêm 1.",
+    "itemDescription": "Tăng chỉ số tấn công thêm 5.",
     "texturePath": "game/items/draught_of_fury.png",
     "itemEffect": "buff",
-    "value": 1.0,
+    "value": 5.0,
     "itemPrice": 300,
     "manaCost": 10.0
   },
   {
     "itemID": 4,
     "itemName": "Aegis Brew",
-    "itemDescription": "Tăng chỉ số phòng thủ thêm 1.",
+    "itemDescription": "Tăng chỉ số phòng thủ thêm 5.",
     "texturePath": "game/items/aegis_brew.png",
     "itemEffect": "buff",
-    "value": 2.0,
+    "value": 5.0,
     "itemPrice": 300,
     "manaCost": 10.0
   },
@@ -151,7 +151,7 @@
   },
   {
     "itemID": 16,
-    "itemName": "Toxic Poiton",
+    "itemName": "Toxic Potion",
     "itemDescription": "Gây 20 sát thương cho kẻ địch",
     "texturePath": "game/items/toxic_potion.png",
     "itemEffect": "debuff",

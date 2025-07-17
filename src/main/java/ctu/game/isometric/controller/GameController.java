@@ -232,8 +232,12 @@ public class GameController {
                     newMap.generateRandomMaze(getCharacter().getRun() / 2);
                     boardEventManager.randomBoardEveryRun();
                     isNewRun = false;
-                    if (!character.isTutorialCompleted("maze"))
+                    if (!character.isTutorialCompleted("maze")) {
                         tutorialUI.show("maze");
+                        character.setTutorialCompleted("maze");
+                        if (!character.getFlags().contains("dungeon_entry"))
+                            addFlag("dungeon_entry");
+                    }
                 }
 
                 this.map = newMap;
@@ -308,6 +312,9 @@ public class GameController {
 
             this.map = newMap;
             this.character.setGameMap2(map);
+            if (mapName.equals("forest")) {
+                this.character.setPosition(10, 14);
+            }
             this.pathfinder.setMap(newMap);
             this.eventManager = this.eventManagerMap.get(mapName);
             this.game.getGameScreen().getMapRenderer().changeTiledMapRenderer(this.map, this.eventManager);
@@ -411,8 +418,10 @@ public class GameController {
 
                             setState(GameState.GAMEPLAY);
 
-                            if (!character.isTutorialCompleted("combat"))
+                            if (!character.isTutorialCompleted("combat")) {
                                 tutorialUI.show("combat");
+                                character.setTutorialCompleted("combat");
+                            }
                             gameplayController.activate();
                             gameplayController.startCombat(enemy);
                         });
@@ -650,10 +659,7 @@ public class GameController {
                 settingsMenu.update(delta);
                 break;
             case CUTSCENE:
-//                if (character.getFlags() != null) {
-//                    if (character.getFlags().isEmpty())
-//                        startMulBGSubTitleCutscene("intro", subtitles);
-//                }
+
                 cutsceneController.update(delta);
                 break;
 
@@ -766,7 +772,7 @@ public class GameController {
     public void startMulBGSubTitleCutscene(String cutsceneName, Array<String> subtitles) {
         setPreviousState(currentState);
         setState(GameState.CUTSCENE);
-        cutsceneController.loadMultipleBackgroundsCutscene(cutsceneName, subtitles);
+        cutsceneController.loadOctopathStyleCutscene(cutsceneName, subtitles);
         addFlag(cutsceneName);
     }
 
@@ -965,6 +971,10 @@ public class GameController {
             setState(GameState.CUTSCENE);
             if (!character.getFlags().contains("intro")) {
                 startMulBGSubTitleCutscene("intro", subtitles);
+                if (!character.isTutorialCompleted("movement")) {
+                    tutorialUI.show("movement");
+                    character.setTutorialCompleted("movement");
+                }
 //            changeForestMap();
             }
 
@@ -1081,6 +1091,14 @@ public class GameController {
     }
 
     String currentEventId;
+
+    public String getCurrentEventId() {
+        return currentEventId;
+    }
+
+    public void setCurrentEventId(String currentEventId) {
+        this.currentEventId = currentEventId;
+    }
 
     public void setCompletedEvent() {
         eventManager.completeEvent(currentEventId);

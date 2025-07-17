@@ -125,9 +125,9 @@ public class GameScreen implements Screen {
 
 //            System.out.println("save map name: " + gameController.getCharacter().getMapName());
             String saveMapName = gameController.getCharacter().getMapName();
-            System.out.println("save map name: " + saveMapName);
             if (saveMapName.equals("board")) {
                 gameController.changeSaveMap("main");
+                gameController.getCharacter().setPosition(31,7);
             } else {
                 gameController.changeSaveMap(saveMapName);
             }

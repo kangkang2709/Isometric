@@ -14,8 +14,10 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import ctu.game.isometric.controller.quiz.QuizController;
+import ctu.game.isometric.model.entity.Enemy;
 import ctu.game.isometric.model.game.GameState;
 import ctu.game.isometric.model.world.IsometricMap;
+import ctu.game.isometric.util.EnemyLoader;
 import ctu.game.isometric.view.renderer.WeatherRenderer;
 import ctu.game.isometric.view.ui.DialogUI;
 import ctu.game.isometric.view.renderer.MapRenderer;
@@ -432,8 +434,12 @@ public class InputController extends InputAdapter {
                 mapRenderer.printCurrentPosition();
             }
             case Keys.F8 -> {
-//                gameController.getGame().changeScreen("DUNGEON");
-                gameController.changeMap("tavern");
+                Enemy enemy = EnemyLoader.getEnemyById(9);
+
+                gameController.setState(GameState.GAMEPLAY);
+
+                gameController.getGameplayController().activate();
+                gameController.getGameplayController().startCombat(enemy);
             }
             case Keys.F9 -> {
                 gameController.changeMap("main");

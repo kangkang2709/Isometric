@@ -20,8 +20,8 @@ public class MusicController {
 
     public void initialize() {
         loadMusic("exploring_theme", "audio/musics/village.mp3");
-        loadMusic("main_theme", "audio/musics/Menu.mp3");
-        loadMusic("menu_theme", "audio/musics/menu.mp3");
+        loadMusic("main_theme", "audio/musics/menu.mp3");
+        loadMusic("menu_theme", "audio/musics/Ambient.mp3");
         loadMusic("setting_theme", "audio/musics/setting_theme.mp3");
         loadMusic("combat_theme", "audio/musics/combat_theme.mp3");
         loadMusic("victory", "audio/musics/Victory.mp3");

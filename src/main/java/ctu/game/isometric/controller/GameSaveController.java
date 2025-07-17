@@ -258,7 +258,7 @@ public class GameSaveController {
         copy.setMana(original.getMana());
         copy.setMapName(original.getMapName());
 
-
+        copy.setCurrentObject(original.getCurrentObject());
         // Copy any other essential character data
         // (Items, stats, quests, etc. - add as needed)
 

@@ -1,6 +1,7 @@
 package ctu.game.isometric.view.renderer;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -48,8 +49,21 @@ public class CutsceneRenderer {
     public enum CutsceneType {
         PAGES,
         BACKGROUND_WITH_SUBTITLES,
-        MULTIPLE_BACKGROUNDS_WITH_SUBTITLES // New type
+        MULTIPLE_BACKGROUNDS_WITH_SUBTITLES,
+        OCTOPATH_STYLE // New Octopath Traveler style
     }
+
+    // Octopath style variables
+    private Texture overlayTexture;
+    private Texture frameTexture;
+    private String currentDisplayedText;
+    private float typewriterSpeed;
+    private float typewriterTimer;
+    private int currentCharIndex;
+    private boolean isTyping;
+    private float centerX;
+    private float centerY;
+
 
     private Array<Texture> backgroundTextures;
 
@@ -75,6 +89,15 @@ public class CutsceneRenderer {
         this.subtitleAlpha = 1.0f;
         this.glyphLayout = new GlyphLayout();
         this.backgroundTextures = new Array<>();
+
+        // Initialize Octopath style properties
+        this.currentDisplayedText = "";
+        this.typewriterSpeed = 25f; // Characters per second
+        this.typewriterTimer = 0f;
+        this.currentCharIndex = 0;
+        this.isTyping = false;
+        this.centerX = 640f; // Center of 1280 width
+        this.centerY = 360f; // Center of 720 height
     }
 
     public void loadCutscene(String cutsceneName) {
@@ -152,14 +175,118 @@ public class CutsceneRenderer {
     }
 
 
+    public void loadOctopathStyleCutscene(String cutsceneName, Array<String> subtitleTexts) {
+        cutsceneEnded = false;
+        disposePages();
+        disposeBackgrounds();
+
+        String basePath = "cutscenes/" + cutsceneName + "/";
+
+        // Load overlay texture
+        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(0, 0, 0, 0.5f); // Màu đen với alpha 50%, đổi thành 0f nếu muốn trong suốt hoàn toàn
+        pixmap.fill();
+        overlayTexture = new Texture(pixmap);
+        pixmap.dispose(); // Giải phóng Pixmap sau khi tạo Texture
+
+
+        // Load frame texture
+        frameTexture = new Texture(Gdx.files.internal("ui/bg_frame.png"));
+
+        // Load background textures for each subtitle
+        backgroundTextures.clear();
+        for (int i = 0; i < subtitleTexts.size; i++) {
+            String backgroundPath = basePath + "background" + (i + 1) + ".png";
+            if (Gdx.files.internal(backgroundPath).exists()) {
+                backgroundTextures.add(new Texture(Gdx.files.internal(backgroundPath)));
+            } else {
+                if (Gdx.files.internal(basePath + "background.png").exists()) {
+                    backgroundTextures.add(new Texture(Gdx.files.internal(basePath + "background.png")));
+                } else {
+                    backgroundTextures.add(null);
+                }
+            }
+        }
+
+        // Load subtitles
+        subtitles.clear();
+        for (String subtitle : subtitleTexts) {
+            subtitles.add(subtitle);
+        }
+
+        currentPage = 0;
+        pageDisplayTimer = 0f;
+        isTransitioning = false;
+        cutsceneType = CutsceneType.OCTOPATH_STYLE;
+
+        // Initialize typewriter effect
+        startTypewriterEffect();
+    }
+
+    private void startTypewriterEffect() {
+        if (currentPage < subtitles.size) {
+            currentDisplayedText = "";
+            currentCharIndex = 0;
+            typewriterTimer = 0f;
+            isTyping = true;
+        }
+    }
+
+    private void updateTypewriterEffect(float delta) {
+        if (!isTyping || currentPage >= subtitles.size) {
+            return;
+        }
+
+        String fullText = subtitles.get(currentPage);
+        if (currentCharIndex >= fullText.length()) {
+            isTyping = false;
+            return;
+        }
+
+        typewriterTimer += delta;
+        float timePerChar = 1f / typewriterSpeed;
+
+        if (typewriterTimer >= timePerChar) {
+            if (currentCharIndex < fullText.length()) {
+                currentDisplayedText = fullText.substring(0, currentCharIndex + 1);
+                currentCharIndex++;
+            }
+            typewriterTimer = 0f;
+
+            if (currentCharIndex >= fullText.length()) {
+                isTyping = false;
+            }
+        }
+    }
+
     private boolean cutsceneEnded = false;
 
     public void update(float delta) {
-        // Add this check at the beginning
         if (cutsceneEnded) {
             return;
         }
 
+        if (cutsceneType == CutsceneType.OCTOPATH_STYLE) {
+            updateTypewriterEffect(delta);
+
+            // Auto progress after typewriter finishes
+            if (!isTyping && autoProgressEnabled) {
+                pageDisplayTimer += delta;
+                if (pageDisplayTimer >= pageDisplayDuration) {
+                    if (currentPage >= subtitles.size - 1) {
+                        endCutscene();
+                        return;
+                    }
+
+                    currentPage++;
+                    pageDisplayTimer = 0f;
+                    startTypewriterEffect();
+                }
+            }
+            return;
+        }
+
+        // Rest of the existing update logic...
         if (isTransitioning) {
             transitionTimer += delta;
             if (transitionType == TransitionType.FADE) {
@@ -174,7 +301,6 @@ public class CutsceneRenderer {
                 fadeAlpha = 1.0f;
                 subtitleAlpha = 0.0f;
 
-                // Check if we've reached the end
                 int maxPages = cutsceneType == CutsceneType.PAGES ? pages.size : subtitles.size;
                 if (currentPage >= maxPages) {
                     endCutscene();
@@ -186,7 +312,6 @@ public class CutsceneRenderer {
             if (pageDisplayTimer >= pageDisplayDuration) {
                 int maxPages = cutsceneType == CutsceneType.PAGES ? pages.size : subtitles.size;
 
-                // Check if this is the last page
                 if (currentPage >= maxPages - 1) {
                     endCutscene();
                     return;
@@ -201,7 +326,7 @@ public class CutsceneRenderer {
     }
 
     public void render(SpriteBatch batch) {
-        float screenWidth = 1280; // Assuming a fixed screen width for simplicity
+        float screenWidth = 1280;
         float screenHeight = 720;
 
         Matrix4 originalMatrix = batch.getProjectionMatrix().cpy();
@@ -211,11 +336,42 @@ public class CutsceneRenderer {
             renderPagesCutscene(batch, screenWidth, screenHeight);
         } else if (cutsceneType == CutsceneType.BACKGROUND_WITH_SUBTITLES || cutsceneType == CutsceneType.MULTIPLE_BACKGROUNDS_WITH_SUBTITLES) {
             renderBackgroundCutscene(batch, screenWidth, screenHeight);
+        } else if (cutsceneType == CutsceneType.OCTOPATH_STYLE) {
+            renderOctopathStyleCutscene(batch, screenWidth, screenHeight);
         }
 
         batch.setProjectionMatrix(originalMatrix);
     }
+    private void renderOctopathStyleCutscene(SpriteBatch batch, float screenWidth, float screenHeight) {
+        // Draw background
+        if (currentPage < backgroundTextures.size && backgroundTextures.get(currentPage) != null) {
+            batch.setColor(1, 1, 1, 1);
+            batch.draw(backgroundTextures.get(currentPage), 40, 0, 1200, screenHeight);
+        }
 
+        // Draw overlay
+        if (overlayTexture != null) {
+            batch.setColor(1, 1, 1, 0.7f); // Semi-transparent overlay
+            batch.draw(overlayTexture, 0, 0, screenWidth, screenHeight);
+        }
+
+        // Draw frame
+        if (frameTexture != null) {
+            batch.setColor(1, 1, 1, 1);
+            batch.draw(frameTexture, 0, 0, screenWidth, screenHeight);
+        }
+
+        // Draw typewriter text in center
+        if (!currentDisplayedText.isEmpty()) {
+            subtitleFont.setColor(1, 1, 1, 1);
+            glyphLayout.setText(subtitleFont, currentDisplayedText);
+            float x = (screenWidth - glyphLayout.width) / 2;
+            float y = (screenHeight + glyphLayout.height) / 2;
+            subtitleFont.draw(batch, currentDisplayedText, x, y);
+        }
+
+        batch.setColor(1, 1, 1, 1);
+    }
     private void renderPagesCutscene(SpriteBatch batch, float screenWidth, float screenHeight) {
         if (!isTransitioning) {
             if (currentPage < pages.size) {
@@ -316,7 +472,7 @@ public class CutsceneRenderer {
                 subtitleFont.setColor(1, 1, 1, subtitleAlpha);
                 glyphLayout.setText(subtitleFont, currentSubtitle);
                 float x = (screenWidth - glyphLayout.width) / 2;
-                subtitleFont.draw(batch, currentSubtitle, x+128, subtitleY);
+                subtitleFont.draw(batch, currentSubtitle, x + 128, subtitleY);
             }
         }
     }
@@ -387,6 +543,28 @@ public class CutsceneRenderer {
     }
 
     public void nextPage() {
+        if (cutsceneType == CutsceneType.OCTOPATH_STYLE) {
+            if (isTyping) {
+                // Skip to end of current text
+                if (currentPage < subtitles.size) {
+                    currentDisplayedText = subtitles.get(currentPage);
+                    currentCharIndex = currentDisplayedText.length();
+                    isTyping = false;
+                }
+            } else {
+                // Move to next page
+                if (currentPage < subtitles.size - 1) {
+                    currentPage++;
+                    pageDisplayTimer = 0f;
+                    startTypewriterEffect();
+                } else {
+                    endCutscene();
+                }
+            }
+            return;
+        }
+
+        // Rest of existing nextPage logic...
         int maxPages = cutsceneType == CutsceneType.PAGES ? pages.size : subtitles.size;
 
         if (!isTransitioning && currentPage < maxPages - 1) {
@@ -456,9 +634,18 @@ public class CutsceneRenderer {
             backgroundTexture.dispose();
             backgroundTexture = null;
         }
-
+        if (overlayTexture != null) {
+            overlayTexture.dispose();
+            overlayTexture = null;
+        }
+        if (frameTexture != null) {
+            frameTexture.dispose();
+            frameTexture = null;
+        }
     }
-
+    public void setTypewriterSpeed(float charactersPerSecond) {
+        this.typewriterSpeed = charactersPerSecond;
+    }
     private void disposePages() {
         for (Texture page : pages) {
             try {

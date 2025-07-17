@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AttackCard {
-    public enum CardType {ATTACK, HEALING, MANA, SPECIAL, STRONG, SHIELD,}
+    public enum CardType {ATTACK, HEALING, MANA, SPECIAL, STRONG, SHIELD, MISS,POISON,FIRE}
 
     private CardType type;
     private String word;
@@ -42,10 +42,13 @@ public class AttackCard {
     private static Texture glassCrackTexture; // Big crack texture
     private static Texture glassShardTexture; // Small shard texture
     private static Texture glowTexture;
-
+    private static Texture missTexture;
+    private static Texture poisonTexture;
+    private static Texture fireTexture;
     private List<ImpactEffect> impactEffects = new ArrayList<>();
 
-    public static void setTextures(Texture attack, Texture heal, Texture mana, Texture special, Texture crack, Texture shard,Texture glow) {
+
+    public static void setTextures(Texture attack, Texture heal, Texture mana, Texture special, Texture crack, Texture shard, Texture glow, Texture miss, Texture poison,Texture fire) {
         texAttack = attack;
         texHeal = heal;
         texMana = mana;
@@ -53,6 +56,9 @@ public class AttackCard {
         glassCrackTexture = crack;
         glassShardTexture = shard;
         glowTexture = glow;
+        missTexture = miss;
+        poisonTexture = poison;
+        fireTexture = fire;
     }
 
 
@@ -179,26 +185,26 @@ public class AttackCard {
     // Hiệu ứng va chạm: crack, shard, máu
     private void playImpactEffect() {
         playSFX();
-        // Nếu là ATTACK thì thêm máu
-        if (type == CardType.ATTACK) {
-            impactEffects.add(new BloodSplatterEffect(endX + cardWidth * scale / 2, endY + cardHeight * scale / 2, getBloodPixel()));// Hiệu ứng vết nứt kính lớn
-            impactEffects.add(new GlassCrackEffect(endX, endY, cardWidth * scale, cardHeight * scale, glassCrackTexture, rotation));
-        }
-        if (type == CardType.STRONG) {
-            impactEffects.add(new BloodSplatterEffect(endX + cardWidth * scale / 2, endY + cardHeight * scale / 2, getBloodPixel()));// Hiệu ứng vết nứt kính lớn
-            impactEffects.add(new GlassCrackEffect(endX, endY, cardWidth * scale, cardHeight * scale, glassCrackTexture, rotation));
-            impactEffects.add(new HealGlowEffect(endX, endY, cardWidth * scale, cardHeight * scale, glassShardTexture));// Hiệu ứng vết nứt kính lớn
-        }
-        if (type == CardType.HEALING) {
-            impactEffects.add(new HealGlowEffect(endX, endY, cardWidth * scale, cardHeight * scale, glowTexture));// Hiệu ứng vết nứt kính lớn
-        }
-        if (type == CardType.MANA) {
-            impactEffects.add(new HealGlowEffect(endX, endY, cardWidth * scale, cardHeight * scale, glowTexture));// Hiệu ứng vết nứt kính lớn
-        }
-        if (type == CardType.SPECIAL) {
-            impactEffects.add(new HealGlowEffect(endX, endY, cardWidth * scale, cardHeight * scale, glowTexture));// Hiệu ứng vết nứt kính lớn
+        float centerX = endX + cardWidth * scale / 2;
+        float centerY = endY + cardHeight * scale / 2;
+        float width = cardWidth * scale;
+        float height = cardHeight * scale;
+
+        switch (type) {
+            case ATTACK:
+            case STRONG:
+                impactEffects.add(new BloodSplatterEffect(centerX, centerY, getBloodPixel()));
+                impactEffects.add(new GlassCrackEffect(endX, endY, width, height, glassCrackTexture, rotation));
+                if (type == CardType.STRONG) {
+                    impactEffects.add(new HealGlowEffect(endX, endY, width, height, glassShardTexture));
+                }
+                break;
+            case POISON,FIRE,MISS,SPECIAL,MANA,HEALING:
+                impactEffects.add(new HealGlowEffect(endX, endY, width, height, glowTexture));
+                break;
         }
     }
+
 
     public void render(SpriteBatch batch) {
         if (opacity <= 0) return;
@@ -240,11 +246,11 @@ public class AttackCard {
             for (int dy = -2; dy <= 2; dy++)
                 if (dx * dx + dy * dy != 0 && Math.abs(dx) + Math.abs(dy) <= 2) {
                     FONT.setColor(0.08f, 0.85f, 1f, 0.28f * opacity);
-                    FONT.draw(batch, shown, textX + dx-3, textY + dy-3);
+                    FONT.draw(batch, shown, textX + dx - 3, textY + dy - 3);
                 }
         // Main text
         FONT.setColor(0.5f, 1f, 1f, opacity);
-        FONT.draw(batch, shown, textX-3, textY-3);
+        FONT.draw(batch, shown, textX - 3, textY - 3);
 
         // Value pop
         if (value != 0) {
@@ -322,6 +328,12 @@ public class AttackCard {
                 return texMana;
             case SPECIAL:
                 return texSpecial;
+            case MISS:
+                return missTexture;
+            case POISON:
+                return poisonTexture;
+            case FIRE:
+                return fireTexture;
             default:
                 return null;
         }
