@@ -70,17 +70,14 @@ public class IsometricMap {
         else layer3 = null;
         switch (mapName) {
             case "main":
-                tileId = 6;
                 startX = 31;
                 startY = 0;
                 break;
             case "tavern":
-                tileId = 13;
                 startX = 10;
                 startY = 7;
                 break;
             case "library":
-                tileId = 1;
                 startX = 4;
                 startY = 1;
                 break;
@@ -91,6 +88,10 @@ public class IsometricMap {
             case "tower":
                 startX = 9;
                 startY = 5;
+                break;
+            case "dungeon2":
+                startX = 1;
+                startY = 20;
                 break;
         }
 

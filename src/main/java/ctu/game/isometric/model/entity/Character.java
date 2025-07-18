@@ -43,6 +43,7 @@ public class Character {
     private float targetX, targetY;
     private float moveSpeed = 2.5f; // Grid cells per second
     private int playerWinStreak = 0;
+    private int bonusRolls = 0; // Bonus rolls for the character
 
     // Quest tracking
     private QuestTracker questTracker;
@@ -1036,6 +1037,14 @@ public class Character {
 
     public void incrementWinStreak() {
         this.playerWinStreak++;
+    }
+
+    public int getBonusRolls() {
+        return bonusRolls;
+    }
+
+    public void setBonusRolls(int bonusRolls) {
+        this.bonusRolls = bonusRolls;
     }
 
     public void resetWinStreak() {

@@ -257,6 +257,7 @@ public class GameSaveController {
         copy.setExp(original.getExp());
         copy.setMana(original.getMana());
         copy.setMapName(original.getMapName());
+        copy.setBonusRolls(original.getBonusRolls());
 
         copy.setCurrentObject(original.getCurrentObject());
         // Copy any other essential character data

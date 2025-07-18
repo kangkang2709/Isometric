@@ -117,6 +117,9 @@ public class NPCRenderer {
         }
 
         // Draw NPC name above the sprite
+        if( npc.getNpcName() == null || npc.getNpcName().isEmpty()) {
+            return; // Skip rendering if name is not set
+        }
         String name = npc.getNpcName();
         float nameX = isoX; // Centered
         float nameY = isoY + 58; // Above the sprite

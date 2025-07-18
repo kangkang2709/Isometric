@@ -17,6 +17,7 @@ import ctu.game.isometric.controller.quiz.QuizController;
 import ctu.game.isometric.model.entity.Enemy;
 import ctu.game.isometric.model.game.GameState;
 import ctu.game.isometric.model.world.IsometricMap;
+import ctu.game.isometric.model.world.MapEvent;
 import ctu.game.isometric.util.EnemyLoader;
 import ctu.game.isometric.view.renderer.WeatherRenderer;
 import ctu.game.isometric.view.ui.DialogUI;
@@ -270,9 +271,10 @@ public class InputController extends InputAdapter {
             return true;
         }
 
-        if (gameController.getEventManager().getMapName().equals("board")) {
+        if (gameController.getEventManager().getMapName().equals("board") && mapRenderer.isAcceptingRoll()) {
             return mapRenderer.handleRollingClick(screenX, screenY);
         }
+
 
         return handleCharacterMovement(screenX, screenY);
 
@@ -286,6 +288,8 @@ public class InputController extends InputAdapter {
 
     private boolean handleCharacterMovement(int screenX, int screenY) {
         // Convert screen coordinates to world coordinates
+
+
         Vector3 worldCoords = new Vector3(screenX, screenY, 0);
         gameController.getCamera().unproject(worldCoords);
 
@@ -412,19 +416,26 @@ public class InputController extends InputAdapter {
                 }
 
             }
+            case Keys.ENTER -> {
+                if (gameController.getCurrentEvent() != null && gameController.getCurrentEventType().equals("trap")) {
+                    MapEvent currentEvent = gameController.getCurrentEvent();
+                    if (mapRenderer.isAcceptingRoll() && !gameController.trapUnlock.containsKey(currentEvent.getId()))
+                        mapRenderer.rollingDiceTrap(currentEvent.getId());
+                }
+            }
             case Keys.F5 -> {
                 Array<String> subtitles = new Array<>();
                 subtitles.add("Welcome to the adventure...");
                 subtitles.add("Your journey begins now.");
                 subtitles.add("Prepare for challenges ahead.");
-                gameController.startMulBGSubTitleCutscene("intro",subtitles);
+                gameController.startMulBGSubTitleCutscene("intro", subtitles);
             }
             case Keys.F6 -> {
                 Array<String> subtitles = new Array<>();
                 subtitles.add("Welcome to the adventure...");
                 subtitles.add("Your journey begins now.");
                 subtitles.add("Prepare for challenges ahead.");
-                gameController.startSubTitleCutscene("intro",subtitles);
+                gameController.startSubTitleCutscene("intro", subtitles);
             }
             case Keys.F7 -> {
 //                gameController.getGame().changeScreen("DUNGEON");
@@ -765,7 +776,8 @@ public class InputController extends InputAdapter {
                 return gameController.getMenuController().handleKeyBindingScroll(amountY);
             }
             case EXPLORING -> {
-                if (gameController.getMap().getMapName().equals("board") || gameController.getMap().getMapName().equals("forest") || gameController.getMap().getMapName().equals("main")) return false;
+                if (gameController.getMap().getMapName().equals("board") || gameController.getMap().getMapName().equals("forest") || gameController.getMap().getMapName().equals("main"))
+                    return false;
                 float defaultZoom = 1.0f;
                 float minZoom = 0.5f;
                 float zoomStep = 0.1f;

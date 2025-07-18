@@ -102,5 +102,18 @@
     "xPosition": 2,
     "yPosition": 7,
     "mapName": "tower"
+  },
+  {
+    "npcID": 9,
+    "npcName": "",
+    "npcDescription": "A skilled healer who can restore your health and mana",
+    "arcId": "healer_backstory",
+    "sceneId": "scene_intro",
+    "npcImage": "healer.png",
+    "npcBackStory": "Elara studied ancient healing arts in the mystical forest before settling in this village.",
+    "behaviorState": "idle",
+    "xPosition": 20,
+    "yPosition": 21,
+    "mapName": "dungeon2"
   }
 ]

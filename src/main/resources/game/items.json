@@ -42,7 +42,7 @@
   {
     "itemID": 5,
     "itemName": "Book of Returned",
-    "itemDescription": "Vật phẩm rơi ra từ Final-Boss dùng để hoàn thành cốt truyệ.",
+    "itemDescription": "Vật phẩm rơi ra từ Final-Boss dùng để hoàn thành cốt truyện.",
     "texturePath": "game/items/book_of_returned.png",
     "itemEffect": "N/A",
     "value": 0.0,

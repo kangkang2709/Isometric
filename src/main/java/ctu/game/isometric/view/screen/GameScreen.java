@@ -88,6 +88,7 @@ public class GameScreen implements Screen {
                     game.getAssetManager().getAnimationManager(),
                     770, 15, gameController
             );
+            dice.setBonusCount(gameController.getCharacter().getBonusRolls());
             mapRenderer.setDice(dice);
             gameController.setMapRenderer(mapRenderer);
             gameController.getInputController().setMapRenderer(mapRenderer);

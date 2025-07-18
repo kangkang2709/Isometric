@@ -164,7 +164,7 @@ public class MapRenderer {
 
             if (success) {
                 dialogController.showMessageWithChoices(
-                        "You want to skip this event", "Vâng [YES]", " Không [NO]",
+                        "Bạn có muốn bỏ qua trận chiến này", "Đồng Ý [YES]", " Từ chối [NO]",
                         () -> {
                             setShouldRenderCharacter(false);
                             getGameController().setEndEvent();
@@ -178,7 +178,7 @@ public class MapRenderer {
                     public void run() {
                         if (diceRenderer.getBonusCount() > 0) {
                             dialogController.showMessageWithChoices(
-                                    "You rolled a " + currentFaceValue + ", which is not enough to succeed.\n You can retry with bonus roll!!!", "Vâng [YES]", " Không [NO]",
+                                    "Bạn tung xúc xắc được " + currentFaceValue + ", không thành công bỏ qua trận chiến.\n Có có muốn thử lại ?", "Đồng Ý [YES]", " Từ chối [NO]",
                                     () -> {
                                         isAcceptingRoll = true;
                                         diceRenderer.activeBonusRoll();
@@ -188,8 +188,67 @@ public class MapRenderer {
                                     }
                             );
                         } else {
-                            dialogController.showSimpleMessage("You rolled a " + currentFaceValue + ", which is not enough to succeed.\n You can not retry!!!");
+                            dialogController.showSimpleMessage("Bạn tung xúc xắc được  " + currentFaceValue + ", không thể bỏ qua trận chiến.\n Hãy chiến đấu như 1 anh hùng nào!!!");
                             setShouldRenderCharacter(false);
+                        }
+                    }
+                }, 1.0f);
+
+            }
+        }));
+
+        diceRenderer.rollDice(targetValue);
+    }
+
+    public void rollingDiceTrap(String trapId) {
+        previousFaceValue = diceRenderer.getCurrentFaceValue();
+
+        diceRenderer.setCompletionListener((success -> {
+            currentFaceValue = diceRenderer.getCurrentFaceValue();
+            if (success) {
+                dialogController.showMessageWithChoices(
+                        "Bạn muốn mở khóa cái bẫy này ?", "Đồng Ý [YES]", " Từ chối [NO]",
+                        () -> {
+                            Timer.schedule(new Timer.Task() {
+                                @Override
+                                public void run() {
+                                    setAcceptingRoll(false);
+                                    dialogController.showSimpleMessage("Bạn đã phá dỡ được bẫy!!! Giờ bạn có thể mở khoá chiếc rương này!!!\n" +
+                                            "Nếu bạn rời khỏi đây, bẫy sẽ được thiết lập lại!!!");
+                                    getGameController().unlockTrap(trapId);
+                                }
+                            }, 1.0f);
+
+                        }, () -> {
+                            Timer.schedule(new Timer.Task() {
+                                @Override
+                                public void run() {
+                                    dialogController.showSimpleMessage("Sửa lại cái bẫy!!! Người đến sau sẽ bị mắc lừa!!! HA HA HA");
+                                    setAcceptingRoll(false);
+                                }
+                            }, 1.0f);
+                        }
+                );
+            } else {
+                Timer.schedule(new Timer.Task() {
+                    @Override
+                    public void run() {
+                        if (diceRenderer.getBonusCount() > 0) {
+                            dialogController.showMessageWithChoices(
+                                    "Bạn tung xúc xắc được" + currentFaceValue + ", không đủ để mở khoá cái bẫy này.\n Có có muốn thử lại ?", "Đồng Ý [YES]", " Từ chối [NO]",
+                                    () -> {
+                                        isAcceptingRoll = true;
+                                        diceRenderer.activeBonusRoll();
+                                    },
+                                    () -> {
+                                        dialogController.showSimpleMessage("Từ bỏ việc mở khoá cái bẫy này!!!");
+                                        setAcceptingRoll(false);
+                                    }
+                            );
+                        } else {
+                            dialogController.showSimpleMessage("Bạn tung xúc xắc được " + currentFaceValue + ", không đủ để mở khoá chiếc rương này.\n Bạn mất " + targetValue + " máu!!!");
+                            character.setHealth(Math.max(1, character.getHealth() - targetValue));
+                            setAcceptingRoll(false);
                         }
                     }
                 }, 1.0f);
@@ -222,11 +281,50 @@ public class MapRenderer {
             cardFont.draw(batch, "Bonus Roll Left: " + diceRenderer.getBonusCount(),
                     centerX + 300,
                     centerY - 90);
+
             cardFont.setColor(Color.WHITE);
 
             diceRenderer.render(batch);
 
         }
+    }
+
+    public void renderDice(SpriteBatch batch, float isoX, float isoY) {
+
+        if (isAcceptingRoll && !character.isMoving()) {
+            batch.draw(cardBackgroundTexture,
+                    isoX + 200,
+                    isoY - 250,
+                    350, 500
+
+            );
+            cardFont.setColor(Color.BLACK);
+            titleFont.draw(batch, "Target: " + targetValue, isoX + 330,
+                    isoY - 5);
+            cardFont.draw(batch, "Bonus Roll Left: " + diceRenderer.getBonusCount(),
+                    isoX + 300,
+                    isoY - 90);
+            cardFont.setColor(Color.RED);
+            cardFont.draw(batch, "PRESS ENTER TO ROLL",
+                    isoX + 280,
+                    isoY - 130);
+            cardFont.setColor(Color.WHITE);
+
+            diceRenderer.render(batch, isoX, isoY);
+
+        }
+    }
+
+    public int getTargetValue() {
+        return targetValue;
+    }
+
+    public void setTargetValue(int targetValue) {
+        this.targetValue = targetValue;
+    }
+
+    public boolean isAcceptingRoll() {
+        return isAcceptingRoll;
     }
 
     public boolean handleRollingClick(int screenX, int screenY) {
@@ -374,7 +472,6 @@ public class MapRenderer {
 //        tiledMapRenderer.renderTileLayer(map.getBaseLayer());
 //        tiledMapRenderer.getBatch().end();
 
-
         // Resume batch if it was drawing before
         if (batchWasDrawing) {
             batch.begin();
@@ -389,7 +486,9 @@ public class MapRenderer {
             }
 
             weatherRenderer.render(batch);
+
         }
+
     }
 
     Map<String, Texture> textures = new HashMap<>();
@@ -612,6 +711,7 @@ public class MapRenderer {
         HOLDING_AT_TARGET,
         RETURNING_TO_ORIGINAL
     }
+
     public void moveCameraToTarget(float targetX, float targetY, float targetZoom,
                                    float moveDuration, float holdDuration, float returnDuration) {
         // Store original camera state
@@ -632,10 +732,12 @@ public class MapRenderer {
         cameraTransitionTimer = 0f;
         isCameraTransitioning = true;
     }
+
     public void printCurrentPosition() {
         System.out.println("Camera Position: " + camera.position);
         System.out.println("Camera Zoom: " + camera.zoom);
     }
+
     public void updateCameraTransition(float deltaTime) {
         if (!isCameraTransitioning) return;
 
@@ -691,6 +793,7 @@ public class MapRenderer {
 
         camera.update();
     }
+
     private float lerp(float start, float end, float progress) {
         return start + (end - start) * progress;
     }
@@ -701,6 +804,7 @@ public class MapRenderer {
     private float easeInOutQuad(float t) {
         return t < 0.5f ? 2 * t * t : -1 + (4 - 2 * t) * t;
     }
+
     public void cancelCameraTransition() {
         if (isCameraTransitioning) {
             camera.position.set(originalCameraPosition);
@@ -710,9 +814,11 @@ public class MapRenderer {
             cameraState = CameraState.NORMAL;
         }
     }
+
     public boolean isCameraTransitioning() {
         return isCameraTransitioning;
     }
+
     public void update(float delta) {
         weatherRenderer.update(delta);
         diceRenderer.update(delta);
@@ -852,6 +958,10 @@ public class MapRenderer {
             case "return":
                 buttonText = "Leave";
                 break;
+            case "trap":
+                drawTrapInfoCard(batch, event);
+                buttonText = "unlock";
+                break;
             case "treasure":
                 buttonText = "Pick up";
                 break;
@@ -975,12 +1085,25 @@ public class MapRenderer {
                     cardX + cardWidth / 2 - textWidth / 2,
                     cardY + 130);
             // Optional dice rendering
+
             renderDice(batch);
-
-
         }
     }
 
+
+    private void drawTrapInfoCard(SpriteBatch batch, MapEvent event) {
+
+        int healthLoss = 0;
+        Object hp = event.getProperties().get("hp");
+        if (hp instanceof String) {
+            healthLoss = Integer.parseInt((String) hp);
+        } else if (hp instanceof Integer) {
+            healthLoss = (Integer) hp;
+        }
+        targetValue = healthLoss;
+        float[] iso = toIsometric(event.getGridX(), event.getGridY());
+        renderDice(batch, iso[0], iso[1]);
+    }
 
     public IsometricMap getMap() {
         return map;

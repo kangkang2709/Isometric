@@ -134,6 +134,33 @@ public class Dice {
 
     }
 
+    public void render(SpriteBatch batch, float isoX, float isoY) {
+        rollEffect.setPosition(isoX + DICE_SIZE / 2f, isoY + DICE_SIZE / 2f);
+        rollEffect.draw(batch);
+
+        TextureRegion frame = animationManager.getDiceFrame(isRolling, currentFaceValue, diceRollingTime);
+
+        // Use isometric coordinates
+        batch.draw(
+                frame,
+                isoX - (DICE_SIZE * scale - DICE_SIZE) / 2 + 310,
+                isoY - (DICE_SIZE * scale - DICE_SIZE) / 2 + 40,
+                DICE_SIZE / 2f,
+                DICE_SIZE / 2f,
+                DICE_SIZE,
+                DICE_SIZE,
+                scale,
+                scale,
+                rotation
+        );
+    }
+
+
+    public boolean handleClick(float screenX, float screenY) {
+        return !isAnimating() &&
+                screenX >= diceX && screenX <= diceX + DICE_SIZE &&
+                screenY >= diceY && screenY <= diceY + DICE_SIZE;
+    }
 
     public int getBonusCount() {
         return bonusCount;
@@ -143,11 +170,9 @@ public class Dice {
         this.bonusCount = bonusCount;
     }
 
-    public boolean handleClick(float screenX, float screenY) {
-        return !isAnimating() &&
-                screenX >= diceX && screenX <= diceX + DICE_SIZE &&
-                screenY >= diceY && screenY <= diceY + DICE_SIZE;
-    }
+
+
+
 
     public boolean isAnimating() {
         return isRolling || bounceTime < BOUNCE_DURATION;

@@ -25,6 +25,8 @@ public class EffectManager implements Disposable {
         this.loadSoundEffects();
     }
 
+
+
     public void loadSoundEffects() {
         loadSound("click", "audio/effects");
     }

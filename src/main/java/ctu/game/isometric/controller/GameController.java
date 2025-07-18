@@ -4,7 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.maps.MapProperties;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Timer;
 import ctu.game.isometric.IsometricGame;
@@ -41,8 +40,6 @@ import ctu.game.isometric.view.view.CharacterInfoDisplay;
 import ctu.game.isometric.view.view.QuestTrackerView;
 
 import java.util.*;
-
-import static ctu.game.isometric.IsometricGame.getGameController;
 
 public class GameController {
     private IsometricGame game;
@@ -982,9 +979,6 @@ public class GameController {
 
         }
     }
-// Add to GameController.java
-// In GameController.java, enhance resetGame method
-// In GameController.java - update the resetGame method
 
     public void initMap() {
 
@@ -994,6 +988,11 @@ public class GameController {
     public void resetEventsManager() {
         eventManagerMap.get("board").resetEvents(mapList.get("board"));
         eventManagerMap.get("main").resetEvents(mapList.get("main"));
+        eventManagerMap.get("library").resetEvents(mapList.get("library"));
+        eventManagerMap.get("tavern").resetEvents(mapList.get("tavern"));
+        eventManagerMap.get("forest").resetEvents(mapList.get("forest"));
+        eventManagerMap.get("tower").resetEvents(mapList.get("tower"));
+        eventManagerMap.get("dungeon2").resetEvents(mapList.get("dungeon2"));
     }
 
     public void resetGame() {
@@ -1006,6 +1005,7 @@ public class GameController {
         characterCreationController = null;
         characterCreationController = new CharacterCreation(this);
 
+        trapUnlock.clear();
 
         loadGameController = null;
         loadGameController = new LoadGameController(this);
@@ -1071,13 +1071,21 @@ public class GameController {
             if (currentEventType.equals("battle") && map.getMapName().equals("board")) {
                 isRenderCharacter = false;
                 mapRenderer.setRenderInfoCard(true);
-            }
+                getMapRenderer().setAcceptingRoll(true);
+            } else  if (currentEventType.equals("trap") && !trapUnlock.containsKey(currentEventId))
+                getMapRenderer().setAcceptingRoll(true);
+            else getMapRenderer().setAcceptingRoll(false);
+
             currentEventId = currentEvent.getId();
             currentEventX = currentEvent.getGridX();
             currentEventY = currentEvent.getGridY();
             properties = currentEvent.getProperties();
-            getMapRenderer().setAcceptingRoll(true);
+
         } else {
+            currentEventType = "";
+            currentEventId = null;
+            currentEventX = -1;
+            currentEventY = -1;
             hasActiveEvent = false;
             properties = null;
         }
@@ -1122,6 +1130,14 @@ public class GameController {
 
     public void setCurrentEvent(MapEvent currentEvent) {
         this.currentEvent = currentEvent;
+    }
+
+    Map<String, Boolean> trapUnlock = new HashMap<>();
+
+    public void unlockTrap(String trapId) {
+        if (trapUnlock.containsKey(trapId))
+            return; // Trap already unlocked
+        trapUnlock.put(trapId, true);
     }
 
 
@@ -1192,6 +1208,27 @@ public class GameController {
                     }
                     this.dialogController.startDialog(arcId, sceneId);
 
+                }
+                break;
+            case "message":
+                if (properties != null) {
+                    String message = properties.get("message", String.class);
+                    dialogController.showSimpleMessage(message);
+                }
+                break;
+            case "trap":
+                if (properties != null && currentEventId != null) {
+                    if (trapUnlock.containsKey(currentEventId)) {
+                        boolean isSucess = new Random().nextBoolean();
+                        if (isSucess) {
+                            Items itemTrap = ItemLoader.getItemById(3);
+                            openTreasureWithAnimation(itemTrap, 1, currentEventX, currentEventY);
+                        } else {
+                            Items itemTrap = ItemLoader.getItemById(4);
+                            openTreasureWithAnimation(itemTrap, 1, currentEventX, currentEventY);
+                        }
+                    } else
+                        dialogController.showSimpleMessage("Cái bẫy chưa được mở khóa, Hãy tung xúc sắc để phá bẫy và mở rương.");
                 }
                 break;
 
@@ -1335,6 +1372,7 @@ public class GameController {
         } else {
             getDialogController().showSimpleMessage("Bạn đã trả lời đúng. Nhận thêm 1 lượt tung xúc sắc!");
             getDice().setBonusRoll(true);
+            character.setBonusRolls(getDice().getBonusCount());
         }
     }
 
@@ -1345,18 +1383,24 @@ public class GameController {
         return isNewRun;
     }
 
+    public Map<String, Boolean> getTrapUnlock() {
+        return trapUnlock;
+    }
+
+    public void setTrapUnlock(Map<String, Boolean> trapUnlock) {
+        this.trapUnlock = trapUnlock;
+    }
+
     public void setNewRun(boolean newRun) {
         isNewRun = newRun;
     }
 
     private void openTreasureWithAnimation(Items item, int amount, int x, int y) {
-        // Get character position for effect placement
-        float[] isoPos = toIsometric(x, y);
 
         effectManager.spawnEffectEvent("Star_Trail", 660, 390);
 
         // Create dialog message about the found item
-        String message = "Bạn nhận được" + amount + " " + item.getItemName() + "!";
+        String message = "Bạn nhận được +" + amount + " " + item.getItemName() + "!";
         dialogController.showSimpleMessage(message);
 
         // Add the item to inventory after a short delay
