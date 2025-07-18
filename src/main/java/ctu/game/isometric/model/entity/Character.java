@@ -91,10 +91,8 @@ public class Character {
         if (amount < 0) {
             throw new IllegalArgumentException("Amount cannot be negative");
         }
-        this.health = Math.max(0, this.health - amount);
-        if (this.health <= 0) {
-            gameOver(); // Check for game over condition
-        }
+        this.health = Math.max(1, this.health - amount);
+
     }
 
     private Date lastSaveTime;
@@ -467,6 +465,7 @@ public class Character {
                 })
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
+
     public Map<String, Integer> getBuffItems2() {
         return items.entrySet().stream()
                 .filter(entry -> {

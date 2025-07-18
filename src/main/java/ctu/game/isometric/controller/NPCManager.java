@@ -20,6 +20,18 @@ public class NPCManager {
         loadNPCs();
     }
 
+    public void changeNPCPosition(int npcId, int x, int y) {
+        NPC npc = npcs.get(npcId);
+        if (npc != null) {
+            npc.setxPosition(x);
+            npc.setyPosition(y);
+            // Update the position in the 2D array as well
+            npcPositions[npcId][0] = x;
+            npcPositions[npcId][1] = y;
+        } else {
+            System.err.println("NPC with ID " + npcId + " not found");
+        }
+    }
 
     private void loadNPCs() {
         try {

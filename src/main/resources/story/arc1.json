@@ -497,7 +497,6 @@
         }
       ]
     },
-
     {
       "id": "dungeon_book",
       "title": "Sách Cổ Về Căn Hầm Ký Ức",
@@ -1613,6 +1612,85 @@
           ],
           "choices": [
           ]
+        }
+      ]
+    },
+    {
+      "id": "armon_helping",
+      "title": "Mở khóa lăng mộ bí ẩn",
+      "description": "Armon, người bảo vệ lăng mộ bí ẩn, sẽ giúp bạn mở khóa lăng mộ này. Hãy tìm hiểu về quá khứ của Armon và lý do anh ta bảo vệ lăng mộ.",
+      "scenes": [
+        {
+          "id": "scene_intro",
+          "background": "transparent.png",
+          "music": "soft_fireplace.mp3",
+          "sound_effects": [
+            "clinking_glasses.wav",
+            "murmur.wav"
+          ],
+          "dialogues": [
+            {
+              "character": "Armon",
+              "characterImage": "ghost.png",
+              "text": "Đây là hướng dẫn nghi thức cổ xưa. Nhưng nghi thức này cần một thứ: các mảnh vỡ của bia đá từ khu vực bị cháy. ?"
+            },
+            {
+              "character": "Armon",
+              "characterImage": "ghost.png",
+              "text": "Chỗ đó đã bị phong ấn, nhưng ta biết một cách để ngươi vào được."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Bằng cách nào.",
+              "next_scene": "scene_1",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_1",
+          "background": "transparent.png",
+          "music": "sad_piano.mp3",
+          "dialogues": [
+            {
+              "character": "Armon",
+              "characterImage": "ghost.png",
+              "text": "Trong thư viện, có một cơ quan bí mật. Nó sẽ dẫn ngươi đến khu vực bị cháy."
+            },
+            {
+              "character": "Armon",
+              "characterImage": "ghost.png",
+              "text": "Nhưng trước tiên, ngươi cần có đủ sức mạnh và trí tuệ để vượt qua thử thách của nó."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Tôi đã sẵn sàng. [YES]",
+              "next_scene": "scene_end",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_end",
+          "background": "tavern_door.png",
+          "music": "village_theme.mp3",
+          "dialogues": [
+            {
+              "character": "Armon",
+              "characterImage": "ghost.png",
+              "text": "Ngoài ra trong thư viện, còn có một cuốn sách cổ mà chủ nhân cũ rất quý. Nếu ngươi tìm thấy thì ngươi có thể giữ lấy."
+            },
+            {
+              "character": "Armon",
+              "characterImage": "ghost.png",
+              "text": "Nó chứa rất nhiều kiến thức quý giá mà nhiều người muốn biết lắm đấy. hahaha..."
+            }
+          ],
+          "choices": []
         }
       ]
     }

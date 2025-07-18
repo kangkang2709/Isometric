@@ -10,6 +10,8 @@ import ctu.game.isometric.model.world.IsometricMap;
 import java.util.ArrayList;
 import java.util.List;
 
+import static ctu.game.isometric.IsometricGame.getGameController;
+
 public class PressurePlatePuzzle {
     private List<PressurePlate> plates;
     private IsometricMap map;
@@ -39,7 +41,6 @@ public class PressurePlatePuzzle {
     }
 
 
-
     public void update(Character character) {
 
         for (PressurePlate plate : plates) {
@@ -59,14 +60,11 @@ public class PressurePlatePuzzle {
             // Revert any map changes from the plate effects
             if (plate.getEffectType().equals("door")) {
                 map.setTileWalkable(plate.getTargetX(), plate.getTargetY(), false);
-            } else if (plate.getEffectType().equals("bridge")) {
-                map.setTileWalkable(plate.getTargetX(), plate.getTargetY(), false);
             }
         }
         completed = false;
     }
 
-    // Alternative method that allows different textures for each plate type
     public void loadTexturesForType(String effectType, String inactiveTexturePath, String activeTexturePath) {
         Texture inactiveTexture = new Texture(Gdx.files.internal(inactiveTexturePath));
         Texture activeTexture = new Texture(Gdx.files.internal(activeTexturePath));
@@ -141,7 +139,10 @@ public class PressurePlatePuzzle {
         private void triggerEffect(Character character) {
             switch (effectType) {
                 case "door":
-                    map.setTileWalkable(gridX, gridY, true);
+                    map.setTileWalkable(targetX, targetY, true);
+                    if (targetX == 11 && targetY == 8) {
+                        getGameController().getDialogController().showSimpleMessage("Nghi thức đã hoàn thành, cánh cửa đã mở!");
+                    }
                     break;
                 case "bridge":
                     // Create a bridge (make the target tile walkable)
@@ -149,7 +150,7 @@ public class PressurePlatePuzzle {
                     break;
                 case "trap":
                     // Damage the character
-                    character.setHealth(character.getHealth() - 2);
+                    character.setHealth(character.getHealth() - 5);
 
                     break;
                 case "teleport":

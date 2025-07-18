@@ -107,7 +107,7 @@ public class MapRenderer {
 
         this.tiledMapRenderer = new IsometricTiledMapRenderer(map.getTiledMap());
 
-        this.fogTexture = new Texture(Gdx.files.internal("textures/fog.png"));
+        this.fogTexture = new Texture(Gdx.files.internal("textures/door1.png"));
 
         this.weatherRenderer = new WeatherRenderer(camera);
 
@@ -380,6 +380,8 @@ public class MapRenderer {
 
         textureRegions.put("trap_inactive", new TextureRegion(inactiveTexture));
         textureRegions.put("trap_active", new TextureRegion(activeTexture));
+        textureRegions.put("door_inactive", new TextureRegion(new Texture(Gdx.files.internal("textures/pyramid3.png"))));
+        textureRegions.put("door_active", new TextureRegion(new Texture(Gdx.files.internal("textures/pyramid3.png"))));
 
     }
 
@@ -387,14 +389,22 @@ public class MapRenderer {
     public void renderPressurePlate(SpriteBatch batch) {
         for (PressurePlatePuzzle.PressurePlate plate : this.map.getPuzzle().getPlates()) {
             TextureRegion texture = textureRegions.get(plate.getEffectType() + "_" + (plate.isActivated() ? "active" : "inactive"));
+            float[] isoPos = toIsometric(plate.getGridX(), plate.getGridY());
+
             if (texture != null) {
-                float[] isoPos = toIsometric(plate.getGridX(), plate.getGridY());
-                batch.draw(texture, isoPos[0] + 10, isoPos[1] + 16, 40, 32);
+                switch (plate.getEffectType()) {
+                    case "trap":
+                        batch.draw(texture, isoPos[0] + 10, isoPos[1] + 16, 40, 32);
+                        break;
+                    case "door":
+                        batch.draw(texture, isoPos[0] + 16, isoPos[1] + 8, 32, 32);
+                        break;
+                }
             }
-//            if (!plate.getEffectType().equals("trap") && !plate.isActivated()) {
-//                float[] isoPos = toIsometric(plate.getTargetX(), plate.getTargetY());
-//                batch.draw(fogTexture, isoPos[0] - 16, isoPos[1] - 10, 64, 64);
-//            }
+            if (plate.getEffectType().equals("door") && !plate.isActivated()) {
+                float[] isoPos2 = toIsometric(plate.getTargetX(), plate.getTargetY());
+                batch.draw(fogTexture, isoPos2[0] + 10, isoPos2[1] + 16, 48, 89);
+            }
         }
     }
 
@@ -964,6 +974,12 @@ public class MapRenderer {
                 break;
             case "treasure":
                 buttonText = "Pick up";
+                break;
+            case "message":
+                buttonText = "Read";
+                break;
+            default:
+                buttonText = "???";
                 break;
         }
 

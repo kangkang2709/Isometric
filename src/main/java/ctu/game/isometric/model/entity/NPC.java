@@ -86,6 +86,7 @@ public class NPC {
 
 
 
+
     public int getXPosition() {
         return xPosition;
     }

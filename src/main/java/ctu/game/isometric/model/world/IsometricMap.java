@@ -68,6 +68,9 @@ public class IsometricMap {
             layer3 = (TiledMapTileLayer) tiledMap.getLayers().get("layer3");
 
         else layer3 = null;
+
+        puzzle = new PressurePlatePuzzle("puzzle1", this, 3);
+
         switch (mapName) {
             case "main":
                 startX = 31;
@@ -90,6 +93,7 @@ public class IsometricMap {
                 startY = 5;
                 break;
             case "dungeon2":
+                addDungeon2Events();
                 startX = 1;
                 startY = 20;
                 break;
@@ -108,9 +112,7 @@ public class IsometricMap {
         if (mapWidth * mapHeight > 10000) {
             enableChunking();
         }
-        puzzle = new PressurePlatePuzzle("puzzle1", this, 3);
 
-        loadPlate();
     }
 
     MazeGenerationResult maze;
@@ -119,6 +121,10 @@ public class IsometricMap {
         return maze;
     }
 
+    public void addDungeon2Events(){
+        puzzle.addPlate(5,14,"door",5,15);
+        puzzle.addPlate(27,14,"door",11,8);
+    }
 
     public void generateRandomMaze(int diff) {
         MazeGenerator generator = new MazeGenerator();
@@ -234,12 +240,6 @@ public class IsometricMap {
 
     public void setMapName(String mapName) {
         this.mapName = mapName;
-    }
-
-    public void loadPlate() {
-
-//        puzzle.loadTexturesForType("door", "textures/door_plate_inactive.png", "textures/door_plate_active.png");
-//        puzzle.loadTexturesForType("trap", "textures/trap_inactive.png", "textures/trap_active.png");
     }
 
 

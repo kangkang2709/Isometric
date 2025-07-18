@@ -1776,9 +1776,9 @@ public class GameplayController {
             String stats = "";
             String wordLower = word.toLowerCase();
 
-            boolean isBurn = wordLower.contains("it") || wordLower.contains("burn") || wordLower.contains("flame");
+            boolean isBurn = wordLower.contains("fire") || wordLower.contains("burn") || wordLower.contains("flame");
             boolean isPoison = wordLower.contains("poison") || wordLower.contains("toxic") || wordLower.contains("venom");
-            boolean isFreeze = wordLower.contains("ice") || wordLower.contains("id") || wordLower.contains("freeze");
+            boolean isFreeze = wordLower.contains("ice") || wordLower.contains("frost") || wordLower.contains("freeze");
             boolean isBuff = wordLower.contains("god") || wordLower.contains("world") || wordLower.contains("return");
 
             if (isBurn) {
@@ -1854,6 +1854,7 @@ public class GameplayController {
                                 enemyStatusDuration.put(stats, enemyStatusDuration.get(stats) + 1);
                                 addCombatLog(effectLog);
                             }
+                            playerMana = Math.max(0, playerMana - 3);
                         } else if (stats.equals("BUFF")) {
                             if (!playerStatusDuration.containsKey("BUFF_ATK") && !playerStatusDuration.containsKey("BUFF_DEF")) {
                                 playerStatusDuration.put("BUFF_ATK", 2);

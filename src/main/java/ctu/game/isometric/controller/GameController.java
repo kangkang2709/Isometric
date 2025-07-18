@@ -125,6 +125,8 @@ public class GameController {
         if (character.getFlags() == null) {
             character.setFlags(new ArrayList<>());
         }
+        System.out.println("Flag added: " + flag);
+
         if (!character.getFlags().contains(flag)) {
             character.getFlags().add(flag);
             if (mainObjectiveDescriptions.containsKey(flag)) {
@@ -236,6 +238,20 @@ public class GameController {
                         character.setTutorialCompleted("maze");
                         if (!character.getFlags().contains("dungeon_entry"))
                             addFlag("dungeon_entry");
+                    }
+                }
+
+                if (mapName.equals("dungeon2")) {
+                    if (!character.getFlags().contains("dungeon2_entry")) {
+
+                        dialogController.showSimpleMessage(Arrays.asList(
+                                        "Ngươi bước vào một không gian nơi thời gian dường như ngừng trôi.",
+                                        "Những bức tường đá cũ kỹ, rạn nứt bao phủ bởi bóng tối. Không gian tĩnh lặng đến mức có thể nghe thấy tiếng tim đập.\n Đây không phải chỉ là một lăng mộ – nó là một nơi bị lãng quên, nơi ký ức và hy sinh hòa quyện thành một thể.",
+                                        "Ngươi cảm nhận được sự hiện diện của những linh hồn đã từng sống, những người đã để lại dấu ấn của mình trong không gian này. \nMỗi bước đi trên nền đất lạnh lẽo là một bước vào quá khứ, nơi những câu chuyện chưa kể đang chờ đợi được khám phá.",
+                                        "[Bạn đã bước vào Dungeon: Lăng Mộ Ký Ức. Các khu vực chính: Thư viện, Nơi Thờ, Lăng Mộ Chính, và Khu vực Bị Cháy.]"
+                                )
+                        );
+                        addFlag("dungeon2_entry");
                     }
                 }
 
@@ -411,47 +427,56 @@ public class GameController {
                     dialogController.startDialog("teleporting_background", "scene_intro");
                 case "Cleric Klein":
 
-                    if (!getCharacter().getFlags().contains("klein_meet")) {
+                case "":
+                case "Armon":
+                    System.out.println("Flag: ghost_name: " + character.getFlags().contains("ghost_name"));
+                    System.out.println("Flag: acient_note: " + character.getFlags().contains("acient_note"));
+
+                    if (character.getFlags().contains("ghost_name") && character.getFlags().contains("acient_note") && character.getFlags().contains("ghost_ashes")) {
+                        dialogController.showMessageWithChoices("Ngươi đã lấy được **mảnh vỡ của bia đá rồi.\n" +
+                                        "Hãy tiến đến nơi thờ và ta sẽ giúp ngươi hoàn thành nghi thức", "Được [YES]", "Chờ chút [NO]",
+                                () -> {
+                                    mapRenderer.moveCameraToTarget(1312, -176, 0.5f, 2.5f, 1.5f, 1.0f);
+                                    Timer.schedule(new Timer.Task() {
+                                        @Override
+                                        public void run() {
+                                            dialogController.showSimpleMessage("Hãy tìm đúng vị trí thực hiện nghi thức. Ta đã mở phong ấn chỗ đấy rồi");
+                                            npcManager.changeNPCPosition(npc.getNpcID(),11,13);
+                                            map.setTileWalkable(27, 14, true);
+                                        }
+                                    }, 1.8f);
+                                }, () -> {
+
+                                });
+                    } else if (character.getFlags().contains("ghost_name") && character.getFlags().contains("acient_note")) {
                         dialogController.setOnDialogFinishedAction(() -> {
-                            Enemy enemy = EnemyLoader.getEnemyById(4);
-
-                            setState(GameState.GAMEPLAY);
-
-                            if (!character.isTutorialCompleted("combat")) {
-                                tutorialUI.show("combat");
-                                character.setTutorialCompleted("combat");
-                            }
-                            gameplayController.activate();
-                            gameplayController.startCombat(enemy);
-                        });
-
-                        dialogController.setOnCanncelFinishedAction(() -> {
-                            game.changeScreen("GAME_OVER");
-                        });
-
-                        dialogController.startDialog("klein_meet", "scene_meet_cleric");
-                        addFlag("klein_meet");
-                        System.out.println("Cleric Klein dialog started");
-                    } else if (getCharacter().getFlags().contains("klein_meet") && !getCharacter().getFlags().contains("dungeon_call")) {
-                        dialogController.setOnDialogFinishedAction(() -> {
-                            addFlag("dungeon_call");
-
-                            character.addItem(ItemLoader.getItemById(1), 2);
-
+                            mapRenderer.moveCameraToTarget(1248, 272, 0.5f, 2.5f, 1.5f, 1.0f);
                             Timer.schedule(new Timer.Task() {
                                 @Override
                                 public void run() {
-                                    dialogController.startDialog("dungeon_entry", "scene_dungeon_overview");
+                                    dialogController.showSimpleMessage("Cơ quan mà Armon nói có lẽ nằm đâu đó ở đây");
                                 }
-                            }, 1f);
+                            }, 1.8f);
                         });
-                        dialogController.startDialog("dungeon_call", "scene_prepare_for_dungeon");
-                    } else
-                        dialogController.showSimpleMessage("Nếu ngươi muốn biết thêm thông tin về hầm ngục, hãy đọc quyển sách trên tủ sách bên cạnh tấm thảm kia.");
-
+                        dialogController.startDialog("armon_helping", "scene_intro");
+                    } else if (character.getFlags().contains("ghost_name")) {
+                        npc.setNpcName("Armon");
+                        dialogController.showSimpleMessage(Arrays.asList(
+                                " Ta nhớ rồi... Ta từng là hộ vệ của chủ nhân lăng mộ. Nhưng ta không thể vào sâu hơn – ta chỉ là một linh hồn bị ràng buộc ở đây. \nNgươi... ngươi là người duy nhất có thể mở cánh cửa lăng mộ chính.",
+                                "*** Hồn ma kể rằng sâu trong lăng mộ có nhật ký của chủ nhân, nơi ghi lại toàn bộ sự thật về thế giới này.\n" +
+                                        " Tuy nhiên, để mở được cánh cửa của lăng mộ chính, cần thực hiện một nghi thức đặc biệt. ***",
+                                "Ta không thể vào sâu hơn. Nhưng ngươi có thể. Hãy lại gần cánh cửa lăng mộ – ta cảm giác có điều gì đó ở đó có thể giúp ngươi.\n",
+                                "Nếu tìm được manh mối, hãy quay trở lại tìm ta"
+                        ));
+                    } else {
+                        dialogController.showSimpleMessage("Một linh hồn xa lạ đang đứng trước mặt mình, nó luon ông miệng nói `Tên của ta.. tên..là..gì`.\n"
+                                + "Ngôi nhà bên cạnh và lăng mộ phía sau nó là của ai?.");
+                    }
+                    break;
                 default:
                     break;
             }
+
 
         } else {
             dialogController.showSimpleMessage("Ta không thấy ai ở gần đây cả.\n" +
@@ -618,6 +643,7 @@ public class GameController {
                     inputController.updateCooldown(delta);
                     checkingCharacterPos(character);
                     character.update(delta);
+                    updateFireBurn(delta);
                     npcRenderer.update(delta);
                 }
 
@@ -664,6 +690,27 @@ public class GameController {
 
         }
 
+    }
+
+
+    public void updateFireBurn(float delta) {
+        if (inFireArea) {
+            fireAreaTimer += delta;
+            if (fireAreaTimer >= 5f) {
+                if (character.getGridX() > 1 && character.getGridX() < 5 &&
+                        character.getGridY() > 8 && character.getGridY() < 13) {
+                    character.decreaseHealth(2);
+                    dialogController.showSimpleMessage("Ngọn lửa đang thiêu đốt bạn! -2 HP");
+                    if (character.getHealth() <= 1) {
+                        dialogController.showSimpleMessage("Linh hồn mình được ai đó bảo vệ sao? Tại sao mình chưa bị thiêu rụi hoàn toàn?");
+                        inFireArea = false;
+                    }
+                } else {
+                    inFireArea = false; // Character left the area
+                }
+                fireAreaTimer = 0f; // Reset timer
+            }
+        }
     }
 
     public Array<String> getSubtitles() {
@@ -860,6 +907,62 @@ public class GameController {
         }
     }
 
+    private boolean inFireArea = false;
+    private float fireAreaTimer = 0f;
+
+    public void checkDungeonEvents(float x, float y) {
+        String positionKey = "dungeon_" + (int) x + "_" + (int) y;
+
+        // Prevent duplicate event triggers
+        if (activeEvents.contains(positionKey)) {
+            return;
+        }
+
+        if (x > 4 && y > 20 && !character.getFlags().contains("dungeon2_library_entry")) {
+            activeEvents.add(positionKey);
+            character.clearPath();
+            dialogController.showSimpleMessage(Arrays.asList(
+                    "*** Những giá sách phủ đầy bụi, các cuốn sách mục nát như thể ký ức của chúng đã bị xóa sạch. \nMột không gian từng là nơi lưu giữ tri thức giờ đây chỉ còn là một bóng ma của quá khứ. ***",
+                    "Những cuốn sách này... không có gì cả. Ai đã xóa đi ký ức của chúng? Và tại sao?"
+            ));
+            addFlag("dungeon2_library_entry");
+            activeEvents.remove(positionKey); // Ensure removal after processing
+        } else if (x > 1 && x < 5 && y > 8 && y <= 13) {
+            if (!character.getFlags().contains("dungeon2_fire_entry")) {
+                activeEvents.add(positionKey);
+                character.clearPath();
+                dialogController.showSimpleMessage(Arrays.asList(
+                        "*** Mặt đất phủ đầy tro tàn, những bức tường ám khói đen.\n Đây là nơi đã chứng kiến một trận chiến khốc liệt, nơi mà sự sống và cái chết giao thoa, để lại dấu tích không bao giờ phai mờ.***",
+                        "Khu vực này... đã bị phá hủy hoàn toàn. Lửa cháy khắp nơi, và mọi thứ đều bị thiêu rụi.",
+                        "Mình phải tìm thấy `vật tàn dư` mà linh hồn đó đã nói và nhanh rời khỏi nơi này."
+                ));
+                addFlag("dungeon2_fire_entry");
+
+                // Start fire area effect
+                inFireArea = true;
+                fireAreaTimer = 0f;
+            }
+        } else if (x > 15 && y > 17 && !character.getFlags().contains("dungeon2_tho_entry")) {
+            activeEvents.add(positionKey);
+            character.clearPath();
+            dialogController.showSimpleMessage(Arrays.asList(
+                    "*** Nhân vật quay lại nơi thờ phụng, nơi một hồn ma vô danh đứng lặng lẽ trước bàn thờ.\n Nó không hề tấn công, nhưng sự hiện diện của nó tạo ra một cảm giác nặng nề***",
+                    "Linh hồn vô danh đứng đó, đôi mắt trống rỗng như thể đang nhìn xuyên qua thời gian.\n Nó thì thầm những lời không rõ nghĩa, như một đoạn ký ức bị đứt đoạn.."
+            ));
+            addFlag("dungeon2_tho_entry");
+            activeEvents.remove(positionKey); // Ensure removal after processing
+        }
+    }
+
+    private void checkEvents(String mapName, int x, int y) {
+        if (mapName.equals("forest")) {
+            checkForestEvents(x, y);
+        } else if (mapName.equals("main")) {
+            checkMainEvents(x, y);
+        } else if (mapName.equals("dungeon2")) {
+            checkDungeonEvents(x, y);
+        }
+    }
 
     public void checkMainEvents(float x, float y) {
         String positionKey = "main_" + (int) x + "_" + (int) y;
@@ -892,13 +995,6 @@ public class GameController {
         }
     }
 
-    private void checkEvents(String mapName, int x, int y) {
-        if (mapName.equals("forest")) {
-            checkForestEvents(x, y);
-        } else if (mapName.equals("main")) {
-            checkMainEvents(x, y);
-        }
-    }
 
     public void checkingCharacterPos(Character character) {
         int x = (int) character.getGridX();
@@ -1072,7 +1168,7 @@ public class GameController {
                 isRenderCharacter = false;
                 mapRenderer.setRenderInfoCard(true);
                 getMapRenderer().setAcceptingRoll(true);
-            } else  if (currentEventType.equals("trap") && !trapUnlock.containsKey(currentEventId))
+            } else if (currentEventType.equals("trap") && !trapUnlock.containsKey(currentEventId))
                 getMapRenderer().setAcceptingRoll(true);
             else getMapRenderer().setAcceptingRoll(false);
 
@@ -1213,7 +1309,47 @@ public class GameController {
             case "message":
                 if (properties != null) {
                     String message = properties.get("message", String.class);
+                    String flagName = properties.get("flag", String.class);
                     dialogController.showSimpleMessage(message);
+                    addFlag(flagName);
+                }
+                break;
+            case "gate":
+                if (properties != null) {
+                    String targetX = properties.get("xTarget", String.class);
+                    String targetY = properties.get("yTarget", String.class);
+
+                    boardEventManager.getWordScrambleGame().startGame();
+                    boardEventManager.getWordScrambleGame().setQuizCompletionListener(success -> {
+                        if (success) {
+                            dialogController.showSimpleMessage(Arrays.asList(
+                                    "Câu đố này là ai để lại, cảm giác thật quen thuộc.",
+                                    "*** Trong lúc đó, ta được đưa đi đến một nơi khác. ***",
+                                    "Hãy cẩn thận, có vẻ như đây là một nơi nguy hiểm."
+                            ));
+                            character.setPosition(Integer.parseInt(targetX), Integer.parseInt(targetY));
+                        } else {
+                            dialogController.showSimpleMessage("Câu đố này là ai để lại, cảm giác thật quen thuộc.");
+                        }
+                    });
+                }
+                break;
+            case "flag":
+                if (properties != null) {
+                    String flagName = properties.get("flag", String.class);
+                    if (flagName != null && !flagName.isEmpty()) {
+                        addFlag(flagName);
+                        if (flagName.equals("ghost_ashes")) {
+                            dialogController.showSimpleMessage("Đã đạt được : Mảnh vỡ của bia đá [Tên bị mờ].\n " +
+                                    "Trên đó khắc tên ai đó. Ngôn ngữ này ...");
+                        } else if (flagName.equals("acient_note")) {
+                            dialogController.showSimpleMessage("Tờ giấy mục nát, các dòng chữ trên đó bị mờ đi bởi thời gian. Nhưng có điều gì đó quan trọng được ghi ở đây.\n" +
+                                    "Mình nên đưa nó cho linh hồn.");
+                        } else dialogController.showSimpleMessage("Đã đạt được : " + flagName);
+
+                        addFlag(flagName);
+                        setCompletedEvent();
+                    }
                 }
                 break;
             case "trap":

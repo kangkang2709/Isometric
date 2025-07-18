@@ -156,10 +156,9 @@ public class DialogController {
     }
 
 
-    public void showMessageWithChoices(String message, String requiredItemId, String actionChoiceText, String cancelChoiceText, Runnable onActionCompleted) {
+    public void showSimpleMessage(List<String> message) {
         // Create a temporary dialog with the message
-        Dialog tempDialog = new Dialog();
-        tempDialog.setText(message);
+
 
         // Find or create the "system_messages" arc
         Arc arc = findArc("system_messages");
@@ -172,32 +171,11 @@ public class DialogController {
             storyData.getArcs().add(arc);
         }
 
-
-        Scene scene1 = findScene(arc, "scene_not_enough_item");
-        if (scene1 == null) {
-            scene1 = new Scene();
-            scene1.setId("scene_not_enough_item");
-            if (arc.getScenes() == null) {
-                arc.setScenes(new ArrayList<>());
-            }
-            arc.getScenes().add(scene1);
-        }
-
-        Scene scene2 = findScene(arc, "scene_end");
-        if (scene2 == null) {
-            scene2 = new Scene();
-            scene2.setId("scene_end");
-            if (arc.getScenes() == null) {
-                arc.setScenes(new ArrayList<>());
-            }
-            arc.getScenes().add(scene2);
-        }
-
-        // Find or create the "choice_dialog" scene
-        Scene scene = findScene(arc, "choice_dialog");
+        // Find or create the "notification" scene
+        Scene scene = findScene(arc, "notification");
         if (scene == null) {
             scene = new Scene();
-            scene.setId("choice_dialog");
+            scene.setId("notification");
             if (arc.getScenes() == null) {
                 arc.setScenes(new ArrayList<>());
             }
@@ -205,136 +183,27 @@ public class DialogController {
         }
 
         // Update dialog
+
+
         List<Dialog> dialogues = new ArrayList<>();
-        dialogues.add(tempDialog);
+        for (String msg : message) {
+            Dialog tempDialog = new Dialog();
+            tempDialog.setText(msg);
+            dialogues.add(tempDialog);
+        }
+
         scene.setDialogues(dialogues);
 
+        // Set action to handle when the simple message is dismissed
+        setOnDialogFinishedAction(() -> {
+            Gdx.app.log("Dialog", "Simple message dismissed");
+        });
 
-        Dialog tempDialog1 = new Dialog();
-        tempDialog1.setText("Sorry, i cannot help you with that, you should have " + requiredItemId + " to perform this action.");
-        List<Dialog> dialogues_enough = new ArrayList<>();
-        dialogues_enough.add(tempDialog1);
-        scene1.setDialogues(dialogues_enough);
-
-        Dialog tempDialog2 = new Dialog();
-        tempDialog2.setText("See you next time!");
-        List<Dialog> dialogues_end = new ArrayList<>();
-        dialogues_end.add(tempDialog2);
-        scene2.setDialogues(dialogues_end);
-
-
-        // Create the two choices
-        List<Choice> choices = new ArrayList<>();
-
-        // Choice 1: Action with required item
-        Choice actionChoice = new Choice();
-        actionChoice.setText(actionChoiceText);
-        actionChoice.setRequired_item(requiredItemId);
-        actionChoice.setNext_scene("scene_end");
-        choices.add(actionChoice);
-
-        // Choice 2: Cancel option
-        Choice cancelChoice = new Choice();
-        cancelChoice.setText(cancelChoiceText);
-        cancelChoice.setNext_scene("scene_end"); // This will make performAction false
-        choices.add(cancelChoice);
-
-        // Set the choices for the scene
-        scene.setChoices(choices);
-
-        // Set action to perform when dialog is finished (only runs if the required item choice is selected)
-        setOnDialogFinishedAction(onActionCompleted);
-
-        // Start the dialog
-        startDialog("system_messages", "choice_dialog");
+        // Show the notification
+        startDialog("system_messages", "notification");
+        performAction = true;
     }
 
-    public void showMessageWithChoices(String message, String actionChoiceText, String cancelChoiceText, Runnable onActionCompleted) {
-        // Create a temporary dialog with the message
-        Dialog tempDialog = new Dialog();
-        tempDialog.setText(message);
-
-        // Find or create the "system_messages" arc
-        Arc arc = findArc("system_messages");
-        if (arc == null) {
-            arc = new Arc();
-            arc.setId("system_messages");
-            if (storyData.getArcs() == null) {
-                storyData.setArcs(new ArrayList<>());
-            }
-            storyData.getArcs().add(arc);
-        }
-
-
-        Scene scene1 = findScene(arc, "scene_not_enough_item");
-        if (scene1 == null) {
-            scene1 = new Scene();
-            scene1.setId("scene_not_enough_item");
-            if (arc.getScenes() == null) {
-                arc.setScenes(new ArrayList<>());
-            }
-            arc.getScenes().add(scene1);
-        }
-
-        Scene scene2 = findScene(arc, "scene_end");
-        if (scene2 == null) {
-            scene2 = new Scene();
-            scene2.setId("scene_end");
-            if (arc.getScenes() == null) {
-                arc.setScenes(new ArrayList<>());
-            }
-            arc.getScenes().add(scene2);
-        }
-
-        // Find or create the "choice_dialog" scene
-        Scene scene = findScene(arc, "choice_dialog");
-        if (scene == null) {
-            scene = new Scene();
-            scene.setId("choice_dialog");
-            if (arc.getScenes() == null) {
-                arc.setScenes(new ArrayList<>());
-            }
-            arc.getScenes().add(scene);
-        }
-
-        // Update dialog
-        List<Dialog> dialogues = new ArrayList<>();
-        dialogues.add(tempDialog);
-        scene.setDialogues(dialogues);
-
-
-        Dialog tempDialog2 = new Dialog();
-        tempDialog2.setText("See you next time!");
-        List<Dialog> dialogues_end = new ArrayList<>();
-        dialogues_end.add(tempDialog2);
-        scene2.setDialogues(dialogues_end);
-
-
-        // Create the two choices
-        List<Choice> choices = new ArrayList<>();
-
-        // Choice 1: Action with required item
-        Choice actionChoice = new Choice();
-        actionChoice.setText(actionChoiceText);
-        actionChoice.setRequired_item(null); // No required item for this choice
-        actionChoice.setNext_scene("scene_end");
-        choices.add(actionChoice);
-
-        // Choice 2: Cancel option
-        Choice cancelChoice = new Choice();
-        cancelChoice.setText(cancelChoiceText);
-        cancelChoice.setNext_scene("scene_end"); // This will make performAction false
-        choices.add(cancelChoice);
-
-        // Set the choices for the scene
-        scene.setChoices(choices);
-
-        // Set action to perform when dialog is finished (only runs if the required item choice is selected)
-        setOnDialogFinishedAction(onActionCompleted);
-
-        // Start the dialog
-        startDialog("system_messages", "choice_dialog");
-    }
 
     public void showMessageWithChoices(String message, String actionChoiceText, String cancelChoiceText, Runnable onActionCompleted, Runnable onCancelCompleted) {
         // Create a temporary dialog with the message
@@ -413,6 +282,7 @@ public class DialogController {
         // Start the dialog
         startDialog("system_messages", "choice_dialog");
     }
+
 
     // After
     public void selectChoice(int index) {

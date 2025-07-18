@@ -443,6 +443,8 @@ public class InputController extends InputAdapter {
             }
             case Keys.PAUSE -> {
                 mapRenderer.printCurrentPosition();
+                gameController.addFlag("acient_note");
+                gameController.addFlag("ghost_ashes");
             }
             case Keys.F8 -> {
                 Enemy enemy = EnemyLoader.getEnemyById(2);
