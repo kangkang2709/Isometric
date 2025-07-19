@@ -445,6 +445,7 @@ public class InputController extends InputAdapter {
                 mapRenderer.printCurrentPosition();
                 gameController.addFlag("acient_note");
                 gameController.addFlag("ghost_ashes");
+                gameController.addFlag("completed_ghost_quest");
             }
             case Keys.F8 -> {
                 Enemy enemy = EnemyLoader.getEnemyById(2);

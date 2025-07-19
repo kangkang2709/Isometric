@@ -177,6 +177,7 @@ public class DarkestDungeon implements Screen {
 
     public void startCombat(Enemy enemy) {
         this.enemyName = enemy.getEnemyName();
+        System.out.println("Starting combat with enemy: " + enemyName);
         this.enemyMaxHP = (int) enemy.getHealth();
         this.enemyHP = enemyMaxHP;
 
@@ -353,7 +354,7 @@ public class DarkestDungeon implements Screen {
                         Timer.schedule(new Timer.Task() {
                             @Override
                             public void run() {
-                                gameController.setCompletedEvent();
+//                                gameController.setCompletedEvent();
                                 gameController.setState(GameState.EXPLORING);
                                 gameController.getCharacter().setHealth(playerHP);
                                 gameController.getCharacter().setMana(playerMana);
@@ -364,6 +365,8 @@ public class DarkestDungeon implements Screen {
                                 if (newLevel > currentLevel) gameController.showLevelUpNotification();
                             }
                         }, 0.5f);
+                        if (enemyName.equalsIgnoreCase("Demon"))
+                            gameController.completedDungeon2();
                     }
 
                     return true;
@@ -633,11 +636,6 @@ public class DarkestDungeon implements Screen {
 //        enemySkillTextures[1] = new Texture("dungeon/enemy_2skill.png");
 //        enemySkillTextures[2] = new Texture("dungeon/enemy_3skill.png");
 
-
-        enemyIdleTextures = getEnemyIdleTextures("frost");
-
-
-        enemySkillTextures = getEnemySkillTextures("frost");
 
         // Skill button textures
         skillButtonTextures[0] = new Texture("dungeon/skill_attack.png");

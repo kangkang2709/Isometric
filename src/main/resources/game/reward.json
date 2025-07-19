@@ -15,13 +15,13 @@
     "rewardID": 3,
     "itemID": 3,
     "amount": 1,
-    "description": "Draught of Fury - Tăng chỉ số tấn công thêm 1."
+    "description": "Draught of Fury - Tăng chỉ số tấn công thêm 5."
   },
   {
     "rewardID": 4,
     "itemID": 4,
     "amount": 1,
-    "description": "Aegis Brew - Tăng chỉ số phòng thủ thêm 1."
+    "description": "Aegis Brew - Tăng chỉ số phòng thủ thêm 5."
   },
   {
     "rewardID": 5,
@@ -39,13 +39,13 @@
     "rewardID": 7,
     "itemID": 8,
     "amount": 1,
-    "description": "Ruby Omega - Dùng tại Cổng Dịch Chuyển để đến hầm ngục A"
+    "description": "Ruby Omega - Dùng tại Cổng Dịch Chuyển để đến hầm ngục **Lăng Mộ Ký Ứ"
   },
   {
     "rewardID": 8,
     "itemID": 9,
     "amount": 1,
-    "description": "Saphire Alpha - Dùng tại Cổng Dịch Chuyển để đến hầm ngục B"
+    "description": "Saphire Alpha - Dùng tại Cổng Dịch Chuyển để đến địa điểm kì lạ"
   },
   {
     "rewardID": 9,

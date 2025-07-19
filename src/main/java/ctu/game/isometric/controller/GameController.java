@@ -373,6 +373,19 @@ public class GameController {
         this.pathfinder.setNpcPositions(npcManager.getNpcPositions());
     }
 
+    public void completedDungeon2() {
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                dialogController.showSimpleMessage(Arrays.asList("Ngươi rất xứng đáng, bây giờ ta có thể an nghĩ được rồi.",
+                        "Ta và chủ nhân cũ của ta từng cố gắng vượt qua đại mê cung nhưng thất bại.",
+                        "Hi vọng dựa vào quyển nhật ký của chủ nhân, ngươi có thể tìm ra sự thật về thế giới này.",
+                        "Và giờ thì tạm biệt, người xa xứ...."));
+                npcManager.removeNPC(9);
+                addFlag("completed_dungeon2");
+            }
+        }, 2f);
+    }
 
     public void showNPCBackStory() {
         NPC npc = findNPCNear(character.getGridX(), character.getGridY());
@@ -429,10 +442,43 @@ public class GameController {
 
                 case "":
                 case "Armon":
-                    System.out.println("Flag: ghost_name: " + character.getFlags().contains("ghost_name"));
-                    System.out.println("Flag: acient_note: " + character.getFlags().contains("acient_note"));
 
-                    if (character.getFlags().contains("ghost_name") && character.getFlags().contains("acient_note") && character.getFlags().contains("ghost_ashes")) {
+                    if (character.getFlags().contains("completed_ghost_quest")) {
+                        dialogController.setOnDialogFinishedAction(() -> {
+                            if (character.getDamage() >= 30) {
+                                completedDungeon2();
+                            } else {
+                                Timer.schedule(new Timer.Task() {
+                                    @Override
+                                    public void run() {
+                                        Enemy enemy = new Enemy(11, "Ghost Armon", "Demon", "enemies/ghost_armon.png", 1, 15, 3);
+                                        enemy.setDefensePower(10);
+                                        game.getDarkestDungeonScreen().startCombat(enemy);
+                                        game.changeScreen("DARK_DUNGEON");
+                                    }
+                                }, 1f);
+
+                            }
+                        });
+                        dialogController.setOnCanncelFinishedAction(() -> {
+//                            Timer.schedule(new Timer.Task() {
+//                                @Override
+//                                public void run() {
+//                                    dialogController.showSimpleMessage("Ngươi vẫn chưa thuyết phục được ta. Hãy chiến đấu để chứng minh sức mạnh của mình.");
+//                                }
+//                            }, 1f);
+                            Timer.schedule(new Timer.Task() {
+                                @Override
+                                public void run() {
+                                    Enemy enemy = new Enemy(11, "Ghost Armon", "Demon", "enemies/ghost_armon.png", 1, 10, 3);
+                                    enemy.setDefensePower(15);
+                                    game.getDarkestDungeonScreen().startCombat(enemy);
+                                    game.changeScreen("DARK_DUNGEON");
+                                }
+                            }, 1f);
+                        });
+                        dialogController.startDialog("armon_ending", "scene_intro");
+                    } else if (character.getFlags().contains("ghost_name") && character.getFlags().contains("acient_note") && character.getFlags().contains("ghost_ashes")) {
                         dialogController.showMessageWithChoices("Ngươi đã lấy được **mảnh vỡ của bia đá rồi.\n" +
                                         "Hãy tiến đến nơi thờ và ta sẽ giúp ngươi hoàn thành nghi thức", "Được [YES]", "Chờ chút [NO]",
                                 () -> {
@@ -441,8 +487,9 @@ public class GameController {
                                         @Override
                                         public void run() {
                                             dialogController.showSimpleMessage("Hãy tìm đúng vị trí thực hiện nghi thức. Ta đã mở phong ấn chỗ đấy rồi");
-                                            npcManager.changeNPCPosition(npc.getNpcID(),11,13);
+                                            npcManager.changeNPCPosition(npc.getNpcID(), 11, 13);
                                             map.setTileWalkable(27, 14, true);
+                                            addFlag("completed_ghost_quest");
                                         }
                                     }, 1.8f);
                                 }, () -> {
@@ -1096,6 +1143,7 @@ public class GameController {
         character = new Character(10, 14);
 
         resetEventsManager();
+        npcManager.resetNPCManager();
 
         // Reset controllers to initial state - make sure to reset character creation controller
         characterCreationController = null;
@@ -1493,9 +1541,24 @@ public class GameController {
             case "cutscene":
                 String cutsceneName = properties.get("cutscene", String.class);
                 if (cutsceneName != null) {
-                    startCutscene(cutsceneName);
+                    System.out.println("Starting cutscene: " + cutsceneName);
+                    switch (cutsceneName) {
+                        case "completed_dungeon2": {
+                            Array<String> subtitles = new Array<>();
+                            subtitles.add("Một chiếc bàn đá đặt chính giữa căn phòng, được bao phủ bởi ánh sáng vàng ấm áp.\n Trên bàn là cuốn nhật ký với bìa da màu nâu, trên đó khắc hình biểu tượng của ba viên đá phép thuật. \n Ánh sáng từ cuốn nhật ký tỏa ra, lấp lánh như những ngôi sao nhỏ.");
+                            subtitles.add("Đứng trước bàn đá, ánh sáng từ cơ thể họ phản chiếu lên các bức tường, làm nổi bật hình dáng.\n Họ đưa tay về phía cuốn nhật ký, ánh sáng vàng từ cuốn sách hòa quyện vào ánh sáng của họ.");
+                            subtitles.add("Cầm lên cuốn nhật ký trên tay, ánh sáng từ cuốn sách chiếu sáng khuôn mặt họ, thể hiện sự quyết tâm và trọng trách lớn lao.\n Một giọng nói nhẹ nhàng nhưng đầy uy nghi vang lên, như thể chủ nhân của lăng mộ đang trực tiếp nói chuyện với nhân vật chính.");
+                            subtitles.add(" - Người được thần chọn, nếu ngươi đã đến được đây, điều đó có nghĩa ngươi đã vượt qua thử thách của ta. Nhưng hành trình của ngươi chỉ mới bắt đầu. \n- Thế giới phép thuật này đang dần chìm vào Hư Vô – một thực thể không có hình dạng nhưng có thể xóa sạch mọi thứ. Kẻ xuyên không đầu tiên, ta, đã hy sinh để phong ấn Hư Vô, nhưng phong ấn đó đang dần yếu đi.");
+                            subtitles.add(" - Để sửa chữa điều này, ngươi cần phải thu thập đủ ba viên đá cổ xưa: Viên Đá Ánh Sáng, Viên Đá Bóng Tối, và Viên Đá Cân Bằng. Chúng là chìa khóa để phong ấn lại Hư Vô và cũng là con đường duy nhất để ngươi trở về thế giới của mình. \n - Có lẽ Thần và Quyến giả của ngài đã giải thích cho ngươi về 3 viên đá này rồi đúng không");
+                            subtitles.add(" - Tuy nhiên, nhiệm vụ này không dễ dàng. Quỷ Vương – hiện thân của Hư Vô – đang chờ ngươi. Hắn sẽ làm mọi cách để ngăn ngươi hoàn thành sứ mệnh.");
+                            subtitles.add("**Giọng nói dần tan biến, và ánh sáng từ cuốn nhật ký dịu đi. Trên các trang sách, các dòng chữ bắt đầu hiện ra rõ ràng như được viết bằng ánh sáng, dẫn dắt nhân vật đến nhiệm vụ tiếp theo.");
+                            startMulBGSubTitleCutscene("completed_dungeon2", subtitles);
+                        }
+                        break;
+                        default:
+                            break;
+                    }
                 }
-                setCompletedEvent();
                 break;
         }
 
@@ -1845,4 +1908,11 @@ public class GameController {
         }
     }
 
+    public NPCManager getNpcManager() {
+        return npcManager;
+    }
+
+    public void setNpcManager(NPCManager npcManager) {
+        this.npcManager = npcManager;
+    }
 }

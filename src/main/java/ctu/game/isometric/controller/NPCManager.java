@@ -20,6 +20,25 @@ public class NPCManager {
         loadNPCs();
     }
 
+    public void removeNPC(int npcId) {
+        NPC removedNpc = npcs.remove(npcId);
+        if (removedNpc != null) {
+            // Also remove the position from the 2D array
+            npcPositions[npcId][0] = 0;
+            npcPositions[npcId][1] = 0;
+            System.out.println("Removed NPC: " + removedNpc.getNpcName());
+        } else {
+            System.err.println("NPC with ID " + npcId + " not found");
+        }
+    }
+
+    public void resetNPCManager() {
+        npcs.clear();
+        npcPositions = new int[0][0]; // Reset the 2D array
+        loadNPCs(); // Reload NPCs from the JSON file
+        System.out.println("NPC Manager has been reset and NPCs reloaded.");
+    }
+
     public void changeNPCPosition(int npcId, int x, int y) {
         NPC npc = npcs.get(npcId);
         if (npc != null) {

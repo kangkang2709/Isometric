@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="isometric" renderorder="left-up" width="30" height="30" tilewidth="64" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="29">
+<map version="1.10" tiledversion="1.11.2" orientation="isometric" renderorder="left-up" width="30" height="30" tilewidth="64" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="37">
  <tileset firstgid="1" name="tile1" tilewidth="64" tileheight="62" tilecount="1" columns="1">
   <image source="tiles/dungeon2/tile1.png" trans="ff00ff" width="64" height="62"/>
  </tileset>
@@ -244,13 +244,12 @@
     <property name="one_time" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="7" x="640" y="544" width="32" height="32"/>
   <object id="8" x="1024" y="384"/>
   <object id="11" x="640" y="832" width="32" height="32">
    <properties>
     <property name="event" value="trap"/>
     <property name="hp" type="int" value="2"/>
-    <property name="id" value="dugeon_7"/>
+    <property name="id" value="dugeon_8"/>
     <property name="one_time" type="bool" value="true"/>
    </properties>
   </object>
@@ -258,16 +257,7 @@
    <properties>
     <property name="event" value="flag"/>
     <property name="flag" value="ghost_ashes"/>
-    <property name="id" value="dungeon_32"/>
-    <property name="one_time" type="bool" value="true"/>
-   </properties>
-  </object>
-  <object id="14" x="352" y="512" width="32" height="32">
-   <properties>
-    <property name="amount" type="int" value="1"/>
-    <property name="event" value="treasure"/>
-    <property name="id" value="dungeon_4"/>
-    <property name="item" value="7"/>
+    <property name="id" value="dungeon_34"/>
     <property name="one_time" type="bool" value="true"/>
    </properties>
   </object>
@@ -302,6 +292,38 @@
     <property name="flag" value="ghost_name"/>
     <property name="id" value="dungeon_2"/>
     <property name="message" value="Nhà của: Armon"/>
+   </properties>
+  </object>
+  <object id="29" x="352" y="512" width="32" height="32">
+   <properties>
+    <property name="cutscene" value="completed_dungeon2"/>
+    <property name="event" value="cutscene"/>
+    <property name="id" value="dungeon_44"/>
+    <property name="one_time" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="30" x="448" y="1024"/>
+  <object id="32" x="640" y="544" width="32" height="32">
+   <properties>
+    <property name="amount" type="int" value="1"/>
+    <property name="event" value="treasure"/>
+    <property name="id" value="dungeon_5"/>
+    <property name="item" value="1"/>
+    <property name="one_time" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="34" x="0" y="256" width="32" height="32">
+   <properties>
+    <property name="event" value="tele"/>
+    <property name="id" value="dungeon_6"/>
+    <property name="map" value="unknown"/>
+   </properties>
+  </object>
+  <object id="36" x="0" y="288" width="32" height="32">
+   <properties>
+    <property name="event" value="tele"/>
+    <property name="id" value="dungeon_7"/>
+    <property name="map" value="unknown"/>
    </properties>
   </object>
  </objectgroup>

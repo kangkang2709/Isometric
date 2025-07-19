@@ -336,7 +336,6 @@ public class LoadGameController {
                     gameController.getEventManagerMap().get("board").updateAfterLoadGame(save);
 
 
-
                     gameController.getCharacter().setLearnedWords(words);
                     gameController.getBountyBoardController().updateQuestStatusFromQuestTracker(gameController.getCharacter().getQuestTracker());
 
@@ -346,7 +345,13 @@ public class LoadGameController {
                     gameController.setState(GameState.EXPLORING);
 //                    gameController.changeBoard();
 
-
+                    if (gameController.getCharacter().getFlags().contains("completed_ghost_quest")) {
+                        gameController.getNpcManager().changeNPCPosition(9, 11, 13);
+                        gameController.getMapList().get("dungeon2").setTileWalkable(27, 14, true);
+                    }
+                    if (gameController.getCharacter().getFlags().contains("completed_dungeon2")) {
+                        gameController.getNpcManager().removeNPC(9);
+                    }
                     if (!gameController.getCharacter().getFlags().contains("intro"))
                         gameController.startCutscene("intro");
 

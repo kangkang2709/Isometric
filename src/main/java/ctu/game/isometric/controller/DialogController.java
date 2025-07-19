@@ -320,7 +320,7 @@ public class DialogController {
                     // If player doesn't have the required item, redirect to scene_not_enough_item
                     startDialog(currentArcId, "scene_not_enough_item");
                 }
-            } else if (choice.getText().contains("YES")) {
+            } else if (choice.getText().contains("[YES]")) {
                 performAction = true;
                 isCancelAction = false;
                 if (choice.getNext_scene() != null) {
@@ -328,7 +328,7 @@ public class DialogController {
                 } else {
                     endDialog();
                 }
-            } else if (choice.getText().contains("NO")) {
+            } else if (choice.getText().contains("[NO]")) {
                 performAction = false;
                 isCancelAction = true;
                 if (choice.getNext_scene() != null) {
@@ -350,7 +350,7 @@ public class DialogController {
                 if (choice.getNext_scene() != null && !choice.getNext_scene().isEmpty()) {
                     if (choice.getNext_scene().equals("scene_end")) {
                         performAction = false;
-                        isCancelAction = true;
+                        isCancelAction = false;
                     }
                     startDialog(currentArcId, choice.getNext_scene());
                 } else {

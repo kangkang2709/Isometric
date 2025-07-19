@@ -1671,6 +1671,37 @@
               "next_scene": "scene_end",
               "required_item": null,
               "reward_item": null
+            },
+            {
+              "text": "Trước khi ta đi, có điều gì ta cần biết nữa không?.",
+              "next_scene": "scene_info",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_info",
+          "background": "tavern_door.png",
+          "music": "village_theme.mp3",
+          "dialogues": [
+            {
+              "character": "Armon",
+              "characterImage": "ghost.png",
+              "text": "Hãy cẩn thận. Ngọn lửa trong đó không chỉ là tàn dư – nó mang theo ký ức đau thương của chủ nhân."
+            },
+            {
+              "character": "Armon",
+              "characterImage": "ghost.png",
+              "text": "Từng có kẻ bước vào nơi đó nhưng đã bị thiêu thành tro tàn."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Tôi sẽ cẩn thận. [YES]",
+              "next_scene": "scene_end",
+              "required_item": null,
+              "reward_item": null
             }
           ]
         },
@@ -1688,6 +1719,104 @@
               "character": "Armon",
               "characterImage": "ghost.png",
               "text": "Nó chứa rất nhiều kiến thức quý giá mà nhiều người muốn biết lắm đấy. hahaha..."
+            }
+          ],
+          "choices": []
+        }
+      ]
+    },
+    {
+      "id": "armon_ending",
+      "title": "",
+      "description": "",
+      "scenes": [
+        {
+          "id": "scene_intro",
+          "background": "transparent.png",
+          "music": "soft_fireplace.mp3",
+          "sound_effects": [
+            "murmur.wav"
+          ],
+          "dialogues": [
+            {
+              "character": "Armon",
+              "characterImage": "ghost.png",
+              "text": "Ngươi đã tiến đến đây...Ngươi đã vượt qua mọi thử thách để đứng tại nơi này. ?"
+            },
+            {
+              "character": "Armon",
+              "characterImage": "ghost.png",
+              "text": "Nhưng ta không thể để bất kỳ ai tiếp cận ký ức của chủ nhân... trừ khi ngươi thực sự xứng đáng.."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Ta đã đến đây vì sự thật, và ta sẽ không để ngươi ngăn cản ta!",
+              "next_scene": "scene_1",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_1",
+          "background": "transparent.png",
+          "music": "sad_piano.mp3",
+          "dialogues": [
+            {
+              "character": "Armon",
+              "characterImage": "ghost.png",
+              "text": "Ta cho ngươi 2 lựa chọn: hoặc là ngươi chứng minh mình xứng đáng, hoặc là đánh bại ta trong một trận chiến cuối cùng."
+            },
+            {
+              "character": "Armon",
+              "characterImage": "ghost.png",
+              "text": "Nếu ngươi thắng, ta sẽ cho phép ngươi tiếp cận ký ức của chủ nhân. Nhưng nếu ngươi thua, ngươi sẽ trở thành 1 phần của ngọn lửa nơi kia."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Tôi sẽ chứng minh mình xứng đáng. [ Yêu cầu tấn công lớn hơn 30 ]  [YES]",
+              "next_scene": "scene_end2",
+              "required_item": null,
+              "reward_item": null
+            },
+            {
+              "text": "Tôi sẽ đánh bại ngươi trong trận chiến cuối cùng. [NO]  [YES]",
+              "next_scene": "scene_end2",
+              "required_item": null,
+              "reward_item": null
+            },
+            {
+              "text": "Tôi chưa sẵn sàng. Cho tôi thêm thời gian chuẩn bị được không?",
+              "next_scene": "scene_end",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_end",
+          "background": "tavern_door.png",
+          "music": "village_theme.mp3",
+          "dialogues": [
+            {
+              "character": "Armon",
+              "characterImage": "ghost.png",
+              "text": "Hãy trở lại khi ngươi đã sẵn sàng. Ta sẽ chờ đợi."
+            }
+          ],
+          "choices": []
+        },
+        {
+          "id": "scene_end2",
+          "background": "tavern_door.png",
+          "music": "village_theme.mp3",
+          "dialogues": [
+            {
+              "character": "Armon",
+              "characterImage": "ghost.png",
+              "text": "Hỡi kẻ dám đối đầu với ta, hãy chuẩn bị tinh thần. Ngọn lửa này của ta sẽ không dễ dàng tha thứ cho kẻ yếu đuối."
             }
           ],
           "choices": []

@@ -351,7 +351,7 @@ public class CutsceneRenderer {
 
         // Draw overlay
         if (overlayTexture != null) {
-            batch.setColor(1, 1, 1, 0.7f); // Semi-transparent overlay
+            batch.setColor(1, 1, 1, 0.7f);
             batch.draw(overlayTexture, 0, 0, screenWidth, screenHeight);
         }
 
@@ -361,13 +361,36 @@ public class CutsceneRenderer {
             batch.draw(frameTexture, 0, 0, screenWidth, screenHeight);
         }
 
-        // Draw typewriter text in center
+        // Draw wrapped typewriter text
         if (!currentDisplayedText.isEmpty()) {
             subtitleFont.setColor(1, 1, 1, 1);
-            glyphLayout.setText(subtitleFont, currentDisplayedText);
-            float x = (screenWidth - glyphLayout.width) / 2;
-            float y = (screenHeight + glyphLayout.height) / 2;
-            subtitleFont.draw(batch, currentDisplayedText, x, y);
+
+            float maxTextWidth = screenWidth - 200; // Padding for frame
+            Array<String> wrappedLines = wrapText(currentDisplayedText, maxTextWidth);
+
+            float lineHeight = subtitleFont.getLineHeight() * lineSpacing;
+            float totalHeight = wrappedLines.size * lineHeight;
+            float startY = (screenHeight + totalHeight) / 2;
+
+            for (int i = 0; i < wrappedLines.size; i++) {
+                String line = wrappedLines.get(i);
+
+                if ("##PARAGRAPH_BREAK##".equals(line)) {
+                    // This is an explicit paragraph break from \n
+                    startY -= (lineHeight * paragraphSpacing);
+                    continue;
+                } else if (line.isEmpty()) {
+                    // This is a regular line break
+                    startY -= lineHeight;
+                    continue;
+                }
+
+                glyphLayout.setText(subtitleFont, line);
+                float x = (screenWidth - glyphLayout.width) / 2;
+                // (additional x adjustments as needed)
+
+                subtitleFont.draw(batch, line, x, startY - (i * lineHeight));
+            }
         }
 
         batch.setColor(1, 1, 1, 1);
@@ -448,31 +471,52 @@ public class CutsceneRenderer {
     }
 
     private void renderBackgroundCutscene(SpriteBatch batch, float screenWidth, float screenHeight) {
-        // Draw background based on cutscene type
         screenWidth = 1024;
 
         if (cutsceneType == CutsceneType.BACKGROUND_WITH_SUBTITLES) {
-            // Single background for all subtitles
             if (backgroundTexture != null) {
                 batch.setColor(1, 1, 1, 1);
                 batch.draw(backgroundTexture, 0, 0, screenWidth, screenHeight);
             }
         } else if (cutsceneType == CutsceneType.MULTIPLE_BACKGROUNDS_WITH_SUBTITLES) {
-            // Different background for each subtitle
             if (currentPage < backgroundTextures.size && backgroundTextures.get(currentPage) != null) {
                 batch.setColor(1, 1, 1, 1);
                 batch.draw(backgroundTextures.get(currentPage), 128, 0, screenWidth, screenHeight);
             }
         }
 
-        // Draw subtitle (same for both types)
+        // Draw wrapped subtitles
         if (currentPage < subtitles.size) {
             String currentSubtitle = subtitles.get(currentPage);
             if (currentSubtitle != null && !currentSubtitle.isEmpty()) {
                 subtitleFont.setColor(1, 1, 1, subtitleAlpha);
-                glyphLayout.setText(subtitleFont, currentSubtitle);
-                float x = (screenWidth - glyphLayout.width) / 2;
-                subtitleFont.draw(batch, currentSubtitle, x + 128, subtitleY);
+
+                float maxTextWidth = screenWidth - 100; // Padding from edges
+                Array<String> wrappedLines = wrapText(currentSubtitle, maxTextWidth);
+
+                float lineHeight = subtitleFont.getLineHeight() * lineSpacing;
+                float totalHeight = wrappedLines.size * lineHeight;
+                float startY = subtitleY + totalHeight;
+
+                for (int i = 0; i < wrappedLines.size; i++) {
+                    String line = wrappedLines.get(i);
+
+                    if ("##PARAGRAPH_BREAK##".equals(line)) {
+                        // This is an explicit paragraph break from \n
+                        startY -= (lineHeight * paragraphSpacing);
+                        continue;
+                    } else if (line.isEmpty()) {
+                        // This is a regular line break
+                        startY -= lineHeight;
+                        continue;
+                    }
+
+                    glyphLayout.setText(subtitleFont, line);
+                    float x = (screenWidth - glyphLayout.width) / 2;
+                    // (additional x adjustments as needed)
+
+                    subtitleFont.draw(batch, line, x, startY - (i * lineHeight));
+                }
             }
         }
     }
@@ -540,6 +584,57 @@ public class CutsceneRenderer {
         }
 
         batch.setColor(1, 1, 1, 1);
+    }
+
+    // Add these variables to the class
+    private float lineSpacing = 1.5f; // Multiplier for line height
+    private float paragraphSpacing = 1f; // Multiplier for \n breaks
+
+    private Array<String> wrapText(String text, float maxWidth) {
+        Array<String> lines = new Array<>();
+
+        // Split by explicit line breaks first
+        String[] paragraphs = text.split("\\n");
+
+        for (int i = 0; i < paragraphs.length; i++) {
+            String paragraph = paragraphs[i];
+
+            // Add paragraph breaks after the first paragraph
+            if (i > 0) {
+                lines.add("##PARAGRAPH_BREAK##"); // Special marker for paragraph breaks
+            }
+
+            if (paragraph.trim().isEmpty()) {
+                continue;
+            }
+
+            // Word wrapping for each paragraph
+            String[] words = paragraph.split(" ");
+            StringBuilder currentLine = new StringBuilder();
+
+            for (String word : words) {
+                String testLine = currentLine.length() == 0 ? word : currentLine + " " + word;
+                glyphLayout.setText(subtitleFont, testLine);
+
+                if (glyphLayout.width <= maxWidth) {
+                    currentLine = new StringBuilder(testLine);
+                } else {
+                    if (currentLine.length() > 0) {
+                        lines.add(currentLine.toString());
+                        currentLine = new StringBuilder(word);
+                    } else {
+                        // Single word is too long, add it anyway
+                        lines.add(word);
+                    }
+                }
+            }
+
+            if (currentLine.length() > 0) {
+                lines.add(currentLine.toString());
+            }
+        }
+
+        return lines;
     }
 
     public void nextPage() {
@@ -656,5 +751,13 @@ public class CutsceneRenderer {
         }
         pages.clear();
         subtitles.clear();
+    }
+
+    public void setLineSpacing(float spacing) {
+        this.lineSpacing = spacing;
+    }
+
+    public void setParagraphSpacing(float spacing) {
+        this.paragraphSpacing = spacing;
     }
 }
