@@ -303,7 +303,7 @@ public class CharacterInfoDisplay {
     }
 
     private void renderScore(SpriteBatch batch) {
-        String scoreText = "Tổng điểm: " + character.getScore();
+        String scoreText = "Tổng điểm (GOLD):  " + character.getScore();
         scoreFont.setColor(BLACK);
         layout.setText(scoreFont, scoreText);
         float scoreX = scoreRect.x + scoreRect.width / 2 - layout.width / 2;

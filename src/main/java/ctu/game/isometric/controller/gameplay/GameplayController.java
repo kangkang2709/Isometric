@@ -1710,8 +1710,7 @@ public class GameplayController {
         if (isCombatMode && isPlayerTurn) {
             float damage = currentLevel + (wordDamageMultiplier - playerNerf + attackBuff) - enemy.getDefensePower() * 0.5f;
             damage = Math.max(1, damage);
-            if (isEnemyLord()) {
-
+            if (isEnemyLord() && damage < 15) {
                 if (random.nextFloat() < 0.1f && !playerStatusDuration.containsKey("TOXIC") && !enemyStatusDuration.containsKey("FREEZE")) {
                     playerStatusDuration.put("TOXIC", 2);
                 } else if (random.nextFloat() < 0.2f && !playerStatusDuration.containsKey("BURN") && !enemyStatusDuration.containsKey("FREEZE")) {
@@ -2055,6 +2054,9 @@ public class GameplayController {
 
         } else if (isEnemyLord()) {
             gameController.getMusicController().playMusic("lord");
+            if (!gameController.getCharacter().getFlags().contains("frost_guardian_defeated")) {
+                enemy.getEnemyDescription().replace("15", "**");
+            }
         } else gameController.getMusicController().playMusic("main_theme");
     }
 

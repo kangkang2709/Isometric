@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AttackCard {
-    public enum CardType {ATTACK, HEALING, MANA, SPECIAL, STRONG, SHIELD, MISS,POISON,FIRE}
+    public enum CardType {ATTACK, HEALING, MANA, SPECIAL, STRONG, SHIELD, MISS, POISON, FIRE}
 
     private CardType type;
     private String word;
@@ -48,7 +48,7 @@ public class AttackCard {
     private List<ImpactEffect> impactEffects = new ArrayList<>();
 
 
-    public static void setTextures(Texture attack, Texture heal, Texture mana, Texture special, Texture crack, Texture shard, Texture glow, Texture miss, Texture poison,Texture fire) {
+    public static void setTextures(Texture attack, Texture heal, Texture mana, Texture special, Texture crack, Texture shard, Texture glow, Texture miss, Texture poison, Texture fire) {
         texAttack = attack;
         texHeal = heal;
         texMana = mana;
@@ -199,11 +199,15 @@ public class AttackCard {
                     impactEffects.add(new HealGlowEffect(endX, endY, width, height, glassShardTexture));
                 }
                 break;
-            case POISON,MISS,SPECIAL,MANA,HEALING:
+            case POISON:
+            case MISS:
+            case SPECIAL:
+            case MANA:
+            case HEALING:
                 impactEffects.add(new HealGlowEffect(endX, endY, width, height, glowTexture));
                 break;
             case FIRE:
-                impactEffects.add(new HealGlowEffect(endX, endY, width/scale, height/scale, glowTexture));
+                impactEffects.add(new HealGlowEffect(endX, endY, width / scale, height / scale, glowTexture));
                 break;
         }
     }

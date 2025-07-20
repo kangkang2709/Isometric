@@ -213,8 +213,8 @@ public class DarkestDungeon implements Screen {
         this.enemyCurrentY = enemyStartY;
 
 
-        enemyIdleTextures = getEnemyIdleTextures(enemyName);
-        enemySkillTextures = getEnemySkillTextures(enemyName);
+        enemyIdleTextures = getEnemyIdleTextures(enemy.getTexturePath());
+        enemySkillTextures = getEnemySkillTextures(enemy.getTexturePath());
 
         this.combatLog = "Chiến đấu bắt đầu! Chọn hành động.";
 
@@ -367,6 +367,8 @@ public class DarkestDungeon implements Screen {
                         }, 0.5f);
                         if (enemyName.equalsIgnoreCase("Demon"))
                             gameController.completedDungeon2();
+                        else  if (enemyName.equalsIgnoreCase("Frost Guardian"))
+                            gameController.defeatedFrostGuardian();
                     }
 
                     return true;

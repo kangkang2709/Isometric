@@ -352,6 +352,9 @@ public class LoadGameController {
                     if (gameController.getCharacter().getFlags().contains("completed_dungeon2")) {
                         gameController.getNpcManager().removeNPC(9);
                     }
+                    if (gameController.getCharacter().getFlags().contains("frost_guardian_defeated")) {
+                        gameController.getNpcManager().removeNPC(10);
+                    }
                     if (!gameController.getCharacter().getFlags().contains("intro"))
                         gameController.startCutscene("intro");
 

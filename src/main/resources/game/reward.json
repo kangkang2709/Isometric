@@ -27,13 +27,13 @@
     "rewardID": 5,
     "itemID": 6,
     "amount": 1,
-    "description": "Grimoire of Trials I - Mở khóa mini-game 1 sau khi trò chuyện với NPC huyền bí."
+    "description": "Grimoire of Trials I - Dùng mở khóa mini-game 1."
   },
   {
     "rewardID": 6,
     "itemID": 7,
     "amount": 1,
-    "description": "Grimoire of Trials II - Mở khóa mini-game 2 sau khi trò chuyện với NPC huyền bí."
+    "description": "Grimoire of Trials II -  Dùng mở khóa mini-game 2."
   },
   {
     "rewardID": 7,
@@ -94,5 +94,17 @@
     "itemID": 7,
     "amount": 1,
     "description": "Toxic Poiton - Gây 20 sát thương cho kẻ địch"
+  },
+  {
+    "rewardID": 16,
+    "itemID": 3,
+    "amount": 3,
+    "description": "Draught of Fury - Tăng chỉ số tấn công thêm 5."
+  },
+  {
+    "rewardID": 17,
+    "itemID": 4,
+    "amount": 3,
+    "description": "Aegis Brew - Tăng chỉ số phòng thủ thêm 5."
   }
 ]

@@ -1,16 +1,16 @@
 [
   {
     "npcID": 1,
-    "npcName": "Mage",
+    "npcName": "Thợ rèn",
     "npcDescription": "A skilled healer who can restore your health and mana",
     "arcId": "healer_backstory",
     "sceneId": "scene_intro",
     "npcImage": "healer.png",
     "npcBackStory": "Elara studied ancient healing arts in the mystical forest before settling in this village.",
     "behaviorState": "idle",
-    "xPosition": 2,
-    "yPosition": 7,
-    "mapName": "tavern"
+    "xPosition": 12,
+    "yPosition": 37,
+    "mapName": "main"
   },
   {
     "npcID": 2,
@@ -47,8 +47,8 @@
     "npcImage": "riddler.png",
     "npcBackStory": "No one knows where he came from, but his riddles have stumped even the wisest scholars.",
     "behaviorState": "idle",
-    "xPosition": 12,
-    "yPosition": 14,
+    "xPosition": 39,
+    "yPosition": 15,
     "mapName": "main"
   },
   {
@@ -115,5 +115,18 @@
     "xPosition": 20,
     "yPosition": 21,
     "mapName": "dungeon2"
+  },
+  {
+    "npcID": 10,
+    "npcName": "Frost Guardian",
+    "npcDescription": "A skilled healer who can restore your health and mana",
+    "arcId": "guardian_backstory",
+    "sceneId": "scene_intro",
+    "npcImage": "healer.png",
+    "npcBackStory": "Elara studied ancient healing arts in the mystical forest before settling in this village.",
+    "behaviorState": "idle",
+    "xPosition": 5,
+    "yPosition": 9,
+    "mapName": "main"
   }
 ]

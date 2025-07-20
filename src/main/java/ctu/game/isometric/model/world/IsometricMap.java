@@ -97,6 +97,10 @@ public class IsometricMap {
                 startX = 1;
                 startY = 20;
                 break;
+            case "unknown":
+                startX = 9;
+                startY = 5;
+                break;
         }
 
         if (mapName.equals("board")) {

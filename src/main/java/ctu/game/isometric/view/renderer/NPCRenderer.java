@@ -54,11 +54,10 @@ public class NPCRenderer {
 
     public void render(SpriteBatch batch) {
         String currentMapName = mapRenderer.getMap().getMapName();
-        boolean isMainMap = currentMapName.equalsIgnoreCase("main");
 
         for (NPC npc : npcs.values()) {
             // Render if we're on main map (all NPCs) or if NPC belongs to current map
-            if (isMainMap || currentMapName.equalsIgnoreCase(npc.getMapName())) {
+            if (currentMapName.equalsIgnoreCase(npc.getMapName())) {
                 renderNPC(npc, batch);
                 // Check if player is close enough to show action buttons
                 if (isPlayerNearNPC(npc)) {

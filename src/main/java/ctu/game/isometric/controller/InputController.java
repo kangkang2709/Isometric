@@ -424,18 +424,10 @@ public class InputController extends InputAdapter {
                 }
             }
             case Keys.F5 -> {
-                Array<String> subtitles = new Array<>();
-                subtitles.add("Welcome to the adventure...");
-                subtitles.add("Your journey begins now.");
-                subtitles.add("Prepare for challenges ahead.");
-                gameController.startMulBGSubTitleCutscene("intro", subtitles);
+                gameController.changeMap("main");
             }
             case Keys.F6 -> {
-                Array<String> subtitles = new Array<>();
-                subtitles.add("Welcome to the adventure...");
-                subtitles.add("Your journey begins now.");
-                subtitles.add("Prepare for challenges ahead.");
-                gameController.startSubTitleCutscene("intro", subtitles);
+                gameController.changeMap("tower");
             }
             case Keys.F7 -> {
 //                gameController.getGame().changeScreen("DUNGEON");
@@ -443,9 +435,7 @@ public class InputController extends InputAdapter {
             }
             case Keys.PAUSE -> {
                 mapRenderer.printCurrentPosition();
-                gameController.addFlag("acient_note");
-                gameController.addFlag("ghost_ashes");
-                gameController.addFlag("completed_ghost_quest");
+                gameController.addFlag("klein_unlock");
             }
             case Keys.F8 -> {
                 Enemy enemy = EnemyLoader.getEnemyById(2);

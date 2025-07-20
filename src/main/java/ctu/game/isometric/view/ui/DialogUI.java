@@ -32,9 +32,9 @@ public class DialogUI {
     private String currentBackgroundPath;
 
     // UI dimensions
-    private static final int DIALOG_BOX_X = 50;
-    private static final int DIALOG_BOX_Y = 50;
-    private static final int DIALOG_BOX_WIDTH = 1280;
+    private static final int DIALOG_BOX_X = 5;
+    private static final int DIALOG_BOX_Y = 10;
+    private static final int DIALOG_BOX_WIDTH = 1270;
     private static final int DIALOG_BOX_HEIGHT = 200;
 
     private static final int CHARACTER_IMAGE_SIZE = 120;

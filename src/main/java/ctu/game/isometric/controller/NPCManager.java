@@ -23,10 +23,9 @@ public class NPCManager {
     public void removeNPC(int npcId) {
         NPC removedNpc = npcs.remove(npcId);
         if (removedNpc != null) {
-            // Also remove the position from the 2D array
             npcPositions[npcId][0] = 0;
             npcPositions[npcId][1] = 0;
-            System.out.println("Removed NPC: " + removedNpc.getNpcName());
+            System.out.println("Removed NPC: " + removedNpc.getMapName());
         } else {
             System.err.println("NPC with ID " + npcId + " not found");
         }

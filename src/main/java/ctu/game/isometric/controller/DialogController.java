@@ -304,10 +304,17 @@ public class DialogController {
                     performAction = true; // Only set to true when choice has required item
 
                     if (itemName != null) {
-                        if (itemName.contains("Location"))
-                            gameController.getCharacter().teleportToLocation(itemName);
-                        else
+                        if (itemName.equalsIgnoreCase("Ruby Omega")) {
+                            gameController.changeSaveMap("dungeon2");
+                            gameController.getCharacter().setPosition(1, 20);
+                        } else if (itemName.equalsIgnoreCase("Saphire Alpha")) {
+                            gameController.changeSaveMap("main");
+                            gameController.getCharacter().setPosition(11, 9);
+                        } else if (itemName.equalsIgnoreCase("Emeral Delta")) {
+                            gameController.changeSaveMap("main");
+                            gameController.getCharacter().setPosition(13, 27);
 
+                        } else
                             gameController.getCharacter().addItem(ItemLoader.getItemByName(itemName), 1);
 
                     }

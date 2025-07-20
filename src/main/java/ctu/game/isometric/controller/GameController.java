@@ -151,6 +151,7 @@ public class GameController {
         this.mapList.put("tavern", new IsometricMap("maps/tavern.tmx"));
         this.mapList.put("forest", new IsometricMap("maps/forest.tmx"));
         this.mapList.put("tower", new IsometricMap("maps/tower.tmx"));
+        this.mapList.put("unknown", new IsometricMap("maps/unknown.tmx"));
         this.mapList.put("dungeon2", new IsometricMap("maps/dungeon2.tmx"));
 
         this.eventManagerMap.put("board", eventManager);
@@ -160,6 +161,7 @@ public class GameController {
         this.eventManagerMap.put("forest", new EventManager(this.mapList.get("forest"), "forest"));
         this.eventManagerMap.put("tower", new EventManager(this.mapList.get("tower"), "tower"));
         this.eventManagerMap.put("dungeon2", new EventManager(this.mapList.get("dungeon2"), "dungeon2"));
+        this.eventManagerMap.put("unknown", new EventManager(this.mapList.get("unknown"), "unknown"));
 
         this.character = new Character(10, 0);
         this.inputController = new InputController(this);
@@ -387,6 +389,23 @@ public class GameController {
         }, 2f);
     }
 
+    public void defeatedFrostGuardian() {
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                dialogController.showSimpleMessage(Arrays.asList(
+                        "Ngươi đã chứng minh bản lĩnh và vượt qua thử thách của ta.",
+                        "Phần thưởng dành cho ngươi đang nằm trong chiếc rương bên cạnh. Hãy nhận lấy, nó sẽ giúp ngươi đối đầu Quỷ Vương.",
+                        "Nhớ kỹ, Quỷ Vương là bậc thầy về ngôn ngữ. Hắn có thể vô hiệu hóa mọi sát thương dưới 15. Hãy chuẩn bị thật tốt trước khi đối mặt với hắn.",
+                        "Đường về nằm ở gần trại lửa, nó có sức mạnh đưa ngươi trở về nơi ngươi đã đến.",
+                        "Giờ đây nhiệm vụ của ta đã hoàn thành. Chúc ngươi thành công trên hành trình phía trước."
+                ));
+                npcManager.removeNPC(10);
+                addFlag("frost_guardian_defeated");
+            }
+        }, 2f);
+    }
+
     public void showNPCBackStory() {
         NPC npc = findNPCNear(character.getGridX(), character.getGridY());
 
@@ -394,8 +413,13 @@ public class GameController {
             npc.setBehaviorState("Dialogue");
             switch (npc.getNpcName()) {
                 case "WordSeer Kang":
+                    if (character.getLevel() < 3 && character.getRun() < 3) {
+                        dialogController.showSimpleMessage("Ngươi chưa đủ tri thức để tham gia `Bài học ngữ nghĩa` của ta.\n" +
+                                "Hãy quay lại khi ngươi đã đạt cấp độ 3 hoặc đã hoàn thành ít nhất phải vượt qua tầng 3 của đại Mê cung.");
+                        break;
+                    }
                     if (getCharacter().getAttempFlags().get("quizAttempts") >= 3) {
-                        dialogController.showSimpleMessage("You have already attempted this quiz today. Come back tomorrow!");
+                        dialogController.showSimpleMessage("Ngươi đã tham gia bài kiểm tra này hôm nay rồi. Hãy quay lại vào ngày mai! [ 3/3 ]");
                     } else {
                         dialogController.setOnDialogFinishedAction(() -> {
                             startQuiz(5);
@@ -403,11 +427,15 @@ public class GameController {
                         });
                         dialogController.startDialog(npc.getArcId(), npc.getSceneId());
                     }
-
                     break;
                 case "Lorekeeper Tian":
+                    if (character.getLevel() < 3 && character.getRun() < 3) {
+                        dialogController.showSimpleMessage("Ngươi chưa đủ tri thức để tham gia `Bài học từ vựng` của ta.\n" +
+                                "Hãy quay lại khi ngươi đã đạt cấp độ 3 hoặc đã hoàn thành ít nhất phải vượt qua tầng 3 của đại Mê cung.");
+                        break;
+                    }
                     if (getCharacter().getAttempFlags().get("mulQuizAttempts") >= 3) {
-                        dialogController.showSimpleMessage("You have already attempted this quiz today. Come back tomorrow!");
+                        dialogController.showSimpleMessage("Ngươi đã tham gia bài kiểm tra này hôm nay rồi. Hãy quay lại vào ngày mai! [ 3/3 ]");
                     } else {
                         dialogController.setOnDialogFinishedAction(() -> {
                             startMulChoiceQuiz(5);
@@ -438,21 +466,94 @@ public class GameController {
                     break;
                 case "Teleporter":
                     dialogController.startDialog("teleporting_background", "scene_intro");
+                    break;
                 case "Cleric Klein":
+                    if (!getCharacter().getFlags().contains("klein_meet")) {
+                        dialogController.setOnDialogFinishedAction(() -> {
+                            Enemy enemy = EnemyLoader.getEnemyById(1);
 
+                            setState(GameState.GAMEPLAY);
+
+                            if (!character.isTutorialCompleted("combat")) {
+                                tutorialUI.show("combat");
+                                character.setTutorialCompleted("combat");
+                            }
+                            gameplayController.activate();
+                            gameplayController.startCombat(enemy);
+                        });
+
+                        dialogController.setOnCanncelFinishedAction(() -> {
+                            game.changeScreen("GAME_OVER");
+                        });
+
+                        dialogController.startDialog("klein_meet", "scene_meet_cleric");
+                        addFlag("klein_meet");
+                        break;
+                    } else if (getCharacter().getFlags().contains("klein_meet") && !getCharacter().getFlags().contains("dungeon_call")) {
+                        dialogController.setOnDialogFinishedAction(() -> {
+                            addFlag("dungeon_call");
+
+                            character.addItem(ItemLoader.getItemById(1), 2);
+
+                            if (character.getItems().get("CCCD") == null) {
+                                character.addItem(ItemLoader.getItemById(17), 1);
+                            }
+
+                            Timer.schedule(new Timer.Task() {
+                                @Override
+                                public void run() {
+                                    dialogController.startDialog("dungeon_entry", "scene_dungeon_overview");
+                                }
+                            }, 1f);
+                        });
+                        dialogController.startDialog("dungeon_call", "scene_prepare_for_dungeon");
+                        break;
+                    } else {
+                        dialogController.showSimpleMessage("Nếu ngươi muốn biết thêm thông tin về hầm ngục, hãy đọc quyển sách trên tủ sách bên cạnh tấm thảm kia.");
+                        break;
+                    }
+                case "Frost Guardian":
+                    dialogController.setOnDialogFinishedAction(() -> {
+                        if (character.getDefend() >= 30) {
+                            defeatedFrostGuardian();
+                        } else {
+                            Timer.schedule(new Timer.Task() {
+                                @Override
+                                public void run() {
+                                    Enemy enemy = new Enemy(11, "Thủ vệ hồ", "Frost Guardian", "frost_guardian", 1, 25, 16);
+                                    enemy.setDefensePower(21);
+                                    game.getDarkestDungeonScreen().startCombat(enemy);
+                                    game.changeScreen("DARK_DUNGEON");
+                                }
+                            }, 1f);
+
+                        }
+                    });
+                    dialogController.setOnCanncelFinishedAction(() -> {
+                        Timer.schedule(new Timer.Task() {
+                            @Override
+                            public void run() {
+                                Enemy enemy = new Enemy(11, "Thủ vệ hồ", "Frost Guardian", "frost_guardian", 1, 21, 16);
+                                enemy.setDefensePower(25);
+                                game.getDarkestDungeonScreen().startCombat(enemy);
+                                game.changeScreen("DARK_DUNGEON");
+                            }
+                        }, 1f);
+                    });
+                    dialogController.startDialog("frostguardian_ending", "scene_intro");
+                    break;
                 case "":
                 case "Armon":
-
                     if (character.getFlags().contains("completed_ghost_quest")) {
                         dialogController.setOnDialogFinishedAction(() -> {
-                            if (character.getDamage() >= 30) {
+                            if (character.getDamage() >= 20) {
                                 completedDungeon2();
                             } else {
                                 Timer.schedule(new Timer.Task() {
                                     @Override
                                     public void run() {
-                                        Enemy enemy = new Enemy(11, "Ghost Armon", "Demon", "enemies/ghost_armon.png", 1, 15, 3);
-                                        enemy.setDefensePower(10);
+                                        Enemy enemy = new Enemy(11, "Flame Slime Guardian", "Flame Guardian Armon", "Demon", 1, 11, 16);
+                                        enemy.setDefensePower(15);
                                         game.getDarkestDungeonScreen().startCombat(enemy);
                                         game.changeScreen("DARK_DUNGEON");
                                     }
@@ -461,17 +562,12 @@ public class GameController {
                             }
                         });
                         dialogController.setOnCanncelFinishedAction(() -> {
-//                            Timer.schedule(new Timer.Task() {
-//                                @Override
-//                                public void run() {
-//                                    dialogController.showSimpleMessage("Ngươi vẫn chưa thuyết phục được ta. Hãy chiến đấu để chứng minh sức mạnh của mình.");
-//                                }
-//                            }, 1f);
+//
                             Timer.schedule(new Timer.Task() {
                                 @Override
                                 public void run() {
-                                    Enemy enemy = new Enemy(11, "Ghost Armon", "Demon", "enemies/ghost_armon.png", 1, 10, 3);
-                                    enemy.setDefensePower(15);
+                                    Enemy enemy = new Enemy(11, "Flame Slime Guardian", "Flame Guardian Armon", "Demon", 1, 15, 17);
+                                    enemy.setDefensePower(11);
                                     game.getDarkestDungeonScreen().startCombat(enemy);
                                     game.changeScreen("DARK_DUNGEON");
                                 }
@@ -542,15 +638,17 @@ public class GameController {
 
     public NPC findNPCNear(float x, float y) {
         for (NPC npc : npcManager.getNpcs().values()) {
-            float npcX = npc.getXPosition();
-            float npcY = npc.getYPosition();
-            // Check if the NPC is within a 1 tile distance
-            if (Math.abs(npcX - x) <= 1f && Math.abs(npcY - y) <= 1f) {
-                if (map.getMapName().equals(npc.getMapName()))
-                    return npc; // Return the first NPC found in range
+            if (isNPCNear(npc, x, y)) {
+                return npc; // Return the first NPC found in range
             }
         }
         return null; // No NPC found in range
+    }
+
+    private boolean isNPCNear(NPC npc, float x, float y) {
+        return Math.abs(npc.getXPosition() - x) <= 1f &&
+                Math.abs(npc.getYPosition() - y) <= 1f &&
+                npc.getMapName().equalsIgnoreCase(map.getMapName());
     }
 
     public void initializeDictionary() {
@@ -681,10 +779,8 @@ public class GameController {
         switch (currentState) {
             case EXPLORING:
                 if (dialogController.isDialogActive() && !dialogController.shouldRenderBackground()) {
-                    if (currentEvent != null && currentEvent.getEventType().equals("treasure")) {
-                        effectManager.update(delta);
 
-                    }
+                    effectManager.update(delta);
                     npcRenderer.update(delta);
                 } else if (!merchantUI.isVisible()) {
                     inputController.updateCooldown(delta);
@@ -1434,13 +1530,17 @@ public class GameController {
                         return;
                     } else if (mapName.equals("unknown") && character.getFlags().contains("klein_unlock")) {
                         changeMap("unknown");
-                        Timer.schedule(new Timer.Task() {
-                            @Override
-                            public void run() {
-                                dialogController.showSimpleMessage("Tại sao trong ngôi nhà này lại có một cánh cổng đá kì lạ như vậy?\n" +
-                                        "Có lẽ ta nên tiến lên tìm hiểu thêm về nó.");
-                            }
-                        }, 2f);
+                        if (!character.getFlags().contains("gate_stone")) {
+                            Timer.schedule(new Timer.Task() {
+                                @Override
+                                public void run() {
+                                    dialogController.showSimpleMessage("Tại sao trong ngôi nhà này lại có một cánh cổng đá kì lạ như vậy?\n" +
+                                            "Có lẽ ta nên tiến lên tìm hiểu thêm về nó.");
+                                }
+                            }, 2f);
+                            addFlag("gate_stone");
+                        }
+
                         return;
                     }
                     if (!mapName.equals(map.getMapName())) {
@@ -1538,6 +1638,12 @@ public class GameController {
 
                     }
                 });
+                break;
+            case "rest":
+                dialogController.showSimpleMessage("Bạn đã nghỉ ngơi và hồi phục năng lượng. [FULL MP]");
+                character.recoveryMana();
+                effectManager.spawnEffectEvent("Star_Trail", 705, 400);
+                break;
             case "cutscene":
                 String cutsceneName = properties.get("cutscene", String.class);
                 if (cutsceneName != null) {
@@ -1596,7 +1702,7 @@ public class GameController {
 
     private void openTreasureWithAnimation(Items item, int amount, int x, int y) {
 
-        effectManager.spawnEffectEvent("Star_Trail", 660, 390);
+        effectManager.spawnEffectEvent("Star_Trail", 660, 370);
 
         // Create dialog message about the found item
         String message = "Bạn nhận được +" + amount + " " + item.getItemName() + "!";

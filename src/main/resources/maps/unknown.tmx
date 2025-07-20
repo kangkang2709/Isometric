@@ -6,7 +6,7 @@
  <tileset firstgid="2" name="floorCarpetSmall_S2" tilewidth="97" tileheight="50" tilecount="1" columns="1">
   <image source="tiles/lib/floorCarpetSmall_S2.png" trans="ff00ff" width="97" height="50"/>
  </tileset>
- <layer id="1" name="ground_layer" width="10" height="10" opacity="0.13">
+ <layer id="1" name="ground_layer" width="10" height="10" opacity="0.37">
   <data encoding="csv">
 1,1,1,1,1,1,1,1,1,1,
 1,1,1,1,1,1,1,1,1,1,

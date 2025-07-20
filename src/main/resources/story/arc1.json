@@ -1136,11 +1136,10 @@
             {
               "character": "Patche",
               "characterImage": "npc_trader.png",
-              "text": "Ngươi chưa có minh chứng [Item `CCCD`]. Sẽ không có giao dịch nào diễn ra nếu không có nó."
+              "text": "Ngươi chưa có minh chứng [Item `CCCD`]. Ở đây, mọi giao dịch đều cần giấy tờ xác thực tri thức. Không có nó, ta không thể trao đổi gì với ngươi."
             }
           ],
-          "choices": [
-          ]
+          "choices": []
         },
         {
           "id": "scene_intro",
@@ -1153,12 +1152,12 @@
             {
               "character": "MC",
               "characterImage": "mc_default.png",
-              "text": "Quầy hàng nhỏ đó… toàn là những thứ kỳ quặc. Và người kia, trông có vẻ… đang chờ đợi ai đó."
+              "text": "Quầy hàng nhỏ này… toàn những vật phẩm lạ lùng. Chủ nhân thì như đang chờ đợi ai đó đặc biệt."
             },
             {
               "character": "Patche",
               "characterImage": "npc_trader.png",
-              "text": "Ồ, khách đây rồi. Ngươi trông như thể cần một thứ gì đó mà chợ bình thường không có, đúng chứ?"
+              "text": "Cuối cùng cũng có khách! Ở chợ này, ngươi sẽ tìm thấy thứ mà những nơi khác không thể bán đâu."
             }
           ],
           "choices": [
@@ -1178,12 +1177,22 @@
             {
               "character": "Patche",
               "characterImage": "npc_trader.png",
-              "text": "Ta không bán – ta trao đổi. Với ta, giá trị nằm ở câu chuyện đằng sau món hàng. Ngươi có thứ gì để kể chứ?"
+              "text": "Ta không phải người bán hàng thông thường – ta là người trao đổi tri thức."
+            },
+            {
+              "character": "Patche",
+              "characterImage": "npc_trader.png",
+              "text": "Ở ngôi làng này, tri thức là tiền tệ thật sự. Mỗi điểm tri thức ngươi kiếm được từ nhiệm vụ, thử thách hay minigame từ vựng đều có giá trị."
+            },
+            {
+              "character": "Patche",
+              "characterImage": "npc_trader.png",
+              "text": "Nếu ngươi có đủ tri thức, ngươi có thể dùng nó để mở khóa vật phẩm mạnh, hoặc những bí mật cổ xưa."
             }
           ],
           "choices": [
             {
-              "text": "Sao ông lại buôn bán kiểu này?",
+              "text": "Vì sao tri thức lại được dùng như tiền?",
               "next_scene": "scene_story",
               "required_item": null,
               "reward_item": null
@@ -1204,17 +1213,22 @@
             {
               "character": "Patche",
               "characterImage": "npc_trader.png",
-              "text": "Ngày xưa, ta là người lữ hành. Đôi chân đi khắp bốn phương, mỗi vùng đều để lại một món đồ – hoặc một bí mật."
+              "text": "Ngày xưa, ta là kẻ lữ hành khắp thế giới phép thuật này. Vàng bạc chỉ có giá trị khi con người còn ham muốn nó, nhưng tri thức thì giúp ta sống sót, vượt qua mọi\n nguy hiểm."
             },
             {
               "character": "Patche",
               "characterImage": "npc_trader.png",
-              "text": "Một ngày, ta nhận ra: thế giới không thiếu vàng – chỉ thiếu những kẻ biết lắng nghe giá trị thật sự."
+              "text": "Ở đây, ai có nhiều tri thức sẽ mạnh mẽ hơn – dùng từ vựng sắc bén để đánh bại kẻ thù, giải đáp những câu hỏi thử thách, đảo từ, trắc nghiệm, vượt qua các \n minigame ngôn ngữ để lấy điểm."
+            },
+            {
+              "character": "Patche",
+              "characterImage": "npc_trader.png",
+              "text": "Đó là lý do ở chợ này, tri thức là tiền tệ duy nhất. Đổi tri thức, nhận vật phẩm, và mở rộng năng lực của mình."
             }
           ],
           "choices": [
             {
-              "text": "Thú vị đấy. Cho tôi xem hàng.",
+              "text": "Nghe hay đấy. Cho tôi xem hàng.",
               "next_scene": "scene_trade_menu",
               "required_item": "CCCD",
               "reward_item": null
@@ -1235,7 +1249,12 @@
             {
               "character": "Patche",
               "characterImage": "npc_trader.png",
-              "text": "Rồi, mở túi ra đi. Có thể ta sẽ tìm thấy điều gì đó đáng đổi."
+              "text": "Mở túi ra đi! Hãy để ta xem ngươi đã tích lũy được bao nhiêu tri thức từ những thử thách và hành trình vừa qua."
+            },
+            {
+              "character": "Patche",
+              "characterImage": "npc_trader.png",
+              "text": "Nhớ nhé, mỗi món ở đây đều cần điểm tri thức. Hãy dùng chúng thật khôn ngoan!"
             }
           ],
           "choices": []
@@ -1548,22 +1567,22 @@
           ],
           "choices": [
             {
-              "text": "Location 1 [Ruby Omega]",
+              "text": "Lăng mộ ký ức 1 [Ruby Omega]",
               "next_scene": "scene_end",
-              "required_item": "Ruby Omega",
-              "reward_item": "Location_Home"
+              "required_item": "CCCD",
+              "reward_item": "Ruby Omega"
             },
             {
-              "text": "Location 2 [Saphire Alpha]",
+              "text": "Lake [Saphire Alpha]",
               "next_scene": "scene_end",
-              "required_item": "Saphire Alpha",
-              "reward_item": "Location_Village"
+              "required_item": "CCCD",
+              "reward_item": "Saphire Alpha"
             },
             {
-              "text": "Location 3 [Emeral Delta]",
+              "text": "Earth Tree [Emeral Delta]",
               "next_scene": "scene_end",
-              "required_item": "Emeral Delta",
-              "reward_item": "Location_Home"
+              "required_item": "CCCD",
+              "reward_item": "Emeral Delta"
             },
             {
               "text": "Tôi chưa sẵn sàng để dịch chuyển.",
@@ -1776,7 +1795,7 @@
           ],
           "choices": [
             {
-              "text": "Tôi sẽ chứng minh mình xứng đáng. [ Yêu cầu tấn công lớn hơn 30 ]  [YES]",
+              "text": "Tôi sẽ chứng minh mình xứng đáng. [ Yêu cầu tấn công lớn hơn 20 ]  [YES]",
               "next_scene": "scene_end2",
               "required_item": null,
               "reward_item": null
@@ -1817,6 +1836,109 @@
               "character": "Armon",
               "characterImage": "ghost.png",
               "text": "Hỡi kẻ dám đối đầu với ta, hãy chuẩn bị tinh thần. Ngọn lửa này của ta sẽ không dễ dàng tha thứ cho kẻ yếu đuối."
+            }
+          ],
+          "choices": []
+        }
+      ]
+    },
+    {
+      "id": "frostguardian_ending",
+      "title": "Vị Hộ Vệ Hồ Băng",
+      "description": "Gặp gỡ vị hộ vệ do thần chỉ điểm tại ngôi hồ bên cạnh làng, vượt qua thử thách để nhận phần thưởng giúp đánh bại Quỷ Vương.",
+      "scenes": [
+        {
+          "id": "scene_intro",
+          "background": "transparent.png",
+          "music": "soft_fireplace.mp3",
+          "sound_effects": [
+            "murmur.wav"
+          ],
+          "dialogues": [
+            {
+              "character": "Frost Guardian",
+              "characterImage": "frost_guardian.png",
+              "text": "Ta đã bị ... phong ấn? Bao năm qua, chỉ còn lại băng giá và ký ức lạnh lẽo."
+            },
+            {
+              "character": "Frost Guardian",
+              "characterImage": "frost_guardian.png",
+              "text": "Ngươi là kẻ được thần chỉ điểm, đến từ ngôi làng bên hồ. Sứ mệnh của ngươi không chỉ là giải phong ấn cho ta, mà còn vượt qua thử thách của \nchính bản thân mình."
+            },
+            {
+              "character": "Frost Guardian",
+              "characterImage": "frost_guardian.png",
+              "text": "Nếu ngươi chiến thắng, phần thưởng sẽ là sức mạnh giúp ngươi đánh bại Quỷ Vương, kẻ đang đe dọa cả thế giới này."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Ta đã đến đây vì sự thật, và ta sẽ không để ngươi ngăn cản ta!",
+              "next_scene": "scene_1",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_1",
+          "background": "transparent.png",
+          "music": "sad_piano.mp3",
+          "dialogues": [
+            {
+              "character": "Frost Guardian",
+              "characterImage": "frost_guardian.png",
+              "text": "Ta sẽ không dễ dàng để ngươi tiến xa hơn. Thử thách phía trước sẽ kiểm tra ý chí, lòng dũng cảm và trí tuệ của ngươi."
+            },
+            {
+              "character": "Frost Guardian",
+              "characterImage": "frost_guardian.png",
+              "text": "Hãy lựa chọn con đường của mình, kẻ được thần chọn."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Tôi sẽ chứng minh mình xứng đáng. [Yêu cầu phòng thử lớn hơn 30] [YES]",
+              "next_scene": "scene_end2",
+              "required_item": null,
+              "reward_item": null
+            },
+            {
+              "text": "Tôi sẽ đánh bại ngươi trong trận chiến cuối cùng. [NO]",
+              "next_scene": "scene_end2",
+              "required_item": null,
+              "reward_item": null
+            },
+            {
+              "text": "Tôi chưa sẵn sàng. Cho tôi thêm thời gian chuẩn bị được không?",
+              "next_scene": "scene_end",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_end",
+          "background": "tavern_door.png",
+          "music": "village_theme.mp3",
+          "dialogues": [
+            {
+              "character": "Frost Guardian",
+              "characterImage": "frost_guardian.png",
+              "text": "Hãy trở lại khi ngươi đã sẵn sàng. Ta sẽ chờ đợi."
+            }
+          ],
+          "choices": []
+        },
+        {
+          "id": "scene_end2",
+          "background": "tavern_door.png",
+          "music": "village_theme.mp3",
+          "dialogues": [
+            {
+              "character": "Frost Guardian",
+              "characterImage": "frost_guardian.png",
+              "text": "Tốt. Hãy để trận thử thách bắt đầu. Sức mạnh của thần sẽ soi đường cho ngươi. Nếu ngươi vượt qua, hy vọng sẽ sống lại trên mảnh đất này."
             }
           ],
           "choices": []

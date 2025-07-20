@@ -110,6 +110,10 @@ public class Character {
 
     String mapName = "forest";
 
+    public void recoveryMana() {
+        this.mana = this.maxMana;
+    }
+
     public Character() {
         this.flags = new ArrayList<>();
         this.quests = new ArrayList<>();
