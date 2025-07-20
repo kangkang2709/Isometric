@@ -12,6 +12,8 @@ import java.util.Map;
 
 public class ItemLoader {
     private static Map<Integer, Items> items = new HashMap<>();
+    private static Map<Integer, Items> itemsWithOutNA = new HashMap<>();
+
     private static boolean initialized = false;
 
     public static void initialize() {
@@ -33,8 +35,12 @@ public class ItemLoader {
                 item.setManaCost(itemJson.getFloat("manaCost", 0.0f));
 
                 items.put(item.getItemID(), item);
+
+                if (!item.getItemEffect().equals("N/A")) {
+                    itemsWithOutNA.put(item.getItemID(), item);
+                }
             }
-            
+
             initialized = true;
         } catch (Exception e) {
             Gdx.app.error("ItemsLoader", "Error loading items", e);
@@ -45,22 +51,21 @@ public class ItemLoader {
         if (!initialized) initialize();
         return new ArrayList<>(items.values());
     }
-    public static List<Items> getAllItemsWithout(String itemEffect) {
+
+    public static List<Items> getAllItemsWithoutNA() {
         if (!initialized) initialize();
 
-        List<Items> filteredItems = new ArrayList<>();
-        for (Items item : items.values()) {
-            if (!item.getItemEffect().equalsIgnoreCase(itemEffect)) {
-                filteredItems.add(item);
-            }
-        }
-        return filteredItems;
+        return new ArrayList<>(itemsWithOutNA.values());
     }
+
     public static List<Items> getAllItemsWithout(String itemEffect1, String itemEffect2) {
         if (!initialized) initialize();
 
         List<Items> filteredItems = new ArrayList<>();
         for (Items item : items.values()) {
+            if (item.getItemName().equals("Big Elixir") || item.getItemName().equals("Big Arcane Essence")) {
+                continue; // Skip these items
+            }
             if (!item.getItemEffect().equalsIgnoreCase(itemEffect1) && !item.getItemEffect().equalsIgnoreCase(itemEffect2)) {
                 filteredItems.add(item);
             }

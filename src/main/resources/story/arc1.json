@@ -638,17 +638,17 @@
             {
               "character": "MC",
               "characterImage": "mc_default.png",
-              "text": "Khá đông nhỉ… Nhưng người kia đứng ở góc bếp trông có vẻ đặc biệt..."
+              "text": "Quán 'Lửa & Lá' này thật đông đúc... Nhưng người phụ nữ đứng bên bếp góc kia trông có vẻ đặc biệt."
             },
             {
               "character": "Lyra",
               "characterImage": "npc_healer.png",
-              "text": "Ồ, một gương mặt lạ. Chào mừng đến với quán 'Lửa & Lá' – ta là Lyra. Ngươi cần gì? Một món ăn? Hay là một câu chuyện?"
+              "text": "Ồ, một gương mặt mới. Chào mừng đến với 'Lửa & Lá'. Ta là Lyra – người giữ lửa nơi này. Ngươi đến đây vì món ăn, vì câu chuyện, hay vì một chút bình yên?"
             }
           ],
           "choices": [
             {
-              "text": "Tiếp tục câu chuyện.",
+              "text": "Tiếp tục trò chuyện.",
               "next_scene": "scene_start",
               "required_item": null,
               "reward_item": null
@@ -664,16 +664,15 @@
         {
           "id": "scene_healed",
           "background": "transparent.png",
-          "music": "sad_piano.mp3",
+          "music": "soft_fireplace.mp3",
           "dialogues": [
             {
               "character": "Lyra",
               "characterImage": "npc_healer.png",
-              "text": "Hẹn gặp lại quý khách lần sau"
+              "text": "Ngươi được hồi phục hoàn toàn. Hãy cẩn thận trên hành trình phía trước. 'Lửa & Lá' sẽ luôn ở đây chờ ngươi."
             }
           ],
-          "choices": [
-          ]
+          "choices": []
         },
         {
           "id": "scene_not_enough_item",
@@ -683,11 +682,10 @@
             {
               "character": "Lyra",
               "characterImage": "npc_healer.png",
-              "text": "Qúy khách chưa có minh chứng [Item `CCCD`]. Tôi không thể giúp gì nếu bạn không có minh chứng thân phận."
+              "text": "Ngươi chưa có minh chứng [Item `CCCD`]. Ta không thể giúp ngươi nếu không có xác nhận thân phận. Hãy quay lại khi ngươi đã sẵn sàng."
             }
           ],
-          "choices": [
-          ]
+          "choices": []
         },
         {
           "id": "scene_start",
@@ -697,7 +695,7 @@
             {
               "character": "Lyra",
               "characterImage": "npc_healer.png",
-              "text": "Bạn muốn nghe câu chuyện của ta? Hay chỉ muốn biết ta đã làm gì ở đây?"
+              "text": "Ngươi muốn nghe câu chuyện của ta? Hay tò mò vì sao ta chọn ở lại nơi này thay vì theo đuổi một con đường khác?"
             }
           ],
           "choices": [
@@ -729,12 +727,12 @@
             {
               "character": "Lyra",
               "characterImage": "npc_healer.png",
-              "text": "Trước đây ta từng là học viên chữa thương ở học viện thủ đô. Nhưng một sai sót nhỏ… đã cướp đi cơ hội trở thành pháp sư y thuật."
+              "text": "Ngày xưa, ta từng là học viên chữa thương tại học viện lớn nhất thủ đô. Nhưng một sai sót nhỏ trong thực hành... đã cướp đi cơ hội của ta."
             },
             {
               "character": "Lyra",
               "characterImage": "npc_healer.png",
-              "text": "Ta quay về quê và mở quán này cùng mẹ. Từ đó, ta học cách dùng món ăn làm dịu nỗi đau và hồi phục cơ thể – một cách khác để chữa lành, đúng không?"
+              "text": "Thất bại đó khiến ta phải quay về quê hương. Ta và mẹ mở quán 'Lửa & Lá' này. Từ đó, ta học cách chữa lành qua những món ăn và sự sẻ chia – một cách khác để mang lại sự bình yên, đúng không?"
             }
           ],
           "choices": [
@@ -760,12 +758,12 @@
             {
               "character": "Lyra",
               "characterImage": "npc_healer.png",
-              "text": "Ngươi biết không… có lần một chiến binh gục ngã ngay tại ngưỡng cửa quán. Ta chỉ còn đúng một nồi súp dược thảo – và nó đã cứu được anh ta."
+              "text": "Có một lần, một chiến binh bị thương nặng gục ngã ngay trước cửa quán. Ta chỉ còn đúng một nồi súp dược thảo – và nó đã cứu được anh ta."
             },
             {
               "character": "Lyra",
               "characterImage": "npc_healer.png",
-              "text": "Từ đó, ta tự hứa sẽ nấu ăn không chỉ bằng tay – mà bằng cả trái tim."
+              "text": "Từ đó, ta tự hứa sẽ luôn nấu ăn không chỉ bằng tay, mà bằng cả trái tim."
             }
           ],
           "choices": [
@@ -827,12 +825,12 @@
             {
               "character": "Lyra",
               "characterImage": "npc_healer.png",
-              "text": "Cảm ơn vì đã lắng nghe. Không phải ai cũng quan tâm đến những điều nhỏ bé…"
+              "text": "Cảm ơn vì đã lắng nghe. Không phải ai cũng quan tâm đến những điều nhỏ bé như vậy..."
             },
             {
               "character": "Lyra",
               "characterImage": "npc_healer.png",
-              "text": "Nếu một ngày nào đó ngươi cần chốn nghỉ chân – hãy nhớ rằng nơi này luôn mở cửa."
+              "text": "Nếu một ngày nào đó ngươi cần chốn nghỉ chân – hãy nhớ rằng 'Lửa & Lá' luôn mở cửa chào đón ngươi."
             }
           ],
           "choices": [
@@ -852,12 +850,12 @@
             {
               "character": "Lyra",
               "characterImage": "npc_healer.png",
-              "text": "Lâu đến mức mọi vết xước trên quầy này đều có một câu chuyện. Ta không phải người giỏi phép thuật… nhưng ta hiểu con người."
+              "text": "Ta đã ở đây rất lâu – đủ để mỗi vết xước trên quầy này đều mang một câu chuyện. Ta không giỏi phép thuật, nhưng ta hiểu con người."
             },
             {
               "character": "Lyra",
               "characterImage": "npc_healer.png",
-              "text": "Người say, kẻ lạc lối, cả những kẻ bị thương – họ đều đến đây. Và ta chỉ làm điều duy nhất ta biết: khiến họ cảm thấy ấm áp."
+              "text": "Người say, kẻ lạc lối, hay những kẻ mang vết thương... Họ đến đây, và ta chỉ làm điều duy nhất ta biết: mang lại sự ấm áp."
             }
           ],
           "choices": [
@@ -883,7 +881,7 @@
             {
               "character": "MC",
               "characterImage": "mc_default.png",
-              "text": "Có lẽ... ta sẽ quay lại đây sau. Quán này có điều gì đó đặc biệt thật."
+              "text": "Có lẽ... một ngày nào đó ta sẽ quay lại. Quán này có điều gì đó đặc biệt thật."
             }
           ],
           "choices": []
@@ -897,7 +895,7 @@
       "scenes": [
         {
           "id": "scene_intro",
-          "background": "village_central_square.png",
+          "background": "tavern_interior.png",
           "music": "calm_village_day.mp3",
           "sound_effects": [
             "birds_chirping.wav",
@@ -907,17 +905,17 @@
             {
               "character": "MC",
               "characterImage": "mc_default.png",
-              "text": "Đó có phải là Trưởng làng không? Ông ta đang quan sát bảng nhiệm vụ với ánh nhìn rất khác…"
+              "text": "Người đàn ông kia… có phải trưởng làng Elden không? Ông ấy đang ngồi ở góc quán với ánh mắt như hoài niệm điều gì đó."
             },
             {
               "character": "Elden",
               "characterImage": "npc_village_master.png",
-              "text": "A, mạo hiểm giả mới à? Lại gần đây nào. Ta đoán ngươi đang tìm việc làm… hay một lý tưởng để theo đuổi?"
+              "text": "Ồ, lữ khách mới. Ngồi xuống đi. Ta đoán ngươi đến đây không chỉ để uống đâu, đúng không?"
             }
           ],
           "choices": [
             {
-              "text": "Tiếp tục.",
+              "text": "Tiếp tục trò chuyện.",
               "next_scene": "scene_start",
               "required_item": null,
               "reward_item": null
@@ -938,11 +936,10 @@
             {
               "character": "Elden",
               "characterImage": "npc_village_master.png",
-              "text": "Ngươi cần có minh chứng thân phận [Item `CCCD`]. \n Ta có thể cho ngươi nếu như nhà ngươi lắng nghe câu chuyện của ta ."
+              "text": "Ngươi cần minh chứng thân phận [Item `CCCD`] mới có thể thực hiện các nhiệm vụ chính thức. Nhưng ta có thể giúp ngươi, nếu ngươi sẵn lòng nghe câu chuyện của ta."
             }
           ],
-          "choices": [
-          ]
+          "choices": []
         },
         {
           "id": "scene_haved_item",
@@ -952,21 +949,25 @@
             {
               "character": "Elden",
               "characterImage": "npc_village_master.png",
-              "text": "Ngươi đã có minh chứng thân phận rồi. Hãy tiếp nhận nhiệm vụ của ta và bắt đầu hành trình của mình."
+              "text": "Ngươi đã có minh chứng thân phận rồi. Hãy tiếp nhận nhiệm vụ và bắt đầu hành trình của mình. Chúc ngươi may mắn."
             }
           ],
-          "choices": [
-          ]
+          "choices": []
         },
         {
           "id": "scene_start",
-          "background": "village_central_square.png",
+          "background": "tavern_interior.png",
           "music": "casual_village_theme.mp3",
           "dialogues": [
             {
               "character": "Elden",
               "characterImage": "npc_village_master.png",
-              "text": "Nhiều người chỉ xem bounty như cách kiếm vàng. Nhưng với ta, nó là lời thề – giữ cho ngôi làng này an toàn.\n Ngươi muốn biết tại sao ta tin vào hệ thống này đến vậy không?"
+              "text": "Nhiều người xem bounty chỉ là cách kiếm vàng. Nhưng với ta, nó là một lời thề – giữ cho ngôi làng này được an toàn."
+            },
+            {
+              "character": "Elden",
+              "characterImage": "npc_village_master.png",
+              "text": "Ngươi muốn biết tại sao ta tin vào hệ thống này đến vậy không?"
             }
           ],
           "choices": [
@@ -998,12 +999,12 @@
             {
               "character": "Elden",
               "characterImage": "npc_village_master.png",
-              "text": "Ngày xưa ta từng là một kiếm sĩ – phiêu lưu khắp nơi, chém quái vật, săn tiền thưởng. Máu đổ nhiều, nhưng chẳng bao giờ là đủ để giữ hòa bình."
+              "text": "Ngày xưa ta từng là một kiếm sĩ, phiêu lưu qua mọi miền đất, săn lùng quái vật và tiền thưởng. Nhưng máu đổ nhiều, và cuối cùng chẳng bao giờ đủ để giữ hòa bình."
             },
             {
               "character": "Elden",
               "characterImage": "npc_village_master.png",
-              "text": "Chính trong một trận đánh ở phía Bắc, nơi đồng đội ngã xuống từng người một, ta nhận ra: chiến đấu vì danh tiếng… thì cuối cùng chẳng còn ai để kể \n lại câu chuyện."
+              "text": "Trong một trận đánh ở phía Bắc, nơi đồng đội hy sinh từng người một, ta nhận ra: chiến đấu vì danh tiếng… thì chẳng còn ai để kể lại câu chuyện."
             }
           ],
           "choices": [
@@ -1029,12 +1030,12 @@
             {
               "character": "Elden",
               "characterImage": "npc_village_master.png",
-              "text": "Ta trở lại nơi mình sinh ra – một làng nhỏ bé bị lũ cướp đe dọa hằng tuần. Không còn kiếm phép thuật, không còn quân đội. Chỉ còn nông dân và sợ hãi."
+              "text": "Ta trở lại nơi mình sinh ra – một ngôi làng nhỏ bị lũ cướp đe dọa mỗi tuần. Không còn kiếm phép thuật, không còn đồng đội. Chỉ còn nông dân và sự sợ hãi."
             },
             {
               "character": "Elden",
               "characterImage": "npc_village_master.png",
-              "text": "Vậy nên ta lập ra bảng bounty – để những người như ngươi có thể chiến đấu và học cách bảo vệ."
+              "text": "Vậy nên ta lập ra bảng bounty – để những người như ngươi có thể chiến đấu và học cách bảo vệ. Nó không chỉ là công việc, mà còn là trách nhiệm."
             }
           ],
           "choices": [
@@ -1060,12 +1061,12 @@
             {
               "character": "Elden",
               "characterImage": "npc_village_master.png",
-              "text": "Ta không chỉ muốn bảo vệ làng – ta muốn xây nền cho thế hệ mới. Mỗi nhiệm vụ là cơ hội để mạo hiểm giả hiểu rằng trách nhiệm lớn hơn phần thưởng."
+              "text": "Ta không chỉ muốn bảo vệ làng – ta muốn xây dựng nền móng cho thế hệ mới. Mỗi nhiệm vụ là cơ hội để mạo hiểm giả hiểu rằng trách nhiệm lớn hơn phần thưởng."
             },
             {
               "character": "Elden",
               "characterImage": "npc_village_master.png",
-              "text": "Ngươi không cần là anh hùng. Ngươi chỉ cần là người không quay lưng khi người khác cần giúp."
+              "text": "Ngươi không cần là anh hùng. Ngươi chỉ cần là người không quay lưng khi người khác cần giúp đỡ."
             }
           ],
           "choices": [
@@ -1073,7 +1074,7 @@
               "text": "Tôi nghĩ tôi hiểu ông rồi. Tôi sẽ nhận lấy thẻ CCCD này và bắt đầu hành trình của mình.",
               "next_scene": "scene_gratitude",
               "required_item": null,
-              "reward_item": null
+              "reward_item": "CCCD"
             },
             {
               "text": "Quay lại đầu.",
@@ -1085,7 +1086,7 @@
         },
         {
           "id": "scene_gratitude",
-          "background": "village_central_square_evening.png",
+          "background": "tavern_interior_evening.png",
           "music": "gentle_gratitude.mp3",
           "dialogues": [
             {
@@ -1264,7 +1265,7 @@
     {
       "id": "lorekeeper_tian_backstory",
       "title": "Kho Tàng Bị Lãng Quên",
-      "description": "Gặp Tian – thủ thư sống giữa tầng tầng sách cổ. Chỉ những ai đủ kiên nhẫn mới được học lại cách gắn từ vào ký ức.",
+      "description": "Gặp Tian – thủ thư sống giữa tầng tầng sách cổ. Ông dạy người chơi cách kết nối lại những ký ức rời rạc qua bài luyện tập điền từ cổ.",
       "scenes": [
         {
           "id": "scene_intro",
@@ -1277,12 +1278,12 @@
             {
               "character": "MC",
               "characterImage": "mc_default.png",
-              "text": "Khó mà nghe thấy tiếng động nào trong thư viện này… ngoài tiếng lật sách liên tục từ góc phòng."
+              "text": "Thư viện này thật yên tĩnh… Chỉ có tiếng lật sách vọng lên từ góc phòng, nơi một người đàn ông già đang chăm chú đọc."
             },
             {
               "character": "Tian",
               "characterImage": "npc_lorekeeper.png",
-              "text": "Yên lặng. Từng từ đều mang trọng lượng. Và những từ bị mất… cần được tìm lại."
+              "text": "Yên lặng. Mỗi từ đều có trọng lượng riêng. Những từ bị lãng quên cần được tìm lại để bảo tồn ký ức của thế giới này."
             }
           ],
           "choices": [
@@ -1295,20 +1296,6 @@
           ]
         },
         {
-          "id": "scene_not_enough_item",
-          "background": "transparent.png",
-          "music": "sad_piano.mp3",
-          "dialogues": [
-            {
-              "character": "Tian",
-              "characterImage": "npc_lorekeeper.png",
-              "text": "Ngươi chưa có  [Item `Grimoire of Trials I`]. Ta không thể hỗ trợ gì được."
-            }
-          ],
-          "choices": [
-          ]
-        },
-        {
           "id": "scene_start",
           "background": "library_interior.png",
           "music": "thoughtful_theme.mp3",
@@ -1316,20 +1303,25 @@
             {
               "character": "Tian",
               "characterImage": "npc_lorekeeper.png",
-              "text": "Ngươi muốn học lại những từ đã lạc khỏi trí nhớ? Ta có một phương pháp – nhưng cần sự tập trung tuyệt đối."
+              "text": "Ngươi muốn học cách khôi phục những ký ức đã rơi vào quên lãng? Ta có một bài luyện tập – điền từ cổ. Nó không dễ, nhưng sẽ mang lại giá trị lớn lao."
+            },
+            {
+              "character": "Tian",
+              "characterImage": "npc_lorekeeper.png",
+              "text": "Mỗi ngày, ngươi có thể luyện tập 3 lần, mỗi lần 5 câu. Hãy cẩn thận khi điền, vì từng từ đúng sẽ mở ra một phần của ký ức ngươi đánh mất."
             }
           ],
           "choices": [
             {
-              "text": "Ông đã học nó từ đâu?",
+              "text": "Ông đã học phương pháp này từ đâu?",
               "next_scene": "scene_story",
               "required_item": null,
               "reward_item": null
             },
             {
-              "text": "Tôi muốn thử phương pháp đó.",
+              "text": "Tôi muốn thử luyện tập.",
               "next_scene": "scene_unlock_cloze",
-              "required_item": "CCCD",
+              "required_item": "Grimoire of Trials I",
               "reward_item": null
             },
             {
@@ -1348,23 +1340,23 @@
             {
               "character": "Tian",
               "characterImage": "npc_lorekeeper.png",
-              "text": "Ta từng là học giả hoàng gia. Nhưng triều đình không cần người bảo tồn – chỉ cần kẻ làm sai ít lỗi nhất."
+              "text": "Ta từng là học giả hoàng gia, phụ trách bảo tồn tri thức của vương quốc. Nhưng triều đình không cần những ký ức – họ chỉ cần thứ phục vụ quyền lực."
             },
             {
               "character": "Tian",
               "characterImage": "npc_lorekeeper.png",
-              "text": "Nay, ta chọn ở lại đây. Để ai muốn học thật sự… có cơ hội hoàn thiện chính mình, từng chỗ trống một."
+              "text": "Giờ đây, ta chọn ở lại thư viện này để bảo vệ những gì còn sót lại. Những ai thực sự muốn học sẽ được dẫn dắt – từng từ, từng ký ức."
             }
           ],
           "choices": [
             {
-              "text": "Cho tôi thử phương pháp đó.",
+              "text": "Tôi sẵn sàng thử luyện tập.",
               "next_scene": "scene_unlock_cloze",
-              "required_item": "CCCD",
+              "required_item": "Grimoire of Trials I",
               "reward_item": null
             },
             {
-              "text": "Tôi chưa sẳn sàng.",
+              "text": "Tôi chưa sẵn sàng.",
               "next_scene": "scene_end",
               "required_item": null,
               "reward_item": null
@@ -1379,12 +1371,12 @@
             {
               "character": "Tian",
               "characterImage": "npc_lorekeeper.png",
-              "text": "Khi nào ngươi sẵn sàng, bàn luyện từ luôn chờ. Đừng để trí nhớ bị phủ bụi lâu quá."
+              "text": "Khi nào ngươi sẵn sàng, bàn luyện từ vẫn ở đây. Đừng để sự lãng quên gặm nhấm ký ức của ngươi quá lâu."
             },
             {
               "character": "MC",
               "characterImage": "mc_default.png",
-              "text": "Cảm ơn ông, Tian. Tôi sẽ quay lại… khi đã sẵn sàng nối lại những ký ức rời rạc."
+              "text": "Cảm ơn ông, Tian. Tôi sẽ quay lại để kết nối lại những ký ức đã mất."
             }
           ],
           "choices": []
@@ -1397,7 +1389,7 @@
             {
               "character": "Tian",
               "characterImage": "npc_lorekeeper.png",
-              "text": "Đây là bàn luyện từ. Ngồi xuống, đừng sợ lấp khoảng trống. Mỗi từ điền đúng… là một bước về phía ngươi từng là."
+              "text": "Đây là bàn luyện từ. Ngồi xuống, hãy điền vào những chỗ trống. Mỗi từ đúng là một bước về phía ký ức hoàn chỉnh."
             }
           ],
           "choices": []
@@ -1407,7 +1399,7 @@
     {
       "id": "wordseer_kang_backstory",
       "title": "Giữa Những Dòng Nghĩa",
-      "description": "Kang – thủ thư trực giác, người thấy sắc thái của từ ngữ như ánh sáng. Cô giúp người chơi luyện chọn đúng – giữa vô số lựa chọn gần đúng.",
+      "description": "Gặp Kang – thủ thư trực giác, người giúp người chơi rèn luyện khả năng chọn từ đúng qua bài kiểm tra trắc nghiệm ngữ nghĩa.",
       "scenes": [
         {
           "id": "scene_intro",
@@ -1417,12 +1409,12 @@
             {
               "character": "MC",
               "characterImage": "mc_default.png",
-              "text": "Trên gác cao thư viện, một cô gái trẻ đang sắp xếp những mảnh giấy có ký hiệu màu sắc…"
+              "text": "Trên gác cao thư viện, một cô gái trẻ đang sắp xếp những mảnh giấy có ký hiệu màu sắc lạ mắt."
             },
             {
               "character": "Kang",
               "characterImage": "npc_wordseer.png",
-              "text": "Một từ có thể có nhiều nghĩa, nhưng ngữ cảnh thì không nói dối. Ngươi muốn học cách chọn đúng à?"
+              "text": "Mỗi từ có nhiều sắc thái, nhưng ngữ cảnh thì không bao giờ nói dối. Ngươi muốn học cách nhận ra sự khác biệt đó không?"
             }
           ],
           "choices": [
@@ -1442,20 +1434,25 @@
             {
               "character": "Kang",
               "characterImage": "npc_wordseer.png",
-              "text": "Luyện trắc nghiệm không phải để chọn nhanh – mà để chọn chính xác. Học cách phân biệt giữa đúng, gần đúng, và sai hoàn toàn."
+              "text": "Trong bài kiểm tra trắc nghiệm, ngươi sẽ chọn từ phù hợp nhất với ngữ cảnh. Mỗi ngày, ngươi có thể làm 3 bài, mỗi bài 5 câu. Đừng vội – hãy chọn chính xác."
+            },
+            {
+              "character": "Kang",
+              "characterImage": "npc_wordseer.png",
+              "text": "Sai cũng không sao, miễn là ngươi hiểu vì sao mình sai. Đó mới là cách học thực sự."
             }
           ],
           "choices": [
             {
-              "text": "Làm sao cô luyện được khả năng đó?",
+              "text": "Cô đã luyện được khả năng này như thế nào?",
               "next_scene": "scene_story",
               "required_item": null,
               "reward_item": null
             },
             {
-              "text": "Tôi muốn thử ôn tập trắc nghiệm.",
+              "text": "Tôi muốn thử bài kiểm tra.",
               "next_scene": "scene_unlock_mcq",
-              "required_item": "CCCD",
+              "required_item": "Grimoire of Trials II",
               "reward_item": null
             },
             {
@@ -1474,23 +1471,23 @@
             {
               "character": "Kang",
               "characterImage": "npc_wordseer.png",
-              "text": "Ta từng theo học ở đền Ngôn Từ – nơi mỗi từ được phân tích như ánh sáng qua lăng kính. Từ đó, ta nhận ra: chọn sai một từ, có thể sai cả số phận."
+              "text": "Ta từng học ở đền Ngôn Từ – nơi mỗi từ được phân tích như ánh sáng qua lăng kính. Từ đó, ta học cách nhìn thấu sắc thái nghĩa."
             },
             {
               "character": "Kang",
               "characterImage": "npc_wordseer.png",
-              "text": "Ta muốn giúp người khác thấy được sắc thái – chứ không chỉ là mặt chữ."
+              "text": "Chọn sai một từ, đôi khi có thể thay đổi cả ý nghĩa của một câu chuyện. Đó là lý do ta muốn giúp ngươi hiểu ngôn ngữ thật sự."
             }
           ],
           "choices": [
             {
-              "text": "Tôi sẵn sàng học.",
+              "text": "Tôi sẵn sàng thử bài kiểm tra.",
               "next_scene": "scene_unlock_mcq",
-              "required_item": null,
+              "required_item": "Grimoire of Trials II",
               "reward_item": null
             },
             {
-              "text": "Tôi chưa sẳn sàng.",
+              "text": "Tôi chưa sẵn sàng.",
               "next_scene": "scene_end",
               "required_item": null,
               "reward_item": null
@@ -1505,29 +1502,15 @@
             {
               "character": "Kang",
               "characterImage": "npc_wordseer.png",
-              "text": "Tập luyện không bao giờ dừng lại. Khi quay lại, hãy mang theo một câu hỏi – và khát khao hiểu nó đến tận cùng."
+              "text": "Học từ không bao giờ kết thúc. Khi quay lại, hãy mang theo khát khao hiểu sâu hơn về từng từ ngươi gặp."
             },
             {
               "character": "MC",
               "characterImage": "mc_default.png",
-              "text": "Tôi sẽ nhớ lời cô. Hẹn gặp lại – giữa những dòng nghĩa."
+              "text": "Tôi sẽ nhớ lời cô, Kang. Hẹn gặp lại – giữa những dòng nghĩa."
             }
           ],
           "choices": []
-        },
-        {
-          "id": "scene_not_enough_item",
-          "background": "transparent.png",
-          "music": "sad_piano.mp3",
-          "dialogues": [
-            {
-              "character": "Kang",
-              "characterImage": "npc_wordseer.png",
-              "text": "Ngươi chưa có  [Item `Grimoire of Trials 2`]. Ta không thể hỗ trợ gì được."
-            }
-          ],
-          "choices": [
-          ]
         },
         {
           "id": "scene_unlock_mcq",
@@ -1537,7 +1520,190 @@
             {
               "character": "Kang",
               "characterImage": "npc_wordseer.png",
-              "text": "Hãy lắng nghe từng câu, nhìn từng từ. Sai cũng được – miễn là sau đó ngươi hiểu vì sao."
+              "text": "Hãy đọc kỹ từng câu hỏi, từng lựa chọn. Sai không quan trọng – hiểu được vì sao sai mới quan trọng."
+            }
+          ],
+          "choices": []
+        }
+      ]
+    },
+    {
+      "id": "upgrader_smith_backstory",
+      "title": "Người Thợ Rèn Nâng Cấp",
+      "description": "Gặp Smith – người thợ rèn lừng danh, không chỉ chế tạo vũ khí mà còn nâng cấp các vật phẩm hỗ trợ như bình Elixir và Arcane Essence. Ông tin rằng sự tiến bộ không chỉ nằm ở chiến đấu mà còn ở việc chuẩn bị kỹ lưỡng.",
+      "scenes": [
+        {
+          "id": "scene_intro",
+          "background": "smithy_interior.png",
+          "music": "forge_theme.mp3",
+          "sound_effects": [
+            "hammer_strike.wav",
+            "fire_crackle.wav"
+          ],
+          "dialogues": [
+            {
+              "character": "MC",
+              "characterImage": "mc_default.png",
+              "text": "Tiếng búa vang vọng khắp căn lò rèn. Người đàn ông lực lưỡng đang chăm chú vào công việc của mình, từng cú búa như mang theo sức nặng của sự quyết tâm."
+            },
+            {
+              "character": "Smith",
+              "characterImage": "npc_upgrader.png",
+              "text": "A, ngươi đến đúng lúc. Nếu ngươi tìm kiếm sức mạnh, ta có thể giúp ngươi – nhưng không phải bằng cách chiến đấu."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Tiếp tục.",
+              "next_scene": "scene_start",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_start",
+          "background": "smithy_interior.png",
+          "music": "forge_theme.mp3",
+          "dialogues": [
+            {
+              "character": "Smith",
+              "characterImage": "npc_upgrader.png",
+              "text": "Ngươi biết không, chiến đấu không chỉ là vung kiếm hay bắn phép. Một chiến binh thực thụ biết cách chuẩn bị – từ vũ khí đến những vật phẩm hỗ trợ \nnhư bình Elixir và Arcane Essence."
+            },
+            {
+              "character": "Smith",
+              "characterImage": "npc_upgrader.png",
+              "text": "Ta có thể nâng cấp bình Elixir và Arcane Essence của ngươi. Nhưng việc này cần nguyên liệu đặc biệt và một chút vàng. Không có gì là miễn phí đâu, bạn trẻ."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Ông có thể nâng cấp bình Elixir và Arcane Essence thế nào?",
+              "next_scene": "scene_explain_upgrades",
+              "required_item": null,
+              "reward_item": null
+            },
+            {
+              "text": "Tôi muốn nâng cấp ngay lập tức!",
+              "next_scene": "scene_upgrade_menu",
+              "required_item": null,
+              "reward_item": null
+            },
+            {
+              "text": "Tôi sẽ quay lại sau.",
+              "next_scene": "scene_end",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_explain_upgrades",
+          "background": "smithy_blueprint.png",
+          "music": "explanation_theme.mp3",
+          "dialogues": [
+            {
+              "character": "Smith",
+              "characterImage": "npc_upgrader.png",
+              "text": "Ngươi có thể nâng cấp bình Elixir và Arcane Essence để tăng hiệu quả hồi phục.."
+            },
+            {
+              "character": "Smith",
+              "characterImage": "npc_upgrader.png",
+              "text": "Để nâng cấp, ngươi cần mang theo nguyên liệu đặc biệt và một số vàng."
+            },
+            {
+              "character": "Smith",
+              "characterImage": "npc_upgrader.png",
+              "text": "Mỗi nâng cấp sẽ tốn một số điểm tri thức, hoặc gấp 4 điểm tri thức nếu không đủ nguyên liệu. Nên hãy chuẩn bị kỹ lưỡng trước khi đến đây."
+            }
+
+          ],
+          "choices": [
+            {
+              "text": "Tôi đã hiểu. Hãy để tôi xem ông có thể nâng cấp gì.",
+              "next_scene": "scene_upgrade_menu",
+              "required_item": null,
+              "reward_item": null
+            },
+            {
+              "text": "Hẹn gặp lại sau.",
+              "next_scene": "scene_end",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_upgrade_menu",
+          "background": "smithy_upgrade_station.png",
+          "music": "upgrade_menu_theme.mp3",
+          "dialogues": [
+            {
+              "character": "Smith",
+              "characterImage": "npc_upgrader.png",
+              "text": "Hãy chọn vật phẩm mà ngươi muốn nâng cấp. Chỉ được nâng cấp mỗi loại một lần, và mỗi nâng cấp sẽ vật phẩm tương ứng tốn một lượng vàng nhất định."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Nâng cấp bình Elixir. [50 score + 1 Elixir hoặc 200 score] [YES]",
+              "next_scene": "scene_upgrade_hp",
+              "required_item": null,
+              "reward_item": "Big Elixir"
+            },
+            {
+              "text": "Nâng cấp bình Arcane Essence. [50 score + 1 Arcane Essence hoặc 200 score] [NO]",
+              "next_scene": "scene_upgrade_mp",
+              "required_item": null,
+              "reward_item": "Big Arcane Essence"
+            },
+            {
+              "text": "Quay lại.",
+              "next_scene": "scene_start",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_upgrade_hp",
+          "background": "smithy_interior.png",
+          "music": "upgrade_complete_theme.mp3",
+          "dialogues": [
+            {
+              "character": "Smith",
+              "characterImage": "npc_upgrader.png",
+              "text": "Ta đã nâng cấp bình Elixir của ngươi. Giờ vật phẩm Elixir nó có thể hồi phục nhiều máu hơn trong mỗi lần sử dụng."
+            }
+          ],
+          "choices": [
+          ]
+        },
+        {
+          "id": "scene_upgrade_mp",
+          "background": "smithy_interior.png",
+          "music": "upgrade_complete_theme.mp3",
+          "dialogues": [
+            {
+              "character": "Smith",
+              "characterImage": "npc_upgrader.png",
+              "text": "Bình Arcane Essence của ngươi đã được nâng cấp. Bây giờ nó có thể hồi phục nhiều năng lượng phép thuật hơn. Đừng quên giữ nó bên mình trong các trận chiến\n khó khăn."
+            }
+          ],
+          "choices": [
+          ]
+        },
+        {
+          "id": "scene_end",
+          "background": "smithy_exterior.png",
+          "music": "village_theme.mp3",
+          "dialogues": [
+            {
+              "character": "MC",
+              "characterImage": "mc_default.png",
+              "text": "Lò rèn của Smith không chỉ mang lại cảm giác vững chắc, mà còn là nơi để chuẩn bị cho những trận chiến lớn hơn.\n Mình sẽ quay lại đây, khi cần nâng cấp thêm."
             }
           ],
           "choices": []

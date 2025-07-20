@@ -361,30 +361,40 @@ public class Character {
         this.health = Math.min(this.health + amount, maxHealth);
     }
 
-    public void buff(String effect, float value) {
-        switch (effect) {
-            case "speed":
-                this.moveSpeed = Math.min(3, this.moveSpeed + value);
+    public void buff(String name, float value) {
+        switch (name) {
+            case "Draught of Fury":
+                this.damage += value;
                 break;
-            case "strength":
-                this.damage = Math.min(10, this.damage + value);
-                break;
-            case "health":
-                this.maxHealth = Math.min(200, this.maxHealth + value);
+            case "Aegis Brew":
+                this.defend += value;
                 break;
             default:
                 throw new IllegalArgumentException("Invalid buff effect");
         }
     }
 
-    public void debuff(String effect, float value) {
-        switch (effect) {
-            case "slow":
-                this.moveSpeed = Math.max(2, this.moveSpeed - value);
-                break;
-            case "curse":
-                this.health = Math.max(0, this.health - value);
-                break;
+
+    public void useScore(int score) {
+        if (score < 0) {
+            throw new IllegalArgumentException("Score cannot be negative");
+        }
+        if (this.score < score) {
+            throw new IllegalStateException("Not enough score to use");
+        }
+        this.score -= score;
+    }
+
+    public boolean upgradeItem(String itemName, int score) {
+
+        if (items == null || !items.containsKey(itemName) || items.get(itemName) <= 0) {
+            useScore(score*4);
+            return false;
+        }
+        else {
+            descreaseItemAmount(itemName, 1);
+            useScore(score);
+            return true;
         }
     }
 
@@ -412,10 +422,7 @@ public class Character {
                 healing(item.getValue());
                 break;
             case "buff":
-                buff("strength", item.getValue());
-                break;
-            case "debuff":
-                debuff("curse", item.getValue());
+                buff(item.getItemName(), item.getValue());
                 break;
             default:
                 throw new IllegalArgumentException("Invalid item effect");

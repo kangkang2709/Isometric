@@ -283,10 +283,10 @@ public class GameController {
 
                 switch (mapName) {
                     case "tavern":
-                        this.character.setPosition(35, 19);
+                        this.character.setPosition(28, 9);
                         break;
                     case "library":
-                        this.character.setPosition(28, 9);
+                        this.character.setPosition(35, 19);
                         break;
                     case "main":
                         this.character.setPosition(31, 15);
@@ -298,6 +298,7 @@ public class GameController {
                         this.character.setPosition(28, 22);
                         break;
                     case "forest":
+
                         this.character.setPosition(10, 14);
                         break;
                 }
@@ -412,6 +413,43 @@ public class GameController {
         if (npc != null) {
             npc.setBehaviorState("Dialogue");
             switch (npc.getNpcName()) {
+                case "Upgrader Smith":
+                    if (character.getScore() < 150) {
+                        dialogController.showSimpleMessage(Arrays.asList("Ngươi cần ít nhất 150 điểm để nâng cấp trang bị của mình.",
+                                "Hãy hoàn thành các nhiệm vụ hoặc đánh bại quái vật để kiếm điểm."));
+                    } else {
+                        dialogController.setOnDialogFinishedAction(() -> {
+                            boolean isDouble = character.upgradeItem("Elixir", 50);
+                            Timer.schedule(new Timer.Task() {
+                                @Override
+                                public void run() {
+                                    if (isDouble) {
+                                        dialogController.showSimpleMessage("Nhận 1 `Big Elixir` từ Smith tốn 50 vàng và 1 bình Elixir.");
+                                    } else {
+                                        dialogController.showSimpleMessage("Nhận 1 `Big Elixir` từ Smith tốn 200 vàng.");
+                                    }
+                                }
+                            }, 1.5f);
+                        });
+                        dialogController.setOnCanncelFinishedAction(() -> {
+                            boolean isDouble = character.upgradeItem("Arcane Essence", 50);
+                            Timer.schedule(new Timer.Task() {
+                                @Override
+                                public void run() {
+                                    if (isDouble) {
+                                        dialogController.showSimpleMessage("Nhận 1 `Big Arcane Essence` từ Smith tốn 50 vàng và 1 bình Arcane Essence.");
+                                    } else {
+                                        dialogController.showSimpleMessage("Nhận 1 `Big Arcane Essence` từ Smith tốn 200 vàng.");
+                                    }
+                                }
+                            }, 1.5f);
+                        });
+
+                        dialogController.startDialog(npc.getArcId(), npc.getSceneId());
+                    }
+                    break;
+
+
                 case "WordSeer Kang":
                     if (character.getLevel() < 3 && character.getRun() < 3) {
                         dialogController.showSimpleMessage("Ngươi chưa đủ tri thức để tham gia `Bài học ngữ nghĩa` của ta.\n" +
@@ -494,10 +532,6 @@ public class GameController {
                             addFlag("dungeon_call");
 
                             character.addItem(ItemLoader.getItemById(1), 2);
-
-                            if (character.getItems().get("CCCD") == null) {
-                                character.addItem(ItemLoader.getItemById(17), 1);
-                            }
 
                             Timer.schedule(new Timer.Task() {
                                 @Override
@@ -1237,6 +1271,9 @@ public class GameController {
     public void resetGame() {
         // Reset character with a new instance
         character = new Character(10, 14);
+        checkPositionEvents(0, 0); // Reset current event
+
+        isRenderCharacter = true;
 
         resetEventsManager();
         npcManager.resetNPCManager();

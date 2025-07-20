@@ -434,6 +434,7 @@ public class GameplayController {
             currentOverlay = OverlayType.NONE;
             timerAction = 5f;
             switch (item.getItemName()) {
+                case "Big Elixir":
                 case "Elixir":
                     playerHealing((int) item.getValue(), () -> {
                         addCombatLog("Đã hồi " + item.getValue() + " Sinh Lực!");
@@ -447,6 +448,7 @@ public class GameplayController {
                         }
                     });
                     break;
+                case "Big Arcane Essence":
                 case "Arcane Essence":
                     playerHealingMana((int) item.getValue(), () -> {
                         addCombatLog("Đã hồi " + item.getValue() + " Năng lượng!");
@@ -463,8 +465,7 @@ public class GameplayController {
                     break;
                 case "Draught of Fury":
                     playerBuff(1, () -> {
-                        addCombatLog("Đã tăng 5 sức mạnh!");
-                        wordDamageMultiplier += item.getValue();
+                        addCombatLog("Đã tăng 8 sức mạnh trong trận!");
                         gameController.getCharacter().upAttack(item.getValue());
                         playerStatusDuration.put("BUFF_ATK", 2);
 
@@ -478,7 +479,7 @@ public class GameplayController {
                     break;
                 case "Aegis Brew":
                     playerBuff(1, () -> {
-                        addCombatLog("Đã tăng 5 phòng thủ!");
+                        addCombatLog("Đã tăng 8 phòng thủ trong trận!");
                         gameController.getCharacter().upDefend(item.getValue());
                         playerStatusDuration.put("BUFF_DEF", 5);
 
@@ -686,7 +687,7 @@ public class GameplayController {
         // Player stats
         regularFont.setColor(Color.WHITE);
         float attack = gameController.getCharacter().getDamage() + attackBuff - playerNerf;
-        float defend = gameController.getCharacter().getDefend() + playerDef;
+        float defend = playerDef + playerDef;
         regularFont.draw(batch, "Sức mạnh: " + (int) attack, x + 20, y + height - 15);
         regularFont.draw(batch, "Phòng thủ: " + (int) defend, x + 20, y + height - 35);
         regularFont.draw(batch, "Kinh nghiệm nhận được: " + (int) experienceGain, x + 20, y + height - 55);
@@ -941,9 +942,9 @@ public class GameplayController {
 
         // Main overlay panel
         float panelWidth = screenWidth * 0.7f;
-        float panelHeight = screenHeight * 0.7f - 150;
+        float panelHeight = screenHeight * 0.7f - 80;
         float panelX = (screenWidth - panelWidth) / 2;
-        float panelY = (screenHeight - panelHeight) / 2;
+        float panelY = (screenHeight - panelHeight) / 2 +70;
 
         // Panel background
         batch.setColor(0.3f, 0.2f, 0.1f, 0.95f);
@@ -1537,8 +1538,8 @@ public class GameplayController {
         if (playerStatusDuration.containsKey("BUFF_ATK")) {
             int buffDuration = playerStatusDuration.get("BUFF_ATK");
             if (buffDuration > 1) {
-                attackBuff = 5; // Tăng sát thương tấn công
-                addCombatLog("Bạn được tăng 5 sát thương tấn công!");
+                attackBuff = 8; // Tăng sát thương tấn công
+                addCombatLog("Bạn được tăng 8 sát thương tấn công!");
                 playerStatusDuration.put("BUFF_ATK", buffDuration - 1);
             } else {
                 playerStatusDuration.remove("BUFF_ATK");
@@ -1549,8 +1550,8 @@ public class GameplayController {
         if (playerStatusDuration.containsKey("BUFF_DEF")) {
             int buffDuration = playerStatusDuration.get("BUFF_DEF");
             if (buffDuration > 1) {
-                playerDef = 5; // Tăng phòng thủ
-                addCombatLog("Bạn được tăng 5 phòng thủ!");
+                playerDef = 8; // Tăng phòng thủ
+                addCombatLog("Bạn được tăng 8 phòng thủ!");
                 playerStatusDuration.put("BUFF_DEF", buffDuration - 1);
             } else {
                 playerStatusDuration.remove("BUFF_DEF");
@@ -1666,12 +1667,12 @@ public class GameplayController {
 
         if (action < 4) {
             damage = 5 + random.nextInt(6) + enemy.getAttackPower(); // ~5–10 + atk
-            damage -= (gameController.getCharacter().getDefend() + playerDef); // giảm kháng nhẹ
+            damage -= (playerDefend + playerDef); // giảm kháng nhẹ
             damage = Math.max(0, damage);
             addCombatLog(enemyName + " tấn công gây " + (int) damage + " sát thương!");
         } else if (action < 8) {
             damage = 10 + random.nextInt(6) + (enemy.getAttackPower() - atkNerf) * 1.2f + currentLevel * 0.5f;
-            damage -= (gameController.getCharacter().getDefend() + playerDef); // giảm kháng nhẹ
+            damage -= (playerDefend + playerDef); // giảm kháng nhẹ
             damage = Math.max(5, damage);
             addCombatLog(enemyName + " tấn công mạnh gây " + (int) damage + " sát thương!");
         } else if (action == 8) {
@@ -1998,12 +1999,16 @@ public class GameplayController {
         cleanupCombatState();
     }
 
+
+    private float playerDefend = 0;
+
     public void startCombat(Enemy enemy) {
         cleanupCombatState();
 
         this.enemy = enemy;
         this.enemyName = enemy.getEnemyName();
         this.wordDamageMultiplier = gameController.getCharacter().getDamage();
+        this.playerDefend = gameController.getCharacter().getDefend();
         this.isVictory = false;
         this.experienceGain = 0;
         this.playerHealth = gameController.getCharacter().getHealth();

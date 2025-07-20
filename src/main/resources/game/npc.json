@@ -1,15 +1,15 @@
 [
   {
     "npcID": 1,
-    "npcName": "Thợ rèn",
+    "npcName": "Upgrader Smith",
     "npcDescription": "A skilled healer who can restore your health and mana",
-    "arcId": "healer_backstory",
+    "arcId": "upgrader_smith_backstory",
     "sceneId": "scene_intro",
     "npcImage": "healer.png",
     "npcBackStory": "Elara studied ancient healing arts in the mystical forest before settling in this village.",
     "behaviorState": "idle",
-    "xPosition": 12,
-    "yPosition": 37,
+    "xPosition": 7,
+    "yPosition": 27,
     "mapName": "main"
   },
   {

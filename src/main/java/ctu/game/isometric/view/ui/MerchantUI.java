@@ -73,9 +73,11 @@ public class MerchantUI {
     private final Color inactiveTabColor = new Color(0.22f, 0.22f, 0.28f, 1f);
     private final Color closeButtonColor = new Color(0.7f, 0.3f, 0.3f, 1f);
     private final Color closeButtonHoverColor = new Color(0.8f, 0.4f, 0.4f, 1f);
-    private final Color priceColor = new Color(1f, 0.85f, 0.4f, 1f);
     private final Color affordableColor = new Color(0.4f, 0.9f, 0.4f, 1f);
+
     private final Color unaffordableColor = new Color(0.9f, 0.4f, 0.4f, 1f);
+    private final Color priceColor = new Color(1f, 0.85f, 0.4f, 1f);
+
     private final Color titleColor = new Color(0.9f, 0.9f, 1f, 1f);
     private final Color textColor = new Color(0.85f, 0.85f, 0.9f, 1f);
     private final Color dividerColor = new Color(0.3f, 0.3f, 0.4f, 0.8f);
@@ -592,7 +594,7 @@ public class MerchantUI {
                         buyButton.y + (buyButton.height + layout.height) / 2);
             } else {
                 font.setColor(priceColor);
-                font.draw(batch, "Sell Price: " + (price / 2), detailsX, detailsY - 50);
+                font.draw(batch, "Sell Price: " + (price * 0.7), detailsX, detailsY - 50);
 
                 // Draw sell button
                 font.setColor(Color.WHITE);
@@ -612,8 +614,7 @@ public class MerchantUI {
 
     // Keep existing methods for functionality
     private void loadMerchantItems() {
-//        merchantItems = ItemLoader.getAllItemsWithout("N/A");
-        merchantItems = ItemLoader.getAllItems();
+        merchantItems = ItemLoader.getAllItemsWithoutNA();
 
         Gdx.app.log("MerchantUI", "Loaded " + merchantItems.size() + " merchant items");
 
@@ -626,12 +627,17 @@ public class MerchantUI {
 
     private void updatePlayerItems() {
         Character character = gameController.getCharacter();
+
+
         playerItems.clear();
         displayItems.clear();
 
         Map<String, Integer> characterItems = character.getItems();
         for (Map.Entry<String, Integer> entry : characterItems.entrySet()) {
             Items item = ItemLoader.getItemByName(entry.getKey());
+            if (item.getItemEffect().equals("N/A")) {
+                continue; // Skip items with "N/A" effect
+            }
             if (item != null) {
                 playerItems.put(item, entry.getValue());
                 displayItems.add(item);
@@ -744,9 +750,9 @@ public class MerchantUI {
 
         try {
             int price = item.getItemPrice();
-            int sellPrice = price / 2;
+            float sellPrice = price *0.7f; // 70% of the buy price
 
-            character.addScore(sellPrice);
+            character.addScore((int)sellPrice);
             character.removeItem(item.getItemName(), 1);
 
             updatePlayerItems();

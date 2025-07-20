@@ -436,6 +436,7 @@ public class InputController extends InputAdapter {
             case Keys.PAUSE -> {
                 mapRenderer.printCurrentPosition();
                 gameController.addFlag("klein_unlock");
+                gameController.getCharacter().setScore(600);
             }
             case Keys.F8 -> {
                 Enemy enemy = EnemyLoader.getEnemyById(2);

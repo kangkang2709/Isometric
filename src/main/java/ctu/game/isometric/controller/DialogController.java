@@ -304,6 +304,7 @@ public class DialogController {
                     performAction = true; // Only set to true when choice has required item
 
                     if (itemName != null) {
+
                         if (itemName.equalsIgnoreCase("Ruby Omega")) {
                             gameController.changeSaveMap("dungeon2");
                             gameController.getCharacter().setPosition(1, 20);
@@ -313,7 +314,6 @@ public class DialogController {
                         } else if (itemName.equalsIgnoreCase("Emeral Delta")) {
                             gameController.changeSaveMap("main");
                             gameController.getCharacter().setPosition(13, 27);
-
                         } else
                             gameController.getCharacter().addItem(ItemLoader.getItemByName(itemName), 1);
 
@@ -327,9 +327,20 @@ public class DialogController {
                     // If player doesn't have the required item, redirect to scene_not_enough_item
                     startDialog(currentArcId, "scene_not_enough_item");
                 }
-            } else if (choice.getText().contains("[YES]")) {
+            }
+            else if (choice.getText().contains("[YES]")) {
                 performAction = true;
                 isCancelAction = false;
+
+                if (itemName != null && !itemName.isEmpty()) {
+                    Items item = ItemLoader.getItemByName(itemName);
+                    if (item != null) {
+                        if (item.getItemEffect().equals("N/A") && gameController.getCharacter().getItems().get(itemName) != null) {
+                        } else {
+                            gameController.getCharacter().addItem(item, 1);
+                        }
+                    }
+                }
                 if (choice.getNext_scene() != null) {
                     startDialog(currentArcId, choice.getNext_scene());
                 } else {
@@ -338,6 +349,16 @@ public class DialogController {
             } else if (choice.getText().contains("[NO]")) {
                 performAction = false;
                 isCancelAction = true;
+
+                if (itemName != null && !itemName.isEmpty()) {
+                    Items item = ItemLoader.getItemByName(itemName);
+                    if (item != null) {
+                        if (item.getItemEffect().equals("N/A") && gameController.getCharacter().getItems().get(itemName) != null) {
+                        } else {
+                            gameController.getCharacter().addItem(item, 1);
+                        }
+                    }
+                }
                 if (choice.getNext_scene() != null) {
                     startDialog(currentArcId, choice.getNext_scene());
                 } else {

@@ -6,8 +6,8 @@
     "texturePath": "game/items/elixir.png",
     "itemEffect": "heal",
     "value": 20.0,
-    "itemPrice": 100,
-    "manaCost": 5.0
+    "itemPrice": 50,
+    "manaCost": 10.0
   },
   {
     "itemID": 2,
@@ -16,28 +16,28 @@
     "texturePath": "game/items/arcane_essence.png",
     "itemEffect": "heal",
     "value": 20.0,
-    "itemPrice": 100,
+    "itemPrice": 50,
     "manaCost": 0.0
   },
   {
     "itemID": 3,
     "itemName": "Draught of Fury",
-    "itemDescription": "Tăng chỉ số tấn công thêm 5.",
+    "itemDescription": "Tăng chỉ số tấn công thêm 5 vĩnh viễn và 8 khi trong trận chiến.",
     "texturePath": "game/items/draught_of_fury.png",
     "itemEffect": "buff",
     "value": 5.0,
-    "itemPrice": 300,
-    "manaCost": 10.0
+    "itemPrice": 150,
+    "manaCost": 5.0
   },
   {
     "itemID": 4,
     "itemName": "Aegis Brew",
-    "itemDescription": "Tăng chỉ số phòng thủ thêm 5.",
+    "itemDescription": "Tăng chỉ số phòng thủ thêm 5 vĩnh viễn và 8 khi trong trận chiến..",
     "texturePath": "game/items/aegis_brew.png",
     "itemEffect": "buff",
     "value": 5.0,
-    "itemPrice": 300,
-    "manaCost": 10.0
+    "itemPrice": 150,
+    "manaCost": 5.0
   },
   {
     "itemID": 5,
@@ -168,6 +168,25 @@
     "value": 0.0,
     "itemPrice": 9999,
     "manaCost": 0.0
+  },
+  {
+    "itemID": 18,
+    "itemName": "Big Elixir",
+    "itemDescription": "Hồi phục 40 HP.",
+    "texturePath": "game/items/elixir2.png",
+    "itemEffect": "heal",
+    "value": 40.0,
+    "itemPrice": 400,
+    "manaCost": 5.0
+  },
+  {
+    "itemID": 19,
+    "itemName": "Big Arcane Essence",
+    "itemDescription": "Hồi phục 40 Mana.",
+    "texturePath": "game/items/arcane_essence2.png",
+    "itemEffect": "heal",
+    "value": 40.0,
+    "itemPrice": 400,
+    "manaCost": 0.0
   }
-
 ]
