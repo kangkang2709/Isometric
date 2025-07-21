@@ -230,7 +230,6 @@
               "characterImage": "mc_ready.png",
               "text": "Có lẽ mình lại cần tìm đến sự giúp đỡ của Cleric Klein."
             }
-
           ],
           "choices": []
         }
@@ -1804,13 +1803,13 @@
               "reward_item": "Ruby Omega"
             },
             {
-              "text": "Lake [Saphire Alpha]",
+              "text": "Lake  [Saphire Alpha]",
               "next_scene": "scene_end",
               "required_item": "CCCD",
               "reward_item": "Saphire Alpha"
             },
             {
-              "text": "Earth Tree [Emeral Delta]",
+              "text": "Gốc cây Yggdrasil [Emeral Delta]",
               "next_scene": "scene_end",
               "required_item": "CCCD",
               "reward_item": "Emeral Delta"
@@ -2176,110 +2175,218 @@
         }
       ]
     },
+
     {
       "id": "scene_boss_floor_4",
-      "music": "boss_theme_1.mp3",
-      "sound_effects": [
-        "echo_words.mp3"
-      ],
-      "dialogues": [
+      "title": "",
+      "description": "",
+      "scenes": [
         {
-          "character": "Narrator",
-          "characterImage": "fade_black.png",
-          "text": "[Khi bước vào tầng 4, bạn cảm nhận được luồng tư tưởng mạnh mẽ đang dao động...]"
+          "id": "scene_boss_crystal_intro",
+          "music": "boss_theme_1.mp3",
+          "sound_effects": [
+            "echo_words.mp3"
+          ],
+          "dialogues": [
+            {
+              "character": "mc_default",
+              "characterImage": "mc_default.png",
+              "text": "[Không khí như đông cứng lại. Một con rắn khổng lồ, thân thể kết tinh bằng pha lê đỏ, lặng lẽ trườn ra từ bóng tối...]"
+            },
+            {
+              "character": "Crystal Serpent Boss",
+              "characterImage": "stone.png",
+              "text": "Ngươi đã đến để giành lấy Hồng Ngọc? Chữ nghĩa của ngươi... sẽ bị bào mòn dần cho đến khi không còn gì."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Chiến đấu với Crystal Serpent Boss. [YES]",
+              "next_scene": "scene_boss_crystal_fight",
+              "required_item": null,
+              "reward_item": null
+            },
+            {
+              "text": "Rút lui trước để chuẩn bị. [NO]",
+              "next_scene": "scene_boss_crystal_escape",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
         },
         {
-          "character": "Sentinel of Idea",
-          "characterImage": "boss_idea_guardian.png",
-          "text": "Kẻ ngoại đạo... Ngươi đã bước quá sâu vào miền Ý Niệm. Ngươi có thể hiểu ngôn từ, nhưng liệu ngươi *hiểu được tư tưởng* đằng sau chúng?"
-        },
+            "id": "scene_boss_crystal_fight",
+            "music": "battle_theme.mp3",
+            "sound_effects": [
+                "battle_start.mp3"
+            ],
+            "dialogues": [
+                {
+                "character": "mc_default",
+                "characterImage": "mc_default.png",
+                "text": "Sẵn sàng đối đầu với Quái vật đá khổng lồ. Cuộc chiến cam go bắt đầu..."
+                }
+            ],
+            "choices": []
+            },
         {
-          "character": "MC",
-          "characterImage": "mc_alert.png",
-          "text": "Tư tưởng ẩn sau từ ngữ...? Ngươi là gì vậy?"
-        },
-        {
-          "character": "Sentinel of Idea",
-          "characterImage": "boss_idea_guardian.png",
-          "text": "Ta là Người Gác Ngọc Ý Niệm – hạt nhân của sự hiểu biết. Đánh bại ta, hoặc bị cuốn vào mê cung của logic và khái niệm."
-        },
-        {
-          "character": "System",
-          "characterImage": "fade_black.png",
-          "text": "[Mini-boss: Sentinel of Idea xuất hiện. Hoàn thành thử thách từ vựng logic để tiếp tục.]"
+          "id": "scene_boss_crystal_escape",
+          "music": "escape_theme.mp3",
+          "sound_effects": [
+            "escape_sound.mp3"
+          ],
+          "dialogues": [
+            {
+              "character": "mc_default",
+              "characterImage": "mc_default.png",
+              "text": "Cần thêm thời gian để chuẩn bị. Quái vật đá quá mạnh mẽ, mình cần tìm cách khác để đối phó."
+            }
+          ],
+          "choices": []
         }
-      ],
-      "choices": []
+      ]
     },
     {
       "id": "scene_boss_floor_6",
-      "music": "boss_theme_2.mp3",
-      "sound_effects": [
-        "visual_pulse.mp3"
-      ],
-      "dialogues": [
+      "title": "",
+      "description": "",
+      "scenes": [
         {
-          "character": "Narrator",
-          "characterImage": "fade_black.png",
-          "text": "[Một ánh sáng kỳ dị quét qua mê cung khi bạn tiến vào tầng 6. Hình ảnh ngôn từ lấp lánh bay quanh bạn...]"
+          "id": "scene_boss_sapphire_intro",
+          "music": "boss_theme_1.mp3",
+          "sound_effects": [
+            "echo_words.mp3"
+          ],
+          "dialogues": [
+            {
+              "character": "mc_default",
+              "characterImage": "mc_default.png",
+              "text": "[Vượt qua con đường lửa, bạn đối mặt với một sinh vật hùng vĩ – một con rồng lam đang hồi phục nhờ ngọn lửa xanh rực cháy quanh nó...]"
+            },
+            {
+              "character": "Sapphire Dragon Boss",
+              "characterImage": "dragon.png",
+              "text": "Ta không sợ bỏng... chỉ có độc mới khiến ta suy yếu. Hãy xem liệu ngươi có thể vượt qua được ta!"
+            }
+          ],
+          "choices": [
+            {
+              "text": "Chiến đấu với Sapphire Dragon Boss. [YES]",
+              "next_scene": "scene_boss_dragon_fight",
+              "required_item": null,
+              "reward_item": null
+            },
+            {
+              "text": "Chuẩn bị thêm. [NO]",
+              "next_scene": "scene_boss_dragon_escape",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
         },
         {
-          "character": "Guardian of Lexicon",
-          "characterImage": "boss_graphic_guardian.png",
-          "text": "Ta là người canh giữ Biểu Đồ – nơi mọi khái niệm được ánh xạ hóa thành hình ảnh và kết nối."
+            "id": "scene_boss_dragon_fight",
+            "music": "battle_theme.mp3",
+            "sound_effects": [
+                "battle_start.mp3"
+            ],
+            "dialogues": [
+                {
+                "character": "mc_default",
+                "characterImage": "mc_default.png",
+                "text": "Sẵn sàng đối đầu với Rồng Lửa khổng lồ. Cuộc chiến cam go bắt đầu..."
+                }
+            ],
+            "choices": []
         },
         {
-          "character": "MC",
-          "characterImage": "mc_thinking.png",
-          "text": "Biểu Đồ...? Có nghĩa là... cấu trúc từ và liên kết của chúng?"
-        },
-        {
-          "character": "Guardian of Lexicon",
-          "characterImage": "boss_graphic_guardian.png",
-          "text": "Đúng. Ngươi phải chứng minh rằng mình có thể đọc hiểu dòng chảy ẩn trong ngôn ngữ. Nếu không, ngươi sẽ bị lạc trong mê đồ tri thức."
-        },
-        {
-          "character": "System",
-          "characterImage": "fade_black.png",
-          "text": "[Mini-boss: Guardian of Lexicon xuất hiện. Hoàn thành thử thách đối chiếu từ và biểu tượng để tiếp tục.]"
+          "id": "scene_boss_dragon_escape",
+          "music": "escape_theme.mp3",
+          "sound_effects": [
+            "escape_sound.mp3"
+          ],
+          "dialogues": [
+            {
+              "character": "mc_default",
+              "characterImage": "mc_default.png",
+              "text": "Cần thêm thời gian để chuẩn bị. Rồng Lửa quá mạnh mẽ, mình cần tìm cách khác để đối phó."
+            }
+          ],
+          "choices": []
         }
-      ],
-      "choices": []
+      ]
     },
     {
       "id": "scene_boss_floor_8",
-      "music": "boss_theme_3.mp3",
-      "sound_effects": [
-        "flowing_river.mp3"
-      ],
-      "dialogues": [
+      "title": "",
+      "description": "",
+      "scenes": [
         {
-          "character": "Narrator",
-          "characterImage": "fade_black.png",
-          "text": "[Tầng 8 rung chuyển nhẹ. Không khí trở nên linh hoạt và thay đổi liên tục – như một dòng chảy ngôn từ không ngừng...]"
+          "id": "scene_boss_emerald_intro",
+          "music": "boss_theme_1.mp3",
+          "sound_effects": [
+            "echo_words.mp3"
+          ],
+          "dialogues": [
+            {
+              "character": "mc_default",
+              "characterImage": "mc_default.png",
+              "text": "[Ở tận cùng lối mòn đầy sương mù, một linh hồn mờ nhạt hiện ra – cơ thể phủ đầy lục quang, ánh mắt trống rỗng...]"
+            },
+            {
+              "character": "Emerald Revenant Boss",
+              "characterImage": "undead.png",
+              "text": "Từ ngữ... là thứ dễ bị xóa nhòa. Ngươi sẽ không còn nhớ nổi chính bản thân mình khi rơi vào màn sương ký ức của ta."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Chiến đấu với Emerald Revenant Boss. [YES]",
+              "next_scene": "scene_boss_crystal_fight",
+              "required_item": null,
+              "reward_item": null
+            },
+            {
+              "text": "Rút lui trước để chuẩn bị thêm. [NO]",
+              "next_scene": "scene_boss_crystal_escape",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
         },
         {
-          "character": "Warden of Flow",
-          "characterImage": "boss_flow_guardian.png",
-          "text": "Ngươi đã tiến xa, nhưng còn một điều cuối cùng: *ngữ cảnh*. Liệu ngươi hiểu được ngôn từ khi chúng trôi trong dòng thời gian?"
+            "id": "scene_boss_crystal_fight",
+            "music": "battle_theme.mp3",
+            "sound_effects": [
+                "battle_start.mp3"
+            ],
+            "dialogues": [
+                {
+                "character": "mc_default",
+                "characterImage": "mc_default.png",
+                "text": "Sẵn sàng đối đầu với Linh Hồn Lục Quang. Cuộc chiến cam go bắt đầu..."
+                }
+            ],
+            "choices": []
         },
         {
-          "character": "MC",
-          "characterImage": "mc_ready.png",
-          "text": "Tôi không chỉ học từ. Tôi học cách sử dụng và cảm nhận chúng trong từng câu chữ."
-        },
-        {
-          "character": "Warden of Flow",
-          "characterImage": "boss_flow_guardian.png",
-          "text": "Tốt. Hãy chứng minh ngươi xứng đáng nắm giữ Ngọc Dòng Chảy – linh hồn của ngôn ngữ sống động."
-        },
-        {
-          "character": "System",
-          "characterImage": "fade_black.png",
-          "text": "[Mini-boss: Warden of Flow xuất hiện. Hoàn thành thử thách điền từ vào ngữ cảnh (cloze test) để tiếp tục.]"
+          "id": "scene_boss_crystal_escape",
+          "music": "escape_theme.mp3",
+          "sound_effects": [
+            "escape_sound.mp3"
+          ],
+          "dialogues": [
+            {
+              "character": "mc_default",
+              "characterImage": "mc_default.png",
+              "text": "Cần thêm thời gian để chuẩn bị. Linh Hồn Lục Quang quá mạnh mẽ, mình cần tìm cách khác để đối phó."
+            }
+          ],
+          "choices": []
         }
-      ],
-      "choices": []
+      ]
     }
+
+
   ]
 }

@@ -597,9 +597,13 @@ public class GameplayController {
                 Timer.schedule(new Timer.Task() {
                     @Override
                     public void run() {
+                        if (isEnemyBoss()) {
+                            gameController.returnToTowerAfterBoss(enemyName);
+                        }
                         gameController.setState(GameState.EXPLORING);
                         if (newLevel > currentLevel) gameController.showLevelUpNotification();
                         cleanupCombatState();
+
                     }
                 }, 0.5f);
             }
@@ -687,7 +691,7 @@ public class GameplayController {
         // Player stats
         regularFont.setColor(Color.WHITE);
         float attack = gameController.getCharacter().getDamage() + attackBuff - playerNerf;
-        float defend = playerDef + playerDef;
+        float defend = playerDefend + playerDef;
         regularFont.draw(batch, "Sức mạnh: " + (int) attack, x + 20, y + height - 15);
         regularFont.draw(batch, "Phòng thủ: " + (int) defend, x + 20, y + height - 35);
         regularFont.draw(batch, "Kinh nghiệm nhận được: " + (int) experienceGain, x + 20, y + height - 55);
@@ -944,7 +948,7 @@ public class GameplayController {
         float panelWidth = screenWidth * 0.7f;
         float panelHeight = screenHeight * 0.7f - 80;
         float panelX = (screenWidth - panelWidth) / 2;
-        float panelY = (screenHeight - panelHeight) / 2 +70;
+        float panelY = (screenHeight - panelHeight) / 2 + 70;
 
         // Panel background
         batch.setColor(0.3f, 0.2f, 0.1f, 0.95f);
@@ -1912,9 +1916,9 @@ public class GameplayController {
             gameController.getMusicController().playMusic("defeat");
 
             if (!isGameOver) {
-                gameController.returnToTower();
+                gameController.returnToTower(enemyName);
                 String eventId = currentEvent != null ? currentEvent.getId() : gameController.getCurrentEventId();
-                gameController.getEventManager().completeEvent(currentEvent.getId());
+                gameController.getEventManager().completeEvent(eventId);
                 gameController.setCompletedEvent();
                 gameController.setRenderCharacter(true);
             }
@@ -1938,17 +1942,23 @@ public class GameplayController {
             switch (enemyName) {
                 case "Crystal Serpent Boss":
                     achievementManager.updateProgress(Achievement.AchievementType.ENEMY_WIN_1, 1);
+                    gameController.addFlag("crystal_serpent_boss_defeated");
                     break;
                 case "Sapphire Dragon Boss":
                     achievementManager.updateProgress(Achievement.AchievementType.ENEMY_WIN_2, 1);
+                    gameController.addFlag("sapphire_dragon_boss_defeated");
                     break;
                 case "Emerald Revenant Boss":
                     achievementManager.updateProgress(Achievement.AchievementType.ENEMY_WIN_3, 1);
+                    gameController.addFlag("emerald_revenant_boss_defeated");
                     break;
                 case "Demon Lord Azrok":
                     achievementManager.updateProgress(Achievement.AchievementType.ENEMY_WIN, 1);
+                    gameController.addFlag("demon_lord_azrok_defeated");
                     break;
             }
+
+
             gameController.setRenderCharacter(true);
             achievementManager.updateProgress(Achievement.AchievementType.COMBAT_WIN, 1);
 

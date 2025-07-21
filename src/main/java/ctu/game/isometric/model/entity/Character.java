@@ -222,6 +222,16 @@ public class Character {
         ettempFlags.put("run", ettempFlags.getOrDefault("run", 0) + 1);
     }
 
+    public void deRun() {
+        if (ettempFlags == null) {
+            ettempFlags = new HashMap<>();
+        }
+        int runCount = ettempFlags.getOrDefault("run", 0);
+        if (runCount > 0) {
+            ettempFlags.put("run", runCount - 1);
+        }
+    }
+
     public void teleportToLocation(String location) {
         if (location == null || location.isEmpty()) {
             throw new IllegalArgumentException("Location cannot be null or empty");

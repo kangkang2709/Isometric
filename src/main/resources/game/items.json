@@ -42,7 +42,7 @@
   {
     "itemID": 5,
     "itemName": "Book of Returned",
-    "itemDescription": "Vật phẩm rơi ra từ Final-Boss dùng để hoàn thành cốt truyện.",
+    "itemDescription": "Vật phẩm rơi ra từ Arzok s dùng để hoàn thành nghi thức quay về thế giới cũ.",
     "texturePath": "game/items/book_of_returned.png",
     "itemEffect": "N/A",
     "value": 0.0,
@@ -52,7 +52,7 @@
   {
     "itemID": 6,
     "itemName": "Grimoire of Trials I",
-    "itemDescription": "Mở khóa mini-game 1 sau khi trò chuyện với NPC huyền bí.",
+    "itemDescription": "Mở khóa mini-game 1 sau khi trò chuyện với người dân trong thư viện.",
     "texturePath": "game/items/grimoire_trials_1.png",
     "itemEffect": "N/A",
     "value": 0.0,
@@ -62,7 +62,7 @@
   {
     "itemID": 7,
     "itemName": "Grimoire of Trials II",
-    "itemDescription": "Mở khóa mini-game 2 sau khi trò chuyện với NPC huyền bí.",
+    "itemDescription": "Mở khóa mini-game 2 sau khi trò chuyện với người dân trong thư viện..",
     "texturePath": "game/items/grimoire_trials_2.png",
     "itemEffect": "N/A",
     "value": 0.0,
@@ -72,7 +72,7 @@
   {
     "itemID": 8,
     "itemName": "Ruby Omega",
-    "itemDescription": "Dùng tại Cổng Dịch Chuyển để đến hầm ngục A",
+    "itemDescription": "Dùng tại Cổng Dịch Chuyển để đến lăng mộ Ký Ức.",
     "texturePath": "game/items/ruby_omega.png",
     "itemEffect": "N/A",
     "value": 0.0,
@@ -82,7 +82,7 @@
   {
     "itemID": 9,
     "itemName": "Saphire Alpha",
-    "itemDescription": "Dùng tại Cổng Dịch Chuyển để đến hầm ngục B",
+    "itemDescription": "Dùng tại Cổng Dịch Chuyển để đến bên bờ Hồ.",
     "texturePath": "game/items/saphire_alpha.png",
     "itemEffect": "N/A",
     "value": 0.0,
@@ -92,7 +92,7 @@
   {
     "itemID": 10,
     "itemName": "Emeral Delta",
-    "itemDescription": "Dùng tại Cổng Dịch Chuyển để đến hầm ngục C",
+    "itemDescription": "Dùng tại Cổng Dịch Chuyển để đến hầm gốc cây thế giới thụ Yggdrasil.",
     "texturePath": "game/items/emeral_delta.png",
     "itemEffect": "N/A",
     "value": 0.0,

@@ -359,8 +359,41 @@ public class GameController {
         }
     }
 
-    public void returnToTower() {
+    public void returnToTower(String enemyName) {
         IsometricMap newMap = this.mapList.get("tower");
+
+        if (newMap != null) {
+            this.map = newMap;
+            this.character.setGameMap(map);
+            this.character.setPosition(5, 7);
+            this.pathfinder.setMap(newMap);
+            this.eventManager = this.eventManagerMap.get("tower");
+            this.game.getGameScreen().getMapRenderer().changeTiledMapRenderer(this.map, this.eventManager);
+
+            if (enemyName.contains("Boss") || enemyName.contains("Lord"))
+                Timer.schedule(new Timer.Task() {
+                    @Override
+                    public void run() {
+                        character.deRun();
+                        dialogController.showSimpleMessage("Mình đã thất bại, may mà Cleric Klein đã cứu mình.\n Nhưng mình đã bị đẩy lùi về 1 tầng");
+                    }
+                }, 1.5f);
+            else
+                Timer.schedule(new Timer.Task() {
+                    @Override
+                    public void run() {
+                        dialogController.showSimpleMessage("Mình đã thất bại, may mà Cleric Klein đã cứu mình.\n");
+                    }
+                }, 1.5f);
+
+        } else {
+            Gdx.app.error("GameController", "Tower map not found.");
+        }
+    }
+
+    public void returnToTowerAfterBoss(String BossName) {
+        IsometricMap newMap = this.mapList.get("tower");
+
         if (newMap != null) {
             this.map = newMap;
             this.character.setGameMap(map);
@@ -373,7 +406,10 @@ public class GameController {
             Timer.schedule(new Timer.Task() {
                 @Override
                 public void run() {
-                    dialogController.showSimpleMessage("Mình đã thất bại, may mà Cleric Klein đã cứu mình.\n");
+                    dialogController.showSimpleMessage(Arrays.asList(
+                            "Chúc mừng ngươi đã đánh bại " + BossName + ".",
+                            "Hãy tận dụng phần thưởng từ chiến thắng này để tiếp tục hành trình."
+                    ));
                 }
             }, 1.5f);
 
@@ -1633,7 +1669,8 @@ public class GameController {
                     }
                     if (!mapName.equals(map.getMapName())) {
                         changeMap(mapName);
-                        if (mapName.equals("board") && !character.getFlags().contains("maze_cutscene") )  startMazeCutScene();
+                        if (mapName.equals("board") && !character.getFlags().contains("maze_cutscene"))
+                            startMazeCutScene();
 
                     }
                 }
@@ -1696,11 +1733,58 @@ public class GameController {
                 });
                 break;
             case "new_run_event":
-                getCharacter().updateRun();
-                changeMap("main");
-                this.boardEventManager.randomBoardEveryRun();
+                int run = character.getRun() + 1;
                 isNewRun = true;
-                setEndEvent();
+                switch (run) {
+                    case 4:
+                        dialogController.setOnDialogFinishedAction(() -> {
+                            Enemy enemy = EnemyLoader.getEnemyById(6);
+                            setState(GameState.GAMEPLAY);
+                            gameplayController.activate();
+                            gameplayController.startCombat(enemy);
+                            character.updateRun();
+                        });
+                        dialogController.setOnCanncelFinishedAction(() -> {
+
+                        });
+                        dialogController.startDialog("scene_boss_floor_4", "scene_boss_crystal_intro");
+                        break;
+                    case 6:
+                        dialogController.setOnDialogFinishedAction(() -> {
+                            Enemy enemy = EnemyLoader.getEnemyById(7);
+                            setState(GameState.GAMEPLAY);
+                            gameplayController.activate();
+                            gameplayController.startCombat(enemy);
+                            character.updateRun();
+                        });
+                        dialogController.startDialog("scene_boss_floor_6", "scene_boss_sapphire_intro");
+                        break;
+                    case 8:
+                        dialogController.setOnDialogFinishedAction(() -> {
+                            Enemy enemy = EnemyLoader.getEnemyById(8);
+                            setState(GameState.GAMEPLAY);
+                            gameplayController.activate();
+                            gameplayController.startCombat(enemy);
+                            character.updateRun();
+                        });
+                        dialogController.startDialog("scene_boss_floor_8", "scene_boss_emerald_intro");
+                        break;
+                    case 10:
+                        dialogController.setOnDialogFinishedAction(() -> {
+                            Enemy enemy = EnemyLoader.getEnemyById(8);
+                            setState(GameState.GAMEPLAY);
+                            gameplayController.activate();
+                            gameplayController.startCombat(enemy);
+                            character.updateRun();
+                        });
+                        break;
+                    default:
+                        dialogController.showSimpleMessage("Bạn đã hoàn thành tầng " + character.getRun() + " của mê cung, hãy chuẩn bị cho tầng tiếp theo.");
+                        changeMap("main");
+                        character.updateRun();
+                        break;
+
+                }
                 break;
             case "dungeon":
                 getCharacter().updateRun();

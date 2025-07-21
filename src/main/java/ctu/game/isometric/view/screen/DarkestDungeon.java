@@ -420,7 +420,7 @@ public class DarkestDungeon implements Screen {
                             game.changeScreen("GAME");
                             gameController.setState(GameState.EXPLORING);
                             gameController.setPreviousState(GameState.EXPLORING);
-                            gameController.returnToTower();
+                            gameController.returnToTower(enemyName);
                             gameController.setRenderCharacter(true);
                             return true;
                         } else {

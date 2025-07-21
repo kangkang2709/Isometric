@@ -519,12 +519,15 @@ public class MapRenderer {
                     drawItemTexture(batch, event.getProperties().get("itemName", String.class), isoPos[0] + 16, isoPos[1] + 8, 32, 32);
                     break;
                 case "new_run_event":
+                case "dungeon":
                     drawTexture(batch, "new_run", isoPos[0], isoPos[1], 32, 64);
                     break;
                 case "battle":
                     drawEnemySpinCard(batch, isoPos[0] + 14, isoPos[1] + 12, 20, 30);
                     break;
-                case "word_scramble", "mulquiz", "quiz":
+                case "word_scramble":
+                case "mulquiz":
+                case "quiz":
                     drawMiniGameSpinCard(batch, isoPos[0] + 14, isoPos[1] + 12, 20, 30);
                     break;
             }
@@ -977,6 +980,12 @@ public class MapRenderer {
                 break;
             case "message":
                 buttonText = "Read";
+                break;
+            case "new_run_event":
+                buttonText = "Next Floor";
+                break;
+            case "dungeon":
+                buttonText = "Floor";
                 break;
             default:
                 buttonText = "???";
