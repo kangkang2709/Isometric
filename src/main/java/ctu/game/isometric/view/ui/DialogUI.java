@@ -142,9 +142,9 @@ public class DialogUI {
         Gdx.gl.glEnable(Gdx.gl.GL_BLEND);
         Gdx.gl.glBlendFunc(Gdx.gl.GL_SRC_ALPHA, Gdx.gl.GL_ONE_MINUS_SRC_ALPHA);
 
+        String currentArcId = dialogController.getCurrentArcId();
         // Render background first (bottom layer)
         if (dialogController.shouldRenderBackground()) {
-            String currentArcId = dialogController.getCurrentArcId();
             String currentSceneId = dialogController.getCurrentSceneId();
 
             if (currentArcId != null && currentSceneId != null) {
@@ -192,7 +192,7 @@ public class DialogUI {
             }
 
             // Draw character image
-            if (characterImage != null) {
+            if (characterImage != null && !currentArcId.equals("system_messages") ) {
                 batch.draw(characterImage,
                         DIALOG_BOX_X + 20,
                         DIALOG_BOX_Y + DIALOG_BOX_HEIGHT - CHARACTER_IMAGE_SIZE - 60,

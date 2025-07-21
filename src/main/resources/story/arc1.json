@@ -99,12 +99,6 @@
               "next_scene": "scene_02",
               "required_item": null,
               "reward_item": "CCCD"
-            },
-            {
-              "text": "Tôi muốn trở về thế giới của mình.",
-              "next_scene": "scene_ending2",
-              "required_item": null,
-              "reward_item": null
             }
           ],
           "conditions": {}
@@ -171,6 +165,78 @@
       ]
     },
     {
+      "id": "god_dialogue",
+      "title": "Chương 2: Vòng Lặp Số Phận",
+      "description": "Sau khi cố gắng quay về thế giới cũ, nhân vật một lần nữa tỉnh dậy tại vùng rừng lạ. Một giọng nói vang vọng từ trời cao tiết lộ sự thật đằng sau sự tái lặp này.",
+      "conditions": "",
+      "scenes": [
+        {
+          "id": "scene_01",
+          "music": "mystic_voice.mp3",
+          "sound_effects": [
+            "wind_chime.mp3"
+          ],
+          "dialogues": [
+            {
+              "character": "???",
+              "characterImage": "divine_glow.png",
+              "text": "[Giọng nói vang vọng] Lữ khách... Ta không thể giữ lời hứa đưa ngươi trở về."
+            },
+            {
+              "character": "MC",
+              "characterImage": "mc_shocked.png",
+              "text": "Thần sao? Nhưng... tại sao? Ngài nói sẽ tôn trọng quyết định của tôi mà!"
+            },
+            {
+              "character": "Thần Linh Vô Danh",
+              "characterImage": "divine_glow.png",
+              "text": "Sức mạnh của ta đã bị phong ấn một phần. Azrok, vị vương của vực thẳm, đã làm rạn nứt kết giới giữa các thế giới. Ta không thể mở lại cánh cổng cho ngươi nữa."
+            },
+            {
+              "character": "Thần Linh Vô Danh",
+              "characterImage": "divine_glow.png",
+              "text": "Nhưng chính vì vậy... vận mệnh thật sự của ngươi đã bắt đầu. Hành trình này không còn là lựa chọn – nó là sợi chỉ gắn kết định mệnh của các thế giới."
+            },
+            {
+              "character": "MC",
+              "characterImage": "mc_ready.png",
+              "text": "Vậy ra... tôi buộc phải đối mặt với định mệnh này. Nếu Azrok là nguyên nhân, thì tôi sẽ tìm cách kết thúc điều đó."
+            },
+            {
+              "character": "MC",
+              "characterImage": "mc_ready.png",
+              "text": "Để đền bù cho sự thiệt thòi của ngươi, ta sẽ tặng ngươi 1 bình Draught of Fury."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Chấp nhận sự thật và bắt đầu lại hành trình. [YES]",
+              "next_scene": "scene_02",
+              "required_item": null,
+              "reward_item": "Draught of Fury"
+            }
+          ],
+          "conditions": {}
+        },
+        {
+          "id": "scene_02",
+          "music": "hopeful_journey.mp3",
+          "sound_effects": [
+            "footsteps_grass.mp3"
+          ],
+          "dialogues": [
+            {
+              "character": "MC",
+              "characterImage": "mc_ready.png",
+              "text": "Có lẽ mình lại cần tìm đến sự giúp đỡ của Cleric Klein."
+            }
+
+          ],
+          "choices": []
+        }
+      ]
+    },
+    {
       "id": "klein_meet",
       "title": "Chương 3: Gặp vị Quyến Giả",
       "description": "Nhân vật chính gặp Klein tại Tòa Tháp Ngữ Cổ và được giao nhiệm vụ khôi phục dòng chảy ngôn từ để cứu lấy thế giới.",
@@ -198,7 +264,7 @@
             {
               "character": "Cleric Klein",
               "characterImage": "cleric_Klein.png",
-              "text": "Ngươi được chọn vì ngươi mang trong mình một khả năng hiếm có: khả năng tái tạo và củng cố dòng chảy ngôn từ. Sứ mệnh của ngươi không chỉ là cứu \n thế giới này, mà còn là khôi phục sức mạnh của ngôn từ – thứ đã từng là phép thuật mạnh nhất ở Elaria."
+              "text": "Ngươi được chọn vì ngươi mang trong mình một khả năng hiếm có: khả năng tái tạo và củng cố dòng chảy ngôn từ. Sứ mệnh của ngươi không chỉ là cứu \n thế giới này, đánh bại Quỷ Vương Azrok, mà còn là khôi phục lại sức mạnh của ngôn từ đã bị hư hỏng."
             },
             {
               "character": "Cleric Klein",
@@ -238,12 +304,6 @@
               "next_scene": "scene_cleric_deepdive",
               "required_item": null,
               "reward_item": null
-            },
-            {
-              "text": "Nếu tôi từ chối sứ mệnh này thì sao?",
-              "next_scene": "scene_ending_reject",
-              "required_item": null,
-              "reward_item": null
             }
           ],
           "conditions": {}
@@ -279,6 +339,12 @@
               "next_scene": "scene_training_intro",
               "required_item": null,
               "reward_item": null
+            },
+            {
+              "text": "Nếu tôi từ chối sứ mệnh này thì sao?",
+              "next_scene": "scene_ending_reject",
+              "required_item": null,
+              "reward_item": null
             }
           ]
         },
@@ -295,11 +361,6 @@
               "character": "Cleric Klein",
               "characterImage": "cleric_Klein.png",
               "text": "Ta hiểu. Không phải ai cũng sẵn lòng mang gánh nặng của thế giới. Nhưng hãy nhớ – lựa chọn từ chối cũng là một hành động mang theo hậu quả."
-            },
-            {
-              "character": "System",
-              "characterImage": "mc_ready.png",
-              "text": "[Nếu đã từ chối Sứ Mệnh Chính. Trò chơi kết thúc sớm.]"
             }
           ],
           "choices": [
@@ -324,6 +385,11 @@
             "portal_open.mp3"
           ],
           "dialogues": [
+            {
+              "character": "Cleric Klein",
+              "characterImage": "cleric_Klein.png",
+              "text": "Thần linh sẽ nhân từ, ngài sẽ tôn trọng quyết định của ngươi. Nhưng hãy nhớ, thế giới này đang cần người như ngươi."
+            },
             {
               "character": "Cleric Klein",
               "characterImage": "cleric_Klein.png",
@@ -603,12 +669,12 @@
             {
               "character": "Cleric Klein",
               "characterImage": "cleric_Klein.png",
-              "text": "Cuối mỗi tầng là một điểm kiểm tra. Hoàn thành một tầng, ngươi có thể quay về ngôi làng để nghỉ ngơi. Hoàn thành cả 10 tầng, ngươi sẽ đối mặt với \n*Quỷ Vương Kharzen – nơi chỉ những từ ngữ mạnh nhất mới có thể tiến đến."
+              "text": "Cuối mỗi tầng là một điểm kiểm tra. Hoàn thành một tầng, ngươi có thể quay về ngôi làng để nghỉ ngơi. Hoàn thành cả 10 tầng, ngươi sẽ đối mặt với \n*Quỷ Vương Azrok – nơi chỉ những từ ngữ mạnh nhất mới có thể tiến đến."
             },
             {
               "character": "Cleric Klein",
               "characterImage": "cleric_Klein.png",
-              "text": "Vị thần đã dặn dò ta rằng: ở tầng thứ 11 của hầm ngục, ngươi có thể tìm thấy cách để quay về thế giới cũ. Nhưng trước hết, hãy tập trung vào việc vượt qua \ntừng tầng một."
+              "text": "Vị thần đã dặn dò ta rằng: khi vượt qua tầng 10 của hầm ngục, ngươi có thể tìm thấy cách để quay về thế giới cũ. Nhưng trước hết, hãy tập trung vào việc vượt qua \ntừng tầng một."
             },
             {
               "character": "Cleric Klein",
@@ -1618,7 +1684,6 @@
               "characterImage": "npc_upgrader.png",
               "text": "Mỗi nâng cấp sẽ tốn một số điểm tri thức, hoặc gấp 4 điểm tri thức nếu không đủ nguyên liệu. Nên hãy chuẩn bị kỹ lưỡng trước khi đến đây."
             }
-
           ],
           "choices": [
             {
@@ -2110,6 +2175,111 @@
           "choices": []
         }
       ]
+    },
+    {
+      "id": "scene_boss_floor_4",
+      "music": "boss_theme_1.mp3",
+      "sound_effects": [
+        "echo_words.mp3"
+      ],
+      "dialogues": [
+        {
+          "character": "Narrator",
+          "characterImage": "fade_black.png",
+          "text": "[Khi bước vào tầng 4, bạn cảm nhận được luồng tư tưởng mạnh mẽ đang dao động...]"
+        },
+        {
+          "character": "Sentinel of Idea",
+          "characterImage": "boss_idea_guardian.png",
+          "text": "Kẻ ngoại đạo... Ngươi đã bước quá sâu vào miền Ý Niệm. Ngươi có thể hiểu ngôn từ, nhưng liệu ngươi *hiểu được tư tưởng* đằng sau chúng?"
+        },
+        {
+          "character": "MC",
+          "characterImage": "mc_alert.png",
+          "text": "Tư tưởng ẩn sau từ ngữ...? Ngươi là gì vậy?"
+        },
+        {
+          "character": "Sentinel of Idea",
+          "characterImage": "boss_idea_guardian.png",
+          "text": "Ta là Người Gác Ngọc Ý Niệm – hạt nhân của sự hiểu biết. Đánh bại ta, hoặc bị cuốn vào mê cung của logic và khái niệm."
+        },
+        {
+          "character": "System",
+          "characterImage": "fade_black.png",
+          "text": "[Mini-boss: Sentinel of Idea xuất hiện. Hoàn thành thử thách từ vựng logic để tiếp tục.]"
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "scene_boss_floor_6",
+      "music": "boss_theme_2.mp3",
+      "sound_effects": [
+        "visual_pulse.mp3"
+      ],
+      "dialogues": [
+        {
+          "character": "Narrator",
+          "characterImage": "fade_black.png",
+          "text": "[Một ánh sáng kỳ dị quét qua mê cung khi bạn tiến vào tầng 6. Hình ảnh ngôn từ lấp lánh bay quanh bạn...]"
+        },
+        {
+          "character": "Guardian of Lexicon",
+          "characterImage": "boss_graphic_guardian.png",
+          "text": "Ta là người canh giữ Biểu Đồ – nơi mọi khái niệm được ánh xạ hóa thành hình ảnh và kết nối."
+        },
+        {
+          "character": "MC",
+          "characterImage": "mc_thinking.png",
+          "text": "Biểu Đồ...? Có nghĩa là... cấu trúc từ và liên kết của chúng?"
+        },
+        {
+          "character": "Guardian of Lexicon",
+          "characterImage": "boss_graphic_guardian.png",
+          "text": "Đúng. Ngươi phải chứng minh rằng mình có thể đọc hiểu dòng chảy ẩn trong ngôn ngữ. Nếu không, ngươi sẽ bị lạc trong mê đồ tri thức."
+        },
+        {
+          "character": "System",
+          "characterImage": "fade_black.png",
+          "text": "[Mini-boss: Guardian of Lexicon xuất hiện. Hoàn thành thử thách đối chiếu từ và biểu tượng để tiếp tục.]"
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "scene_boss_floor_8",
+      "music": "boss_theme_3.mp3",
+      "sound_effects": [
+        "flowing_river.mp3"
+      ],
+      "dialogues": [
+        {
+          "character": "Narrator",
+          "characterImage": "fade_black.png",
+          "text": "[Tầng 8 rung chuyển nhẹ. Không khí trở nên linh hoạt và thay đổi liên tục – như một dòng chảy ngôn từ không ngừng...]"
+        },
+        {
+          "character": "Warden of Flow",
+          "characterImage": "boss_flow_guardian.png",
+          "text": "Ngươi đã tiến xa, nhưng còn một điều cuối cùng: *ngữ cảnh*. Liệu ngươi hiểu được ngôn từ khi chúng trôi trong dòng thời gian?"
+        },
+        {
+          "character": "MC",
+          "characterImage": "mc_ready.png",
+          "text": "Tôi không chỉ học từ. Tôi học cách sử dụng và cảm nhận chúng trong từng câu chữ."
+        },
+        {
+          "character": "Warden of Flow",
+          "characterImage": "boss_flow_guardian.png",
+          "text": "Tốt. Hãy chứng minh ngươi xứng đáng nắm giữ Ngọc Dòng Chảy – linh hồn của ngôn ngữ sống động."
+        },
+        {
+          "character": "System",
+          "characterImage": "fade_black.png",
+          "text": "[Mini-boss: Warden of Flow xuất hiện. Hoàn thành thử thách điền từ vào ngữ cảnh (cloze test) để tiếp tục.]"
+        }
+      ],
+      "choices": []
     }
   ]
 }

@@ -427,12 +427,16 @@ public class InputController extends InputAdapter {
                 gameController.changeMap("main");
             }
             case Keys.F6 -> {
-                gameController.changeMap("tower");
+
+                gameController.getGame().changeScreen("GAME");
             }
             case Keys.F7 -> {
-//                gameController.getGame().changeScreen("DUNGEON");
-                gameController.changeMap("dungeon2");
+              Enemy enemy = new Enemy(11, "Thủ vệ hồ", "Frost Guardian", "frost_guardian", 1, 25, 16);
+                                    enemy.setDefensePower(21);
+                gameController.getGame().getDarkestDungeonScreen().startCombat(enemy);
+                gameController.getGame().changeScreen("DARK_DUNGEON");
             }
+
             case Keys.PAUSE -> {
                 mapRenderer.printCurrentPosition();
                 gameController.addFlag("klein_unlock");

@@ -100,8 +100,8 @@ public class DarkestDungeon implements Screen {
     private float enemyScale = 1.0f;
     private final float MAX_SCALE = 1.4f;
 
-    private final float CHAR_WIDTH = 200;
-    private final float CHAR_HEIGHT = 250;
+    private final float CHAR_WIDTH = 150;
+    private final float CHAR_HEIGHT = 200;
 
     // Bottom UI layout
     private final float STATUS_PANEL_WIDTH = 300;
@@ -213,8 +213,6 @@ public class DarkestDungeon implements Screen {
         this.enemyCurrentY = enemyStartY;
 
 
-        enemyIdleTextures = getEnemyIdleTextures(enemy.getTexturePath());
-        enemySkillTextures = getEnemySkillTextures(enemy.getTexturePath());
 
         this.combatLog = "Chiến đấu bắt đầu! Chọn hành động.";
 
@@ -231,6 +229,10 @@ public class DarkestDungeon implements Screen {
         reward = null;
 
         inputWord = "";
+
+
+        enemyIdleTextures = getEnemyIdleTextures(enemy.getTexturePath());
+        enemySkillTextures = getEnemySkillTextures(enemy.getTexturePath());
     }
 
     int currentLevel = 0;
@@ -242,6 +244,44 @@ public class DarkestDungeon implements Screen {
     private float cameraShake = 0f;
     private float cameraZoom = 1f;
     private Vector2 cameraOffset = new Vector2();
+
+
+    private Texture loadLinearTexture(String path) {
+        Texture texture = new Texture(path);
+        texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        return texture;
+    }
+
+    private void loadTextures() {
+
+
+// Load idle textures
+        playerIdleTextures[0] = loadLinearTexture("dungeon/Idle_0001.png");
+        playerIdleTextures[1] = loadLinearTexture("dungeon/Idle_0002.png");
+
+// Load skill textures
+        playerSkillTextures[0] = loadLinearTexture("dungeon/player_attack.png");
+        playerSkillTextures[1] = loadLinearTexture("dungeon/player_flame.png");
+        playerSkillTextures[2] = loadLinearTexture("dungeon/player_lightning.png");
+        playerSkillTextures[3] = loadLinearTexture("dungeon/player_heal.png");
+        playerSkillTextures[4] = loadLinearTexture("dungeon/player_defend.png");
+
+
+        // Skill button textures
+        skillButtonTextures[0] = new Texture("dungeon/skill_attack.png");
+        skillButtonTextures[1] = new Texture("dungeon/skill_flame.png");
+        skillButtonTextures[2] = new Texture("dungeon/skill_lightning.png");
+        skillButtonTextures[3] = new Texture("dungeon/skill_heal.png");
+        skillButtonTextures[4] = new Texture("dungeon/skill_defend.png");
+
+        // Effect textures
+        effectTextures[0] = new Texture("dungeon/damage_effect.png");
+        effectTextures[1] = new Texture("dungeon/heal_effect.png");
+        effectTextures[2] = new Texture("dungeon/defense_effect.png");
+
+        backgroundTexture = new Texture("backgrounds/dungeon.png");
+        backgroundBlurTexture = new Texture("backgrounds/dungeon_blur.png");
+    }
 
     @Override
     public void show() {
@@ -367,7 +407,7 @@ public class DarkestDungeon implements Screen {
                         }, 0.5f);
                         if (enemyName.equalsIgnoreCase("Demon"))
                             gameController.completedDungeon2();
-                        else  if (enemyName.equalsIgnoreCase("Frost Guardian"))
+                        else if (enemyName.equalsIgnoreCase("Frost Guardian"))
                             gameController.defeatedFrostGuardian();
                     }
 
@@ -614,46 +654,6 @@ public class DarkestDungeon implements Screen {
         return enemySkillTexturesCache.get(enemyName);
     }
 
-
-    private void loadTextures() {
-        // Player idle animation textures
-        playerIdleTextures[0] = new Texture("dungeon/idle1.png");
-        playerIdleTextures[1] = new Texture("dungeon/idle2.png");
-
-        // Player skill textures
-        playerSkillTextures[0] = new Texture("dungeon/player_attack.png");
-        playerSkillTextures[1] = new Texture("dungeon/player_flame.png");
-        playerSkillTextures[2] = new Texture("dungeon/player_lightning.png");
-        playerSkillTextures[3] = new Texture("dungeon/player_heal.png");
-        playerSkillTextures[4] = new Texture("dungeon/player_defend.png");
-
-        // Enemy idle animation textures
-//        enemyIdleTextures[0] = new Texture("dungeon/enemy_1idle.png");
-//        enemyIdleTextures[1] = new Texture("dungeon/enemy_2idle.png");
-//        enemyIdleTextures[2] = new Texture("dungeon/enemy_3idle.png");
-//        enemyIdleTextures[3] = new Texture("dungeon/enemy_3idle.png");
-//
-//        // Enemy skill textures
-//        enemySkillTextures[0] = new Texture("dungeon/enemy_1skill.png");
-//        enemySkillTextures[1] = new Texture("dungeon/enemy_2skill.png");
-//        enemySkillTextures[2] = new Texture("dungeon/enemy_3skill.png");
-
-
-        // Skill button textures
-        skillButtonTextures[0] = new Texture("dungeon/skill_attack.png");
-        skillButtonTextures[1] = new Texture("dungeon/skill_flame.png");
-        skillButtonTextures[2] = new Texture("dungeon/skill_lightning.png");
-        skillButtonTextures[3] = new Texture("dungeon/skill_heal.png");
-        skillButtonTextures[4] = new Texture("dungeon/skill_defend.png");
-
-        // Effect textures
-        effectTextures[0] = new Texture("dungeon/damage_effect.png");
-        effectTextures[1] = new Texture("dungeon/heal_effect.png");
-        effectTextures[2] = new Texture("dungeon/defense_effect.png");
-
-        backgroundTexture = new Texture("backgrounds/dungeon.png");
-        backgroundBlurTexture = new Texture("backgrounds/dungeon_blur.png");
-    }
 
     boolean defeated = false;
 
@@ -991,7 +991,7 @@ public class DarkestDungeon implements Screen {
                 else offsetX = 250;
 
                 playerCurrentX = playerStartX + moveX + offsetX;
-                playerCurrentY = MathUtils.lerp(playerStartY, COMBAT_CENTER_Y - 20, anticipationProgress);
+                playerCurrentY = MathUtils.lerp(playerStartY, COMBAT_CENTER_Y - 20, anticipationProgress) + 20;
 
                 // Dynamic scaling with overshoot
                 playerScale = MathUtils.lerp(1.0f, MAX_SCALE * 1.2f, anticipationProgress);
@@ -1008,7 +1008,7 @@ public class DarkestDungeon implements Screen {
                         MathUtils.lerp(30, -150, (anticipationProgress - 0.2f) / 0.8f); // Rush forward
 
                 enemyCurrentX = enemyStartX + moveX - 250;
-                enemyCurrentY = MathUtils.lerp(enemyStartY, COMBAT_CENTER_Y - 20, anticipationProgress);
+                enemyCurrentY = MathUtils.lerp(enemyStartY, COMBAT_CENTER_Y - 20, anticipationProgress) - 20;
 
                 // Dynamic scaling with overshoot
                 enemyScale = MathUtils.lerp(1.0f, MAX_SCALE * 1.2f, anticipationProgress);
@@ -1855,6 +1855,7 @@ public class DarkestDungeon implements Screen {
         for (Texture texture : enemyIdleTextures) {
             if (texture != null) texture.dispose();
         }
+
         if (backgroundTexture != null) backgroundTexture.dispose();
 
         for (Texture texture : playerSkillTextures) {
@@ -1869,5 +1870,27 @@ public class DarkestDungeon implements Screen {
         for (Texture texture : effectTextures) {
             if (texture != null) texture.dispose();
         }
+        if (backgroundBlurTexture != null) backgroundBlurTexture.dispose();
+        if (damageParticleTex != null) damageParticleTex.dispose();
+        if (titleFont != null) titleFont.dispose();
+        if (inputFont != null) inputFont.dispose();
+
+        // Dispose all cached enemy textures and clear the caches
+        for (Texture[] textures : enemyIdleTexturesCache.values()) {
+            for (Texture texture : textures) {
+                if (texture != null) texture.dispose();
+            }
+        }
+        for (Texture[] textures : enemySkillTexturesCache.values()) {
+            for (Texture texture : textures) {
+                if (texture != null) texture.dispose();
+            }
+        }
+
+        // Clear the cache maps
+        enemyIdleTexturesCache.clear();
+        enemySkillTexturesCache.clear();
+
+        System.out.println("CombatScreen disposed");
     }
 }

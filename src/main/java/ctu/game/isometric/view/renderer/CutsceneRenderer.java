@@ -687,7 +687,6 @@ public class CutsceneRenderer {
             @Override
             public void run() {
                 if (gameController != null) {
-                    System.out.println("Cutscene ended, returning to game state.");
                     gameController.setState(GameState.EXPLORING);
                     gameController.setPreviousState(GameState.EXPLORING);
                 }

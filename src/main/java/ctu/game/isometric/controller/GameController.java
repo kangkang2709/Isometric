@@ -117,9 +117,28 @@ public class GameController {
         mainObjectiveDescriptions.put("god_intro", "Cleric Klein có thể giúp mình hiểu rõ hơn về thế giới này.");
         mainObjectiveDescriptions.put("klein_meet", "Nói chuyện với Cleric Klein\n");
         mainObjectiveDescriptions.put("dungeon_call", "Tiến đến hầm ngục thông qua cổng dịch chuyển theo lời chỉ dẫn của Cleric Klein.\n");
-        mainObjectiveDescriptions.put("dungeon_entry", "Vượt qua hầm ngục và tìm hiểu bí mật của thế giới này.\n");
+        mainObjectiveDescriptions.put("dungeon_entry", "Vượt qua hầm ngục và tìm hiểu bí mật của thế giới này.\nMục tiêu: tìm kiếm 3 viên ngọc và sống sót đến tầng cuối.");
     }
 
+
+    public void startMazeCutScene() {
+        Array<String> cutSceneSubtitles = new Array<>();
+        cutSceneSubtitles.add("Từ thuở xa xưa, các Hiền Giả Ngôn Từ đã cùng nhau xây dựng một mê cung cổ đại – Căn Hầm Ký Ức. \nNơi đây lưu giữ tinh hoa tri thức, phép thuật của ngôn từ, và vô số thử thách để rèn luyện thế hệ kế tiếp.");
+        cutSceneSubtitles.add("Mỗi tầng của mê cung là một thử thách được mã hóa bằng tiếng Anh – nơi từ vựng trở thành công cụ, ngữ cảnh là lưỡi kiếm, và tư duy là ngọn đèn dẫn đường.");
+        cutSceneSubtitles.add("Thế nhưng… một biến cố xảy ra. Quỷ vương Azrok – thực thể đến từ Hư Vô – đã xâm nhập mê cung, làm vỡ cấu trúc tri thức, tha hóa các câu đố, và biến các cư dân tri thức thành sinh vật lạc lối.");
+        cutSceneSubtitles.add("Từ đó, mê cung không còn là nơi rèn luyện, mà trở thành chiến trường.\n Những cạm bẫy ngôn ngữ, rương ký ức, và sinh vật ngôn từ bị bóp méo giờ hiện diện khắp nơi.");
+        cutSceneSubtitles.add("Ba viên Ngọc Tri Thức – Ý Niệm, Biểu Đồ và Dòng Chảy – là phần lõi còn nguyên vẹn. \nChúng được canh giữ sâu trong tầng 4, 6 và 8. \n Nếu thu thập được, bạn có thể khôi phục Căn Hầm… hoặc đóng cánh cổng mãi mãi.");
+        cutSceneSubtitles.add("Giờ đây, bạn là người được chọn để bước vào mê cung tri thức đã đổ vỡ ấy. Con đường không dễ đi… \nNhưng chính nơi đây, ngôn từ sẽ được tái sinh, và số phận thế giới sẽ được viết lại bằng chính câu chữ của bạn.");
+        startMulBGSubTitleCutscene("maze", cutSceneSubtitles);
+        addFlag("maze_cutscene");
+    }
+
+    public void showLoopDialogue() {
+        dialogController.showSimpleMessage(Arrays.asList("Tại sao mình lại quay trở về khu rừng này? Mình đã đi qua đây rồi mà.",
+                "Định mệnh khiến mình không thể quay về thế giới cũ dù cho có thần giúp đỡ",
+                "Chẳng lẽ phải tiêu diệt Quỷ Vương Azrok mới có thể trở về?"));
+        addFlag("loop_dialogue");
+    }
 
     public void addFlag(String flag) {
         if (character.getFlags() == null) {
@@ -521,7 +540,16 @@ public class GameController {
                         });
 
                         dialogController.setOnCanncelFinishedAction(() -> {
-                            game.changeScreen("GAME_OVER");
+                            if (character.getAttempFlags().get("loop") >= 1)
+                                Timer.schedule(new Timer.Task() {
+                                    @Override
+                                    public void run() {
+                                        dialogController.showSimpleMessage("Mình không nên từ chối vận mệnh này.\n Hãy bắt đầu cuộc hành trình của mình với Cleric Klein.");
+                                        character.getFlags().remove("klein_meet");
+                                    }
+                                }, 1f);
+                            else
+                                startLoopEvent();
                         });
 
                         dialogController.startDialog("klein_meet", "scene_meet_cleric");
@@ -1034,11 +1062,14 @@ public class GameController {
         }
         if (map.getMapName().equals("forest")) {
             if (!character.getFlags().contains("forest_info")) {
-                dialogController.showSimpleMessage("Mình đang ở đâu? Đây không phải là thế giới của mình...\n " +
-                        "Giọng nói trong đầu mình trước đó là ai.\n" +
-                        "Trước tiên mình cần phải tìm đường rời khỏi đây đã.");
+                dialogController.showSimpleMessage(Arrays.asList("Mình đang ở đâu? Đây không phải là thế giới của mình...",
+                        "Giọng nói trong đầu mình trước đó là ai.",
+                        "Trước tiên mình cần phải tìm đường rời khỏi đây đã."));
                 addFlag("forest_info");
                 return;
+            } else if (character.getFlags().contains("loop") && !character.getFlags().contains("loop_dialogue")) {
+                showLoopDialogue();
+                addFlag("loop_dialogue");
             }
         }
 
@@ -1141,6 +1172,16 @@ public class GameController {
         }
     }
 
+
+    public void startLoopEvent() {
+        changeSaveMap("forest");
+
+        character.loopIncrease();
+        addFlag("loop");
+        character.getFlags().remove("loop_dialogue");
+        character.getFlags().remove("klein_meet");
+    }
+
     public void checkMainEvents(float x, float y) {
         String positionKey = "main_" + (int) x + "_" + (int) y;
 
@@ -1149,26 +1190,32 @@ public class GameController {
             return;
         }
 
-        if (!character.getFlags().contains("god_intro") && ((x == 31 && y == 4) || (x == 32 && y == 4))) {
-            activeEvents.add(positionKey);
-            character.clearPath();
-            dialogController.setOnCanncelFinishedAction(() -> {
-                game.changeScreen("GAME_OVER");
-            });
-            dialogController.setOnDialogFinishedAction(() -> {
-                mapRenderer.moveCameraToTarget(2048, 128, 0.5f, 2.5f, 1.5f, 1.0f);
-                Timer.schedule(new Timer.Task() {
-                    @Override
-                    public void run() {
-                        dialogController.showSimpleMessage("Có lẽ đó là tòa tháp của Cleric mà vị thần nhắc tới");
+        if ((x == 31 && y == 4) || (x == 32 && y == 4)) {
+            if (!character.getFlags().contains("god_intro")) {
+                activeEvents.add(positionKey);
+                character.clearPath();
+                dialogController.setOnDialogFinishedAction(() -> {
+                    mapRenderer.moveCameraToTarget(2048, 128, 0.5f, 2.5f, 1.5f, 1.0f);
+                    Timer.schedule(new Timer.Task() {
+                        @Override
+                        public void run() {
+                            dialogController.showSimpleMessage("Có lẽ đó là tòa tháp của Cleric mà vị thần nhắc tới");
 
-                    }
-                }, 1.8f);
-            });
-            dialogController.startDialog("god_intro", "scene_01");
-            addFlag("god_intro");
-            character.setPosition(31, 5);
-            activeEvents.remove(positionKey); // Ensure removal after processing
+                        }
+                    }, 1.8f);
+                });
+                dialogController.startDialog("god_intro", "scene_01");
+                addFlag("god_intro");
+                character.setPosition(31, 5);
+                activeEvents.remove(positionKey); // Ensure removal after processing
+            } else if (character.getFlags().contains("god_intro") && character.getFlags().contains("loop_dialogue") && !character.getFlags().contains("god_dialogue")) {
+                activeEvents.add(positionKey);
+                character.clearPath();
+                dialogController.startDialog("god_dialogue", "scene_01");
+                addFlag("god_dialogue");
+                activeEvents.remove(positionKey); // Ensure removal after processing
+            }
+
         }
     }
 
@@ -1185,11 +1232,14 @@ public class GameController {
 
         if (map.getMapName().equals("forest")) {
             if (!character.getFlags().contains("forest_info")) {
-                dialogController.showSimpleMessage("Mình đang ở đâu? Đây không phải là thế giới của mình...\n " +
-                        "Giọng nói trong đầu mình trước đó là ai.\n" +
-                        "Trước tiên mình cần phải tìm đường rời khỏi đây đã.");
+                dialogController.showSimpleMessage(Arrays.asList("Mình đang ở đâu? Đây không phải là thế giới của mình...",
+                        "Giọng nói trong đầu mình trước đó là ai.",
+                        "Trước tiên mình cần phải tìm đường rời khỏi đây đã."));
                 addFlag("forest_info");
                 return;
+            } else if (character.getFlags().contains("loop") && !character.getFlags().contains("loop_dialogue")) {
+                showLoopDialogue();
+                addFlag("loop_dialogue");
             }
         }
 
@@ -1557,6 +1607,7 @@ public class GameController {
                         getDialogController().showSimpleMessage("!!!!KHÔNG THỂ TIẾN VÀO NƠI NÀY!!!!");
                         return;
                     }
+
                     if (mapName.equals("board") && !getCharacter().getFlags().contains("dungeon_call")) {
                         getDialogController().showSimpleMessage("Cánh cổng thật kì lạ, nó dẫn đến đâu vậy?\n" +
                                 "Ta nên hỏi ngài Klein về tác dụng của nó.");
@@ -1582,6 +1633,8 @@ public class GameController {
                     }
                     if (!mapName.equals(map.getMapName())) {
                         changeMap(mapName);
+                        if (mapName.equals("board") && !character.getFlags().contains("maze_cutscene") )  startMazeCutScene();
+
                     }
                 }
                 break;

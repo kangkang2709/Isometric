@@ -491,7 +491,7 @@ public class CharacterCreation {
         font.setColor(Color.WHITE);
         font.draw(batch, "Khởi tạo nhân vật", Gdx.graphics.getWidth() / 2 - layout.width / 2, titleY);
 
-        font.draw(batch, "Tên: " + playerName.length() + "/" + MAX_NAME_LENGTH, nameInputBox.x, nameInputBox.y + nameInputBox.height + 20);
+        font.draw(batch, "Tên: " + playerName.length() + "/" + MAX_NAME_LENGTH, nameInputBox.x, nameInputBox.y + nameInputBox.height + 40);
         subtitleFont.draw(batch, " * QUY TẮC NHẬP TÊN NGƯỜI CHƠI: Chỉ cho phép chữ cái tiếng Anh (A-Z), số (0-9) và dấu cách.\n" +
                 " * Độ dài tối đa: 17 ký tự. Dấu tiếng Việt sẽ bị tự động loại bỏ nên vui lòng tắt UNIKEY hoặc bộ gõ Tiếng Việt.\n" +
                 " * Điều khiển: ENTER (bật/tắt nhập), BACKSPACE (xóa), ESC (thoát), Ctrl+A (chọn tất cả), Ctrl+C/V (sao chép/dán).", 10, 80);

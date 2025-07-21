@@ -132,6 +132,7 @@ public class Character {
         this.ettempFlags.put("mulQuizAttempts", 0);
         this.ettempFlags.put("fallen", 0);
         this.ettempFlags.put("wrongWord", 0);
+        this.ettempFlags.put("loop", 0);
         this.questTracker = new QuestTracker();
         mapName = "forest";
         initialTutorial();
@@ -139,6 +140,10 @@ public class Character {
 //        addItem(ItemLoader.getItemByName("CCCD"), 1);
     }
 
+    public void loopIncrease() {
+        int loopCount = ettempFlags.getOrDefault("loop", 0);
+        ettempFlags.put("loop", loopCount + 1);
+    }
 
     public void initialTutorial() {
         this.isTutorials = new HashMap<>();
@@ -199,6 +204,7 @@ public class Character {
         this.ettempFlags.put("fallen", 0);
         this.ettempFlags.put("wrongWord", 0);
         this.ettempFlags.put("run", 0);
+        this.ettempFlags.put("loop", 0);
         this.score = 0;
         this.questTracker = new QuestTracker();
         mapName = "forest";
@@ -388,10 +394,9 @@ public class Character {
     public boolean upgradeItem(String itemName, int score) {
 
         if (items == null || !items.containsKey(itemName) || items.get(itemName) <= 0) {
-            useScore(score*4);
+            useScore(score * 4);
             return false;
-        }
-        else {
+        } else {
             descreaseItemAmount(itemName, 1);
             useScore(score);
             return true;
