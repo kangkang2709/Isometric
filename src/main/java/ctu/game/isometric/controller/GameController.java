@@ -252,7 +252,6 @@ public class GameController {
 
                 if (mapName.equalsIgnoreCase("board")) {
                     newMap.generateRandomMaze(getCharacter().getRun() / 2);
-                    boardEventManager.randomBoardEveryRun();
                     isNewRun = false;
                     if (!character.isTutorialCompleted("maze")) {
                         tutorialUI.show("maze");
@@ -260,6 +259,7 @@ public class GameController {
                         if (!character.getFlags().contains("dungeon_entry"))
                             addFlag("dungeon_entry");
                     }
+
                 }
 
                 if (mapName.equals("dungeon2")) {
@@ -277,6 +277,7 @@ public class GameController {
                 }
 
                 this.map = newMap;
+                if (mapName.equals("board")) boardEventManager.randomBoardEveryRun();
                 this.character.setGameMap(map);
                 this.pathfinder.setMap(newMap);
                 this.eventManager = this.eventManagerMap.get(mapName);
@@ -1792,9 +1793,16 @@ public class GameController {
                 boolean isDungeon = random.nextBoolean();
 
                 if (isDungeon) {
-                    changeMap("dungeon");
-                } else
-                    changeMap("dungeon2");
+                    Enemy enemy = new Enemy(11, "Thủ vệ hồ", "Frost Guardian", "frost", 1, 25, 16);
+                    enemy.setDefensePower(21);
+                    game.getDarkestDungeonScreen().startCombat(enemy);
+                    game.changeScreen("DARK_DUNGEON");
+                } else{
+                    Enemy enemy = new Enemy(11, "Thủ vệ hồ", "Frost Guardian", "minotaur", 1, 25, 16);
+                    enemy.setDefensePower(21);
+                    game.getDarkestDungeonScreen().startCombat(enemy);
+                    game.changeScreen("DARK_DUNGEON");
+                }
 
                 isNewRun = true;
                 setEndEvent();

@@ -75,11 +75,11 @@ public class MerchantUI {
     private final Color closeButtonHoverColor = new Color(0.8f, 0.4f, 0.4f, 1f);
     private final Color affordableColor = new Color(0.4f, 0.9f, 0.4f, 1f);
 
-    private final Color unaffordableColor = new Color(0.9f, 0.4f, 0.4f, 1f);
-    private final Color priceColor = new Color(1f, 0.85f, 0.4f, 1f);
+    private final Color unaffordableColor = new Color(0.9f, 0.4f, 0.4f, 0.7f);
+    private final Color priceColor = new Color(1, 1, 1, 1);
 
     private final Color titleColor = new Color(0.9f, 0.9f, 1f, 1f);
-    private final Color textColor = new Color(0.85f, 0.85f, 0.9f, 1f);
+    private final Color textColor = new Color(1, 1, 1, 1); // RGBA: trắng với độ trong suốt đầy đủ
     private final Color dividerColor = new Color(0.3f, 0.3f, 0.4f, 0.8f);
 
     public MerchantUI(GameController gameController) {

@@ -423,11 +423,13 @@ public class InputController extends InputAdapter {
                         mapRenderer.rollingDiceTrap(currentEvent.getId());
                 }
             }
+            case Keys.PAGE_DOWN -> {
+                gameController.changeMap("dungeon2");
+            }
             case Keys.F5 -> {
                 gameController.changeMap("main");
             }
             case Keys.F6 -> {
-
                 gameController.getGame().changeScreen("GAME");
             }
             case Keys.F7 -> {
@@ -445,8 +447,9 @@ public class InputController extends InputAdapter {
             case Keys.HOME -> {
                 gameController.getCharacter().setPosition(gameController.getMap().getEndX(), gameController.getMap().getEndY());
             }
+
             case Keys.F8 -> {
-                Enemy enemy = EnemyLoader.getEnemyById(2);
+                Enemy enemy = EnemyLoader.getEnemyById(7);
 
                 gameController.setState(GameState.GAMEPLAY);
 
@@ -454,11 +457,14 @@ public class InputController extends InputAdapter {
                 gameController.getGameplayController().startCombat(enemy);
             }
             case Keys.F9 -> {
-                gameController.changeMap("main");
+                Enemy enemy = EnemyLoader.getEnemyById(8);
+
+                gameController.setState(GameState.GAMEPLAY);
+
+                gameController.getGameplayController().activate();
+                gameController.getGameplayController().startCombat(enemy);
             }
-            case Keys.F11 -> {
-                gameController.getGame().changeScreen("DARK_DUNGEON");
-            }
+
             case Keys.F10 -> {
                 gameController.changeMap("board");
             }
@@ -777,7 +783,7 @@ public class InputController extends InputAdapter {
                 return gameController.getMenuController().handleKeyBindingScroll(amountY);
             }
             case EXPLORING -> {
-                if (gameController.getMap().getMapName().equals("board") || gameController.getMap().getMapName().equals("forest") || gameController.getMap().getMapName().equals("main"))
+                if (gameController.getMap().getMapName().equals("board1") || gameController.getMap().getMapName().equals("forest") || gameController.getMap().getMapName().equals("main"))
                     return false;
                 float defaultZoom = 1.0f;
                 float minZoom = 0.5f;

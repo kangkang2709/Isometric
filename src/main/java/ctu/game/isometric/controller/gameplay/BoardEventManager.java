@@ -196,7 +196,7 @@ public class BoardEventManager {
                     ", Enemies=" + enemyEvents + ", Words=" + wordEvents + ", Traps=" + trapEvents +
                     ", Quiz=" + quizEvents + ", MultiQuiz=" + multiQuizEvents);
 
-            // Place events
+//            // Place events
             placeSpecificEvents("trap", trapEvents, "plate");
             placeSpecificEvents("enemy", enemyEvents, "enemy");
             placeSpecificEvents("word_scramble", wordEvents, "word");

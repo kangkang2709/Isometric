@@ -11,6 +11,7 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import ctu.game.isometric.controller.GameController;
 import ctu.game.isometric.model.dictionary.Dictionary;
 import ctu.game.isometric.model.dictionary.Word;
@@ -20,12 +21,52 @@ import ctu.game.isometric.util.WordNetValidator;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.ArrayDeque;
+import java.util.Queue;
 
 import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
+import com.sun.speech.freetts.Voice;
+import com.sun.speech.freetts.VoiceManager;
+import com.sun.speech.freetts.audio.JavaClipAudioPlayer;
 
 public class DictionaryView {
+    // Static color constants for memory efficiency
+    private static final Color BACKGROUND_COLOR = new Color(0.2f, 0.2f, 0.2f, 1);
+    private static final Color SEARCH_BOX_COLOR = new Color(0.3f, 0.3f, 0.3f, 1);
+    private static final Color BUTTON_COLOR = new Color(0.5f, 0.5f, 0.5f, 1);
+    private static final Color ACTIVE_TAB_COLOR = new Color(0.4f, 0.7f, 0.4f, 1);
+    private static final Color INACTIVE_TAB_COLOR = new Color(0.3f, 0.3f, 0.3f, 1);
+    private static final Color WORD_LIST_COLOR = new Color(0.25f, 0.25f, 0.25f, 1);
+    private static final Color SELECTED_WORD_COLOR = new Color(0.4f, 0.4f, 0.6f, 1);
+    private static final Color SCROLL_BAR_COLOR = new Color(0.3f, 0.3f, 0.3f, 1);
+    private static final Color SCROLL_THUMB_COLOR = new Color(0.6f, 0.6f, 0.6f, 1);
+    private static final Color BACK_BUTTON_COLOR = new Color(0.7f, 0.3f, 0.3f, 1);
+    private static final Color PRONOUNCE_BUTTON_ACTIVE = new Color(0.3f, 0.6f, 0.3f, 1);
+
+    // Simple object pooling without LibGDX ObjectPool
+    private final Queue<GlyphLayout> glyphLayoutPool = new ArrayDeque<>();
+    private static final int MAX_POOL_SIZE = 10;
+
+    // Text measurement cache
+    private final Map<String, Float> textHeightCache = new HashMap<>();
+    private final Map<String, GlyphLayout> glyphLayoutCache = new HashMap<>();
+
+    // Word details caching
+    private Word cachedSelectedWord = null;
+    private float cachedDetailsHeight = 0;
+    private final List<String> cachedFormattedDefinitions = new ArrayList<>();
+
+    // Dirty flags for rendering optimization
+    private boolean needsRedraw = true;
+    private boolean wordListChanged = false;
+    private boolean selectedWordChanged = false;
+
     private final GameController gameController;
     private final Dictionary dictionary;
     private final WordNetValidator wordNetValidator;
@@ -62,6 +103,21 @@ public class DictionaryView {
     private boolean isSearchFocused = false;
     int newLearnedWords = 0;
 
+    // TTS with improved thread management
+    private Voice voice;
+    private boolean isTTSEnabled = true;
+    private ExecutorService ttsExecutor = Executors.newSingleThreadExecutor();
+    private volatile boolean isSpeaking = false;
+    private Rectangle pronounceButton = new Rectangle(530, 650, 120, 30);
+
+    // Reusable objects to reduce garbage collection
+    private final GlyphLayout glyphLayout = new GlyphLayout();
+    private final Rectangle scissorRect = new Rectangle();
+    private final Vector3 tempVector = new Vector3();
+    private final Color tempColor = new Color();
+
+     Matrix4 uiMatrix = new Matrix4().setToOrtho2D(0, 0, 1280, 720);
+
     public DictionaryView(GameController gameController, Dictionary dictionary, WordNetValidator wordNetValidator) {
         this.gameController = gameController;
         this.dictionary = dictionary;
@@ -71,6 +127,11 @@ public class DictionaryView {
         camera.setToOrtho(false, 1280, 720);
         newLearnedWords = 0;
 
+        // Initialize object pool
+        for (int i = 0; i < MAX_POOL_SIZE; i++) {
+            glyphLayoutPool.offer(new GlyphLayout());
+        }
+
         try {
             this.labelFont = generateVietNameseFont("ModernAntiqua-Regular.ttf", 20);
         } catch (Exception e) {
@@ -79,18 +140,96 @@ public class DictionaryView {
             Gdx.app.error("DictionaryView", "Failed to load Vietnamese font", e);
         }
 
+        initializeTTS();
         updateWordList();
     }
 
-    public void update(float delta) {
-        updateScrollBars();
+    private GlyphLayout obtainGlyphLayout() {
+        GlyphLayout layout = glyphLayoutPool.poll();
+        return layout != null ? layout : new GlyphLayout();
     }
+
+    private void freeGlyphLayout(GlyphLayout layout) {
+        if (glyphLayoutPool.size() < MAX_POOL_SIZE) {
+            glyphLayoutPool.offer(layout);
+        }
+    }
+
+    private void initializeTTS() {
+        try {
+            System.setProperty("freetts.voices", "com.sun.speech.freetts.en.us.cmu_us_kal.KevinVoiceDirectory");
+            VoiceManager voiceManager = VoiceManager.getInstance();
+            voice = voiceManager.getVoice("kevin16");
+
+            if (voice != null) {
+                voice.allocate();
+                voice.setRate(150);
+                voice.setPitch(100);
+                voice.setVolume(1.0f);
+            } else {
+                isTTSEnabled = false;
+                Gdx.app.error("DictionaryView", "TTS voice not available");
+            }
+        } catch (Exception e) {
+            isTTSEnabled = false;
+            Gdx.app.error("DictionaryView", "Failed to initialize TTS", e);
+        }
+    }
+
+    private void speakText(String text) {
+        if (!isTTSEnabled || voice == null || text == null || text.trim().isEmpty()) {
+            return;
+        }
+
+        // Cancel current speech if speaking
+        if (isSpeaking) {
+            try {
+                // FreeTTS doesn't have stop method, use interrupt instead
+                ttsExecutor.shutdownNow();
+                ttsExecutor = Executors.newSingleThreadExecutor();
+                isSpeaking = false;
+            } catch (Exception e) {
+                Gdx.app.error("DictionaryView", "Error stopping speech", e);
+            }
+        }
+
+        ttsExecutor.submit(() -> {
+            try {
+                isSpeaking = true;
+                voice.speak(text);
+            } catch (Exception e) {
+                Gdx.app.error("DictionaryView", "Error during speech synthesis", e);
+            } finally {
+                isSpeaking = false;
+            }
+        });
+    }
+
+    private void pronounceSelectedWord() {
+        if (selectedWord == null) return;
+
+        String textToSpeak = selectedWord.getTerm();
+        if (selectedWord.getPronunciation() != null && !selectedWord.getPronunciation().isEmpty()) {
+            textToSpeak = selectedWord.getTerm();
+        }
+
+        speakText(textToSpeak);
+    }
+
+    public void update(float delta) {
+        if (wordListChanged || selectedWordChanged) {
+            updateScrollBars();
+            needsRedraw = true;
+            wordListChanged = false;
+            selectedWordChanged = false;
+        }
+    }
+
     public boolean handleKeyTyped(char character) {
         if (!isSearchFocused) {
             return false;
         }
 
-        // Handle backspace
         if (character == '\b') {
             if (searchText.length() > 0) {
                 searchText = searchText.substring(0, searchText.length() - 1);
@@ -99,13 +238,11 @@ public class DictionaryView {
             return false;
         }
 
-        // Handle enter key
         if (character == '\r' || character == '\n') {
             searchWords();
             return true;
         }
 
-        // Only accept printable characters
         if (!Character.isISOControl(character)) {
             searchText += character;
             return true;
@@ -114,7 +251,6 @@ public class DictionaryView {
         return false;
     }
 
-    // Methods to add to DictionaryView class
     public void handleMouseClick(float x, float y) {
         y = Gdx.graphics.getHeight() - y;
 
@@ -128,45 +264,35 @@ public class DictionaryView {
             updateWordList();
         } else if (searchButton.contains(x, y)) {
             searchWords();
+        } else if (pronounceButton.contains(x, y) && selectedWord != null) {
+            pronounceSelectedWord();
         } else if (backButton.contains(x, y)) {
             gameController.setCurrentState(GameState.EXPLORING);
         } else if (wordListArea.contains(x, y)) {
             selectWordFromList(y);
         } else if (wordListScrollBar.contains(x, y)) {
-            // Handle word list scroll bar click
             if (displayedWords.size() > WORDS_PER_PAGE) {
                 if (wordListScrollThumb.contains(x, y)) {
                     isDraggingWordListThumb = true;
                 } else {
-                    // Jump to position
                     float clickRatio = (wordListScrollBar.y + wordListScrollBar.height - y) / wordListScrollBar.height;
                     wordListStartIndex = Math.min(displayedWords.size() - WORDS_PER_PAGE,
                             Math.max(0, (int)(clickRatio * displayedWords.size())));
                 }
             }
         } else if (detailsScrollBar.contains(x, y) && selectedWord != null) {
-            // Handle details scroll bar click
             if (maxDetailsScrollPosition > 0) {
                 if (detailsScrollThumb.contains(x, y)) {
                     isDraggingDetailsThumb = true;
                 } else {
-                    // Jump to position
                     float clickRatio = (detailsScrollBar.y + detailsScrollBar.height - y) / detailsScrollBar.height;
                     detailsScrollPosition = Math.min(maxDetailsScrollPosition, Math.max(0, clickRatio * maxDetailsScrollPosition));
                 }
             }
         }
-//        else if (!showingLearnedWords && selectedWord != null &&
-//                x >= detailsArea.x + 20 && x <= detailsArea.x + 200 &&
-//                y >= detailsArea.y + 15 && y <= detailsArea.y + 45) {
-//            dictionary.markWordAsLearned(selectedWord.getTerm());
-//            updateWordList();
-//            selectedWord = null;
-//        }
     }
 
     public void handleMouseScroll(float amountX, float amountY, float mouseX, float mouseY) {
-        // Cap the scroll amount to prevent large jumps
         float cappedScrollAmount = Math.max(-10, Math.min(10, amountY));
 
         if (wordListArea.contains(mouseX, mouseY) || wordListScrollBar.contains(mouseX, mouseY)) {
@@ -195,9 +321,7 @@ public class DictionaryView {
         isDraggingDetailsThumb = false;
     }
 
-
     private void updateScrollBars() {
-        // Update word list scroll thumb position
         if (displayedWords.size() > WORDS_PER_PAGE) {
             float thumbHeight = Math.max(50, wordListArea.height * WORDS_PER_PAGE / displayedWords.size());
             float maxThumbY = wordListArea.y + wordListArea.height - thumbHeight;
@@ -211,7 +335,6 @@ public class DictionaryView {
             wordListScrollThumb.y = wordListArea.y;
         }
 
-        // Update details scroll thumb
         if (selectedWord != null) {
             float contentHeight = calculateWordDetailsHeight();
             maxDetailsScrollPosition = Math.max(0, contentHeight - detailsArea.height);
@@ -236,18 +359,17 @@ public class DictionaryView {
         if (selectedWord != null) {
             int currentIndex = displayedWords.indexOf(selectedWord);
 
-            // If at the top of visible list and can scroll up
             if (currentIndex == wordListStartIndex && wordListStartIndex > 0) {
                 wordListStartIndex--;
             }
 
-            // Select previous word if possible
             if (currentIndex > 0) {
                 selectedWord = displayedWords.get(currentIndex - 1);
+                selectedWordChanged = true;
             }
         } else if (!displayedWords.isEmpty()) {
-
             selectedWord = displayedWords.get(0);
+            selectedWordChanged = true;
         }
     }
 
@@ -256,18 +378,17 @@ public class DictionaryView {
             int currentIndex = displayedWords.indexOf(selectedWord);
             int lastIndex = displayedWords.size() - 1;
 
-            // If at the bottom of visible list and can scroll down
             if (currentIndex == wordListStartIndex + WORDS_PER_PAGE - 1 && currentIndex < lastIndex) {
                 wordListStartIndex++;
             }
 
-            // Select next word if possible
             if (currentIndex < lastIndex) {
                 selectedWord = displayedWords.get(currentIndex + 1);
+                selectedWordChanged = true;
             }
         } else if (!displayedWords.isEmpty()) {
-            // If no word selected, select the first word
             selectedWord = displayedWords.get(0);
+            selectedWordChanged = true;
         }
     }
 
@@ -275,7 +396,8 @@ public class DictionaryView {
         int index = (int)((wordListArea.y + wordListArea.height - y) / 30) + wordListStartIndex;
         if (index >= 0 && index < displayedWords.size()) {
             selectedWord = displayedWords.get(index);
-            detailsScrollPosition = 0; // Reset details scroll when selecting a new word
+            detailsScrollPosition = 0;
+            selectedWordChanged = true;
         }
     }
 
@@ -284,18 +406,19 @@ public class DictionaryView {
         Set<Word> words = showingLearnedWords ? dictionary.getLearnedWords() : dictionary.getNewWords();
         displayedWords.addAll(words);
 
-        // Adjust start index if needed
         if (wordListStartIndex + WORDS_PER_PAGE > displayedWords.size()) {
             wordListStartIndex = Math.max(0, displayedWords.size() - WORDS_PER_PAGE);
         }
+
+        wordListChanged = true;
     }
 
-    public void addNewWord(String word){
+    public void addNewWord(String word) {
         if (word == null || word.isEmpty()) {
             return;
         }
         Word newWord = wordNetValidator.getWordDetails(word);
-        if (!dictionary.getNewWords().contains(newWord) && !dictionary.getLearnedWords().contains(newWord) ){
+        if (!dictionary.getNewWords().contains(newWord) && !dictionary.getLearnedWords().contains(newWord)) {
             System.out.printf("word: %s\n", newWord.getTerm());
             dictionary.addNewWord(newWord);
             newLearnedWords++;
@@ -312,66 +435,75 @@ public class DictionaryView {
         if (searchResults != null && !searchResults.isEmpty()) {
             displayedWords.addAll(searchResults);
             selectedWord = displayedWords.iterator().next();
+            selectedWordChanged = true;
         }
         wordListStartIndex = 0;
+        wordListChanged = true;
     }
 
     public void render(SpriteBatch batch) {
         camera.update();
 
-        // First draw shapes
         Gdx.gl.glEnable(GL20.GL_BLEND);
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
         // Main background
-        shapeRenderer.setColor(0.2f, 0.2f, 0.2f, 1);
+        shapeRenderer.setColor(BACKGROUND_COLOR);
         shapeRenderer.rect(80, 60, 1120, 600);
 
         // Search area
-        shapeRenderer.setColor(0.3f, 0.3f, 0.3f, 1);
+        shapeRenderer.setColor(SEARCH_BOX_COLOR);
         shapeRenderer.rect(searchBox.x, searchBox.y, searchBox.width, searchBox.height);
 
         // Search button
-        shapeRenderer.setColor(0.5f, 0.5f, 0.5f, 1);
+        shapeRenderer.setColor(BUTTON_COLOR);
         shapeRenderer.rect(searchButton.x, searchButton.y, searchButton.width, searchButton.height);
 
+        // Pronounce button
+        if (selectedWord != null && isTTSEnabled) {
+            shapeRenderer.setColor(PRONOUNCE_BUTTON_ACTIVE);
+        } else {
+            shapeRenderer.setColor(SEARCH_BOX_COLOR);
+        }
+        shapeRenderer.rect(pronounceButton.x, pronounceButton.y, pronounceButton.width, pronounceButton.height);
+
         // Tabs
-        shapeRenderer.setColor(showingLearnedWords ? new Color(0.4f, 0.7f, 0.4f, 1) : new Color(0.3f, 0.3f, 0.3f, 1));
+        shapeRenderer.setColor(showingLearnedWords ? ACTIVE_TAB_COLOR : INACTIVE_TAB_COLOR);
         shapeRenderer.rect(learnedTab.x, learnedTab.y, learnedTab.width, learnedTab.height);
 
-        shapeRenderer.setColor(!showingLearnedWords ? new Color(0.4f, 0.7f, 0.4f, 1) : new Color(0.3f, 0.3f, 0.3f, 1));
+        shapeRenderer.setColor(!showingLearnedWords ? ACTIVE_TAB_COLOR : INACTIVE_TAB_COLOR);
         shapeRenderer.rect(newTab.x, newTab.y, newTab.width, newTab.height);
 
         // Word list area
-        shapeRenderer.setColor(0.25f, 0.25f, 0.25f, 1);
+        shapeRenderer.setColor(WORD_LIST_COLOR);
         shapeRenderer.rect(wordListArea.x, wordListArea.y, wordListArea.width, wordListArea.height);
 
         // Word details area
-        shapeRenderer.setColor(0.25f, 0.25f, 0.25f, 1);
+        shapeRenderer.setColor(WORD_LIST_COLOR);
         shapeRenderer.rect(detailsArea.x, detailsArea.y, detailsArea.width, detailsArea.height);
 
         // Back button
-        shapeRenderer.setColor(0.7f, 0.3f, 0.3f, 1);
+        shapeRenderer.setColor(BACK_BUTTON_COLOR);
         shapeRenderer.rect(backButton.x, backButton.y, backButton.width, backButton.height);
 
         // Draw scroll bars
-        shapeRenderer.setColor(0.3f, 0.3f, 0.3f, 1);
+        shapeRenderer.setColor(SCROLL_BAR_COLOR);
         shapeRenderer.rect(wordListScrollBar.x, wordListScrollBar.y, wordListScrollBar.width, wordListScrollBar.height);
         shapeRenderer.rect(detailsScrollBar.x, detailsScrollBar.y, detailsScrollBar.width, detailsScrollBar.height);
 
         // Draw scroll thumbs
-        shapeRenderer.setColor(0.6f, 0.6f, 0.6f, 1);
+        shapeRenderer.setColor(SCROLL_THUMB_COLOR);
         shapeRenderer.rect(wordListScrollThumb.x, wordListScrollThumb.y, wordListScrollThumb.width, wordListScrollThumb.height);
         if (selectedWord != null) {
             shapeRenderer.rect(detailsScrollThumb.x, detailsScrollThumb.y, detailsScrollThumb.width, detailsScrollThumb.height);
         }
 
-        // If there's a word selected, highlight it
+        // Highlight selected word
         if (selectedWord != null) {
             int index = displayedWords.indexOf(selectedWord);
             if (index >= wordListStartIndex && index < wordListStartIndex + WORDS_PER_PAGE) {
-                shapeRenderer.setColor(0.4f, 0.4f, 0.6f, 1);
+                shapeRenderer.setColor(SELECTED_WORD_COLOR);
                 float y = wordListArea.y + wordListArea.height - 30 * (index - wordListStartIndex + 1);
                 shapeRenderer.rect(wordListArea.x, y, wordListArea.width, 30);
             }
@@ -380,21 +512,30 @@ public class DictionaryView {
         shapeRenderer.end();
         Gdx.gl.glDisable(GL20.GL_BLEND);
 
-        // Then draw text with the batch
-        batch.setProjectionMatrix(new Matrix4().setToOrtho2D(0, 0, 1280, 720));
+        // Text rendering
+        batch.setProjectionMatrix(uiMatrix);
 
         if(batch.isDrawing()) batch.end();
         batch.begin();
 
-        // Title - use larger font if available
+        // Title
         labelFont.setColor(Color.WHITE);
         labelFont.draw(batch, "DICTIONARY", 640, 700, 0, Align.center, false);
 
-        // Rest of your text drawing code with default font
+        // Search text
         labelFont.setColor(Color.WHITE);
         labelFont.draw(batch, searchText.isEmpty() ? "Search..." : searchText,
                 searchBox.x + 10, searchBox.y + 20);
         labelFont.draw(batch, "Search", searchButton.x + 20, searchButton.y + 20);
+
+        // Pronounce button text
+        if (selectedWord != null && isTTSEnabled) {
+            labelFont.setColor(Color.WHITE);
+        } else {
+            labelFont.setColor(Color.GRAY);
+        }
+        labelFont.draw(batch, "Pronounce", pronounceButton.x + 20, pronounceButton.y + 20);
+        labelFont.setColor(Color.WHITE);
 
         // Tabs
         labelFont.draw(batch, "Learned Words", learnedTab.x + 40, learnedTab.y + 20);
@@ -403,21 +544,29 @@ public class DictionaryView {
         // Back button
         labelFont.draw(batch, "Back", backButton.x + 30, backButton.y + 25);
 
-        // Word list
-        // Ensure wordListStartIndex is valid
+        // Render word list
+        renderWordList(batch);
+        renderWordDetails(batch);
+
+    }
+
+    private void renderWordList(SpriteBatch batch) {
         wordListStartIndex = Math.max(0, Math.min(wordListStartIndex, displayedWords.isEmpty() ? 0 : displayedWords.size() - 1));
 
         if (displayedWords.isEmpty()) {
             labelFont.draw(batch, "No words found", wordListArea.x + 20, wordListArea.y + wordListArea.height - 20);
-        } else {
-            for (int i = wordListStartIndex; i < Math.min(wordListStartIndex + WORDS_PER_PAGE, displayedWords.size()); i++) {
-                Word word = displayedWords.get(i);
-                float y = wordListArea.y + wordListArea.height - 30 * (i - wordListStartIndex + 1);
-                labelFont.draw(batch, word.getTerm(), wordListArea.x + 10, y + 20);
-            }
+            return;
         }
 
-        renderWordDetails(batch);
+        final float baseY = wordListArea.y + wordListArea.height - 30;
+        final float wordX = wordListArea.x + 10;
+        final int endIndex = Math.min(wordListStartIndex + WORDS_PER_PAGE, displayedWords.size());
+
+        for (int i = wordListStartIndex; i < endIndex; i++) {
+            Word word = displayedWords.get(i);
+            float y = baseY - (30 * (i - wordListStartIndex));
+            labelFont.draw(batch, word.getTerm(), wordX, y + 20);
+        }
     }
 
     private void renderWordDetails(SpriteBatch batch) {
@@ -427,7 +576,6 @@ public class DictionaryView {
             batch.begin();
         }
 
-        // Enable scissors to clip content to details area
         batch.flush();
         scissorRect.set(detailsArea.x, detailsArea.y, detailsArea.width, detailsArea.height);
         ScissorStack.pushScissors(scissorRect);
@@ -479,32 +627,32 @@ public class DictionaryView {
                             detailsArea.width - 60, Align.left, true);
                     y -= synonymsHeight + 15;
                 }
+
+                // Antonyms
                 if (!def.getAntonyms().isEmpty()) {
                     String antonyms = "Antonyms: " + String.join(", ", def.getAntonyms());
                     float antonymsHeight = calculateTextHeight(antonyms, 16, detailsArea.width - 60);
                     labelFont.draw(batch, antonyms, detailsArea.x + 40, y,
                             detailsArea.width - 60, Align.left, true);
                     y -= antonymsHeight + 15;
-
                 }
             }
         }
 
-        // Mark as learned button for new words
-//        if (!showingLearnedWords) {
-//            labelFont.setColor(0.4f, 0.7f, 1, 1);
-//            labelFont.draw(batch, "[ Mark as Learned ]", detailsArea.x + 20, detailsArea.y + 30);
-//            labelFont.setColor(Color.WHITE);
-//        }
-
-        // End scissor
         batch.flush();
         ScissorStack.popScissors();
     }
 
-    // Calculate total height of word details to determine scrolling range
     private float calculateWordDetailsHeight() {
         if (selectedWord == null) return 0;
+
+        // Use cached value if word hasn't changed
+        if (selectedWord.equals(cachedSelectedWord)) {
+            return cachedDetailsHeight;
+        }
+
+        cachedSelectedWord = selectedWord;
+        cachedFormattedDefinitions.clear();
 
         float height = 60; // Basic padding + word term height
 
@@ -517,6 +665,7 @@ public class DictionaryView {
 
             for (WordDefinition def : selectedWord.getDefinitions()) {
                 String defText = "• " + def.getPartOfSpeech() + ": " + def.getDefinition();
+                cachedFormattedDefinitions.add(defText);
                 height += calculateTextHeight(defText, 16, detailsArea.width - 40) + 10;
 
                 if (!def.getExamples().isEmpty()) {
@@ -532,30 +681,68 @@ public class DictionaryView {
                     String synonyms = "Synonyms: " + String.join(", ", def.getSynonyms());
                     height += calculateTextHeight(synonyms, 16, detailsArea.width - 60) + 15;
                 }
-                if(!def.getAntonyms().isEmpty()) {
+
+                if (!def.getAntonyms().isEmpty()) {
                     String antonyms = "Antonyms: " + String.join(", ", def.getAntonyms());
                     height += calculateTextHeight(antonyms, 16, detailsArea.width - 60) + 15;
                 }
             }
         }
 
+        cachedDetailsHeight = height;
         return height;
     }
 
-    public void dispose() {
-        shapeRenderer.dispose();
-        if (labelFont != null) {
-            labelFont.dispose();
-        }
+    private float calculateTextHeight(String text, int fontSize, float width) {
+        String cacheKey = text + "_" + fontSize + "_" + width;
+        return textHeightCache.computeIfAbsent(cacheKey, k -> {
+            GlyphLayout layout = obtainGlyphLayout();
+            layout.setText(labelFont, text, Color.WHITE, width, Align.left, true);
+            float height = layout.height;
+            freeGlyphLayout(layout);
+            return height;
+        });
     }
 
-    private final com.badlogic.gdx.graphics.g2d.GlyphLayout glyphLayout = new com.badlogic.gdx.graphics.g2d.GlyphLayout();
-    private final Rectangle scissorRect = new Rectangle();
-    private final Vector3 tempVector = new Vector3();
-    private final Color tempColor = new Color();
-    private float calculateTextHeight(String text, int fontSize, float width) {
-        glyphLayout.setText(labelFont, text, Color.WHITE, width, Align.left, true);
-        return glyphLayout.height;
+    public void dispose() {
+        // Clear caches
+        textHeightCache.clear();
+        glyphLayoutCache.clear();
+        cachedFormattedDefinitions.clear();
+        glyphLayoutPool.clear();
+
+        // Dispose graphics resources
+        if (shapeRenderer != null) {
+            shapeRenderer.dispose();
+            shapeRenderer = null;
+        }
+
+        if (labelFont != null) {
+            labelFont.dispose();
+            labelFont = null;
+        }
+
+        // Clean up TTS resources
+        if (ttsExecutor != null) {
+            ttsExecutor.shutdown();
+            try {
+                if (!ttsExecutor.awaitTermination(1, TimeUnit.SECONDS)) {
+                    ttsExecutor.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                ttsExecutor.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
+        }
+
+        if (voice != null) {
+            try {
+                voice.deallocate();
+            } catch (Exception e) {
+                Gdx.app.error("DictionaryView", "Error deallocating TTS voice", e);
+            }
+            voice = null;
+        }
     }
 
     public Dictionary getDictionary() {

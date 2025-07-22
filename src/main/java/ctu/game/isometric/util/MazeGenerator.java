@@ -323,6 +323,7 @@ public class MazeGenerator {
                 terrain[y][x] = (base[y][x] == FLOOR) ? 0 : TILE_BLOCK;
     }
 
+//    Dead end là những ô FLOOR chỉ có duy nhất 1 hàng xóm cũng là FLOOR, nghĩa là đi vào thì không có đường ra tiếp.
     private static List<int[]> generateFakeEndpoints(List<int[]> floorTiles, int[][] baseLayer,
                                                      Set<String> pathSet, int[] start, int[] end,
                                                      int count, int width, int height, Random random) {

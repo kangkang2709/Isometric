@@ -438,32 +438,27 @@ public class MapRenderer {
 
     public void render(SpriteBatch batch) {
 
-//        if (!map.getMapName().equals("board")) {
-//            float[] isoPos = toIsometric(character.getGridX(), character.getGridY());
-//            camera.position.set(isoPos[0], isoPos[1], 0);
-//            camera.update();
-//        } else {
-//            camera.position.set(645, 25, 0);
-//            camera.update();
+
+//        if (!isCameraTransitioning) {
+//            if (isZoomed && map.getMapName().equals("board")) {
+//                camera.position.set(645, 25, 0);
+//                camera.zoom = 0.8f;
+//                camera.update();
+//            } else if (!isZoomed && map.getMapName().equals("board") || map.getMapName().equals("forest") || map.getMapName().equals("main")) {
+//                float[] isoPos = toIsometric(character.getGridX(), character.getGridY());
+//                camera.position.set(isoPos[0], isoPos[1], 0);
+//                camera.zoom = 0.5f;
+//                camera.update();
+//            } else {
+//                float[] isoPos = toIsometric(character.getGridX(), character.getGridY());
+//                camera.position.set(isoPos[0], isoPos[1], 0);
+//                camera.update();
+//            }
 //        }
 
-
-        if (!isCameraTransitioning) {
-            if (isZoomed && map.getMapName().equals("board")) {
-                camera.position.set(645, 25, 0);
-                camera.zoom = 0.8f;
-                camera.update();
-            } else if (!isZoomed && map.getMapName().equals("board") || map.getMapName().equals("forest") || map.getMapName().equals("main")) {
-                float[] isoPos = toIsometric(character.getGridX(), character.getGridY());
-                camera.position.set(isoPos[0], isoPos[1], 0);
-                camera.zoom = 0.5f;
-                camera.update();
-            } else {
-                float[] isoPos = toIsometric(character.getGridX(), character.getGridY());
+        float[] isoPos = toIsometric(character.getGridX(), character.getGridY());
                 camera.position.set(isoPos[0], isoPos[1], 0);
                 camera.update();
-            }
-        }
 
         // End batch if currently drawing to use renderer
         boolean batchWasDrawing = batch.isDrawing();

@@ -409,6 +409,7 @@ public class DarkestDungeon implements Screen {
                             gameController.completedDungeon2();
                         else if (enemyName.equalsIgnoreCase("Frost Guardian"))
                             gameController.defeatedFrostGuardian();
+                        else  gameController.returnToTower(enemyName);
                     }
 
                     return true;
