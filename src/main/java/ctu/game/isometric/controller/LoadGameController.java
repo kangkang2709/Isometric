@@ -67,8 +67,6 @@ public class LoadGameController {
 
         // Initialize fonts
 
-        font = new BitmapFont();
-        font.getData().setScale(1.5f);
 
         // Load textures
         backgroundImage = new Texture(Gdx.files.internal("backgrounds/black.png"));
@@ -191,7 +189,7 @@ public class LoadGameController {
 
         if (isConfirmationDialogActive) {
             // Draw dialog background
-            batch.draw(buttonNormal, screenWidth / 2 - 200, screenHeight / 2 - 100, 400, 200);
+            batch.draw(buttonSelected, screenWidth / 2 - 200, screenHeight / 2 - 100, 400, 200);
 
             // Draw dialog text
             GlyphLayout dialogText = new GlyphLayout(font, "Delete save file?");

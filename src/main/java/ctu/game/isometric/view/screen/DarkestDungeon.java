@@ -3,19 +3,13 @@ package ctu.game.isometric.view.screen;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.Interpolation;
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.*;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Timer;
 import ctu.game.isometric.IsometricGame;
 import ctu.game.isometric.controller.GameController;
@@ -28,6 +22,11 @@ import ctu.game.isometric.util.AssetManager;
 import ctu.game.isometric.util.ItemLoader;
 import ctu.game.isometric.util.RewardLoader;
 import ctu.game.isometric.util.WordNetValidator;
+import ctu.game.isometric.view.scene.Character2DRenderer;
+import ctu.game.isometric.view.scene.CombatEnvironment3D;
+import ctu.game.isometric.view.ui.DefeatRenderer;
+import ctu.game.isometric.view.ui.RewardRenderer;
+import ctu.game.isometric.view.ui.TutorialRenderer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -61,7 +60,6 @@ public class DarkestDungeon implements Screen {
 
     // Pause menu
     private boolean isPaused = false;
-    private boolean escKeyPressed = false;
 
     // Character stats - Enhanced with ATK and DEF
     private int playerHP = 2, playerMaxHP = 60;
@@ -82,34 +80,15 @@ public class DarkestDungeon implements Screen {
     // Combat area (top half)
     private final float COMBAT_AREA_Y = BOTTOM_HALF_HEIGHT;
     private final float COMBAT_CENTER_Y = COMBAT_AREA_Y + TOP_HALF_HEIGHT / 2;
-
-    // Character positions
-    private float playerStartX = SCREEN_WIDTH * 0.25f;
-    private float playerStartY = COMBAT_CENTER_Y;
-    private float enemyStartX = SCREEN_WIDTH * 0.75f;
-    private float enemyStartY = COMBAT_CENTER_Y;
-
-    // Current animated positions
-    private float playerCurrentX = playerStartX;
-    private float playerCurrentY = playerStartY;
-    private float enemyCurrentX = enemyStartX;
-    private float enemyCurrentY = enemyStartY;
-
-    // Scale for character animation
     private float playerScale = 1.0f;
     private float enemyScale = 1.0f;
     private final float MAX_SCALE = 1.4f;
-
-    private final float CHAR_WIDTH = 150;
-    private final float CHAR_HEIGHT = 200;
-
     // Bottom UI layout
     private final float STATUS_PANEL_WIDTH = 300;
     private final float STATUS_PANEL_HEIGHT = 200;
     private final float PLAYER_STATUS_X = 50;
     private final float ENEMY_STATUS_X = SCREEN_WIDTH - STATUS_PANEL_WIDTH - 50;
     private final float STATUS_PANEL_Y = 50;
-
     // Skill bar layout
     private final float SKILL_BAR_WIDTH = 400;
     private final float SKILL_BAR_HEIGHT = 80;
@@ -117,23 +96,14 @@ public class DarkestDungeon implements Screen {
     private final float SKILL_BAR_Y = 250;
     private final float SKILL_BUTTON_SIZE = 64;
     private final float SKILL_BUTTON_SPACING = 12;
-
     // Health/Mana bars
     private final float BAR_WIDTH = 200;
     private final float BAR_HEIGHT = 14;
     private final float MANA_BAR_HEIGHT = 12;
-
     // Skills configuration
-    private String[] skillIcons = {"⚔️", "🔥", "⚡", "💉", "🛡️"};
     private String[] skillNames = {"Attack", "Word", "TypeW", "Heal", "Defend"};
     private int[] skillManaCost = {0, 5, 5, 10, 0};
     private boolean[] skillEnabled = {true, true, true, true, true};
-
-    // Enemy skills
-    private String[] enemySkillIcons = {"⚔️", "🌊", "❤️"};
-    private String[] enemySkillNames = {"Attack", "Special", "Heal"};
-    private int[] enemySkillCost = {0, 8, 12};
-
     // Textures
     private Texture[] playerIdleTextures = new Texture[2]; // For idle animation
     private Texture[] playerSkillTextures = new Texture[5];
@@ -151,6 +121,7 @@ public class DarkestDungeon implements Screen {
     private boolean effectOnPlayer = false;
     private int currentSkill = -1;
     private int enemyAction = -1;
+    int rewardId = 0;
 
     // Animation control
     private boolean isAnimating = false;
@@ -165,6 +136,23 @@ public class DarkestDungeon implements Screen {
 
     WordNetValidator wordNetValidator;
 
+    private CombatEnvironment3D environment3D;
+    private Character2DRenderer character2DRenderer;
+
+    private Vector3 playerWorldPos = new Vector3(-3f, 1f, 2f);
+    private Vector3 enemyWorldPos = new Vector3(5f, 1f, -2f);
+
+    // Camera movement
+    private Vector3 cameraTargetPos = new Vector3(0f, 8f, 12f);
+    private Vector3 cameraCurrentPos = new Vector3(0f, 8f, 12f);
+    private float cameraLerpSpeed = 2f;
+
+
+    public void resetPosition() {
+        playerWorldPos = new Vector3(-3f, 1f, 2f);
+        enemyWorldPos = new Vector3(5f, 1f, -2f);
+    }
+
     public DarkestDungeon(IsometricGame game, GameController gameController) {
         this.gameController = gameController;
         this.game = game;
@@ -173,13 +161,17 @@ public class DarkestDungeon implements Screen {
         this.wordNetValidator = gameController.getWordNetValidator();
     }
 
-    int rewardId = 0;
+    private RewardRenderer rewardRenderer;
+    private DefeatRenderer defeatRenderer;
+    private TutorialRenderer tutorialRenderer;
+
 
     public void startCombat(Enemy enemy) {
         this.enemyName = enemy.getEnemyName();
         System.out.println("Starting combat with enemy: " + enemyName);
         this.enemyMaxHP = (int) enemy.getHealth();
         this.enemyHP = enemyMaxHP;
+
 
         this.enemyATK = enemy.getAttackPower();
         this.enemyDEF = enemy.getDefensePower();
@@ -207,11 +199,6 @@ public class DarkestDungeon implements Screen {
         this.effectOnPlayer = false;
         this.currentSkill = -1;
         this.enemyAction = -1;
-        this.playerCurrentX = playerStartX;
-        this.playerCurrentY = playerStartY;
-        this.enemyCurrentX = enemyStartX;
-        this.enemyCurrentY = enemyStartY;
-
 
 
         this.combatLog = "Chiến đấu bắt đầu! Chọn hành động.";
@@ -227,10 +214,9 @@ public class DarkestDungeon implements Screen {
 
         item = null;
         reward = null;
-
         inputWord = "";
 
-
+        resetPosition();
         enemyIdleTextures = getEnemyIdleTextures(enemy.getTexturePath());
         enemySkillTextures = getEnemySkillTextures(enemy.getTexturePath());
     }
@@ -266,6 +252,8 @@ public class DarkestDungeon implements Screen {
         playerSkillTextures[3] = loadLinearTexture("dungeon/player_heal.png");
         playerSkillTextures[4] = loadLinearTexture("dungeon/player_defend.png");
 
+        enemyIdleTextures = getEnemyIdleTextures("demon");
+        enemySkillTextures = getEnemySkillTextures("demon");
 
         // Skill button textures
         skillButtonTextures[0] = new Texture("dungeon/skill_attack.png");
@@ -286,6 +274,8 @@ public class DarkestDungeon implements Screen {
     @Override
     public void show() {
 
+        environment3D = new CombatEnvironment3D();
+        character2DRenderer = new Character2DRenderer(environment3D.getCamera());
 
         batch = new SpriteBatch();
         font = generateVietNameseFont("GrenzeGotisch.ttf", 20);
@@ -306,6 +296,9 @@ public class DarkestDungeon implements Screen {
         currentPlayerTexture = playerIdleTextures[0];
         currentEnemyTexture = enemyIdleTextures[0];
 
+        rewardRenderer = new RewardRenderer(batch, font, titleFont, inputFont, shapeRenderer, assetManager);
+        defeatRenderer = new DefeatRenderer(batch, font, titleFont, inputFont, shapeRenderer);
+        tutorialRenderer = new TutorialRenderer(batch, font, titleFont, inputFont, shapeRenderer);
 
         Gdx.input.setInputProcessor(new com.badlogic.gdx.InputAdapter() {
             @Override
@@ -344,46 +337,13 @@ public class DarkestDungeon implements Screen {
                 screenY = 720 - screenY; // Invert Y coordinateif
 
                 if (showTutorial) {
-                    // Tutorial navigation
-                    float tutorialWidth = 700;
-                    float tutorialHeight = 500;
-                    float tutorialX = (SCREEN_WIDTH - tutorialWidth) / 2;
-                    float tutorialY = (SCREEN_HEIGHT - tutorialHeight) / 2;
-
-                    float buttonWidth = 100;
-                    float buttonHeight = 40;
-                    float prevButtonX = tutorialX + 50;
-                    float nextButtonX = tutorialX + tutorialWidth - 150;
-                    float closeButtonX = tutorialX + tutorialWidth - 110;
-                    float buttonY = tutorialY + 30;
-                    float closeButtonY = tutorialY + tutorialHeight - 50;
-
-                    // Previous page
-                    if (currentTutorialPage > 0 &&
-                            screenX >= prevButtonX && screenX <= prevButtonX + buttonWidth &&
-                            screenY >= buttonY && screenY <= buttonY + buttonHeight) {
-                        currentTutorialPage -= 2; // Skip title pages
-                        if (currentTutorialPage < 0) currentTutorialPage = 0;
-                        return true;
-                    }
-
-                    // Next page
-                    if (currentTutorialPage < tutorialPages.length - 2 &&
-                            screenX >= nextButtonX && screenX <= nextButtonX + buttonWidth &&
-                            screenY >= buttonY && screenY <= buttonY + buttonHeight) {
-                        currentTutorialPage += 2; // Skip title pages
-                        return true;
-                    }
-
-                    // Close tutorial
-                    if (screenX >= closeButtonX && screenX <= closeButtonX + buttonWidth &&
-                            screenY >= closeButtonY && screenY <= closeButtonY + buttonHeight) {
+                    boolean continueShowing = tutorialRenderer.handleClick(screenX, screenY);
+                    if (!continueShowing) {
                         showTutorial = false;
                         currentTutorialPage = 0;
-                        return true;
                     }
-
-                    return true; // Consume input while tutorial is open
+                    currentTutorialPage = tutorialRenderer.getCurrentPage();
+                    return true;
                 }
 
                 if (victory) {
@@ -409,7 +369,7 @@ public class DarkestDungeon implements Screen {
                             gameController.completedDungeon2();
                         else if (enemyName.equalsIgnoreCase("Frost Guardian"))
                             gameController.defeatedFrostGuardian();
-                        else  gameController.returnToTower(enemyName);
+                        else gameController.returnToTower(enemyName);
                     }
 
                     return true;
@@ -481,18 +441,18 @@ public class DarkestDungeon implements Screen {
                         return true; // Ngăn xử lý các input khác khi đang pause
                     }
 
-                    if (combatState == CombatState.PLAYER_TURN && !isAnimating) {
 
+                    if (combatState == CombatState.PLAYER_TURN && !isAnimating && !isPaused &&
+                            screenX >= menuX + 10 && screenX <= menuX + menuWidth - 10) {
 
+                        // Check skill buttons
                         for (int i = 0; i < 5; i++) {
-                            float skillX = SKILL_BAR_X + 20 + i * (SKILL_BUTTON_SIZE + SKILL_BUTTON_SPACING);
-                            float skillY = SKILL_BAR_Y + 8;
-
-                            if (skillEnabled[i] &&
-                                    screenX >= skillX && screenX <= skillX + SKILL_BUTTON_SIZE &&
-                                    screenY >= skillY && screenY <= skillY + SKILL_BUTTON_SIZE) {
-                                handlePlayerAction(i);
-                                return true;
+                            float skillY = buttonY - i * (buttonHeight + buttonSpacing);
+                            if (screenY >= skillY - buttonHeight && screenY <= skillY) {
+                                if (skillEnabled[i]) {
+                                    handlePlayerAction(i);
+                                    return true;
+                                }
                             }
                         }
                     } else if (combatState == CombatState.COMBAT_END) {
@@ -532,19 +492,18 @@ public class DarkestDungeon implements Screen {
                 return false;
             }
         });
-// Add this to the InputAdapter in the show() method
 
     }
 
-    private void addCameraShake(float intensity, float duration) {
-        cameraShake = Math.max(cameraShake, intensity);
-        Timer.schedule(new Timer.Task() {
-            @Override
-            public void run() {
-                cameraShake = Math.max(0, cameraShake - intensity / 10);
-            }
-        }, 0, duration / 10, (int) (duration * 10));
-    }
+    float menuWidth = 320;
+    float menuHeight = 240;
+    float menuX = 20;
+    float menuY = 20;
+
+    float buttonHeight = 40;
+    float buttonSpacing = 8;
+    float buttonY = menuY + menuHeight;
+
 
     private void updateTooltip() {
         hoveredSkill = -1;
@@ -552,11 +511,11 @@ public class DarkestDungeon implements Screen {
 
         if (combatState == CombatState.PLAYER_TURN && !isAnimating && !isPaused) {
             for (int i = 0; i < 5; i++) {
-                float skillX = SKILL_BAR_X + 20 + i * (SKILL_BUTTON_SIZE + SKILL_BUTTON_SPACING);
-                float skillY = SKILL_BAR_Y + 8;
+                float skillY = buttonY - i * (buttonHeight + buttonSpacing);
 
-                if (mouseX >= skillX && mouseX <= skillX + SKILL_BUTTON_SIZE &&
-                        mouseY >= skillY && mouseY <= skillY + SKILL_BUTTON_SIZE) {
+                // Check if mouse is over skill button
+                if (mouseX >= menuX + 10 && mouseX <= menuX + menuWidth - 10 &&
+                        mouseY >= skillY - buttonHeight && mouseY <= skillY) {
                     hoveredSkill = i;
                     showTooltip = true;
                     break;
@@ -564,6 +523,8 @@ public class DarkestDungeon implements Screen {
             }
         }
     }
+
+    private GlyphLayout layout = new GlyphLayout();
 
     private void drawTooltip() {
         if (!showTooltip || hoveredSkill == -1) return;
@@ -577,9 +538,11 @@ public class DarkestDungeon implements Screen {
         float tooltipWidth = Math.max(layout.width + 20, 200);
         float tooltipHeight = layout.height + 40;
 
-        // Position tooltip above skill button
-        float tooltipX = mouseX - tooltipWidth / 2;
-        float tooltipY = mouseY + 20;
+        // Position tooltip to the right of command menu
+        float menuWidth = 320;
+        float menuX = 20;
+        float tooltipX = menuX + menuWidth + 10;
+        float tooltipY = mouseY;
 
         // Keep tooltip on screen
         tooltipX = Math.max(10, Math.min(tooltipX, SCREEN_WIDTH - tooltipWidth - 10));
@@ -608,11 +571,9 @@ public class DarkestDungeon implements Screen {
 
         font.setColor(skillEnabled[hoveredSkill] ? Color.CYAN : Color.RED);
         font.draw(batch, manaCost, tooltipX + 90, tooltipY + tooltipHeight - 10);
-
         batch.end();
     }
 
-    int experience = 0;
 
     Map<String, Texture[]> enemyIdleTexturesCache = new HashMap<>();
     Map<String, Texture[]> enemySkillTexturesCache = new HashMap<>();
@@ -666,19 +627,24 @@ public class DarkestDungeon implements Screen {
             renderDefeat(batch);
         } else {
             if (!isPaused) {
+                updateDamageNumbers(delta);
                 updateCombat(delta);
+                updateCameraMovement(delta);
+                updateCharacterPositions(delta);
                 updateIdleAnimations(delta);
             }
+            Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+            Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
 
-            Gdx.gl.glClearColor(0.05f, 0.05f, 0.08f, 1);
-            Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+            // Render 3D environment
+            environment3D.render();
 
-            camera.update();
-            batch.setProjectionMatrix(camera.combined);
-            shapeRenderer.setProjectionMatrix(camera.combined);
+            // Disable depth test cho 2D rendering
+            Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);
 
-            drawBackground();
-            drawCharacters();
+            // Render 2D characters
+            renderCharacters2D();
+            renderDamageNumbers();
 
             // Draw word display effects
             if (showWordDisplay && !isPaused) {
@@ -702,6 +668,103 @@ public class DarkestDungeon implements Screen {
     }
 
 
+    private void renderCharacters2D() {
+        // Render player
+        character2DRenderer.renderCharacter(
+                currentPlayerTexture,
+                playerWorldPos,
+                environment3D.getCamera(),
+                playerScale
+        );
+
+        // Render enemy
+        character2DRenderer.renderCharacter(
+                currentEnemyTexture,
+                enemyWorldPos,
+                environment3D.getCamera(),
+                enemyScale
+        );
+
+        // Render effects nếu có
+        if (showEffect && currentEffectTexture != null) {
+            Vector3 effectPos = effectOnPlayer ? playerWorldPos : enemyWorldPos;
+            effectPos.y += 0.0f; // Hiệu ứng ở phía trên nhân vật
+            character2DRenderer.renderCharacter(
+                    currentEffectTexture,
+                    effectPos,
+                    environment3D.getCamera(),
+                    1.2f
+            );
+        }
+    }
+
+    // Thêm method để tạo camera effects
+    private void addCameraMovement(Vector3 targetPos, float duration) {
+        cameraTargetPos.set(targetPos);
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                cameraTargetPos.set(0f, 8f, 12f); // Reset về vị trí mặc định
+            }
+        }, duration);
+    }
+
+    private void updateCameraMovement(float delta) {
+        PerspectiveCamera cam = environment3D.getCamera();
+
+        // Smooth camera movement
+        cameraCurrentPos.lerp(cameraTargetPos, cameraLerpSpeed * delta);
+        cam.position.set(cameraCurrentPos);
+        cam.lookAt(0f, 2f, 0f);
+        cam.update();
+
+        // Camera shake effect
+        if (cameraShake > 0) {
+            float shakeX = (float) (Math.random() - 0.5) * cameraShake;
+            float shakeY = (float) (Math.random() - 0.5) * cameraShake;
+            cam.position.add(shakeX, shakeY, 0);
+            cam.update();
+        }
+    }
+
+    private void updateCharacterPositions(float delta) {
+        if (isAnimating) {
+            // Cập nhật vị trí 3D của nhân vật trong animation
+            updateCharacterAnimation3D(delta);
+        }
+    }
+
+    private void updateCharacterAnimation3D(float delta) {
+        float progress = animationTimer;
+
+        switch (animState) {
+            case MOVE_TO_CENTER:
+                if (isPlayerAction) {
+                    // Di chuyển trong không gian 3D
+                    Vector3 targetPos = new Vector3(0f, 1f, 1f);
+                    playerWorldPos.lerp(targetPos, progress);
+
+                    // Thay đổi góc camera để tập trung vào action
+                    cameraTargetPos.set(-2f, 6f, 8f);
+                } else {
+                    Vector3 targetPos = new Vector3(2f, 1f, -1f);
+                    enemyWorldPos.lerp(targetPos, progress);
+                    cameraTargetPos.set(2f, 6f, 8f);
+                }
+                break;
+
+            case MOVE_BACK:
+                // Reset positions
+                if (isPlayerAction) {
+                    playerWorldPos.lerp(new Vector3(-3f, 1f, 2f), progress);
+                } else {
+                    enemyWorldPos.lerp(new Vector3(5f, 1f, -2f), progress);
+                }
+                cameraTargetPos.set(0f, 8f, 12f);
+                break;
+        }
+    }
+
     private void drawInputField() {
         if (!showInputField) return;
 
@@ -710,7 +773,6 @@ public class DarkestDungeon implements Screen {
         float fieldX = (SCREEN_WIDTH - fieldWidth) / 2 + 35;
         float fieldY = COMBAT_CENTER_Y - 50;
 
-        inputFieldBounds = new Rectangle(fieldX, fieldY, fieldWidth, fieldHeight);
 
         // Draw input field background
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
@@ -739,91 +801,15 @@ public class DarkestDungeon implements Screen {
     Reward reward = null;
 
     private void renderReward(SpriteBatch batch) {
-        float panelWidth = 600, panelHeight = 400;
-        float panelX = (1280 - panelWidth) / 2;
-        float panelY = (720 - panelHeight) / 2;
-
-        // 1. Vẽ nền panel
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setColor(0f, 0f, 0f, 0.8f); // Semi-transparent black
-        shapeRenderer.rect(panelX, panelY, panelWidth, panelHeight);
-        shapeRenderer.end();
-
-
-        batch.begin();
-        titleFont.setColor(Color.WHITE);
-        titleFont.draw(batch, "CHIẾN THẮNG", panelX + 250, panelY + panelHeight - 40);
-
-        // 3. Hiển thị hình ảnh và mô tả vật phẩm
-        if (item != null) {
-            Texture itemTexture = assetManager.loadTexture(item.getItemName(), item.getTexturePath());
-            if (itemTexture != null) {
-                batch.setColor(Color.WHITE);
-                batch.draw(itemTexture, panelX + 100, panelY + panelHeight / 2 - 32, 64, 64);
-            }
-            font.setColor(Color.YELLOW);
-            font.draw(batch, item.getItemName() + " x" + reward.getAmount(), panelX + 180, panelY + panelHeight / 2 + 30);
-            font.draw(batch, reward.getDescription(), panelX + 180, panelY + panelHeight / 2);
-        }
-
-        // 4. Vẽ nút "Continue"
-        float buttonWidth = 200, buttonHeight = 50;
-        float buttonX = 1280 / 2 - buttonWidth / 2;
-        float buttonY = panelY + 50;
-        continueButtonBounds = new Rectangle(buttonX, buttonY, buttonWidth, buttonHeight);
-
-        batch.end();
-
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setColor(0.2f, 0.2f, 0.3f, 1f); // Button background
-        shapeRenderer.rect(buttonX, buttonY, buttonWidth, buttonHeight);
-        shapeRenderer.end();
-
-        // 5. Vẽ chữ trên nút
-        batch.begin();
-        font.setColor(Color.WHITE);
-        font.draw(batch, "Tiếp tục", buttonX + 70, buttonY + 33);
-        batch.end();
+        rewardRenderer.setReward(item, reward);
+        rewardRenderer.render();
+        continueButtonBounds = rewardRenderer.getContinueButtonBounds();
     }
 
-    public void renderDefeat(SpriteBatch batch) {
-        float panelWidth = 600, panelHeight = 400;
-        float panelX = (1280 - panelWidth) / 2;
-        float panelY = (720 - panelHeight) / 2;
-
-        // Draw defeat panel background
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setColor(0f, 0f, 0f, 0.8f); // Semi-transparent black
-        shapeRenderer.rect(panelX, panelY, panelWidth, panelHeight);
-        shapeRenderer.end();
-
-        batch.begin();
-        titleFont.setColor(Color.RED);
-        titleFont.draw(batch, "Bạn đã bị hạ gục!", panelX + 210, panelY + panelHeight - 40);
-
-        // Draw defeat message
-        if (!isEnded) {
-            font.setColor(Color.WHITE);
-            font.draw(batch, "Bạn còn cơ hội, Cleric Klein đã đưa bạn về để chữa trị.", panelX + 100, panelY + panelHeight / 2 + 30);
-        }
-        // Draw continue button
-        float buttonWidth = 200, buttonHeight = 50;
-        float buttonX = 1280 / 2 - buttonWidth / 2;
-        float buttonY = panelY + 50;
-        continueButtonBounds = new Rectangle(buttonX, buttonY, buttonWidth, buttonHeight);
-
-        batch.end();
-
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setColor(0.2f, 0.2f, 0.3f, 1f); // Button background
-        shapeRenderer.rect(buttonX, buttonY, buttonWidth, buttonHeight);
-        shapeRenderer.end();
-
-        // Draw text on the button
-        batch.begin();
-        font.setColor(Color.WHITE);
-        font.draw(batch, "Tiếp tục", buttonX + 70, buttonY + 33);
-        batch.end();
+    private void renderDefeat(SpriteBatch batch) {
+        defeatRenderer.setEnded(isEnded);
+        defeatRenderer.render();
+        continueButtonBounds = defeatRenderer.getContinueButtonBounds();
     }
 
     private void updateIdleAnimations(float delta) {
@@ -946,7 +932,6 @@ public class DarkestDungeon implements Screen {
                     animationTimer = 0;
                     showEffect = false;
                 } else {
-                    updateSkillEffect(progress / SKILL_EFFECT_DURATION);
                 }
                 break;
 
@@ -991,14 +976,11 @@ public class DarkestDungeon implements Screen {
 
                 else offsetX = 250;
 
-                playerCurrentX = playerStartX + moveX + offsetX;
-                playerCurrentY = MathUtils.lerp(playerStartY, COMBAT_CENTER_Y - 20, anticipationProgress) + 20;
 
                 // Dynamic scaling with overshoot
                 playerScale = MathUtils.lerp(1.0f, MAX_SCALE * 1.2f, anticipationProgress);
 
                 // Enemy reacts
-                enemyCurrentX = MathUtils.lerp(enemyStartX, SCREEN_WIDTH * 0.65f, anticipationProgress) - 100;
                 enemyScale = MathUtils.lerp(1.0f, 0.9f, anticipationProgress); // Slightly shrink
             } else {
                 // Dramatic zoom in during enemy action
@@ -1008,50 +990,17 @@ public class DarkestDungeon implements Screen {
                 float moveX = anticipationProgress < 0.2f ? 30 * (anticipationProgress / 0.2f) : // Pull back
                         MathUtils.lerp(30, -150, (anticipationProgress - 0.2f) / 0.8f); // Rush forward
 
-                enemyCurrentX = enemyStartX + moveX - 250;
-                enemyCurrentY = MathUtils.lerp(enemyStartY, COMBAT_CENTER_Y - 20, anticipationProgress) - 20;
 
                 // Dynamic scaling with overshoot
                 enemyScale = MathUtils.lerp(1.0f, MAX_SCALE * 1.2f, anticipationProgress);
 
                 // Player reacts
-                playerCurrentX = MathUtils.lerp(playerStartX, SCREEN_WIDTH * 0.35f, anticipationProgress) + 100;
                 playerScale = MathUtils.lerp(1.0f, 0.9f, anticipationProgress); // Slightly shrink
             }
         }
     }
 
 
-    private void updateSkillEffect(float progress) {
-        // Add some shake effect during skill execution
-        float shake = (float) Math.sin(progress * 20) * 0.1f;
-
-        if (isPlayerAction) {
-            playerCurrentX += shake;
-        } else {
-            enemyCurrentX += shake;
-        }
-    }
-
-    //    private void updateMoveBack(float progress) {
-//        float easeProgress = Interpolation.pow2In.apply(progress);
-//
-//        // Only move back for attack skills, not heal/defend
-//        boolean shouldMove = isPlayerAction ?
-//                (currentSkill == 0 || currentSkill == 1 || currentSkill == 2) :
-//                (enemyAction == 0 || enemyAction == 1);
-//
-//        if (shouldMove) {
-//            // Move both characters back to original positions and reset scales
-//            playerCurrentX = MathUtils.lerp(SCREEN_WIDTH * 0.4f, playerStartX, easeProgress);
-//            playerCurrentY = MathUtils.lerp(COMBAT_CENTER_Y, playerStartY, easeProgress);
-//            playerScale = MathUtils.lerp(MAX_SCALE, 1.0f, easeProgress);
-//
-//            enemyCurrentX = MathUtils.lerp(SCREEN_WIDTH * 0.6f, enemyStartX, easeProgress);
-//            enemyCurrentY = MathUtils.lerp(COMBAT_CENTER_Y, enemyStartY, easeProgress);
-//            enemyScale = MathUtils.lerp(MAX_SCALE, 1.0f, easeProgress);
-//        }
-//    }
     private void updateMoveBack(float progress) {
         // Only move back for attack skills, not heal/defend
         boolean shouldMove = isPlayerAction ?
@@ -1060,24 +1009,16 @@ public class DarkestDungeon implements Screen {
 
         if (shouldMove) {
             // Bỏ qua hiệu ứng di chuyển từ từ, set về gốc luôn
-            playerCurrentX = playerStartX;
-            playerCurrentY = playerStartY;
             playerScale = 1.0f;
 
-            enemyCurrentX = enemyStartX;
-            enemyCurrentY = enemyStartY;
             enemyScale = 1.0f;
         }
     }
 
 
     private void resetCharacterPositions() {
-        playerCurrentX = playerStartX;
-        playerCurrentY = playerStartY;
         playerScale = 1.0f;
 
-        enemyCurrentX = enemyStartX;
-        enemyCurrentY = enemyStartY;
         enemyScale = 1.0f;
 
         currentPlayerTexture = playerIdleTextures[0];
@@ -1114,8 +1055,6 @@ public class DarkestDungeon implements Screen {
     private boolean showWordDisplay = false;
     private float wordDisplayTimer = 0f;
     private final float WORD_DISPLAY_DURATION = 2f;
-    private boolean showDamageEffect = false;
-    private boolean showHealEffect = false;
 
     private void applyPlayerSkillEffects() {
         switch (currentSkill) {
@@ -1124,7 +1063,7 @@ public class DarkestDungeon implements Screen {
                 damage = Math.max(1, damage);
                 enemyHP = Math.max(0, enemyHP - damage);
                 combatLog = "Bạn tấn công gây " + damage + " sát thương!";
-
+                showDamageNumber(damage, true, false);
                 break;
             case 1: // Word (Random from learned words)
                 playerMana -= 5;
@@ -1142,7 +1081,7 @@ public class DarkestDungeon implements Screen {
                     displayWord = randomWord;
                     showWordDisplay = true;
                     wordDisplayTimer = 0f;
-                    showDamageEffect = true;
+                    showDamageNumber(wordDamage, true, false);
                 } else {
                     int basicDamage = MathUtils.random(playerATK - 2, playerATK + 2) - enemyDEF;
                     basicDamage = Math.max(1, basicDamage);
@@ -1162,7 +1101,7 @@ public class DarkestDungeon implements Screen {
                 int heal = MathUtils.random(15, 25);
                 playerHP = Math.min(playerMaxHP, playerHP + heal);
                 combatLog = "Bạn hồi phục" + heal + " sinh lực!";
-                showHealEffect = true;
+                showDamageNumber(heal, false, true);
                 break;
             case 4: // Defend
                 playerMana = Math.min(playerMaxMana, playerMana + 3);
@@ -1177,8 +1116,6 @@ public class DarkestDungeon implements Screen {
             wordDisplayTimer += delta;
             if (wordDisplayTimer >= WORD_DISPLAY_DURATION) {
                 showWordDisplay = false;
-                showDamageEffect = false;
-                showHealEffect = false;
             }
         }
     }
@@ -1213,34 +1150,10 @@ public class DarkestDungeon implements Screen {
         // Draw main text
         titleFont.setColor(1f, 1f, 0.3f, fadeAlpha);
         layout.setText(titleFont, displayWord);
-        titleFont.draw(batch, layout, wordX - layout.width / 2, wordY);
-        drawWordEffects(batch, wordX, wordY - 20, fadeAlpha);
+        titleFont.draw(batch, layout, wordX - layout.width / 2, wordY - 100);
 
         batch.end();
 
-        // Draw particle effects
-
-    }
-
-    Texture damageParticleTex = new Texture("dungeon/damage_particle.png");
-
-    private void drawWordEffects(SpriteBatch batch, float centerX, float centerY, float alpha) {
-
-        if (!showDamageEffect && !showHealEffect) return;
-
-        if (showDamageEffect && damageParticleTex != null) {
-            float scale = 1.0f + 0.2f * (float) Math.sin(wordDisplayTimer * 8); // nhấp nháy to–nhỏ
-            float size = 92 * scale;
-            batch.setColor(1f, 0.3f, 0.1f, alpha * 0.8f);
-            batch.draw(
-                    damageParticleTex,
-                    centerX - size / 2f - 25, centerY - size / 2f + 20,
-                    size + 50, size
-            );
-        }
-
-
-        batch.setColor(Color.WHITE); // Reset lại màu
     }
 
 
@@ -1255,10 +1168,9 @@ public class DarkestDungeon implements Screen {
             enemyHP = Math.max(0, enemyHP - wordDamage);
             combatLog = "'" + word + "' hợp lệ! Gây " + wordDamage + " sát thương!";
 
-            showDamageEffect = true;
             currentEffectTexture = effectTextures[0];
             effectOnPlayer = false;
-
+            showDamageNumber(wordScore, true, false);
             if (gameController.getCharacter().updateDict(word))
                 gameController.getDictionaryView().addNewWord(word);
         } else {
@@ -1266,9 +1178,9 @@ public class DarkestDungeon implements Screen {
             playerHP = Math.max(0, playerHP - selfDamage);
             combatLog = "'" + word + "' không hợp lệ! Bạn nhận" + selfDamage + " sát thương!";
 
-            showDamageEffect = true;
             currentEffectTexture = effectTextures[0];
             effectOnPlayer = true;
+            showDamageNumber(selfDamage, false, false);
         }
 
         showInputField = false;
@@ -1283,6 +1195,7 @@ public class DarkestDungeon implements Screen {
                 damage = Math.max(1, damage);
                 playerHP = Math.max(0, playerHP - damage);
                 combatLog = enemyName + " tấn công gây " + damage + " sát thương!";
+                showDamageNumber(damage, false, false);
                 break;
             case 1: // Special
                 if (enemyMana >= 8) {
@@ -1291,6 +1204,7 @@ public class DarkestDungeon implements Screen {
                     specialDamage = Math.max(1, specialDamage);
                     playerHP = Math.max(0, playerHP - specialDamage);
                     combatLog = enemyName + " sử dụng kỹ năng gây " + specialDamage + " sát thương!";
+                    showDamageNumber(specialDamage, false, false);
                 } else {
                     damage = MathUtils.random(enemyATK - 2, enemyATK + 2) - playerDEF;
                     damage = Math.max(1, damage);
@@ -1299,16 +1213,18 @@ public class DarkestDungeon implements Screen {
                 }
                 break;
             case 2: // Heal
-                if (enemyMana >= 12) {
-                    enemyMana -= 12;
-                    int heal = MathUtils.random(10, 20);
-                    enemyHP = Math.min(enemyMaxHP, enemyHP + heal);
-                    combatLog = enemyName + " hồi phục được " + heal + " sinh lực!";
+                if (enemyMana >= 7) {
+                    enemyMana -= 7;
+                    int healAmount = enemyMaxHP / 4;
+                    enemyHP = Math.min(enemyMaxHP, enemyHP + healAmount);
+                    combatLog = enemyName + " hồi phục được " + healAmount + " sinh lực!";
+                    showDamageNumber(healAmount, true, true);
                 } else {
                     damage = MathUtils.random(enemyATK - 2, enemyATK + 2) - playerDEF;
                     damage = Math.max(1, damage);
                     playerHP = Math.max(0, playerHP - damage);
                     combatLog = enemyName + " tấn công gây " + damage + " sát thương!";
+                    showDamageNumber(damage, false, false);
                 }
                 break;
         }
@@ -1316,185 +1232,13 @@ public class DarkestDungeon implements Screen {
 
     Texture backgroundBlurTexture;
 
-    private void drawBackground() {
-        batch.begin();
-        // Top half - combat area
-        if (isAnimating)
-            batch.draw(backgroundBlurTexture, 0, BOTTOM_HALF_HEIGHT, SCREEN_WIDTH, TOP_HALF_HEIGHT + 100);
-        else
-            batch.draw(backgroundTexture, 0, BOTTOM_HALF_HEIGHT, SCREEN_WIDTH, TOP_HALF_HEIGHT + 100);
-        // Bottom half - UI area
-        batch.setColor(0.1f, 0.1f, 0.15f, 1);
-//        batch.draw(backgroundTexture, 0, 0, SCREEN_WIDTH, BOTTOM_HALF_HEIGHT);
-        batch.setColor(Color.WHITE);
-        batch.end();
-    }
-
-    private void drawCharacters() {
-        batch.begin();
-
-        // Draw player with animation
-        float playerWidth = CHAR_WIDTH * playerScale;
-        float playerHeight = CHAR_HEIGHT * playerScale;
-        batch.draw(currentPlayerTexture,
-                playerCurrentX - playerWidth / 2 - 150, playerCurrentY - playerHeight / 2,
-                playerWidth, playerHeight);
-
-        // Draw enemy with animation
-        float enemyWidth = CHAR_WIDTH * enemyScale;
-        float enemyHeight = CHAR_HEIGHT * enemyScale;
-        batch.draw(currentEnemyTexture,
-                enemyCurrentX - enemyWidth / 2 + 150, enemyCurrentY - enemyHeight / 2,
-                enemyWidth, enemyHeight);
-
-        // Draw effects
-        if (showEffect && currentEffectTexture != null) {
-            float effectX = effectOnPlayer ? playerCurrentX - 150 : enemyCurrentX + 150;
-            float effectY = effectOnPlayer ? playerCurrentY : enemyCurrentY;
-            float effectScale = effectOnPlayer ? playerScale : enemyScale;
-            float effectSize = 120 * effectScale;
-
-            // Flip Y for enemy attack effects
-            if (effectOnPlayer && !isPlayerAction && enemyAction == 0) {
-                batch.draw(currentEffectTexture,
-                        effectX - effectSize / 2 + 40, effectY + effectSize / 2 - 140,
-                        effectSize / 2, -effectSize / 2,
-                        effectSize, effectSize,
-                        1, 1, 0,
-                        0, 0, currentEffectTexture.getWidth(), currentEffectTexture.getHeight(),
-                        true, false);
-            } else {
-                batch.draw(currentEffectTexture,
-                        effectX - effectSize / 2, effectY - effectSize / 2,
-                        effectSize, effectSize);
-            }
-        }
-
-        batch.end();
-    }
-
     // Add these fields to the class
     private boolean showTutorial = false;
-    private String[] tutorialPages = {
-            "HƯỚNG DẪN CHIẾN ĐẤU - Trang 1/4",
-            "KỸ NĂNG:\n" +
-                    "-Attack - Đòn đánh vật lý cơ bản (Không tốn mana)\n" +
-                    "-Word - Dùng từ đã học ngẫu nhiên để gây sát thương (5 mana)\n" +
-                    "-TypeW - Gõ từ thủ công, nếu sai sẽ tự gây sát thương (5 mana)\n" +
-                    "-Heal - Hồi máu (10 mana)\n" +
-                    "-Defend - Tăng phòng thủ và hồi mana (Không tốn mana)",
-
-            "HƯỚNG DẪN CHIẾN ĐẤU - Trang 2/4",
-            "CƠ CHẾ CHIẾN ĐẤU:\n" +
-                    "-Đây là hệ thống chiến đấu theo lượt: bạn và kẻ địch thay phiên nhau\n hành động.\n" +
-                    "-Mỗi lượt, bạn chọn một kỹ năng để sử dụng.\n" +
-                    "-Mana là năng lượng cần để dùng kỹ năng — khi cạn mana, bạn sẽ không\n thể dùng kỹ năng nữa.\n" +
-                    "-Kẻ địch có hành vi khác nhau — có thể tấn công, phòng thủ, hoặc\n hồi máu. Hãy quan sát để chọn chiến thuật phù hợp.",
-
-            "HƯỚNG DẪN CHIẾN ĐẤU - Trang 3/4",
-            "CƠ CHẾ CHIẾN ĐẤU:\n" +
-                    "-Sát thương gây ra = ATK (tấn công) - DEF (phòng thủ) của địch,tối thiểu là 1.\n" +
-                    "-Kỹ năng 1 Word gây sát thương lớn: Word Score + ATK - DEF.\n" +
-                    "-Word Score là điểm của từ trong từ điển bạn đã học — từ càng khó thì\n điểm càng cao.\n" +
-                    "-Kỹ năng TypeW cho phép bạn gõ bất kỳ từ nào. Nếu đúng, sát thương\n rất mạnh. Nếu sai, bạn tự nhận sát thương.\n",
-
-            "HƯỚNG DẪN CHIẾN ĐẤU - Trang 4/4",
-            "MẸO:\n" +
-                    "-Học từ mới để tăng sát thương kỹ năng Word.\n" +
-                    "-TypeW rất mạnh nếu bạn gõ đúng, nhưng dễ gây hại nếu gõ sai.\n" +
-                    "-Dùng Defend để hồi mana và tăng chỉ số phòng thủ.\n" +
-                    "-Luôn chú ý lượng máu — Heal kịp lúc để tránh bị hạ gục.\n" +
-                    "-Di chuột vào kỹ năng để xem chi tiết mô tả (tooltip).\n" +
-                    "-Nhấn ESC để tạm dừng bất cứ lúc nào."
-    };
-
-
     private int currentTutorialPage = 0;
 
     private void drawTutorial() {
-        if (!showTutorial) return;
-
-        float tutorialWidth = 700;
-        float tutorialHeight = 500;
-        float tutorialX = (SCREEN_WIDTH - tutorialWidth) / 2;
-        float tutorialY = (SCREEN_HEIGHT - tutorialHeight) / 2;
-
-        // Draw tutorial background
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setColor(0, 0, 0, 0.8f);
-        shapeRenderer.rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-
-        shapeRenderer.setColor(0.05f, 0.05f, 0.1f, 0.95f);
-        shapeRenderer.rect(tutorialX, tutorialY, tutorialWidth, tutorialHeight);
-
-        // Border
-        shapeRenderer.setColor(0.4f, 0.4f, 0.6f, 1);
-        shapeRenderer.rect(tutorialX, tutorialY, tutorialWidth, 3);
-        shapeRenderer.rect(tutorialX, tutorialY + tutorialHeight - 3, tutorialWidth, 3);
-        shapeRenderer.rect(tutorialX, tutorialY, 3, tutorialHeight);
-        shapeRenderer.rect(tutorialX + tutorialWidth - 3, tutorialY, 3, tutorialHeight);
-
-        // Navigation buttons
-        float buttonWidth = 100;
-        float buttonHeight = 40;
-        float prevButtonX = tutorialX + 50;
-        float nextButtonX = tutorialX + tutorialWidth - 150;
-        float closeButtonX = tutorialX + tutorialWidth - 110;
-        float buttonY = tutorialY + 30;
-        float closeButtonY = tutorialY + tutorialHeight - 50;
-
-        // Previous button (if not first page)
-        if (currentTutorialPage > 0) {
-            shapeRenderer.setColor(0.2f, 0.2f, 0.3f, 1f);
-            shapeRenderer.rect(prevButtonX, buttonY, buttonWidth, buttonHeight);
-        }
-
-        // Next button (if not last page)
-        if (currentTutorialPage < tutorialPages.length - 2) {
-            shapeRenderer.setColor(0.2f, 0.2f, 0.3f, 1f);
-            shapeRenderer.rect(nextButtonX, buttonY, buttonWidth, buttonHeight);
-        }
-
-        // Close button
-        shapeRenderer.setColor(0.3f, 0.2f, 0.2f, 1f);
-        shapeRenderer.rect(closeButtonX, closeButtonY, buttonWidth, buttonHeight);
-        shapeRenderer.end();
-
-        // Draw tutorial content
-        batch.begin();
-
-        // Title
-        titleFont.setColor(Color.CYAN);
-        titleFont.draw(batch, tutorialPages[currentTutorialPage],
-                tutorialX + 50, tutorialY + tutorialHeight - 50);
-
-        // Content
-        inputFont.setColor(Color.WHITE);
-        String content = tutorialPages[currentTutorialPage + 1];
-        String[] lines = content.split("\n");
-
-        float lineY = tutorialY + tutorialHeight - 100;
-        for (String line : lines) {
-            inputFont.draw(batch, line, tutorialX + 50, lineY);
-            lineY -= 25;
-        }
-
-        // Navigation button text
-        font.setColor(Color.WHITE);
-        if (currentTutorialPage > 0) {
-            font.draw(batch, "Lùi", prevButtonX + 20, buttonY + 25);
-        }
-        if (currentTutorialPage < tutorialPages.length - 2) {
-            font.draw(batch, "Tiếp", nextButtonX + 35, buttonY + 25);
-        }
-        font.draw(batch, "Đóng", closeButtonX + 30, closeButtonY + 25);
-
-        // Page indicator
-        font.setColor(Color.LIGHT_GRAY);
-        String pageInfo = "Trang " + ((currentTutorialPage / 2) + 1) + " of " + (tutorialPages.length / 2);
-        font.draw(batch, pageInfo, tutorialX + tutorialWidth / 2 - 40, tutorialY + 20);
-
-        batch.end();
+        tutorialRenderer.setCurrentPage(currentTutorialPage);
+        tutorialRenderer.render();
     }
 
     // Add these fields to the class
@@ -1511,181 +1255,371 @@ public class DarkestDungeon implements Screen {
             "Tăng phòng thủ và hồi năng lượng\nKhông tốn mana"
     };
 
-
     private void drawBottomUI() {
-        // Draw bottom UI background
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setColor(0.02f, 0.02f, 0.05f, 0.95f);
-        shapeRenderer.rect(0, 0, SCREEN_WIDTH, BOTTOM_HALF_HEIGHT);
-        shapeRenderer.end();
 
-        drawStatusPanels();
-        drawSkillBar();
-        drawCombatLog();
+        // Draw FF7R style UI components
+        drawCommandMenu();        // Bottom left
+        drawCharacterPanel();     // Bottom right
+        drawEnemyStatusBar();     // Top middle (boss style)
+        drawTurnIndicator();      // Top left
+        drawRebirthStyleCombatLog(); // Keep combat log
     }
 
-    private void drawStatusPanels() {
+    private void drawCommandMenu() {
+        float buttonY = menuY + menuHeight - 50;
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
-        // Player status panel
-        shapeRenderer.setColor(0.08f, 0.08f, 0.12f, 0.9f);
-        shapeRenderer.rect(PLAYER_STATUS_X, STATUS_PANEL_Y, STATUS_PANEL_WIDTH, STATUS_PANEL_HEIGHT);
-        shapeRenderer.setColor(0.3f, 0.15f, 0.15f, 0.8f);
-        shapeRenderer.rect(PLAYER_STATUS_X, STATUS_PANEL_Y + STATUS_PANEL_HEIGHT - 2, STATUS_PANEL_WIDTH, 2);
+        // Draw subtle background with glow effect
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        shapeRenderer.setColor(0.05f, 0.1f, 0.2f, 0.3f);
+        shapeRenderer.rect(menuX, menuY, menuWidth, menuHeight);
 
-        // Enemy status panel
-        shapeRenderer.setColor(0.08f, 0.08f, 0.12f, 0.9f);
-        shapeRenderer.rect(ENEMY_STATUS_X, STATUS_PANEL_Y, STATUS_PANEL_WIDTH, STATUS_PANEL_HEIGHT);
-        shapeRenderer.setColor(0.3f, 0.15f, 0.15f, 0.8f);
-        shapeRenderer.rect(ENEMY_STATUS_X, STATUS_PANEL_Y + STATUS_PANEL_HEIGHT - 2, STATUS_PANEL_WIDTH, 2);
+        // Top highlight line
+        shapeRenderer.setColor(0.2f, 0.5f, 0.9f, 0.6f);
+        shapeRenderer.rectLine(menuX, menuY + menuHeight, menuX + menuWidth, menuY + menuHeight, 1);
 
-        drawStatusBars();
 
-        shapeRenderer.end();
-
-        // Draw status text
-        batch.begin();
-        font.setColor(Color.WHITE);
-        font.draw(batch, playerName, PLAYER_STATUS_X + 20, STATUS_PANEL_Y + STATUS_PANEL_HEIGHT - 20);
-        font.draw(batch, enemyName, ENEMY_STATUS_X + 20, STATUS_PANEL_Y + STATUS_PANEL_HEIGHT - 20);
-
-        // Player detailed stats
-        font.draw(batch, "HP: " + playerHP + "/" + playerMaxHP, PLAYER_STATUS_X + 20, STATUS_PANEL_Y + 150);
-        font.draw(batch, "MP: " + playerMana + "/" + playerMaxMana, PLAYER_STATUS_X + 20, STATUS_PANEL_Y + 115);
-        font.draw(batch, "ATK: " + playerATK, PLAYER_STATUS_X + 20, STATUS_PANEL_Y + 80);
-        font.draw(batch, "DEF: " + playerDEF, PLAYER_STATUS_X + 20, STATUS_PANEL_Y + 45);
-
-        // Enemy detailed stats
-        font.draw(batch, "HP: " + enemyHP + "/" + enemyMaxHP, ENEMY_STATUS_X + 20, STATUS_PANEL_Y + 150);
-        font.draw(batch, "MP: " + enemyMana + "/" + enemyMaxMana, ENEMY_STATUS_X + 20, STATUS_PANEL_Y + 115);
-        font.draw(batch, "ATK: " + enemyATK, ENEMY_STATUS_X + 20, STATUS_PANEL_Y + 80);
-        font.draw(batch, "DEF: " + enemyDEF, ENEMY_STATUS_X + 20, STATUS_PANEL_Y + 45);
-
-        batch.end();
-    }
-
-    private void drawStatusBars() {
-        // Player bars
-        float playerBarX = PLAYER_STATUS_X + 120;
-        float playerHPBarY = STATUS_PANEL_Y + 135;
-        float playerManaBarY = STATUS_PANEL_Y + 100;
-
-        // Player HP bar
-        shapeRenderer.setColor(0.2f, 0.2f, 0.2f, 1);
-        shapeRenderer.rect(playerBarX, playerHPBarY, BAR_WIDTH, BAR_HEIGHT);
-        shapeRenderer.setColor(0.8f, 0.2f, 0.2f, 1);
-        shapeRenderer.rect(playerBarX, playerHPBarY,
-                BAR_WIDTH * (float) playerHP / playerMaxHP, BAR_HEIGHT);
-
-        // Player Mana bar
-        shapeRenderer.setColor(0.2f, 0.2f, 0.2f, 1);
-        shapeRenderer.rect(playerBarX, playerManaBarY, BAR_WIDTH, MANA_BAR_HEIGHT);
-        shapeRenderer.setColor(0.2f, 0.4f, 0.8f, 1);
-        shapeRenderer.rect(playerBarX, playerManaBarY,
-                BAR_WIDTH * (float) playerMana / playerMaxMana, MANA_BAR_HEIGHT);
-
-        // Enemy bars
-        float enemyBarX = ENEMY_STATUS_X + 120;
-        float enemyHPBarY = STATUS_PANEL_Y + 135;
-        float enemyManaBarY = STATUS_PANEL_Y + 100;
-
-        // Enemy HP bar
-        shapeRenderer.setColor(0.2f, 0.2f, 0.2f, 1);
-        shapeRenderer.rect(enemyBarX, enemyHPBarY, BAR_WIDTH, BAR_HEIGHT);
-        shapeRenderer.setColor(0.8f, 0.2f, 0.2f, 1);
-        shapeRenderer.rect(enemyBarX, enemyHPBarY,
-                BAR_WIDTH * (float) enemyHP / enemyMaxHP, BAR_HEIGHT);
-
-        // Enemy Mana bar
-        shapeRenderer.setColor(0.2f, 0.2f, 0.2f, 1);
-        shapeRenderer.rect(enemyBarX, enemyManaBarY, BAR_WIDTH, MANA_BAR_HEIGHT);
-        shapeRenderer.setColor(0.2f, 0.4f, 0.8f, 1);
-        shapeRenderer.rect(enemyBarX, enemyManaBarY,
-                BAR_WIDTH * (float) enemyMana / enemyMaxMana, MANA_BAR_HEIGHT);
-    }
-
-    private void drawSkillBar() {
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-
-        // Skill bar background
-        shapeRenderer.setColor(0.1f, 0.06f, 0.06f, 0.9f);
-        shapeRenderer.rect(SKILL_BAR_X, SKILL_BAR_Y, SKILL_BAR_WIDTH, SKILL_BAR_HEIGHT);
-
-        // Skill buttons using skillButtonTextures
         for (int i = 0; i < 5; i++) {
-            float skillX = SKILL_BAR_X + 20 + i * (SKILL_BUTTON_SIZE + SKILL_BUTTON_SPACING);
-            float skillY = SKILL_BAR_Y + 8;
-
-            // Button background
             boolean canUse = skillEnabled[i] && combatState == CombatState.PLAYER_TURN && !isAnimating;
-            shapeRenderer.setColor(canUse ?
-                    new Color(0.15f, 0.1f, 0.1f, 1) :
-                    new Color(0.05f, 0.05f, 0.05f, 1));
-            shapeRenderer.rect(skillX, skillY, SKILL_BUTTON_SIZE, SKILL_BUTTON_SIZE);
+            float alpha = canUse ? 0.8f : 0.3f;
 
-            // Button border
-            shapeRenderer.setColor(canUse ?
-                    new Color(0.4f, 0.25f, 0.25f, 1) :
-                    new Color(0.2f, 0.2f, 0.2f, 1));
-            shapeRenderer.rect(skillX, skillY, SKILL_BUTTON_SIZE, 2);
-            shapeRenderer.rect(skillX, skillY + SKILL_BUTTON_SIZE - 2, SKILL_BUTTON_SIZE, 2);
-            shapeRenderer.rect(skillX, skillY, 2, SKILL_BUTTON_SIZE);
-            shapeRenderer.rect(skillX + SKILL_BUTTON_SIZE - 2, skillY, 2, SKILL_BUTTON_SIZE);
+            // Button highlight
+            if (hoveredSkill == i) {
+                shapeRenderer.setColor(0.2f, 0.6f, 0.9f, 0.2f);
+                shapeRenderer.rect(menuX + 10, buttonY - i * (buttonHeight + buttonSpacing), menuWidth - 20, buttonHeight);
+            }
+
+            // Button line
+            shapeRenderer.setColor(0.4f, 0.6f, 0.9f, alpha);
+            shapeRenderer.rectLine(
+                    menuX + 10,
+                    buttonY - i * (buttonHeight + buttonSpacing),
+                    menuX + 30,
+                    buttonY - i * (buttonHeight + buttonSpacing),
+                    1);
         }
 
         shapeRenderer.end();
 
-        // Draw skill button textures and info
+        // Draw command text
         batch.begin();
+        titleFont.setColor(0.9f, 0.95f, 1f, 0.9f);
+        titleFont.draw(batch, "COMMANDS", menuX + 180, menuY + menuHeight - 5);
+
         for (int i = 0; i < 5; i++) {
-            float skillX = SKILL_BAR_X + 20 + i * (SKILL_BUTTON_SIZE + SKILL_BUTTON_SPACING);
-            float skillY = SKILL_BAR_Y + 8;
-
             boolean canUse = skillEnabled[i] && combatState == CombatState.PLAYER_TURN && !isAnimating;
+            float alpha = canUse ? 1.0f : 0.5f;
 
-            // Draw skill button texture
             if (skillButtonTextures[i] != null) {
-                batch.setColor(canUse ? Color.WHITE : Color.GRAY);
-                batch.draw(skillButtonTextures[i], skillX + 4, skillY + 4,
-                        SKILL_BUTTON_SIZE - 8, SKILL_BUTTON_SIZE - 8);
+                batch.setColor(canUse ? Color.WHITE : new Color(0.5f, 0.5f, 0.6f, 0.5f));
+                batch.draw(skillButtonTextures[i], menuX + 15, buttonY - i * (buttonHeight + buttonSpacing) + 4, 32, 32);
                 batch.setColor(Color.WHITE);
             }
 
-            // Draw skill info
-            font.setColor(Color.LIGHT_GRAY);
-            font.draw(batch, skillNames[i], skillX + 2, skillY - 2);
+            // Skill name
+            font.setColor(canUse ? new Color(0.9f, 0.9f, 1f, 1f) : new Color(0.6f, 0.6f, 0.7f, 0.5f));
+            font.draw(batch, skillNames[i], menuX + 55, buttonY - i * (buttonHeight + buttonSpacing) + 25);
 
+            // Mana cost
             if (skillManaCost[i] > 0) {
-                font.setColor(Color.CYAN);
-                font.draw(batch, "" + skillManaCost[i], skillX + 50, skillY + 15);
+                font.setColor(canUse ? Color.CYAN : new Color(0.3f, 0.5f, 0.7f, 0.5f));
+                font.draw(batch, "MP: " + skillManaCost[i], menuX + menuWidth - 70, buttonY - i * (buttonHeight + buttonSpacing) + 25);
             }
         }
-        font.draw(batch, "Thanh kỹ năng", 607, 350);
         batch.end();
     }
 
-    private final GlyphLayout layout = new GlyphLayout(); // Khai báo 1 lần trong class để tái sử dụng
+    private void drawCharacterPanel() {
+        float panelWidth = 310;
+        float panelHeight = 180;
+        float panelX = SCREEN_WIDTH - panelWidth - 20;
+        float panelY = 20;
 
-    private void drawCombatLog() {
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+
+        // Panel background glow
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        shapeRenderer.setColor(0.05f, 0.1f, 0.15f, 0.3f);
+        shapeRenderer.rect(panelX, panelY, panelWidth, panelHeight);
+
+        // Blue accent lines
+        shapeRenderer.setColor(0.2f, 0.5f, 0.9f, 0.6f);
+        shapeRenderer.rectLine(panelX, panelY + panelHeight, panelX + panelWidth, panelY + panelHeight, 1);
+        shapeRenderer.rectLine(panelX, panelY, panelX, panelY + panelHeight, 1);
+
+        // Status bars
+        float barY = panelY + panelHeight - 60;
+        float manaBarY = panelY + panelHeight - 90;
+
+        // HP bar with segments
+        drawRebirthBar(panelX + 60, barY, 220, 16,
+                (float) playerHP / playerMaxHP,
+                new Color(0.05f, 0.15f, 0.1f, 0.8f),
+                new Color(0.1f, 0.8f, 0.3f, 0.9f));
+
+        // MP bar with segments
+        drawRebirthBar(panelX + 60, manaBarY, 220, 12,
+                (float) playerMana / playerMaxMana,
+                new Color(0.05f, 0.1f, 0.2f, 0.8f),
+                new Color(0.2f, 0.4f, 0.9f, 0.9f));
+
+        shapeRenderer.end();
+
+        // Draw character info text
         batch.begin();
+        titleFont.setColor(0.9f, 0.95f, 1f, 0.9f);
+        layout.setText(titleFont, playerName);
+        titleFont.draw(batch, playerName,
+                panelX + (panelWidth - layout.width) / 2,
+                panelY + panelHeight - 15);
 
-        font.setColor(Color.YELLOW);
+        font.setColor(0.8f, 0.9f, 1f, 0.9f);
+        font.draw(batch, "HP", panelX + 25, barY + 18);
+        font.draw(batch, playerHP + "/" + playerMaxHP, panelX + panelWidth - 40, barY + 11);
 
-        // Turn indicator – auto center
-        String turnText = getTurnText();
-        layout.setText(titleFont, turnText);
-        float turnX = (SCREEN_WIDTH - layout.width) / 2;
-        titleFont.setColor(Color.RED);
-        titleFont.draw(batch, layout, turnX, 150);
+        font.draw(batch, "MP", panelX + 25, manaBarY + 16);
+        font.draw(batch, playerMana + "/" + playerMaxMana, panelX + panelWidth - 40, manaBarY + 8);
 
-        // Combat log – auto center
-        layout.setText(inputFont, combatLog);
-        float logX = (SCREEN_WIDTH - layout.width) / 2;
-        inputFont.draw(batch, layout, logX, 50);
+        // Stats with icons
+        font.draw(batch, "ATK: " + playerATK, panelX + 20, panelY + 50);
+        font.draw(batch, "DEF: " + playerDEF, panelX + 140, panelY + 50);
 
         batch.end();
     }
 
+    private void drawEnemyStatusBar() {
+        float barWidth = 600;
+        float barHeight = 60;
+        float barX = (SCREEN_WIDTH - barWidth) / 2;
+        float barY = SCREEN_HEIGHT - barHeight - 10;
+
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+
+        // Boss-style wide bar with subtle background
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        shapeRenderer.setColor(0.05f, 0.1f, 0.15f, 0.7f);
+        shapeRenderer.rect(barX, barY, barWidth, barHeight);
+
+        // Red accent line
+
+        layout.setText(titleFont, enemyName);
+        float gapWidth = layout.width + 30;
+        float halfGap = gapWidth / 2;
+        float centerX = barX + barWidth / 2;
+        shapeRenderer.setColor(0.8f, 0.2f, 0.2f, 0.6f);
+        shapeRenderer.rectLine(barX, barY, centerX - halfGap, barY, 1);
+        shapeRenderer.rectLine(centerX + halfGap, barY, barX + barWidth, barY, 1);
+
+
+        // HP bar
+        drawRebirthBar(barX + 100, barY + 25, barWidth - 120, 15,
+                (float) enemyHP / enemyMaxHP,
+                new Color(0.15f, 0.05f, 0.05f, 0.8f),
+                new Color(0.8f, 0.2f, 0.2f, 0.9f));
+
+        shapeRenderer.end();
+
+        // Draw enemy info
+        batch.begin();
+        titleFont.setColor(0.9f, 0.7f, 0.7f, 0.9f);
+        titleFont.draw(batch, enemyName,
+                barX + (barWidth - layout.width) / 2,
+                barY + barHeight - 50);
+
+
+        font.setColor(0.8f, 0.7f, 0.7f, 0.8f);
+        font.draw(batch, "HP", barX + 70, barY + 52);
+        font.draw(batch, enemyHP + "/" + enemyMaxHP, barX + barWidth - 60, barY + 38);
+        batch.end();
+    }
+
+    private void drawTurnIndicator() {
+        float indicatorWidth = 180;
+        float indicatorHeight = 40;
+        float indicatorX = 10;
+        float indicatorY = SCREEN_HEIGHT - indicatorHeight - 10;
+
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+
+        // Semi-transparent background
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        shapeRenderer.setColor(0.05f, 0.1f, 0.15f, 0.7f);
+        shapeRenderer.rect(indicatorX, indicatorY, indicatorWidth, indicatorHeight);
+
+        // Accent line based on turn
+        if (combatState == CombatState.PLAYER_TURN) {
+            shapeRenderer.setColor(0.2f, 0.6f, 0.9f, 0.8f);
+        } else {
+            shapeRenderer.setColor(0.8f, 0.3f, 0.3f, 0.8f);
+        }
+        shapeRenderer.rectLine(indicatorX, indicatorY, indicatorX + indicatorWidth, indicatorY, 1);
+
+        shapeRenderer.end();
+
+        // Draw turn text
+        batch.begin();
+        font.setColor(0.9f, 0.9f, 1.0f, 0.9f);
+        font.draw(batch, getTurnText(), indicatorX + 15, indicatorY + 25);
+        batch.end();
+    }
+
+    private void drawRebirthBar(float x, float y, float width, float height, float fillPercent,
+                                Color bgColor, Color fillColor) {
+        int segments = 20; // More segments for smoother look
+        float segmentWidth = width / segments;
+        float segmentSpacing = 1; // Smaller spacing for smoother look
+        float filledWidth = width * fillPercent;
+
+        // Background with subtle gradient
+        shapeRenderer.setColor(bgColor);
+        shapeRenderer.rect(x, y, width, height);
+
+        // Filled segments
+        for (int i = 0; i < segments; i++) {
+            float segX = x + i * segmentWidth;
+            if (segX < x + filledWidth) {
+                float segW = Math.min(segmentWidth - segmentSpacing, x + filledWidth - segX);
+
+                // Add subtle gradient effect to segments
+                float brightness = 0.8f + 0.2f * (float) Math.sin(i * 0.3f);
+                shapeRenderer.setColor(
+                        fillColor.r * brightness,
+                        fillColor.g * brightness,
+                        fillColor.b * brightness,
+                        fillColor.a
+                );
+
+                shapeRenderer.rect(segX, y + 1, segW, height - 2);
+            }
+        }
+
+        // Top highlight
+        shapeRenderer.setColor(1f, 1f, 1f, 0.4f);
+        shapeRenderer.rectLine(x, y + height, x + width, y + height, 1);
+    }
+
+    private void drawRebirthStyleCombatLog() {
+        // Draw combat log in a stylized box at the top
+        float logWidth = 580;
+        float logHeight = 40;
+        float logX = (SCREEN_WIDTH - logWidth) / 2 + 10;
+        float logY = 5;
+
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(0.05f, 0.1f, 0.15f, 0.4f);
+        shapeRenderer.rect(logX, logY, logWidth, logHeight);
+
+        // FF7-style border
+        shapeRenderer.setColor(0.3f, 0.5f, 0.9f, 0.6f);
+        shapeRenderer.rectLine(logX + 10, logY, logX + logWidth - 10, logY, 1);
+        shapeRenderer.rectLine(logX + 10, logY + logHeight, logX + logWidth - 10, logY + logHeight, 1);
+        shapeRenderer.rectLine(logX, logY + 5, logX, logY + logHeight - 5, 1);
+        shapeRenderer.rectLine(logX + logWidth, logY + 5, logX + logWidth, logY + logHeight - 5, 1);
+
+        // Corner connectors
+        shapeRenderer.rectLine(logX, logY + 5, logX + 10, logY, 1);
+        shapeRenderer.rectLine(logX + logWidth - 10, logY, logX + logWidth, logY + 5, 1);
+        shapeRenderer.rectLine(logX, logY + logHeight - 5, logX + 10, logY + logHeight, 1);
+        shapeRenderer.rectLine(logX + logWidth - 10, logY + logHeight, logX + logWidth, logY + logHeight - 5, 1);
+        shapeRenderer.end();
+
+        // Draw text
+        batch.begin();
+        font.setColor(Color.WHITE);
+        layout.setText(font, combatLog);
+        font.draw(batch, combatLog, logX + (logWidth - layout.width) / 2, logY + 25);
+        batch.end();
+    }
+
+    // Add this class to represent damage/healing popup numbers
+    private class DamageNumber {
+        private final String text;
+        private final float x, startY;
+        private float y;
+        private float alpha;
+        private final Color color;
+        private float lifeTime;
+        private final float MAX_LIFETIME = 1.5f;
+
+        public DamageNumber(String text, float x, float y, Color color) {
+            this.text = text;
+            this.x = x;
+            this.startY = y;
+            this.y = y;
+            this.alpha = 1.0f;
+            this.color = new Color(color);
+            this.lifeTime = 0f;
+        }
+
+        public boolean update(float delta) {
+            lifeTime += delta;
+            if (lifeTime > MAX_LIFETIME) return true;
+
+            // Float upward
+            y = startY + 80 * (lifeTime / MAX_LIFETIME);
+
+            // Fade out
+            if (lifeTime > MAX_LIFETIME * 0.5f) {
+                alpha = 1.0f - (lifeTime - (MAX_LIFETIME * 0.5f)) / (MAX_LIFETIME * 0.5f);
+            }
+
+            return false;
+        }
+
+        public void render(SpriteBatch batch, BitmapFont font) {
+            Color prevColor = new Color(font.getColor());
+            font.setColor(color.r, color.g, color.b, alpha);
+            layout.setText(font, text);
+            font.draw(batch, text, x - layout.width / 2, y);
+            font.setColor(prevColor);
+        }
+    }
+
+    // Add this to class fields
+    // Add this to class fields
+    private Array<DamageNumber> damageNumbers = new Array<>();
+
+    // Updated method to display damage numbers using world positions
+    private void showDamageNumber(int amount, boolean onEnemy, boolean isHealing) {
+        // Get the world position of the target
+        Vector3 worldPos = onEnemy ? enemyWorldPos.cpy() : playerWorldPos.cpy();
+
+        // Offset Y position to appear above character
+        worldPos.y += 2.0f;
+
+        // Convert world position to screen position
+        Vector3 screenPos = environment3D.getCamera().project(new Vector3(worldPos));
+
+        // Choose color based on damage type
+        Color color;
+        if (isHealing) {
+            color = new Color(0.2f, 0.9f, 0.4f, 1.0f);  // Green for healing
+            amount = Math.abs(amount);  // Make sure healing is positive
+        } else {
+            color = new Color(0.95f, 0.2f, 0.2f, 1.0f);  // Red for damage
+        }
+
+        String text = (isHealing ? "+" : "") + amount;
+        damageNumbers.add(new DamageNumber(text, screenPos.x, screenPos.y, color));
+    }
+
+    // Update method to update damage numbers
+    private void updateDamageNumbers(float delta) {
+        for (int i = damageNumbers.size - 1; i >= 0; i--) {
+            if (damageNumbers.get(i).update(delta)) {
+                damageNumbers.removeIndex(i);
+            }
+        }
+    }
+
+    // Render method to draw damage numbers
+    private void renderDamageNumbers() {
+        batch.begin();
+        for (DamageNumber number : damageNumbers) {
+            number.render(batch, titleFont);
+        }
+        batch.end();
+    }
 
     private void drawPauseMenu() {
         // Updated constants
@@ -1761,9 +1695,6 @@ public class DarkestDungeon implements Screen {
 
         // Reset word effects
         showWordDisplay = false;
-        showDamageEffect = false;
-        showHealEffect = false;
-
         isAnimating = true;
         isPlayerAction = true;
         animState = AnimationState.MOVE_TO_CENTER;
@@ -1872,7 +1803,6 @@ public class DarkestDungeon implements Screen {
             if (texture != null) texture.dispose();
         }
         if (backgroundBlurTexture != null) backgroundBlurTexture.dispose();
-        if (damageParticleTex != null) damageParticleTex.dispose();
         if (titleFont != null) titleFont.dispose();
         if (inputFont != null) inputFont.dispose();
 
@@ -1891,7 +1821,5 @@ public class DarkestDungeon implements Screen {
         // Clear the cache maps
         enemyIdleTexturesCache.clear();
         enemySkillTexturesCache.clear();
-
-        System.out.println("CombatScreen disposed");
     }
 }
