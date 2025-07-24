@@ -28,7 +28,7 @@ public class IsometricGame extends Game {
 
 
 //        splashScreen = new SplashScreen(this);
-//        gameScreen = new GameScreen(this, gameController);
+        gameScreen = new GameScreen(this, gameController);
 //        gameOverScreen = new EndScreen(() -> {
 //            gameController.setState(GameState.MAIN_MENU);
 //            gameController.resetGame();
@@ -38,7 +38,7 @@ public class IsometricGame extends Game {
 
         darkestDungeonScreen = new DarkestDungeon(this, gameController);
 
-        setScreen(darkestDungeonScreen);
+        setScreen(gameScreen);
     }
 
     @Override

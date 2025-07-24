@@ -229,7 +229,6 @@ public class DarkestDungeon implements Screen {
     private OrthographicCamera combatCamera;
     private float cameraShake = 0f;
     private float cameraZoom = 1f;
-    private Vector2 cameraOffset = new Vector2();
 
 
     private Texture loadLinearTexture(String path) {
@@ -252,8 +251,8 @@ public class DarkestDungeon implements Screen {
         playerSkillTextures[3] = loadLinearTexture("dungeon/player_heal.png");
         playerSkillTextures[4] = loadLinearTexture("dungeon/player_defend.png");
 
-        enemyIdleTextures = getEnemyIdleTextures("demon");
-        enemySkillTextures = getEnemySkillTextures("demon");
+//        enemyIdleTextures = getEnemyIdleTextures("demon");
+//        enemySkillTextures = getEnemySkillTextures("demon");
 
         // Skill button textures
         skillButtonTextures[0] = new Texture("dungeon/skill_attack.png");
@@ -281,6 +280,7 @@ public class DarkestDungeon implements Screen {
         font = generateVietNameseFont("GrenzeGotisch.ttf", 20);
         titleFont = generateVietNameseFont("GrenzeGotisch.ttf", 26);
         inputFont = generateVietNameseFont("Roboto-Black.ttf", 18);
+
         shapeRenderer = new ShapeRenderer();
         camera = new OrthographicCamera();
         camera.setToOrtho(false, SCREEN_WIDTH, SCREEN_HEIGHT);

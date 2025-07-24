@@ -449,7 +449,7 @@ public class InputController extends InputAdapter {
             }
 
             case Keys.F8 -> {
-                Enemy enemy = EnemyLoader.getEnemyById(7);
+                Enemy enemy = EnemyLoader.getEnemyById(1);
 
                 gameController.setState(GameState.GAMEPLAY);
 
@@ -777,7 +777,7 @@ public class InputController extends InputAdapter {
                 return true;
             }
             case GAMEPLAY -> {
-                gameController.getGameplayController().handleCombatLogScroll(amountY);
+                gameController.getGameplayController().getRenderer().handleCombatLogScroll(amountY);
             }
             case MENU -> {
                 return gameController.getMenuController().handleKeyBindingScroll(amountY);
