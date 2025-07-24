@@ -426,6 +426,9 @@ public class InputController extends InputAdapter {
             case Keys.PAGE_DOWN -> {
                 gameController.changeMap("dungeon2");
             }
+            case Keys.PAGE_UP -> {
+                gameController.getCharacter().setDirection("knocked_down");
+            }
             case Keys.F5 -> {
                 gameController.changeMap("main");
             }
@@ -457,7 +460,7 @@ public class InputController extends InputAdapter {
                 gameController.getGameplayController().startCombat(enemy);
             }
             case Keys.F9 -> {
-                Enemy enemy = EnemyLoader.getEnemyById(8);
+                Enemy enemy = EnemyLoader.getEnemyById(7);
 
                 gameController.setState(GameState.GAMEPLAY);
 

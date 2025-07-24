@@ -377,6 +377,16 @@ public class Character {
         this.health = Math.min(this.health + amount, maxHealth);
     }
 
+    public void restoreMana(float amount) {
+        if (amount < 0) {
+            throw new IllegalArgumentException("Mana restoration amount cannot be negative");
+        }
+        if (maxMana < 0) {
+            throw new IllegalStateException("Maximum mana cannot be negative");
+        }
+        this.mana = Math.min(this.mana + amount, maxMana);
+    }
+
     public void buff(String name, float value) {
         switch (name) {
             case "Draught of Fury":
@@ -434,7 +444,10 @@ public class Character {
 
         switch (item.getItemEffect()) {
             case "heal":
-                healing(item.getValue());
+                if (item.getItemName().equals("Elixir") || item.getItemName().equals("Big Elixir"))
+                    healing(item.getValue());
+                else if (item.getItemName().equals("Arcane Essence") || item.getItemName().equals("Big Arcane Essence"))
+                    restoreMana(item.getValue());
                 break;
             case "buff":
                 buff(item.getItemName(), item.getValue());
@@ -698,6 +711,7 @@ public class Character {
 //            (0, -1) → "left" (West)
             direction = "left_down";
         }
+        System.out.println("Direction updated to: " + direction);
     }
 
 

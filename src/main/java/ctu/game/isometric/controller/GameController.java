@@ -1330,6 +1330,7 @@ public class GameController {
             setState(GameState.CUTSCENE);
             if (!character.getFlags().contains("intro")) {
                 startMulBGSubTitleCutscene("intro", subtitles);
+                character.setDirection("knocked_down");
                 if (!character.isTutorialCompleted("movement")) {
                     tutorialUI.show("movement");
                     character.setTutorialCompleted("movement");
@@ -1797,7 +1798,7 @@ public class GameController {
                     enemy.setDefensePower(21);
                     game.getDarkestDungeonScreen().startCombat(enemy);
                     game.changeScreen("DARK_DUNGEON");
-                } else{
+                } else {
                     Enemy enemy = new Enemy(11, "Thủ vệ hồ", "Frost Guardian", "minotaur", 1, 25, 16);
                     enemy.setDefensePower(21);
                     game.getDarkestDungeonScreen().startCombat(enemy);

@@ -12,30 +12,7 @@ public class AnimationManager {
     private Map<String, Animation<TextureRegion>> characterAnimations = new HashMap<>();
     private Map<String, Animation<TextureRegion>> npcAnimations = new HashMap<>();
     private Map<String, Animation<TextureRegion>> diceAnimations = new HashMap<>();
-    private Map<String, Animation<TextureRegion>> dungeonEnemyAnimations = new HashMap<>();
 
-
-
-    public void loadDungeonEnemyAnimations(String enemySpritePath,String direction) {
-        Texture enemySpriteSheet = new Texture(Gdx.files.internal(enemySpritePath));
-        enemySpriteSheet.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-
-        int frameCount = 6;
-        // Create animation frames
-        TextureRegion[] frames = new TextureRegion[frameCount];
-        for (int i = 0; i < frameCount; i++) {
-            frames[i] = new TextureRegion(enemySpriteSheet, i * 80, 0, 80, 80);
-        }
-
-        // Add animation to map with unique key
-        dungeonEnemyAnimations.put("enemy_"+direction, new Animation<>(0.1f, frames));
-    }
-
-
-    public Animation<TextureRegion> getDungeonEnemyAnimation(String direction) {
-        String animKey = "enemy_" + direction;
-        return dungeonEnemyAnimations.getOrDefault(animKey, null);
-    }
 
     public void loadDiceAnimations(String staticDicePath, String rollingDicePath) {
         // Load texture sheets
@@ -137,6 +114,13 @@ public class AnimationManager {
         }
     }
 
+    public void loadKnockedDownAnimation(String knockedDownSpritePath) {
+        Texture knockedDownTexture = new Texture(Gdx.files.internal(knockedDownSpritePath));
+        knockedDownTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+
+        TextureRegion[] frames = {new TextureRegion(knockedDownTexture)};
+        characterAnimations.put("knocked_down", new Animation<>(0.1f, frames));
+    }
 
     public void loadNpcAnimations(String npcId, String idleSpritePath, String dialogueSpritePath) {
         // Load texture sheets
@@ -176,6 +160,14 @@ public class AnimationManager {
     }
 
     public TextureRegion getCharacterFrame(String direction, boolean isMoving, float stateTime) {
+
+        if (direction.equals("knocked_down")) {
+            Animation<TextureRegion> animation = characterAnimations.get("knocked_down");
+            if (animation != null) {
+                return animation.getKeyFrame(stateTime, true);
+            }
+        }
+
         String animKey = direction + (isMoving ? "_walk" : "_idle");
 
         // If animation doesn't exist, find a fallback

@@ -1,6 +1,8 @@
 package ctu.game.isometric.view.renderer;
 
 import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Matrix4;
@@ -26,18 +28,19 @@ public class CharacterRenderer {
         this.animationManager = assetManager.getAnimationManager();
         // Use the character's gender instead of the uninitialized field
         Gender characterGender = character.getGender();
-        if (characterGender == null || characterGender.equals(Gender.MALE))
+        if (characterGender == null || characterGender.equals(Gender.MALE)) {
+            this.animationManager.loadKnockedDownAnimation("characters/knocked_down_male.png");
             this.animationManager.loadCharacterAnimations("characters/idle.png", "characters/walk.png");
-        else
+        } else {
+            this.animationManager.loadKnockedDownAnimation("characters/knocked_down_female.png");
             this.animationManager.loadCharacterAnimations("characters/female_idle.png", "characters/female_walk.png");
+        }
+
     }
 
 
     float offsetY = 17.5f;
     float offsetX = -3f;
-
-    int width = 48; // Width of the character sprite
-    int height = 48; // Height of the character sprite
 
     public void render(SpriteBatch batch) {
         float gridX = character.getGridX();
@@ -54,15 +57,22 @@ public class CharacterRenderer {
         if (mapRenderer.getMap().getMapName().equals("board")) {
             isoY += offsetY;
             isoX += offsetX;
-
         }
         // Get animation frame with translated direction
         String direction = translateDirection(character.getDirection());
+
+        if(direction.equals("knocked_down")) {
+            isoY += 14;
+            isoX += 14;
+        }
+
         TextureRegion currentFrame = animationManager.getCharacterFrame(
                 direction,
                 character.isMoving(),
                 character.getAnimationTime()
         );
+
+
         // Position character at the center of the tile
         float offsetPlayerX = 10; // Half of sprite width (48/2)
         float offsetPlayerY = -5; // Position the feet at tile base (character sprite height - tile height)
@@ -81,7 +91,6 @@ public class CharacterRenderer {
 
     // Convert simplified direction to sprite sheet direction
     private String translateDirection(String direction) {
-        // Map all 8-way directions to our available 6 sprite directions
         switch (direction) {
             case "up":
                 return "up";
@@ -97,6 +106,8 @@ public class CharacterRenderer {
                 return "right_up";
             case "left_down":
                 return "left_down";
+            case "knocked_down":
+                return "knocked_down";
             default:
                 return "right_down";
         }

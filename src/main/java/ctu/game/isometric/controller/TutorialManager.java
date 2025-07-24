@@ -76,7 +76,7 @@ public class TutorialManager {
                 "- Buff Attack: Tăng 5 điểm tấn công.\n" +
                         "- Buff Defend: Tăng 5 điểm phòng thủ.\n" +
                         "- Buff Regen: Hồi phục một lượng máu mỗi lượt.\n" +
-                        "- Debuff Freeze: Đóng băng kẻ địch, khiến chúng không thể hành động trong lượt. Có 50% cơ hội phá băng mỗi lượt.\n" +
+                        "- Debuff Freeze: Đóng băng kẻ địch, khiến chúng không thể hành động trong lượt và hồi phục 5 HP. Có 50% cơ hội phá băng mỗi lượt.\n" +
                         "- Debuff Burn: Gây bỏng, trừ 2% máu mỗi lượt và giảm 20% tấn công của kẻ địch.\n" +
                         "- Debuff Toxic: Gây độc, trừ 5% hơn mỗi lượt.\n\n" +
                         "**Lưu ý:** Freeze và Burn không thể tồn tại đồng thời. Nếu kẻ địch đang bị Freeze mà bị dính Burn, cả hai hiệu ứng sẽ bị triệt tiêu và ngược lại.\n" +

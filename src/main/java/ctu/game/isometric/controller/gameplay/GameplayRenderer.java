@@ -20,6 +20,7 @@ import ctu.game.isometric.model.game.LetterGrid;
 import ctu.game.isometric.model.game.Reward;
 import ctu.game.isometric.util.ItemLoader;
 import ctu.game.isometric.util.RewardLoader;
+import ctu.game.isometric.view.scene.FloatingText;
 
 import java.util.HashMap;
 import java.util.List;
@@ -94,6 +95,31 @@ public class GameplayRenderer {
         }
     }
 
+    private void renderFloatingTexts(SpriteBatch batch) {
+        List<FloatingText> floatingTexts = controller.getFloatingTexts();
+        if (floatingTexts != null && !floatingTexts.isEmpty()) {
+            for (FloatingText floatingText : floatingTexts) {
+                Color originalColor = titleFont.getColor().cpy();
+                Color textColor = floatingText.getColor().cpy();
+                textColor.a = floatingText.getAlpha();
+
+                titleFont.setColor(textColor);
+                titleFont.draw(batch, floatingText.getText(),
+                        floatingText.getX(), floatingText.getY());
+
+                // Restore original font color
+                titleFont.setColor(originalColor);
+            }
+        }
+    }
+
+    public void loadPlayerTexture(String gender) {
+        if (gender.equalsIgnoreCase("MALE"))
+            playerTexture = getTexture("characters/male.png");
+        else
+            playerTexture = getTexture("characters/female.png");
+    }
+
     private Texture createFallbackTexture(int width, int height, Color color) {
         Pixmap pixmap = new Pixmap(width, height, Pixmap.Format.RGBA8888);
         pixmap.setColor(color);
@@ -125,17 +151,6 @@ public class GameplayRenderer {
         return texture;
     }
 
-    public void updateFlicker(float delta) {
-        Map<String, Integer> enemyStatusDuration = controller.getEnemyStatusDuration();
-        if (enemyStatusDuration != null) {
-            for (String statusName : enemyStatusDuration.keySet()) {
-                float phase = effectAlphaPhase.getOrDefault(statusName, 0f);
-                phase += delta * 2f;
-                if (phase > MathUtils.PI2) phase -= MathUtils.PI2;
-                effectAlphaPhase.put(statusName, phase);
-            }
-        }
-    }
 
     public void render(SpriteBatch batch) {
         batch.setProjectionMatrix(viewport.getCamera().combined);
@@ -146,6 +161,7 @@ public class GameplayRenderer {
 
         if (controller.isCombatMode()) {
             renderCombatUI(batch);
+            renderFloatingTexts(batch);
         } else if (controller.isVictory()) {
             renderReward(batch);
         } else {
@@ -279,6 +295,8 @@ public class GameplayRenderer {
         regularFont.draw(batch, "Phòng thủ: " + (int) defend, x + 20, y + height - 35);
     }
 
+    Texture playerTexture;
+
     private void drawBattlefield(SpriteBatch batch, float x, float y, float width, float height) {
         Texture battlefieldBg = getTexture("ui/battlefield_bg.png");
         if (battlefieldBg != null) {
@@ -293,11 +311,6 @@ public class GameplayRenderer {
 
         drawPokemonStyleEnemySection(batch);
 
-        Texture playerTexture;
-        if (controller.getGender().equalsIgnoreCase("MALE"))
-            playerTexture = getTexture("characters/male.png");
-        else
-            playerTexture = getTexture("characters/female.png");
 
         if (playerTexture != null) {
             batch.setColor(Color.WHITE);
@@ -504,11 +517,11 @@ public class GameplayRenderer {
     }
 
     private void drawPokemonStyleButton(SpriteBatch batch, Rectangle buttonRect, String text, Color color) {
-//        Vector3 mousePos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
-//        viewport.unproject(mousePos);
-//        boolean isHovered = buttonRect.contains(mousePos.x, mousePos.y);
-//
-//        batch.setColor(isHovered ? color.cpy().mul(1.2f) : color);
+        Vector3 mousePos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
+        viewport.unproject(mousePos);
+        boolean isHovered = buttonRect.contains(mousePos.x, mousePos.y);
+
+        batch.setColor(isHovered ? color.cpy().mul(1.2f) : color);
         batch.draw(whiteTexture, buttonRect.x, buttonRect.y, buttonRect.width, buttonRect.height);
 
         batch.setColor(Color.WHITE);
@@ -724,20 +737,41 @@ public class GameplayRenderer {
                 regularFont.setColor(Color.WHITE);
                 regularFont.draw(batch, String.valueOf(duration), x + iconIndex * spacing + iconSize - 10, y);
 
+
+                // Compute flicker alpha
+                float phase = effectAlphaPhase.getOrDefault(statusName, 0f);
+                float alpha = 0.5f + 0.5f * MathUtils.sin(phase);
+                batch.setColor(1f, 1f, 1f, alpha);
+
+                // Draw effect on enemy
+                Texture effectTexture = null;
+                if (statusName.equals("BUFF_ATK") || statusName.equals("BUFF_DEF"))
+                    effectTexture = getTexture("ui/regen_effect.png");
+                else
+                    effectTexture = getTexture("ui/" + statusName.toLowerCase() + "_effect.png");
+
+                if (effectTexture != null) {
+                    switch (statusName) {
+                        case "BURN":
+                            batch.setColor(1f, 0.4f, 0f, alpha); // Orange-red glow
+                            batch.draw(playerTexture, 326, 266, 150, 200);
+                            break;
+                        case "TOXIC":
+                            batch.draw(effectTexture, 286, 286, 200, 150);
+                            break;
+                        case "BUFF_ATK":
+                        case "BUFF_DEF":
+                            batch.draw(effectTexture, 286, 256, 200, 150);
+                            break;
+                    }
+                }
+
+                batch.setColor(Color.WHITE); // Reset after each effect
+
                 iconIndex++;
             }
 
-            float phase = effectAlphaPhase.getOrDefault("REGEN", 0f);
-            float alpha = 0.5f + 0.5f * MathUtils.sin(phase);
-            batch.setColor(1f, 1f, 1f, alpha);
 
-            if (playerStatusDuration.containsKey("BUFF_ATK") || playerStatusDuration.containsKey("BUFF_DEF")) {
-                Texture effectTexture = getTexture("ui/regen_effect.png");
-                if (effectTexture != null) {
-                    batch.draw(effectTexture, 286, 256, 200, 150);
-                }
-                batch.setColor(Color.WHITE);
-            }
         }
     }
 
@@ -746,32 +780,69 @@ public class GameplayRenderer {
         float spacing = 30;
         int iconIndex = 0;
 
-        Map<String, Integer> enemyStatusDuration = controller.getEnemyStatusDuration();
-        if (enemyStatusDuration != null) {
-            for (Map.Entry<String, Integer> status : enemyStatusDuration.entrySet()) {
+        if (controller.getEnemyStatusDuration() != null) {
+            for (Map.Entry<String, Integer> status : controller.getEnemyStatusDuration().entrySet()) {
                 String statusName = status.getKey();
                 int duration = status.getValue();
 
+                // Draw status icon
                 Texture statusIcon = getTexture("ui/" + statusName.toLowerCase() + ".png");
                 if (statusIcon != null) {
                     batch.setColor(Color.WHITE);
                     batch.draw(statusIcon, x + iconIndex * spacing, y, iconSize, iconSize);
                 }
 
+                // Draw duration text
                 regularFont.setColor(Color.WHITE);
                 regularFont.draw(batch, String.valueOf(duration), x + iconIndex * spacing + iconSize - 10, y);
 
+                // Compute flicker alpha
                 float phase = effectAlphaPhase.getOrDefault(statusName, 0f);
                 float alpha = 0.5f + 0.5f * MathUtils.sin(phase);
                 batch.setColor(1f, 1f, 1f, alpha);
 
+                // Draw effect on enemy
                 Texture effectTexture = getTexture("ui/" + statusName.toLowerCase() + "_effect.png");
+                Texture enemyTexture = getTexture(controller.getEnemy().getTexturePath());
                 if (effectTexture != null) {
-                    batch.draw(effectTexture, 830, 450, 150, 200);
+                    switch (statusName) {
+                        case "REGEN":
+                            batch.draw(effectTexture, 805, 430, 200, 150);
+                            break;
+                        case "FREEZE":
+                            batch.draw(effectTexture, 800, 430, 200, 200);
+                            break;
+                        case "BURN":
+                            batch.setColor(1f, 0.4f, 0f, alpha); // Orange-red glow
+                            batch.draw(enemyTexture, 830, 450, 150, 200);
+                            break;
+                        case "TOXIC":
+                            batch.draw(effectTexture, 805, 460, 200, 170);
+                            break;
+                    }
                 }
 
-                batch.setColor(Color.WHITE);
+                batch.setColor(Color.WHITE); // Reset after each effect
                 iconIndex++;
+            }
+        }
+    }
+
+    public void updateFlicker(float delta) {
+        if (controller.getEnemyStatusDuration() != null) {
+            for (String statusName : controller.getEnemyStatusDuration().keySet()) {
+                float phase = effectAlphaPhase.getOrDefault(statusName, 0f);
+                phase += delta * 2f; // tốc độ flicker, bạn có thể điều chỉnh
+                if (phase > MathUtils.PI2) phase -= MathUtils.PI2;
+                effectAlphaPhase.put(statusName, phase);
+            }
+        }
+        if (controller.getPlayerStatusDuration() != null) {
+            for (String statusName : controller.getPlayerStatusDuration().keySet()) {
+                float phase = effectAlphaPhase.getOrDefault(statusName, 0f);
+                phase += delta * 2f; // tốc độ flicker, bạn có thể điều chỉnh
+                if (phase > MathUtils.PI2) phase -= MathUtils.PI2;
+                effectAlphaPhase.put(statusName, phase);
             }
         }
     }
@@ -811,8 +882,8 @@ public class GameplayRenderer {
         }
         return textureCache.get(path);
     }
+
     private void clearOldTextures() {
-        // Remove half of cached textures to free memory
         int removeCount = textureCache.size() / 2;
         textureCache.entrySet().removeIf(entry -> {
             if (removeCount > 0 && entry.getValue() != null) {
@@ -822,6 +893,7 @@ public class GameplayRenderer {
             return false;
         });
     }
+
     public void clearTextureCache() {
         for (Texture texture : textureCache.values()) {
             if (texture != null) texture.dispose();
@@ -838,6 +910,7 @@ public class GameplayRenderer {
         // Clear some cached textures to free memory
         clearOldTextures();
     }
+
     public void dispose() {
         clearTextureCache();
 

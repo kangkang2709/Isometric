@@ -1,13 +1,11 @@
 package ctu.game.isometric.controller.gameplay;
 
 import com.badlogic.gdx.Gdx;
+
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -20,6 +18,7 @@ import ctu.game.isometric.model.entity.Enemy;
 import ctu.game.isometric.model.game.*;
 import ctu.game.isometric.model.world.MapEvent;
 import ctu.game.isometric.util.*;
+import ctu.game.isometric.view.scene.FloatingText;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,7 +27,6 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.List;
-
 
 public class GameplayController {
     // Core constants
@@ -101,7 +99,16 @@ public class GameplayController {
         createCloseButton(1280, 720);
     }
 
+    private List<FloatingText> floatingTexts = new ArrayList<>();
+
+    public void addFloatingText(String text, float x, float y, Color color) {
+        floatingTexts.add(new FloatingText(text, x, y, color, 2.0f));
+    }
+
     public void playerAttack(String word, int dmg, Runnable onComplete) {
+        if (dmg > 0) {
+            addFloatingText("-" + dmg, 950, 600, Color.RED);
+        }
         cardAnimationService.playerAttack(word, dmg, onComplete);
     }
 
@@ -110,15 +117,17 @@ public class GameplayController {
     }
 
     public void playerHealing(int heal, Runnable onComplete) {
+        addFloatingText("+" + heal + " HP", 320, 460, Color.GREEN);
         cardAnimationService.playerHealing(heal, onComplete);
     }
 
     public void playerHealingMana(int mana, Runnable onComplete) {
+        addFloatingText("+" + mana + " MP", 320, 460, Color.CYAN);
         cardAnimationService.playerHealingMana(mana, onComplete);
     }
 
     public void playerBuff(int buff, Runnable onComplete) {
-        cardAnimationService.playerToxic(buff, onComplete);
+        cardAnimationService.playerBuff(buff, onComplete);
     }
 
     public void playerToxic(int buff, Runnable onComplete) {
@@ -134,12 +143,26 @@ public class GameplayController {
     }
 
     public void enemyAttack(int dmg, int action, int heal, Runnable onComplete) {
+        if (dmg > 0) {
+            addFloatingText("-" + dmg, 320, 460, Color.RED);
+        }
+        // Add floating heal text on enemy when they heal
+        if (heal > 0) {
+            addFloatingText("+" + heal + " HP", 950, 600, Color.LIME);
+        }
         cardAnimationService.enemyAttack(dmg, action, heal, onComplete);
     }
 
     public void update(float delta) {
         if (!active) return;
         cardAnimationManager.update(delta);
+
+        // Update floating texts
+        floatingTexts.removeIf(text -> {
+            text.update(delta);
+            return text.isFinished();
+        });
+
         if (timerAction > 0) {
             timerAction -= delta;
             if (timerAction <= 0) {
@@ -148,9 +171,13 @@ public class GameplayController {
         }
         if (isCombatMode) {
             updateCombat(delta);
-            updateFlicker(delta);
+            renderer.updateFlicker(delta);
         }
+    }
 
+    // Add getter for floating texts
+    public List<FloatingText> getFloatingTexts() {
+        return floatingTexts;
     }
 
     private void updateCombat(float delta) {
@@ -566,18 +593,7 @@ public class GameplayController {
 
     private Map<String, Integer> playerStatusDuration = new HashMap<>();
     private Map<String, Integer> enemyStatusDuration = new HashMap<>();
-    private Map<String, Float> effectAlphaPhase = new HashMap<>();
 
-    public void updateFlicker(float delta) {
-        if (enemyStatusDuration != null) {
-            for (String statusName : enemyStatusDuration.keySet()) {
-                float phase = effectAlphaPhase.getOrDefault(statusName, 0f);
-                phase += delta * 2f; // tốc độ flicker, bạn có thể điều chỉnh
-                if (phase > MathUtils.PI2) phase -= MathUtils.PI2;
-                effectAlphaPhase.put(statusName, phase);
-            }
-        }
-    }
 
     private int playerDef = 0;
     private int attackBuff = 0;
@@ -709,7 +725,10 @@ public class GameplayController {
         if (playerStatusDuration.containsKey("BURN")) {
             int burnDamage = Math.max(1, (int) (playerMaxHealth * 0.02f));
             playerHealth = Math.max(0, playerHealth - burnDamage);
-            addCombatLog("Bạn mất " + burnDamage + " HP do bỏng!Và giảm 20% sát thương!");
+
+            addFloatingText("-" + burnDamage + " HP", 315, 455, Color.PURPLE);
+
+            addCombatLog("Bạn mất " + burnDamage + " HP do bỏng! Và giảm 20% sát thương!");
             playerNerf = (int) (enemy.getAttackPower() * 0.2f);
             int remaining = playerStatusDuration.get("BURN") - 1;
             if (remaining <= 0) {
@@ -724,6 +743,9 @@ public class GameplayController {
         if (playerStatusDuration.containsKey("TOXIC")) {
             int toxicDamage = Math.max(1, (int) (playerMaxHealth * 0.05f));
             playerHealth = Math.max(0, playerHealth - toxicDamage);
+
+            addFloatingText("-" + toxicDamage + " HP", 325, 465, Color.ORANGE);
+
             addCombatLog("Bạn mất " + toxicDamage + " HP do độc tố!");
 
             int remaining = playerStatusDuration.get("TOXIC") - 1;
@@ -779,6 +801,9 @@ public class GameplayController {
         if (enemyStatusDuration.containsKey("BURN")) {
             int burnDamage = Math.max(1, (int) (enemyMaxHealth * 0.02f));
             enemyHealth = Math.max(0, enemyHealth - burnDamage);
+
+            addFloatingText("-" + burnDamage + " HP", 940, 605, Color.ORANGE);
+
             atkNerf = enemy.getAttackPower() * 0.2f;
             addCombatLog(enemyName + " mất " + burnDamage + " HP do bỏng và giảm 20% sát thương!");
 
@@ -794,6 +819,9 @@ public class GameplayController {
 
         if (enemyStatusDuration.containsKey("TOXIC")) {
             int toxicDamage = Math.max(1, (int) (enemyMaxHealth * 0.05f));
+
+            addFloatingText("-" + toxicDamage + " HP", 960, 610, Color.PURPLE);
+
             enemyHealth = Math.max(0, enemyHealth - toxicDamage);
             addCombatLog(enemyName + " mất " + toxicDamage + " HP do độc tố!");
 
@@ -808,8 +836,11 @@ public class GameplayController {
 
         if (enemyStatusDuration.containsKey("REGEN")) {
             int regenHeal = Math.max(1, (int) (enemyMaxHealth * 0.05f));
+
             enemyHealth = Math.min(enemyMaxHealth, enemyHealth + regenHeal);
-            addCombatLog(enemyName + " hồi phục " + regenHeal + " liên tục!");
+            addFloatingText("+" + regenHeal + " HP", 955, 610, Color.GREEN);
+
+            addCombatLog(enemyName + " hồi phục " + regenHeal + " HP liên tục!");
 
             int remaining = enemyStatusDuration.get("REGEN") - 1;
             if (remaining <= 0) {
@@ -824,9 +855,9 @@ public class GameplayController {
 
     private void performEnemyAction() {
         int action = random.nextInt(10);
+
         float damage = 0;
         float heal = 0;
-
 
         if (enemyStatusDuration.containsKey("FREEZE")) {
             boolean isBroke = new Random().nextBoolean();
@@ -836,7 +867,11 @@ public class GameplayController {
             } else {
                 int freezeDuration = enemyStatusDuration.get("FREEZE");
                 if (freezeDuration > 1) {
-                    addCombatLog(enemyName + " bị đóng băng và không thể tấn công!");
+                    addCombatLog(enemyName + " bị đóng băng không thể tấn công và hồi phục nhẹ!");
+
+                    enemyHealth = Math.min(enemyMaxHealth, enemyHealth + 5); // Hồi máu nhẹ khi đóng băng
+                    addFloatingText("+5 HP", 960, 605, Color.BLUE);
+
                     enemyStatusDuration.put("FREEZE", freezeDuration - 1);
                     isPlayerTurn = true;
                     enemyAttack(-1, action, (int) heal, () -> {
@@ -1097,11 +1132,13 @@ public class GameplayController {
             gameController.getMusicController().playMusic("defeat");
 
             if (!isGameOver) {
+                gameController.getCharacter().setDirection("knocked_down");
                 gameController.returnToTower(enemyName);
                 String eventId = currentEvent != null ? currentEvent.getId() : gameController.getCurrentEventId();
                 gameController.getEventManager().completeEvent(eventId);
                 gameController.setCompletedEvent();
                 gameController.setRenderCharacter(true);
+
             }
 
             gameController.getCharacter().resetWinStreak();
@@ -1237,6 +1274,8 @@ public class GameplayController {
         addCombatLog("Bắt đầu chiến đấu với " + enemyName + "!");
         letterGrid.regenerateGrid();
 
+        playerStatusDuration.put("BURN",2);
+        playerStatusDuration.put("TOXIC",2);
         float difficultyScore = (enemyHealth * 0.5f + enemy.getAttackPower() * 1.5f) / (currentLevel + 1);
 
         if (enemyName.contains("Lord")) {
@@ -1258,6 +1297,7 @@ public class GameplayController {
             addCombatLog("Cảnh báo: Trận chiến này có thể rất khó khăn!");
         }
 
+        renderer.loadPlayerTexture(gameController.getCharacter().getGender().toString());
 
         if (isEnemyBoss()) {
             gameController.getMusicController().playMusic("boss");
