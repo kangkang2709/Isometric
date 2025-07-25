@@ -340,6 +340,10 @@ public class InputController extends InputAdapter {
         if (state == GameState.SETTINGS) {
             return gameController.getSettingsMenuController().handleMouseDrag(screenX, screenY);
         }
+        if(state == GameState.BOUNTY_BOARD) {
+            gameController.getBountyBoardView().handleDrag(screenX, screenY);
+            return true;
+        }
 
         // Your existing touchDragged code
         return false;
@@ -353,8 +357,6 @@ public class InputController extends InputAdapter {
             gameController.getDictionaryView().handleMouseRelease();
             return true;
         }
-
-        // Your existing touchUp code
         return false;
     }
 
@@ -810,12 +812,12 @@ public class InputController extends InputAdapter {
 
 
             case BOUNTY_BOARD -> {
-                if (amountY > 0) {
-                    gameController.getBountyBoardView().scrollDown();
-                } else if (amountY < 0) {
-                    gameController.getBountyBoardView().scrollUp();
-                }
-                return true;
+//                if (amountY > 0) {
+//                    gameController.getBountyBoardView().scrollDown();
+//                } else if (amountY < 0) {
+//                    gameController.getBountyBoardView().scrollUp();
+//                }
+                return gameController.getBountyBoardView().handleScroll(amountY);
             }
             case QUEST_TRACKER -> {
                 if (amountY > 0) {

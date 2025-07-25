@@ -160,11 +160,13 @@ public class GameController {
     BitmapFont font;
     BitmapFont titleFont;
     BitmapFont regularFont;
+    BitmapFont commonFont;
     public GameController(IsometricGame game) {
         this.game = game;
         this.font = generateVietNameseFont("GrenzeGotisch.ttf", 35);
         this.titleFont = generateVietNameseFont("GrenzeGotisch.ttf", 50);
         this.regularFont = generateVietNameseFont("Roboto-Black.ttf", 16);
+        this.commonFont = generateVietNameseFont("NovaSquare-Regular.ttf", 20);
 
         this.map = new IsometricMap();
         this.eventManager = new EventManager(map, "board");
@@ -227,7 +229,7 @@ public class GameController {
         npcManager = new NPCManager(this);
 
         bountyBoardController = new BountyBoardController(this);
-        bountyBoardView = new BountyBoardView(bountyBoardController);
+        bountyBoardView = new BountyBoardView(bountyBoardController,font,commonFont);
         questTrackerView = new QuestTrackerView(this);
 
         tutorialUI = new TutorialUI(this);

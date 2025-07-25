@@ -104,7 +104,7 @@ public class BountyBoardController {
         if (quest != null && quest.getStatus() == Quest.QuestStatus.AVAILABLE || quest.getStatus() == Quest.QuestStatus.LOCKED) {
             quest.setStatus(Quest.QuestStatus.IN_PROGRESS);
             character.getQuestTracker().getActiveQuests().add(quest);
-            gameController.getDialogController().showSimpleMessage("Quest accepted: " + quest.getTitle());
+//            gameController.getDialogController().showSimpleMessage("Quest accepted: " + quest.getTitle());
         }
     }
 
@@ -189,11 +189,12 @@ public class BountyBoardController {
             character.getQuestTracker().getActiveQuests().remove(quest);
             character.getQuestTracker().getCompletedQuests().add(quest);
 
-            gameController.getDialogController().showSimpleMessage(
-                    "Quest completed! Received: " +
-                            reward.getExperience() + " XP, " +
-                            reward.getGold() + " gold"
-            );
+//            gameController.getDialogController().showSimpleMessage(
+//                    "Quest completed! Received: " +
+//                            reward.getExperience() + " XP, " +
+//                            reward.getGold() + " gold"
+//            );
+            gameController.getMusicController().playMusic("victory");
 
             int currentLevel = character.getLevel();
             int newLevel = character.addExperience(reward.getExperience());

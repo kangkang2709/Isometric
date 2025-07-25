@@ -238,7 +238,7 @@
   {
     "id": "quest_024",
     "title": "Tower’s Challenge",
-    "description": "Complete the puzzle in the Tower of Trials",
+    "description": "Conditon:Gain 3 ruby \nComplete the puzzle in the Tower of Trials",
     "status": "LOCKED",
     "conditions": "defeat_final_boss",
     "visible": true,

@@ -18,6 +18,7 @@ public class Quest {
 
     private String conditions;
 
+
     private boolean visible;
 
     private String prerequisiteQuestId;
