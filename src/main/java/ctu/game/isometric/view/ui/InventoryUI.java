@@ -2,12 +2,19 @@ package ctu.game.isometric.view.ui;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.TimeUtils;
 import ctu.game.isometric.controller.GameController;
 import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.game.Items;
@@ -23,26 +30,42 @@ import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
 public class InventoryUI {
     private GameController gameController;
     private BitmapFont font;
+    private BitmapFont titleFont;
+    private BitmapFont buttonFont;
     private boolean visible = false;
 
-    private Texture buttonTexture;
     private Texture backgroundTexture;
+    private Texture panelTexture;
     private Texture itemSlotTexture;
     private Texture itemSlotSelected;
+    private Texture itemSlotHover;
+    private Texture buttonTexture;
+    private Texture buttonHoverTexture;
+    private Texture iconTexture;
     private ShapeRenderer shapeRenderer;
+    private ShaderProgram blurShader;
+
+    // Animation parameters
+    private float animationState = 0;
+    private boolean isOpening = false;
+    private boolean isClosing = false;
+    private final float ANIMATION_DURATION = 0.3f;
+    private long lastPulseTime = 0;
 
     private int selectedItemIndex = -1;
+    private int hoveredSlotIndex = -1;
     private List<String> itemList = new ArrayList<>();
     private Rectangle inventoryBounds;
     private Rectangle[] itemSlots;
     private Rectangle useButton;
     private Rectangle discardButton;
     private Rectangle closeButton;
+    private Rectangle craftButton;
 
-    private static final int SLOTS_PER_ROW = 5;
-    private static final int MAX_SLOTS = 20;
-    private static final int SLOT_SIZE = 64;
-    private static final int PADDING = 10;
+    private static final int SLOTS_PER_ROW = 3;
+    private static final int MAX_SLOTS = 21;
+    private static final int SLOT_SIZE = 60;
+    private static final int PADDING = 12;
 
     private Map<String, Texture> itemTextures = new HashMap<>();
     private boolean inventoryDirty = true;
@@ -53,90 +76,22 @@ public class InventoryUI {
     private float detailsY;
     private float detailsWidth;
 
-    // UI colors
-    private final Color bgColor = new Color(0.2f, 0.2f, 0.2f, 0.9f);
-    private final Color slotColor = new Color(0.3f, 0.3f, 0.3f, 1f);
-    private final Color selectedColor = new Color(0.5f, 0.5f, 0.8f, 1f);
-    private final Color buttonColor = new Color(0.4f, 0.4f, 0.4f, 1f);
-    private final Color closeButtonColor = new Color(0.7f, 0.3f, 0.3f, 1f);
+    private final Color closeButtonColor = new Color(0.7f, 0.3f, 0.3f, 0.9f);
+    private final Color closeButtonHoverColor = new Color(0.9f, 0.4f, 0.4f, 1f);
+    private final Color titleColor = new Color(0.9f, 0.9f, 1f, 1f);
+    private final Color headingColor = new Color(0.7f, 0.8f, 1f, 1f);
+    private final Color textColor = new Color(0.85f, 0.85f, 0.9f, 1f);
+    private final Color accentColor = new Color(0.5f, 0.8f, 1f, 1f);
+    private final Color errorColor = new Color(1f, 0.5f, 0.5f, 1f);
 
-    public InventoryUI(GameController gameController) {
-        this.gameController = gameController;
-        this.font = generateVietNameseFont("GrenzeGotisch.ttf", 20);
-        this.shapeRenderer = new ShapeRenderer();
-
-        // Create projection matrix once
-        uiMatrix = new Matrix4().setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-
-        // Load textures
-//        backgroundTexture = new Texture(Gdx.files.internal("ui/inventory_bg.png"));
-        itemSlotTexture = new Texture(Gdx.files.internal("ui/slot.png"));
-        itemSlotSelected = new Texture(Gdx.files.internal("ui/slot_highlight.png"));
-        buttonTexture = new Texture(Gdx.files.internal("ui/button.png"));
-
-        // Calculate inventory bounds
-        float screenWidth = Gdx.graphics.getWidth();
-        float screenHeight = Gdx.graphics.getHeight();
-        float inventoryWidth = (SLOTS_PER_ROW * SLOT_SIZE) + ((SLOTS_PER_ROW + 1) * PADDING) + 200;
-        float inventoryHeight = ((MAX_SLOTS / SLOTS_PER_ROW) * SLOT_SIZE) + (((MAX_SLOTS / SLOTS_PER_ROW) + 1) * PADDING) + 100;
-
-        inventoryBounds = new Rectangle(
-                (screenWidth - inventoryWidth) / 2,
-                (screenHeight - inventoryHeight) / 2,
-                inventoryWidth,
-                inventoryHeight
-        );
-
-        // Create item slots
-        itemSlots = new Rectangle[MAX_SLOTS];
-        for (int i = 0; i < MAX_SLOTS; i++) {
-            int row = i / SLOTS_PER_ROW;
-            int col = i % SLOTS_PER_ROW;
-
-            itemSlots[i] = new Rectangle(
-                    inventoryBounds.x + PADDING + (col * (SLOT_SIZE + PADDING)),
-                    inventoryBounds.y + inventoryBounds.height - PADDING - SLOT_SIZE - (row * (SLOT_SIZE + PADDING)),
-                    SLOT_SIZE,
-                    SLOT_SIZE
-            );
-        }
-
-        // Create buttons
-        float buttonWidth = 120;
-        float buttonHeight = 40;
-        float buttonX = inventoryBounds.x + inventoryBounds.width - buttonWidth - PADDING;
-        float buttonY = inventoryBounds.y + PADDING * 3;
-
-        useButton = new Rectangle(buttonX, buttonY + buttonHeight + PADDING, buttonWidth, buttonHeight);
-        discardButton = new Rectangle(buttonX, buttonY, buttonWidth, buttonHeight);
-        closeButton = new Rectangle(
-                inventoryBounds.x + inventoryBounds.width - 30 - PADDING,
-                inventoryBounds.y + inventoryBounds.height - 30 - PADDING,
-                30,
-                30
-        );
-
-        // Precalculate item details position
-        detailsX = inventoryBounds.x + (SLOTS_PER_ROW * (SLOT_SIZE + PADDING)) + PADDING * 2;
-        detailsY = inventoryBounds.y + inventoryBounds.height - PADDING * 3;
-        detailsWidth = inventoryBounds.width - detailsX + inventoryBounds.x - PADDING * 2;
-
-        uiMatrix = new Matrix4().setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        // Preload common textures
-        craftButton = new Rectangle(buttonX, buttonY + (buttonHeight + PADDING) * 2, buttonWidth, buttonHeight);
-        preloadCommonTextures();
-    }
-
-    /**
-     * Renders the inventory UI.
-     *
-     * @param batch The SpriteBatch used for rendering.
-     */
+    // Button hover states
+    private boolean hoverUseButton = false;
+    private boolean hoverDiscardButton = false;
+    private boolean hoverCloseButton = false;
+    private boolean hoverCraftButton = false;
 
     private static final Map<String, CraftingRecipe> CRAFTING_RECIPES = new HashMap<>();
-
-    private Rectangle craftButton;
-    private boolean hoverCraftButton = false;
+    String errorMessage = "";
 
     private static class CraftingRecipe {
         String ingredient;
@@ -155,10 +110,150 @@ public class InventoryUI {
         CRAFTING_RECIPES.put("Mana Blossom", new CraftingRecipe("Mana Blossom", 2, "Arcane Essence"));
     }
 
-    String errorMessage = "";
+    public InventoryUI(GameController gameController) {
+        this.gameController = gameController;
+        this.font = generateVietNameseFont("NovaSquare-Regular.ttf", 20);
+        this.titleFont = generateVietNameseFont("NovaSquare-Regular.ttf", 28);
+        this.buttonFont = generateVietNameseFont("NovaSquare-Regular.ttf", 18);
+        this.shapeRenderer = new ShapeRenderer();
+
+        // Create projection matrix once
+        uiMatrix = new Matrix4().setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
+        // Load textures - add new textures
+        loadTextures();
+
+        // Calculate inventory bounds
+        calculateLayout();
+
+        // Initialize blur shader
+        initializeShaders();
+
+        // Preload item textures
+        preloadCommonTextures();
+    }
+
+    private void loadTextures() {
+        // Load enhanced textures with FF7 Remake inspiration
+        backgroundTexture = new Texture(Gdx.files.internal("ui/panel-1.png"));
+        panelTexture = new Texture(Gdx.files.internal("ui/panel-1.png"));
+        itemSlotTexture = new Texture(Gdx.files.internal("ui/item-slot-1.png"));
+        itemSlotSelected = new Texture(Gdx.files.internal("ui/item-slot-2.png"));
+        itemSlotHover = new Texture(Gdx.files.internal("ui/item-slot-3.png"));
+        buttonTexture = new Texture(Gdx.files.internal("ui/button.png"));
+        buttonHoverTexture = new Texture(Gdx.files.internal("ui/button_selected.png"));
+        iconTexture = new Texture(Gdx.files.internal("ui/icon2-chest.png"));
+
+        // Set texture filtering for smooth scaling
+        backgroundTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        panelTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        itemSlotTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        itemSlotSelected.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        itemSlotHover.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        buttonTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        buttonHoverTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+    }
+
+    private void calculateLayout() {
+        float screenWidth = Gdx.graphics.getWidth();
+        float screenHeight = Gdx.graphics.getHeight();
+
+        // More elegant proportions for inventory window
+        float inventoryWidth = Math.min(screenWidth * 0.8f, 900);
+        float inventoryHeight = Math.min(screenHeight * 0.8f, 600);
+
+        inventoryBounds = new Rectangle(
+                (screenWidth - inventoryWidth) / 2,
+                (screenHeight - inventoryHeight) / 2,
+                inventoryWidth,
+                inventoryHeight
+        );
+
+        // Create item slots with improved spacing
+        itemSlots = new Rectangle[MAX_SLOTS];
+        float slotAreaWidth = (SLOTS_PER_ROW * SLOT_SIZE) + ((SLOTS_PER_ROW - 1) * PADDING);
+        float startX = inventoryBounds.x + (inventoryBounds.width * 0.3f - slotAreaWidth) / 2;
+
+        for (int i = 0; i < MAX_SLOTS; i++) {
+            int row = i / SLOTS_PER_ROW;
+            int col = i % SLOTS_PER_ROW;
+
+            itemSlots[i] = new Rectangle(
+                    startX + (col * (SLOT_SIZE + PADDING)),
+                    inventoryBounds.y + inventoryHeight - SLOT_SIZE * 2 - 8 - (row * (SLOT_SIZE + PADDING)),
+                    SLOT_SIZE,
+                    SLOT_SIZE
+            );
+        }
+
+        // Create buttons with consistent sizing and placement
+        float buttonWidth = 140;
+        float buttonHeight = 45;
+        float buttonX = inventoryBounds.x + inventoryBounds.width - buttonWidth - PADDING * 2;
+        float buttonStartY = inventoryBounds.y + PADDING * 4;
+        float buttonSpacing = buttonHeight + PADDING;
+
+        discardButton = new Rectangle(buttonX, buttonStartY, buttonWidth, buttonHeight);
+        useButton = new Rectangle(buttonX, buttonStartY + buttonSpacing, buttonWidth, buttonHeight);
+        craftButton = new Rectangle(buttonX, buttonStartY + buttonSpacing * 2, buttonWidth, buttonHeight);
+
+        // Modern close button (X in corner)
+        closeButton = new Rectangle(
+                inventoryBounds.x + inventoryBounds.width - 36 - PADDING,
+                inventoryBounds.y + inventoryBounds.height - 36 - PADDING,
+                36,
+                36
+        );
+
+        // Precalculate item details position - more spacious layout
+        detailsX = inventoryBounds.x + inventoryBounds.width * 0.32f;
+        detailsY = inventoryBounds.y + inventoryBounds.height - 80;
+        detailsWidth = inventoryBounds.width * 0.65f;
+    }
+
+    private void initializeShaders() {
+        // Simple blur shader for modern UI feel
+        String vertexShader = "attribute vec4 a_position;\n"
+                + "attribute vec2 a_texCoord0;\n"
+                + "varying vec2 v_texCoord;\n"
+                + "void main() {\n"
+                + "   gl_Position = a_position;\n"
+                + "   v_texCoord = a_texCoord0;\n"
+                + "}";
+
+        String fragmentShader = "#ifdef GL_ES\n"
+                + "precision mediump float;\n"
+                + "#endif\n"
+                + "varying vec2 v_texCoord;\n"
+                + "uniform sampler2D u_texture;\n"
+                + "uniform float u_blur_radius;\n"
+                + "void main() {\n"
+                + "   vec4 color = vec4(0.0);\n"
+                + "   float blurSize = 1.0/512.0 * u_blur_radius;\n"
+                + "   for(float x = -4.0; x <= 4.0; x++) {\n"
+                + "       for(float y = -4.0; y <= 4.0; y++) {\n"
+                + "           color += texture2D(u_texture, v_texCoord + vec2(x, y) * blurSize) / 81.0;\n"
+                + "       }\n"
+                + "   }\n"
+                + "   gl_FragColor = color;\n"
+                + "}";
+
+        try {
+            blurShader = new ShaderProgram(vertexShader, fragmentShader);
+            if (!blurShader.isCompiled()) {
+                System.err.println("Shader compilation failed: " + blurShader.getLog());
+            }
+        } catch (Exception e) {
+            System.err.println("Could not load shader: " + e.getMessage());
+            blurShader = null;
+        }
+    }
 
     public void render(SpriteBatch batch) {
-        if (!visible) return;
+        if (!visible && !isClosing) return;
+
+        // Update animation state
+        updateAnimation();
 
         // Only update when inventory has changed
         if (inventoryDirty) {
@@ -174,84 +269,119 @@ public class InventoryUI {
             batch.end();
         }
 
-        // Draw background using textures
+        // Apply animation scaling/alpha
+        float scale = isOpening || isClosing ? animationState : 1.0f;
+        float alpha = isOpening || isClosing ? animationState : 1.0f;
+
+        // Setup rendering
         batch.setProjectionMatrix(uiMatrix);
         batch.begin();
 
-        // Draw main background texture
-        if (backgroundTexture != null) {
-            batch.draw(backgroundTexture,
-                    inventoryBounds.x, inventoryBounds.y,
-                    inventoryBounds.width, inventoryBounds.height);
-        } else {
-            // Fallback to ShapeRenderer if texture isn't available
-            batch.end();
-            shapeRenderer.setProjectionMatrix(uiMatrix);
-            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-            shapeRenderer.setColor(bgColor);
-            shapeRenderer.rect(inventoryBounds.x, inventoryBounds.y,
-                    inventoryBounds.width, inventoryBounds.height);
-            shapeRenderer.end();
-            batch.begin();
+        // Calculate pulsing effect for selected items
+        float pulseAmount = 0;
+        if (selectedItemIndex >= 0) {
+            long time = TimeUtils.millis();
+            pulseAmount = (float) Math.sin((time - lastPulseTime) / 400.0) * 0.1f + 0.1f;
         }
 
-        // Draw item slots using textures
+        // Draw background panel with blur effect
+        if (backgroundTexture != null) {
+            Color c = batch.getColor();
+            batch.setColor(c.r, c.g, c.b, alpha * 0.95f);
+
+            // Draw with scale animation
+            float width = inventoryBounds.width * scale;
+            float height = inventoryBounds.height * scale;
+            float x = inventoryBounds.x + (inventoryBounds.width - width) / 2;
+            float y = inventoryBounds.y + (inventoryBounds.height - height) / 2;
+
+            batch.draw(backgroundTexture, x, y, width, height);
+
+            // Draw panel dividers
+            batch.draw(panelTexture,
+                    x + inventoryBounds.width * 0.3f * scale, y,
+                    2, height);
+
+            // Draw title area
+            batch.draw(panelTexture,
+                    x, y + height - 60 * scale,
+                    width, 2);
+
+            batch.setColor(c);
+        }
+
+        // Draw inventory title
+        titleFont.setColor(titleColor.r, titleColor.g, titleColor.b, alpha);
+        titleFont.draw(batch, "INVENTORY",
+                inventoryBounds.x + 80,
+                inventoryBounds.y + inventoryBounds.height - 20);
+
+        // Draw inventory icon
+        batch.draw(iconTexture,
+                inventoryBounds.x +20,
+                inventoryBounds.y + inventoryBounds.height - 50,
+                40, 40);
+
+        // Draw item slots with hover and selection effects
         for (int i = 0; i < MAX_SLOTS; i++) {
             if (i == selectedItemIndex) {
-                // Draw highlighted slot for selected item
-                if (itemSlotSelected != null) {
-                    batch.draw(itemSlotSelected,
-                            itemSlots[i].x, itemSlots[i].y,
-                            itemSlots[i].width, itemSlots[i].height);
-                }
+                // Draw highlighted slot with pulse effect
+                float extraSize = pulseAmount * SLOT_SIZE;
+                batch.setColor(1, 1, 1, alpha);
+                batch.draw(itemSlotSelected,
+                        itemSlots[i].x - extraSize / 2, itemSlots[i].y - extraSize / 2,
+                        itemSlots[i].width + extraSize, itemSlots[i].height + extraSize);
+            } else if (i == hoveredSlotIndex) {
+                // Draw hover effect
+                batch.setColor(1, 1, 1, alpha);
+                batch.draw(itemSlotHover,
+                        itemSlots[i].x, itemSlots[i].y,
+                        itemSlots[i].width, itemSlots[i].height);
             } else {
                 // Draw normal slot
-                if (itemSlotTexture != null) {
-                    batch.draw(itemSlotTexture,
-                            itemSlots[i].x, itemSlots[i].y,
-                            itemSlots[i].width, itemSlots[i].height);
-                }
+                batch.setColor(1, 1, 1, alpha);
+                batch.draw(itemSlotTexture,
+                        itemSlots[i].x, itemSlots[i].y,
+                        itemSlots[i].width, itemSlots[i].height);
             }
         }
 
-        // Draw buttons with textures
-        // Draw buttons with textures
-        if (buttonTexture != null) {
-            // Use button texture for all buttons with hover effects
-            if (selectedItemIndex >= 0 && selectedItemIndex < itemList.size()) {
-                Items item = ItemLoader.getItemByName(itemList.get(selectedItemIndex));
-                if (item != null && !item.getItemEffect().equals("N/A") && !item.getItemEffect().equals("quest") && !item.getItemEffect().equals("debuff")) {
+        // Draw buttons with hover effects
+        if (selectedItemIndex >= 0 && selectedItemIndex < itemList.size()) {
+            Items item = ItemLoader.getItemByName(itemList.get(selectedItemIndex));
+            if (item != null) {
+                if (!item.getItemEffect().equals("N/A") && !item.getItemEffect().equals("quest") && !item.getItemEffect().equals("debuff")) {
                     // Use button
-                    batch.setColor(hoverUseButton ? buttonHoverColor : buttonColor);
-                    batch.draw(buttonTexture, useButton.x, useButton.y, useButton.width, useButton.height);
+                    drawButton(batch, useButton, "USE", hoverUseButton, alpha);
                 }
 
-                if (item != null && !item.getItemEffect().equals("N/A") && !item.getItemEffect().equals("quest")) {
+                if (!item.getItemEffect().equals("N/A") && !item.getItemEffect().equals("quest")) {
                     // Discard button
-                    batch.setColor(hoverDiscardButton ? buttonHoverColor : buttonColor);
-                    batch.draw(buttonTexture, discardButton.x, discardButton.y, discardButton.width, discardButton.height);
+                    drawButton(batch, discardButton, "DISCARD", hoverDiscardButton, alpha);
                 }
-                // Add this in the button drawing section after the discard button:
-                if (item != null && item.getItemEffect().equals("craft")) {
+
+                if (item.getItemEffect().equals("craft")) {
                     // Craft button
-                    batch.setColor(hoverCraftButton ? buttonHoverColor : buttonColor);
-                    batch.draw(buttonTexture, craftButton.x, craftButton.y, craftButton.width, craftButton.height);
-                    batch.setColor(Color.WHITE); // Reset color
+                    drawButton(batch, craftButton, "CRAFT", hoverCraftButton, alpha);
                 }
             }
-
-            // Use a red tint for the close button
-            batch.setColor(hoverCloseButton ? closeButtonHoverColor : closeButtonColor);
-            batch.draw(buttonTexture, closeButton.x, closeButton.y, closeButton.width, closeButton.height);
-            batch.setColor(Color.WHITE); // Reset color
         }
+
+        // Draw close button
+        batch.setColor(hoverCloseButton ? closeButtonHoverColor : closeButtonColor);
+        batch.draw(buttonTexture, closeButton.x, closeButton.y, closeButton.width, closeButton.height);
+
+        buttonFont.setColor(Color.WHITE);
+        buttonFont.draw(batch, "X",
+                closeButton.x + closeButton.width / 2 - 8,
+                closeButton.y + closeButton.height / 2 + 8);
 
         // Draw item icons and quantities
         Character character = gameController.getCharacter();
         Map<String, Integer> items = character.getItems();
         int index = 0;
 
-        font.setColor(Color.WHITE);
+        font.setColor(textColor.r, textColor.g, textColor.b, alpha);
         for (String itemName : itemList) {
             if (index >= MAX_SLOTS) break;
 
@@ -263,16 +393,29 @@ public class InventoryUI {
                 float centerX = itemSlots[index].x + SLOT_SIZE / 2f - itemSize / 2f;
                 float centerY = itemSlots[index].y + SLOT_SIZE / 2f - itemSize / 2f;
 
+                batch.setColor(1, 1, 1, alpha);
                 batch.draw(itemTexture, centerX, centerY, itemSize, itemSize);
 
-                // Draw quantity - Add null check here
+                // Draw quantity with improved visibility
                 Integer quantityObj = items.get(itemName);
                 if (quantityObj != null) {
                     int quantity = quantityObj.intValue();
                     if (quantity > 1) {
+                        // Draw small background circle for quantity
+                        shapeRenderer.setProjectionMatrix(uiMatrix);
+                        batch.end();
+                        Gdx.gl.glEnable(GL20.GL_BLEND);
+                        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+                        shapeRenderer.setColor(0.1f, 0.1f, 0.2f, 0.8f * alpha);
+                        shapeRenderer.circle(itemSlots[index].x + SLOT_SIZE - 16, itemSlots[index].y + 16, 12);
+                        shapeRenderer.end();
+                        batch.begin();
+
+                        // Draw quantity text
+                        font.setColor(1, 1, 1, alpha);
                         font.draw(batch, String.valueOf(quantity),
-                                itemSlots[index].x + SLOT_SIZE - 20,
-                                itemSlots[index].y + 20);
+                                itemSlots[index].x + SLOT_SIZE - 22,
+                                itemSlots[index].y + 22);
                     }
                 }
             }
@@ -285,62 +428,75 @@ public class InventoryUI {
             Items item = ItemLoader.getItemByName(itemName);
 
             if (item != null) {
-                font.draw(batch, item.getItemName(), detailsX, detailsY);
-                font.draw(batch, "Hiệu quả: " + item.getItemEffect(), detailsX, detailsY - 30);
-                font.draw(batch, "Trị số: " + item.getValue(), detailsX, detailsY - 60);
-                font.draw(batch, "Năng lượng tiêu hao: " + item.getManaCost(), detailsX, detailsY - 90);
-                font.draw(batch, item.getItemDescription(), detailsX, detailsY - 120,
-                        detailsWidth, -1, true);
-                font.draw(batch, errorMessage, inventoryBounds.x + 10, inventoryBounds.y + 80);
+                // Draw item texture larger in details panel
+                Texture itemTexture = getItemTexture(item.getItemName(), item.getTexturePath());
+                batch.setColor(1, 1, 1, alpha);
+                batch.draw(itemTexture,
+                        detailsX,
+                        detailsY - 80,
+                        80, 80);
 
+                // Draw item name and details with proper styling
+                titleFont.setColor(headingColor.r, headingColor.g, headingColor.b, alpha);
+                titleFont.draw(batch, item.getItemName(), detailsX + 90, detailsY);
+
+                font.setColor(textColor.r, textColor.g, textColor.b, alpha);
+
+                // Draw item stats with icons or visual styling
+                String itemType = item.getItemEffect().equals("N/A") ? item.getItemEffect() : "KEY ITEM";
+                drawItemStat(batch, "Effect:", itemType, detailsX + 90, detailsY - 40);
+                drawItemStat(batch, "Value:", String.valueOf(item.getValue()), detailsX + 90, detailsY - 70);
+                drawItemStat(batch, "Mana:", String.valueOf(item.getManaCost()), detailsX + 90, detailsY - 100);
+
+                // Draw description with word wrapping
+                font.draw(batch, item.getItemDescription(),
+                        detailsX + 40, detailsY - 140,
+                        detailsWidth - 40, -1, true);
+
+                // Draw error message with animation if present
+                if (!errorMessage.isEmpty()) {
+                    float errorPulse = (float) Math.sin(TimeUtils.millis() / 200.0) * 0.2f + 0.8f;
+                    font.setColor(errorColor.r, errorColor.g, errorColor.b, errorPulse * alpha);
+                    font.draw(batch, errorMessage,
+                            inventoryBounds.x + 20,
+                            inventoryBounds.y + 60);
+                }
+
+                // Draw usage instructions based on item type
+                font.setColor(accentColor.r, accentColor.g, accentColor.b, alpha * 0.9f);
                 switch (item.getItemEffect()) {
                     case "heal":
-                        font.draw(batch, "*Dùng để hồi phục máu hoặc năng lượng.", inventoryBounds.x + 10, inventoryBounds.y + 40);
+                        font.draw(batch, "*Used to restore health or mana.",
+                                detailsX, inventoryBounds.y + 40);
                         break;
                     case "buff":
-                        font.draw(batch, "*Dùng để tăng cường chỉ số nhân vật.", inventoryBounds.x + 10, inventoryBounds.y + 40);
+                        font.draw(batch, "*Used to enhance character stats.",
+                                detailsX, inventoryBounds.y + 40);
                         break;
                     case "debuff":
-                        font.draw(batch, "*Gây hiệu ứng xấu cho kẻ địch \n Chỉ dùng trong chiến đấu.", inventoryBounds.x + 10, inventoryBounds.y + 50);
+                        font.draw(batch, "*Applies negative effects to enemies\n Only usable in battle.",
+                                detailsX, inventoryBounds.y + 50);
                         break;
                     case "quest":
-                        font.draw(batch, "*Vật phẩm dùng để hoàn thành nhiệm vụ.\n Thường không sử dụng được trực tiếp.", inventoryBounds.x + 10, inventoryBounds.y + 50);
+                        font.draw(batch, "*Quest item.\n Usually cannot be used directly.",
+                                detailsX, inventoryBounds.y + 50);
                         break;
                     case "N/A":
-                        font.draw(batch, "*Vật phẩm cốt truyện.\n Không có hiệu ứng trực tiếp trong chiến đấu.", inventoryBounds.x + 10, inventoryBounds.y + 50);
+                        font.draw(batch, "*Story-related item.\n Has no direct effect in battle.",
+                                detailsX, inventoryBounds.y + 50);
                         break;
                     case "craft":
-                        font.draw(batch, "*Nguyên liệu dùng để chế tạo vật phẩm khác.", inventoryBounds.x + 10, inventoryBounds.y + 40);
+                        font.draw(batch, "*Material used to craft other items.",
+                                detailsX, inventoryBounds.y + 40);
                         CraftingRecipe recipe = CRAFTING_RECIPES.get(item.getItemName());
                         if (recipe != null) {
-                            font.draw(batch, "Chế tạo: " + recipe.ingredientCount + " " + recipe.ingredient + " → 1 " + recipe.result,
-                                    inventoryBounds.x + 10, inventoryBounds.y + 20);
+                            font.draw(batch, "Crafting: " + recipe.ingredientCount + " " + recipe.ingredient + " → 1 " + recipe.result,
+                                    detailsX, inventoryBounds.y + 20);
                         }
                         break;
-                    default:
-                        font.draw(batch, "*No specific effect.", inventoryBounds.x + 10, inventoryBounds.y + 40);
-                }
-
-                // Only show action buttons if the item has a valid effect
-                if (!item.getItemEffect().equals("N/A") && !item.getItemEffect().equals("quest") && !item.getItemEffect().equals("debuff")) {
-                    font.draw(batch, "DÙNG", useButton.x + useButton.width / 2 - 28,
-                            useButton.y + useButton.height / 2 + 7);
-                }
-
-                if (!item.getItemEffect().equals("N/A") && !item.getItemEffect().equals("quest")) {
-                    font.draw(batch, "VỨT", discardButton.x + discardButton.width / 2 - 22,
-                            discardButton.y + discardButton.height / 2 + 7);
-                }
-                if (item.getItemEffect().equals("craft")) {
-                    font.draw(batch, "CHẾ TẠO", craftButton.x + craftButton.width / 2 - 35,
-                            craftButton.y + craftButton.height / 2 + 7);
                 }
             }
         }
-
-        // Draw close button text centered
-        font.draw(batch, "X", closeButton.x + closeButton.width / 2 - 5,
-                closeButton.y + closeButton.height / 2 + 7);
 
         batch.end();
 
@@ -351,29 +507,74 @@ public class InventoryUI {
         }
     }
 
+    private final GlyphLayout layout = new GlyphLayout(); // Declare once, reuse to avoid GC
+
+    private void drawButton(SpriteBatch batch, Rectangle buttonRect, String text, boolean hovered, float alpha) {
+        Texture buttonTex = hovered ? buttonHoverTexture : buttonTexture;
+        batch.setColor(1, 1, 1, alpha);
+        batch.draw(buttonTex, buttonRect.x, buttonRect.y, buttonRect.width, buttonRect.height);
+
+        buttonFont.setColor(1, 1, 1, alpha);
+        layout.setText(buttonFont, text);
+        float textX = buttonRect.x + (buttonRect.width - layout.width) / 2f;
+        float textY = buttonRect.y + (buttonRect.height + layout.height) / 2f;
+
+        buttonFont.draw(batch, layout, textX, textY);
+    }
+
+
+    private void drawItemStat(SpriteBatch batch, String label, String value, float x, float y) {
+        font.setColor(accentColor.r, accentColor.g, accentColor.b, batch.getColor().a);
+        font.draw(batch, label, x, y);
+        font.setColor(textColor.r, textColor.g, textColor.b, batch.getColor().a);
+        font.draw(batch, value, x + 100, y);
+    }
+
+    private void updateAnimation() {
+        if (isOpening) {
+            animationState += Gdx.graphics.getDeltaTime() / ANIMATION_DURATION;
+            if (animationState >= 1.0f) {
+                animationState = 1.0f;
+                isOpening = false;
+            }
+        } else if (isClosing) {
+            animationState -= Gdx.graphics.getDeltaTime() / ANIMATION_DURATION;
+            if (animationState <= 0.0f) {
+                animationState = 0.0f;
+                isClosing = false;
+                visible = false;
+            }
+        }
+    }
+
+    public void show() {
+        visible = true;
+        selectedItemIndex = -1;
+        errorMessage = "";
+        inventoryDirty = true;
+        isOpening = true;
+        isClosing = false;
+        animationState = 0.0f;
+        lastPulseTime = TimeUtils.millis();
+    }
+
+    public void hide() {
+        isClosing = true;
+        isOpening = false;
+    }
+
+    // Remaining methods (preloadCommonTextures, getItemTexture, etc.) remain the same
+    // Only including critical methods with UI improvements
+
     private void preloadCommonTextures() {
-        // Preload commonly used item textures
         List<Items> commonItems = ItemLoader.getAllItems();
-
         Map<String, Texture> textureMap = gameController.getAssetManager().loadAllItems(commonItems);
-
         this.itemTextures.putAll(textureMap);
-
-//        if (commonItems != null) {
-//            for (Items item : commonItems) {
-//                if (item != null && item.getTexturePath() != null) {
-//                    getItemTexture(item.getTexturePath());
-//                }
-//            }
-//        }
-
-        System.out.println("Preloaded " + itemTextures.size() + " item textures.");
     }
 
     private Texture getItemTexture(String name, String texturePath) {
         if (!itemTextures.containsKey(name)) {
-            System.out.println("Loading texture for item: " + name + " from path: " + texturePath);
-            itemTextures.put(texturePath, new Texture(Gdx.files.internal(texturePath)));
+            itemTextures.put(name, new Texture(Gdx.files.internal(texturePath)));
         }
         return itemTextures.get(name);
     }
@@ -382,7 +583,6 @@ public class InventoryUI {
         itemList.clear();
         Character character = gameController.getCharacter();
         if (character.getItems() != null) {
-            // Only add items that have a quantity > 0
             for (Map.Entry<String, Integer> entry : character.getItems().entrySet()) {
                 if (entry.getValue() != null && entry.getValue() > 0) {
                     itemList.add(entry.getKey());
@@ -392,7 +592,7 @@ public class InventoryUI {
     }
 
     public boolean handleClick(int screenX, int screenY) {
-        if (!visible) return false;
+        if (!visible || isClosing) return false;
 
         float uiY = Gdx.graphics.getHeight() - screenY;
 
@@ -401,7 +601,7 @@ public class InventoryUI {
         }
 
         if (closeButton.contains(screenX, uiY)) {
-            visible = false;
+            hide();
             return true;
         }
 
@@ -409,6 +609,7 @@ public class InventoryUI {
         for (int i = 0; i < itemCount; i++) {
             if (itemSlots[i].contains(screenX, uiY)) {
                 selectedItemIndex = i;
+                lastPulseTime = TimeUtils.millis();
                 return true;
             }
         }
@@ -444,58 +645,6 @@ public class InventoryUI {
         return true;
     }
 
-    private void craftSelectedItem() {
-        if (selectedItemIndex < 0 || selectedItemIndex >= itemList.size()) return;
-
-        String itemName = itemList.get(selectedItemIndex);
-        Items item = ItemLoader.getItemByName(itemName);
-
-        if (item != null && item.getItemEffect().equals("craft")) {
-            CraftingRecipe recipe = CRAFTING_RECIPES.get(itemName);
-            if (recipe != null) {
-                Character character = gameController.getCharacter();
-
-                // Check if player has enough ingredients
-                if (character.getItemCount(recipe.ingredient) >= recipe.ingredientCount) {
-                    try {
-                        // Remove ingredients
-                        Items ingredientItem = ItemLoader.getItemByName(recipe.ingredient);
-
-                        if (ingredientItem != null) {
-//                            for (int i = 0; i < recipe.ingredientCount; i++) {
-//                                character.deleteItem(ingredientItem);  // Delete the ingredient
-//                            }
-
-                            // Add crafted item
-                            Items craftedItem = ItemLoader.getItemByName(recipe.result);
-                            if (craftedItem != null) {
-                                character.addItem(craftedItem, 1);
-                                character.descreaseItemAmount(ingredientItem.getItemName(), recipe.ingredientCount);  // Delete the ingredient
-
-                                errorMessage = "Đã chế tạo thành công " + recipe.result + "!";
-                            }
-                        }
-
-                        inventoryDirty = true;
-                    } catch (Exception e) {
-                        errorMessage = "Lỗi khi chế tạo: " + e.getMessage();
-                    }
-                } else {
-                    errorMessage = "Cần " + recipe.ingredientCount + " " + recipe.ingredient + " để chế tạo!";
-                }
-            }
-        }
-    }
-
-    // Button hover states
-    private boolean hoverUseButton = false;
-    private boolean hoverDiscardButton = false;
-    private boolean hoverCloseButton = false;
-
-    // Hover colors
-    private final Color buttonHoverColor = new Color(0.5f, 0.5f, 0.5f, 1f);
-    private final Color closeButtonHoverColor = new Color(0.8f, 0.4f, 0.4f, 1f);
-
     public boolean handleMouseMove(int screenX, int screenY) {
         if (!visible) return false;
 
@@ -505,12 +654,21 @@ public class InventoryUI {
         hoverDiscardButton = false;
         hoverCloseButton = false;
         hoverCraftButton = false;
+        hoveredSlotIndex = -1;
 
         if (!inventoryBounds.contains(screenX, uiY)) {
             return false;
         }
 
         hoverCloseButton = closeButton.contains(screenX, uiY);
+
+        // Check for hovering over item slots
+        for (int i = 0; i < Math.min(MAX_SLOTS, itemList.size()); i++) {
+            if (itemSlots[i].contains(screenX, uiY)) {
+                hoveredSlotIndex = i;
+                break;
+            }
+        }
 
         if (selectedItemIndex >= 0 && selectedItemIndex < itemList.size()) {
             String itemName = itemList.get(selectedItemIndex);
@@ -543,15 +701,12 @@ public class InventoryUI {
         if (item != null) {
             try {
                 gameController.getCharacter().useItem(item);
-                // If item was fully consumed, reset selection
                 if (!gameController.getCharacter().hasItem(itemName)) {
                     selectedItemIndex = -1;
                 }
-                // Mark inventory as dirty since items changed
                 inventoryDirty = true;
-            } catch (IllegalStateException e) {
-                errorMessage = e.getMessage();
-            } catch (IllegalArgumentException e) {
+                errorMessage = "";
+            } catch (IllegalStateException | IllegalArgumentException e) {
                 errorMessage = e.getMessage();
             }
         }
@@ -566,24 +721,48 @@ public class InventoryUI {
         if (item != null) {
             gameController.getCharacter().deleteItem(item);
             selectedItemIndex = -1;
-            // Mark inventory as dirty since items changed
             inventoryDirty = true;
+            errorMessage = "";
         }
     }
 
-    public void show() {
-        visible = true;
-        selectedItemIndex = -1;
-        errorMessage = "";
-        inventoryDirty = true;
-    }
+    private void craftSelectedItem() {
+        if (selectedItemIndex < 0 || selectedItemIndex >= itemList.size()) return;
 
-    public void hide() {
-        visible = false;
+        String itemName = itemList.get(selectedItemIndex);
+        Items item = ItemLoader.getItemByName(itemName);
+
+        if (item != null && item.getItemEffect().equals("craft")) {
+            CraftingRecipe recipe = CRAFTING_RECIPES.get(itemName);
+            if (recipe != null) {
+                Character character = gameController.getCharacter();
+
+                if (character.getItemCount(recipe.ingredient) >= recipe.ingredientCount) {
+                    try {
+                        Items ingredientItem = ItemLoader.getItemByName(recipe.ingredient);
+
+                        if (ingredientItem != null) {
+                            Items craftedItem = ItemLoader.getItemByName(recipe.result);
+                            if (craftedItem != null) {
+                                character.addItem(craftedItem, 1);
+                                character.descreaseItemAmount(ingredientItem.getItemName(), recipe.ingredientCount);
+
+                                errorMessage = "Đã chế tạo thành công " + recipe.result + "!";
+                            }
+                        }
+                        inventoryDirty = true;
+                    } catch (Exception e) {
+                        errorMessage = "Lỗi khi chế tạo: " + e.getMessage();
+                    }
+                } else {
+                    errorMessage = "Cần " + recipe.ingredientCount + " " + recipe.ingredient + " để chế tạo!";
+                }
+            }
+        }
     }
 
     public boolean isVisible() {
-        return visible;
+        return visible || isOpening || isClosing;
     }
 
     public void notifyItemsChanged() {
@@ -591,40 +770,29 @@ public class InventoryUI {
     }
 
     public void onWindowResize() {
-        // Update projection matrix
         uiMatrix = new Matrix4().setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-
-        // Recalculate UI positions
-        float screenWidth = Gdx.graphics.getWidth();
-        float screenHeight = Gdx.graphics.getHeight();
-        float inventoryWidth = (SLOTS_PER_ROW * SLOT_SIZE) + ((SLOTS_PER_ROW + 1) * PADDING) + 200;
-        float inventoryHeight = ((MAX_SLOTS / SLOTS_PER_ROW) * SLOT_SIZE) + (((MAX_SLOTS / SLOTS_PER_ROW) + 1) * PADDING) + 100;
-
-        inventoryBounds.set(
-                (screenWidth - inventoryWidth) / 2,
-                (screenHeight - inventoryHeight) / 2,
-                inventoryWidth,
-                inventoryHeight
-        );
-
-        // Update cached positions
-        detailsX = inventoryBounds.x + (SLOTS_PER_ROW * (SLOT_SIZE + PADDING)) + PADDING * 2;
-        detailsY = inventoryBounds.y + inventoryBounds.height - PADDING * 3;
-        detailsWidth = inventoryBounds.width - detailsX + inventoryBounds.x - PADDING * 2;
+        calculateLayout();
     }
 
     public void dispose() {
         if (backgroundTexture != null) backgroundTexture.dispose();
+        if (panelTexture != null) panelTexture.dispose();
         if (itemSlotTexture != null) itemSlotTexture.dispose();
         if (itemSlotSelected != null) itemSlotSelected.dispose();
+        if (itemSlotHover != null) itemSlotHover.dispose();
+        if (buttonTexture != null) buttonTexture.dispose();
+        if (buttonHoverTexture != null) buttonHoverTexture.dispose();
+        if (iconTexture != null) iconTexture.dispose();
 
-        // Dispose all cached item textures
         for (Texture texture : itemTextures.values()) {
             if (texture != null) texture.dispose();
         }
         itemTextures.clear();
 
         if (font != null) font.dispose();
+        if (titleFont != null) titleFont.dispose();
+        if (buttonFont != null) buttonFont.dispose();
         if (shapeRenderer != null) shapeRenderer.dispose();
+        if (blurShader != null) blurShader.dispose();
     }
 }

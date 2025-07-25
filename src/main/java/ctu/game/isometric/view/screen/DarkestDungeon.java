@@ -1090,15 +1090,15 @@ public class DarkestDungeon implements Screen {
                 return;
             case 3: // Heal
                 playerMana -= 10;
-                int heal = MathUtils.random(15, 25);
+                int heal = (int)(playerMaxHP * 0.2f);
                 playerHP = Math.min(playerMaxHP, playerHP + heal);
                 combatLog = "Bạn hồi phục" + heal + " sinh lực!";
                 showDamageNumber(heal, false, true);
                 break;
             case 4: // Defend
-                playerMana = Math.min(playerMaxMana, playerMana + 3);
-                playerDEF += 2;
-                combatLog = "Bạn phòng thủ và hồi phục 3 mana! Phòng thủ tăng lên!";
+                playerMana = Math.min(playerMaxMana, playerMana + 5);
+                playerDEF += 3;
+                combatLog = "Bạn phòng thủ và hồi phục 5 mana! Phòng thủ tăng lên!";
                 break;
         }
     }

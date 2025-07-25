@@ -711,13 +711,8 @@ public class Character {
 //            (0, -1) → "left" (West)
             direction = "left_down";
         }
-        System.out.println("Direction updated to: " + direction);
     }
 
-
-    public void interactNPC(String npcId) {
-
-    }
 
     public void updateAchievements(Achievement.AchievementType type, int value) {
         if (type == null) {
@@ -731,6 +726,7 @@ public class Character {
         // Find existing achievements of the same type
         for (Achievement existingAchievement : achievements) {
             if (existingAchievement.getType() == type) {
+                System.out.println("Updating achievement: " + existingAchievement.getId() + " with value: " + value);
                 if (existingAchievement.isUnlocked()) {
                     continue;
                 }

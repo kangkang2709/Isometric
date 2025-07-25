@@ -24,9 +24,7 @@ import java.util.Map;
 import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
 
 public class AchievementUI {
-    private final GameController gameController;
     private final AchievementManager achievementManager;
-    private final Character character;
 
     private boolean active;
     private Viewport viewport;
@@ -41,20 +39,18 @@ public class AchievementUI {
     private int currentPage = 0;
     private static final int ACHIEVEMENTS_PER_PAGE = 5;
 
-    public AchievementUI(GameController gameController) {
-        this.gameController = gameController;
-        this.achievementManager = gameController.getAchievementManager();
-        this.character = gameController.getCharacter();
+    public AchievementUI(AchievementManager achievementManager, BitmapFont titleFont, BitmapFont regularFont) {
+        this.achievementManager = achievementManager;
+
+        this.titleFont = titleFont;
+        this.regularFont = regularFont;
 
         initializeUI();
     }
 
     private void initializeUI() {
         viewport = new FitViewport(1280, 720);
-        titleFont = generateVietNameseFont("Tektur-Bold.ttf", 24);
-        regularFont = generateVietNameseFont("Tektur-Bold.ttf", 16);
         layout = new GlyphLayout();
-
         // Create white texture for drawing colored rectangles
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pixmap.setColor(Color.WHITE);
@@ -63,12 +59,20 @@ public class AchievementUI {
         pixmap.dispose();
 
         // Load UI textures
-        panelTexture = new Texture(Gdx.files.internal("ui/message_box.png"));
-        closeButtonTexture = new Texture(Gdx.files.internal("ui/close_button.png"));
+        panelTexture = new Texture(Gdx.files.internal("ui/panel-1.png"));
+        closeButtonTexture = new Texture(Gdx.files.internal("ui/icon2-exit.png"));
 
+        panelX = (viewport.getWorldWidth() - panelWidth) / 2;
+        panelY = (viewport.getWorldHeight() - panelHeight) / 2;
         // Initialize close button
-        closeButtonRect = new Rectangle(1180, 620, 50, 50);
+        closeButtonRect = new Rectangle(panelX + panelWidth - 30, panelY + panelHeight - 30, 30, 30);
     }
+
+    private float panelX = 0;
+    private float panelY = 0;
+    float panelWidth = 800;
+    float panelHeight = 600;
+
 
     public void render(SpriteBatch batch) {
         if (!active) return;
@@ -86,15 +90,9 @@ public class AchievementUI {
         }
 
         try {
-            // Draw semi-transparent background
-            batch.setColor(0f, 0f, 0f, 0.7f);
-            batch.draw(whiteTexture, 0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
 
             // Draw achievements panel
-            float panelWidth = 800;
-            float panelHeight = 600;
-            float panelX = (viewport.getWorldWidth() - panelWidth) / 2;
-            float panelY = (viewport.getWorldHeight() - panelHeight) / 2;
+
 
             batch.setColor(Color.WHITE);
             batch.draw(panelTexture, panelX - 20, panelY - 20, panelWidth + 40, panelHeight + 40);
@@ -139,9 +137,9 @@ public class AchievementUI {
 
                 // Draw achievement background with different colors based on unlock status
                 if (achievement.isUnlocked()) {
-                    batch.setColor(0.2f, 0.4f, 0.2f, 0.8f);  // Green tint for unlocked
+                    batch.setColor(0.2f, 0.4f, 0.2f, 0.6f);  // Green tint for unlocked
                 } else {
-                    batch.setColor(0.2f, 0.2f, 0.4f, 0.8f);  // Blue tint for locked
+                    batch.setColor(0.2f, 0.2f, 0.4f, 0.5f);  // Blue tint for locked
                 }
                 batch.draw(whiteTexture, startX, achY, achievementWidth, achievementHeight - 10);
 
@@ -188,7 +186,7 @@ public class AchievementUI {
 
                     // More descriptive progress text based on type
                     String progressDesc = "Tiến độ: ";
-                    String progressText = progressDesc + achievement.getCurrentValue() + " / " + achievement.getTargetValue();
+                    String progressText = progressDesc + achievement.getCurrentValue() + "  /  " + achievement.getTargetValue();
                     regularFont.setColor(Color.WHITE);
                     regularFont.draw(batch, progressText, progressX + 470, progressY + 25);
                 }
@@ -359,8 +357,6 @@ public class AchievementUI {
         whiteTexture.dispose();
         panelTexture.dispose();
         closeButtonTexture.dispose();
-        regularFont.dispose();
-        titleFont.dispose();
         for (Texture texture : iconCache.values()) {
             texture.dispose();
         }

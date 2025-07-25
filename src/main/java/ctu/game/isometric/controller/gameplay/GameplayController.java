@@ -1182,6 +1182,7 @@ public class GameplayController {
                     gameController.addFlag("crystal_serpent_boss_defeated");
                     break;
                 case "Sapphire Dragon Boss":
+                    System.out.println("Defeated Sapphire Dragon Boss");
                     achievementManager.updateProgress(Achievement.AchievementType.ENEMY_WIN_2, 1);
                     gameController.addFlag("sapphire_dragon_boss_defeated");
                     break;

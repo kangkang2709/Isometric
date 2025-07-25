@@ -13,9 +13,7 @@ import java.util.Set;
 public class AchievementManager implements Disposable {
     private ObjectMap<String, Achievement> achievements;
     private Array<Achievement> recentlyUnlocked;
-    private boolean hasNewAchievements;
     private GameController gameController;
-    private final String SAVE_FILE = "achievements.json";
 
 
     public AchievementManager(GameController gameController) {
@@ -78,20 +76,6 @@ public class AchievementManager implements Disposable {
                 gameController.getCharacter().updateAchievements(type, value);
     }
 
-    public void checkEnemyDefeat(String enemyName) {
-        for (Achievement achievement : achievements.values()) {
-            if (achievement.getType() == Achievement.AchievementType.ENEMY_DEFEAT &&
-                    enemyName.equals(achievement.getTargetEnemy()) &&
-                    !achievement.isUnlocked()) {
-
-                achievement.updateProgress(1);
-                if (achievement.isUnlocked()) {
-                    recentlyUnlocked.add(achievement);
-                    hasNewAchievements = true;
-                }
-            }
-        }
-    }
 
 
     @Override

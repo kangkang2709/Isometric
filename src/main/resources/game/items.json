@@ -2,7 +2,7 @@
   {
     "itemID": 1,
     "itemName": "Elixir",
-    "itemDescription": "Hồi phục 20 HP.",
+    "itemDescription": "Restores 20 HP.",
     "texturePath": "game/items/elixir.png",
     "itemEffect": "heal",
     "value": 20.0,
@@ -12,7 +12,7 @@
   {
     "itemID": 2,
     "itemName": "Arcane Essence",
-    "itemDescription": "Hồi phục 20 Mana.",
+    "itemDescription": "Restores 20 Mana.",
     "texturePath": "game/items/arcane_essence.png",
     "itemEffect": "heal",
     "value": 20.0,
@@ -22,7 +22,7 @@
   {
     "itemID": 3,
     "itemName": "Draught of Fury",
-    "itemDescription": "Tăng chỉ số tấn công thêm 5 vĩnh viễn và 8 khi trong trận chiến.",
+    "itemDescription": "Permanently increases attack by 5 and temporarily by 8 in battle.",
     "texturePath": "game/items/draught_of_fury.png",
     "itemEffect": "buff",
     "value": 5.0,
@@ -32,7 +32,7 @@
   {
     "itemID": 4,
     "itemName": "Aegis Brew",
-    "itemDescription": "Tăng chỉ số phòng thủ thêm 5 vĩnh viễn và 8 khi trong trận chiến..",
+    "itemDescription": "Permanently increases defense by 5 and temporarily by 8 in battle.",
     "texturePath": "game/items/aegis_brew.png",
     "itemEffect": "buff",
     "value": 5.0,
@@ -42,7 +42,7 @@
   {
     "itemID": 5,
     "itemName": "Book of Returned",
-    "itemDescription": "Vật phẩm rơi ra từ Arzok s dùng để hoàn thành nghi thức quay về thế giới cũ.",
+    "itemDescription": "Dropped by Arzok, used to complete the ritual to return to the old world.",
     "texturePath": "game/items/book_of_returned.png",
     "itemEffect": "N/A",
     "value": 0.0,
@@ -52,7 +52,7 @@
   {
     "itemID": 6,
     "itemName": "Grimoire of Trials I",
-    "itemDescription": "Mở khóa mini-game 1 sau khi trò chuyện với người dân trong thư viện.",
+    "itemDescription": "Volume 1 magic book, can be handed over to the Library staff to join the mini-game.",
     "texturePath": "game/items/grimoire_trials_1.png",
     "itemEffect": "N/A",
     "value": 0.0,
@@ -62,7 +62,7 @@
   {
     "itemID": 7,
     "itemName": "Grimoire of Trials II",
-    "itemDescription": "Mở khóa mini-game 2 sau khi trò chuyện với người dân trong thư viện..",
+    "itemDescription": "Volume 2 magic book, can be handed over to the Library staff to join the mini-game.",
     "texturePath": "game/items/grimoire_trials_2.png",
     "itemEffect": "N/A",
     "value": 0.0,
@@ -72,7 +72,7 @@
   {
     "itemID": 8,
     "itemName": "Ruby Omega",
-    "itemDescription": "Dùng tại Cổng Dịch Chuyển để đến lăng mộ Ký Ức.",
+    "itemDescription": "Concept Gem. Use at -Teleport Gate- to reach the Tomb of Memories.",
     "texturePath": "game/items/ruby_omega.png",
     "itemEffect": "N/A",
     "value": 0.0,
@@ -81,8 +81,8 @@
   },
   {
     "itemID": 9,
-    "itemName": "Saphire Alpha",
-    "itemDescription": "Dùng tại Cổng Dịch Chuyển để đến bên bờ Hồ.",
+    "itemName": "Sapphire Alpha",
+    "itemDescription": "Charting Gem. Use at -Teleport Gate- to reach the lakeside.",
     "texturePath": "game/items/saphire_alpha.png",
     "itemEffect": "N/A",
     "value": 0.0,
@@ -91,8 +91,8 @@
   },
   {
     "itemID": 10,
-    "itemName": "Emeral Delta",
-    "itemDescription": "Dùng tại Cổng Dịch Chuyển để đến hầm gốc cây thế giới thụ Yggdrasil.",
+    "itemName": "Emerald Delta",
+    "itemDescription": "Flowing Gem. Use at -Teleport Gate- to reach the roots of the world tree Yggdrasil.",
     "texturePath": "game/items/emeral_delta.png",
     "itemEffect": "N/A",
     "value": 0.0,
@@ -102,7 +102,7 @@
   {
     "itemID": 11,
     "itemName": "Healing Herb",
-    "itemDescription": "Nguyên liệu chế tạo Elixir hoặc dùng cho nhiệm vụ.",
+    "itemDescription": "Material for crafting Elixir or used in quests.",
     "texturePath": "game/items/healing_herb.png",
     "itemEffect": "craft",
     "value": 0.0,
@@ -112,7 +112,7 @@
   {
     "itemID": 12,
     "itemName": "Mana Blossom",
-    "itemDescription": "Nguyên liệu chế tạo Arcane Essence hoặc dùng cho nhiệm vụ.",
+    "itemDescription": "Material for crafting Arcane Essence or used in quests.",
     "texturePath": "game/items/mana_blossom.png",
     "itemEffect": "craft",
     "value": 0.0,
@@ -122,7 +122,7 @@
   {
     "itemID": 13,
     "itemName": "Enchanted Stone",
-    "itemDescription": "Đá ma thuật – nguyên liệu dùng cho nhiệm vụ, nhận được khi đánh bại quái vật.",
+    "itemDescription": "Magical stone – a quest material dropped by monsters.",
     "texturePath": "game/items/enchanted_stone.png",
     "itemEffect": "quest",
     "value": 0.0,
@@ -132,7 +132,7 @@
   {
     "itemID": 14,
     "itemName": "Beast Flesh",
-    "itemDescription": "Thịt quái vật – nguyên liệu dùng cho nhiệm vụ, nhận được khi đánh bại quái vật.",
+    "itemDescription": "Monster meat – a quest material dropped by monsters.",
     "texturePath": "game/items/beast_flesh.png",
     "itemEffect": "quest",
     "value": 0.0,
@@ -142,7 +142,7 @@
   {
     "itemID": 15,
     "itemName": "Hide of the Fallen",
-    "itemDescription": "Da quái vật – nguyên liệu dùng cho nhiệm vụ, nhận được khi đánh bại quái vật.",
+    "itemDescription": "Monster hide – a quest material dropped by monsters.",
     "texturePath": "game/items/hide_of_the_fallen.png",
     "itemEffect": "quest",
     "value": 0.0,
@@ -152,17 +152,17 @@
   {
     "itemID": 16,
     "itemName": "Toxic Potion",
-    "itemDescription": "Gây 20 sát thương cho kẻ địch",
+    "itemDescription": "Deals 20 damage to an enemy.",
     "texturePath": "game/items/toxic_potion.png",
     "itemEffect": "debuff",
     "value": 20.0,
-    "itemPrice": 300,
+    "itemPrice": 250,
     "manaCost": 10.0
   },
   {
     "itemID": 17,
     "itemName": "CCCD",
-    "itemDescription": "Chứng nhận thân phận của bạn với thế giới này.",
+    "itemDescription": "Your personal identification in this world.",
     "texturePath": "game/items/CCCD.png",
     "itemEffect": "N/A",
     "value": 0.0,
@@ -172,7 +172,7 @@
   {
     "itemID": 18,
     "itemName": "Big Elixir",
-    "itemDescription": "Hồi phục 40 HP.",
+    "itemDescription": "Restores 40 HP.",
     "texturePath": "game/items/elixir2.png",
     "itemEffect": "heal",
     "value": 40.0,
@@ -182,7 +182,7 @@
   {
     "itemID": 19,
     "itemName": "Big Arcane Essence",
-    "itemDescription": "Hồi phục 40 Mana.",
+    "itemDescription": "Restores 40 Mana.",
     "texturePath": "game/items/arcane_essence2.png",
     "itemEffect": "heal",
     "value": 40.0,

@@ -447,6 +447,9 @@ public class CharacterInfoDisplay {
         titleFont.setColor(PRIMARY_BLUE);
         titleFont.draw(batch, headerText, textX, textY);
 
+        titleFont.setColor(Color.YELLOW);
+        titleFont.draw(batch, "GOLD: " + character.getScore(), mainPanel.x + mainPanel.width - 200, textY);
+
         // Character class/job
         statFont.setColor(HIGHLIGHT);
         String classText = "Adventurer";  // Replace with actual character class if available

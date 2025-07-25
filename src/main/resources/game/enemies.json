@@ -2,7 +2,7 @@
   {
     "enemyID": 1,
     "enemyName": "Feral Fungus",
-    "enemyDescription": "Kẻ địch cấp thấp, di chuyển chậm nhưng dai dẳng.",
+    "enemyDescription": "Low-level enemy, moves slowly but persistently.",
     "texturePath": "enemies/mushroom.png",
     "health": 10,
     "attackPower": 2,
@@ -12,7 +12,7 @@
   {
     "enemyID": 2,
     "enemyName": "Twisted Tree",
-    "enemyDescription": "Thực vật đột biến, khả năng phòng thủ cao.",
+    "enemyDescription": "Mutated plant with high defense capabilities.",
     "texturePath": "enemies/tree.png",
     "health": 16,
     "attackPower": 1,
@@ -22,7 +22,7 @@
   {
     "enemyID": 3,
     "enemyName": "Leonine Beast",
-    "enemyDescription": "Thú dữ hoang dã, tấn công mạnh nhưng dễ bị tổn thương.",
+    "enemyDescription": "Wild feral beast, strong attacks but vulnerable.",
     "texturePath": "enemies/beast.png",
     "health": 11,
     "attackPower": 4,
@@ -32,7 +32,7 @@
   {
     "enemyID": 4,
     "enemyName": "Armored Snake",
-    "enemyDescription": "Sinh vật có lớp da dày, chống chịu khá tốt.",
+    "enemyDescription": "Creature with thick skin, fairly resistant.",
     "texturePath": "enemies/snake.png",
     "health": 10,
     "attackPower": 3,
@@ -42,7 +42,7 @@
   {
     "enemyID": 5,
     "enemyName": "Goblin Brute",
-    "enemyDescription": "Goblin khổng lồ, dùng sức mạnh cơ bắp để chiến đấu.",
+    "enemyDescription": "Giant goblin, fights using brute strength.",
     "texturePath": "enemies/goblin.png",
     "health": 12,
     "attackPower": 4,
@@ -52,7 +52,7 @@
   {
     "enemyID": 6,
     "enemyName": "Crystal Serpent Boss",
-    "enemyDescription": "Mini-Boss – Canh giữ Hồng Ngọc, Linh hồn cổ đại làm giảm số lượng ký tự.",
+    "enemyDescription": "Mini-Boss – Guardian of the Ruby, an ancient soul that reduces character count.",
     "texturePath": "enemies/stone.png",
     "health": 30,
     "attackPower": 8,
@@ -62,9 +62,9 @@
   {
     "enemyID": 7,
     "enemyName": "Sapphire Dragon Boss",
-    "enemyDescription": "Mini-Boss – Canh giữ Lam Ngọc, Con rồng có khả năng hồi phục liên tục bởi ngọn lửa và không thể bị bỏng nhưng dễ bị trúng độc.",
+    "enemyDescription": "Mini-Boss – Guardian of the Sapphire, a dragon that constantly regenerates from flame, immune to burn but vulnerable to poison.",
     "texturePath": "enemies/dragon.png",
-    "health": 28,
+    "health": 1,
     "attackPower": 7,
     "defensePower": 4,
     "rewardId": 8
@@ -72,7 +72,7 @@
   {
     "enemyID": 8,
     "enemyName": "Emerald Revenant Boss",
-    "enemyDescription": "Mini-Boss – Bảo vệ Lục Ngọc, Linh hồn có thể làm biến mất một số ký tự trong từ vựng và không thể bị độc.",
+    "enemyDescription": "Mini-Boss – Protector of the Emerald, a spirit that can make some vocabulary characters disappear and is immune to poison.",
     "texturePath": "enemies/undead.png",
     "health": 23,
     "attackPower": 5,
@@ -82,7 +82,7 @@
   {
     "enemyID": 9,
     "enemyName": "Demon Lord Azrok",
-    "enemyDescription": "Final Boss – Điều khiển bóng tối ngôn từ. Miễn nhiễm với sát thương dưới 15, và gây phản độc hoặc bỏng.",
+    "enemyDescription": "Final Boss – Master of the linguistic shadows. Immune to damage under 15, inflicts poison or burn backlash.",
     "texturePath": "enemies/demon_king.png",
     "health": 60,
     "attackPower": 15,

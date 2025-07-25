@@ -1,4 +1,5 @@
 package ctu.game.isometric.view.view;
+
 import com.badlogic.gdx.Gdx;
 import ctu.game.isometric.model.entity.Character;
 import com.badlogic.gdx.graphics.Color;
@@ -34,11 +35,11 @@ class SkillsTabContent {
     };
 
     private String[] skillDescriptions = {
-            "Đòn tấn công cơ bản gây sát thương vật lý",
-            "Niệm một từ từ từ điển của bạn\nGây sát thương dựa trên điểm số của từ",
-            "Tự gõ một từ thủ công\nTừ không hợp lệ sẽ gây sát thương cho bạn!",
-            "Hồi phục điểm máu\nTốn 10 năng lượng",
-            "Tăng phòng thủ và hồi năng lượng\nKhông tốn mana"
+            "Basic physical damage based on your attack power",
+            "Magical damage based on dictionary word point value",
+            "Damage based on manually typed word, invalid words damage you",
+            "Restores 20% of your max HP, costs 10 MP",
+            "Increases 3 defense, recovers 5 MP"
     };
 
     private int selectedSkill = -1;
@@ -111,10 +112,13 @@ class SkillsTabContent {
         this.character = character;
     }
 
+
+    GlyphLayout gyphLayout = new GlyphLayout();
+
     public void render(SpriteBatch batch, Rectangle bounds) {
         // Draw section title
         titleFont.setColor(HEADER_COLOR);
-        titleFont.draw(batch, "SKILLS", bounds.x + 30, bounds.y + bounds.height-10);
+        titleFont.draw(batch, "SKILLS", bounds.x + 30, bounds.y + bounds.height - 10);
 
         float contentStartY = bounds.y + bounds.height - 40;
         float padding = 15;
@@ -154,6 +158,8 @@ class SkillsTabContent {
 
             // Draw skill name
             font.setColor(HEADER_COLOR);
+
+            gyphLayout.setText(font, skillNames[i]);
             font.draw(batch, skillNames[i], textX, rowY + iconSize - 5);
 
             // Draw skill description (shorter version)
@@ -167,7 +173,8 @@ class SkillsTabContent {
             // Draw skill cost/effect info
             font.setColor(Color.LIGHT_GRAY);
             String costInfo = getSkillCostInfo(i);
-            font.draw(batch, costInfo, textX, rowY + iconSize - 45);
+            font.draw(batch, "(" + costInfo + ")", textX + gyphLayout.width + 10, rowY + iconSize - 5);
+            gyphLayout.reset();
         }
 
         // Draw detailed info for selected skill at bottom if there is one
@@ -175,16 +182,25 @@ class SkillsTabContent {
             drawDetailedSkillInfo(batch, bounds, selectedSkill);
         }
     }
+
     private String getSkillCostInfo(int skillIndex) {
-        switch(skillIndex) {
-            case 0: return "Cost: None";
-            case 1: return "Cost: 5 MP";
-            case 2: return "Cost: None";
-            case 3: return "Cost: 10 MP";
-            case 4: return "Cost: None";
-            default: return "";
+        switch (skillIndex) {
+            case 0:
+                return "Cost: None";
+            case 1:
+                return "Cost: 5 MP";
+            case 2:
+                return "Cost: None";
+            case 3:
+                return "Cost: 10 MP";
+            case 4:
+                return "Cost: None";
+            default:
+                return "";
         }
-    }private void drawDetailedSkillInfo(SpriteBatch batch, Rectangle bounds, int skillIndex) {
+    }
+
+    private void drawDetailedSkillInfo(SpriteBatch batch, Rectangle bounds, int skillIndex) {
         float padding = 15;
         float infoHeight = 100;
         float infoY = bounds.y + padding;
@@ -216,13 +232,19 @@ class SkillsTabContent {
     }
 
     private String getSkillEffectDetails(int skillIndex) {
-        switch(skillIndex) {
-            case 0: return "Effect: Basic physical damage based on your attack power";
-            case 1: return "Effect: Magical damage based on dictionary word point value";
-            case 2: return "Effect: Damage based on manually typed word, invalid words damage you";
-            case 3: return "Effect: Restores 20% of your max HP, costs 10 MP";
-            case 4: return "Effect: Increases defense by 50% for 2 turns, recovers 5 MP";
-            default: return "";
+        switch (skillIndex) {
+            case 0:
+                return "Effect: Basic physical damage based on your attack power";
+            case 1:
+                return "Effect: Magical damage based on dictionary word point value";
+            case 2:
+                return "Effect: Damage based on manually typed word, invalid words damage you";
+            case 3:
+                return "Effect: Restores 20% of your max HP, costs 10 MP";
+            case 4:
+                return "Effect: Increases defense by 50% for 2 turns, recovers 5 MP";
+            default:
+                return "";
         }
     }
 

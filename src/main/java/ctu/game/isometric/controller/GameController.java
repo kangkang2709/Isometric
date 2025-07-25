@@ -159,11 +159,12 @@ public class GameController {
 
     BitmapFont font;
     BitmapFont titleFont;
-
+    BitmapFont regularFont;
     public GameController(IsometricGame game) {
         this.game = game;
         this.font = generateVietNameseFont("GrenzeGotisch.ttf", 35);
         this.titleFont = generateVietNameseFont("GrenzeGotisch.ttf", 50);
+        this.regularFont = generateVietNameseFont("Roboto-Black.ttf", 16);
 
         this.map = new IsometricMap();
         this.eventManager = new EventManager(map, "board");
@@ -216,7 +217,7 @@ public class GameController {
         inputController.setEffectManager(effectManager);
 
         achievementManager = new AchievementManager(this);
-        achievementUI = new AchievementUI(this);
+        achievementUI = new AchievementUI(achievementManager,font, regularFont);
         this.currentPlayTime = new Date();
 
         // Initialize the level up notification
