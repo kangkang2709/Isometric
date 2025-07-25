@@ -30,9 +30,9 @@ import java.util.List;
 
 public class GameplayController {
     // Core constants
-    private static final float ENEMY_TURN_DELAY = 1.2f;
+    private static final float ENEMY_TURN_DELAY = 2.5f;
     private static final float COMBAT_TIME_LIMIT = 300f;
-    private static final int MAX_COMBAT_LOG_LINES = 20;
+    private static final int MAX_COMBAT_LOG_LINES = 40;
     // Core components
     private final GameController gameController;
     private final LetterGrid letterGrid;
@@ -157,6 +157,7 @@ public class GameplayController {
         if (!active) return;
         cardAnimationManager.update(delta);
 
+
         // Update floating texts
         floatingTexts.removeIf(text -> {
             text.update(delta);
@@ -172,6 +173,7 @@ public class GameplayController {
         if (isCombatMode) {
             updateCombat(delta);
             renderer.updateFlicker(delta);
+            renderer.updateFlicker2(delta);
         }
     }
 
@@ -442,26 +444,41 @@ public class GameplayController {
     Rectangle itemButton = new Rectangle();
     Rectangle normalAttackButton = new Rectangle();
     Rectangle closeInventoryButton = new Rectangle();
+    Rectangle infoButton = new Rectangle();
 
     public void createMainActionButtons() {
         float buttonWidth = 150;
         float buttonHeight = 45;
         float buttonY = 35;
         float spacing = 20;
+        float offsetY = 60;
 
-        // Center the buttons
+        // Giữ vị trí canh phải như cũ
         float totalWidth = (buttonWidth * 2) + spacing;
         float startX = (viewport.getWorldWidth() - totalWidth) - spacing * 5;
+        float centerX = startX + buttonWidth + spacing / 2f;
 
-        // Spell button (opens letter grid)
-        spellButton.set(startX, buttonY, buttonWidth, buttonHeight);
+        // Trên: Normal Attack
+        normalAttackButton.set(centerX - buttonWidth / 2f, buttonY + offsetY * 2, buttonWidth, buttonHeight);
 
-        // Item button (opens inventory)
-        itemButton.set(startX + buttonWidth + spacing, buttonY, buttonWidth, buttonHeight);
-        // Normal attack button (for quick attacks)
-        normalAttackButton.set(startX + buttonWidth + spacing, buttonY + 95, buttonWidth, buttonHeight);
+        // Trái: Item
+        itemButton.set(centerX - 100 - buttonWidth / 2f, buttonY + offsetY, buttonWidth, buttonHeight);
+
+        // Phải: Spell
+        spellButton.set(centerX + 100 - buttonWidth / 2f, buttonY + offsetY, buttonWidth, buttonHeight);
+
+        // Dưới: Info
+        infoButton.set(centerX - buttonWidth / 2f, buttonY, buttonWidth, buttonHeight);
     }
 
+
+    public Rectangle getInfoButton() {
+        return infoButton;
+    }
+
+    public void setInfoButton(Rectangle infoButton) {
+        this.infoButton = infoButton;
+    }
 
     public void createCloseButton(float screenWidth, float screenHeight) {
         float panelWidth = screenWidth * 0.7f;
@@ -490,7 +507,8 @@ public class GameplayController {
         } else if (normalAttackButton.contains(x, y)) {
             currentOverlay = OverlayType.NONE;
             return normalAttack();
-
+        } else if (infoButton.contains(x, y)) {
+            gameController.setState(GameState.INFORMATION);
         }
 
 
@@ -873,12 +891,13 @@ public class GameplayController {
                     addFloatingText("+5 HP", 960, 605, Color.BLUE);
 
                     enemyStatusDuration.put("FREEZE", freezeDuration - 1);
-                    isPlayerTurn = true;
                     enemyAttack(-1, action, (int) heal, () -> {
                         checkCombatEnd();
+
                         if (isCombatMode) {
                             letterGrid.regenerateGrid();
                             addCombatLog("---Đến lượt của bạn!---");
+                            isPlayerTurn = true;
                             checkPlayerStatusEffects();
                             if (isEnemyBoss()) applyBossEffects();
                         }
@@ -916,11 +935,11 @@ public class GameplayController {
         if (damage >= 0) {
             playerHealth = Math.max(0, playerHealth - damage);
         }
-        isPlayerTurn = true;
 
         enemyAttack((int) damage, action, (int) heal, () -> {
             checkCombatEnd();
             if (isCombatMode) {
+                isPlayerTurn = true;
                 letterGrid.regenerateGrid();
                 addCombatLog("---Đến lượt của bạn!---");
                 checkPlayerStatusEffects();
@@ -1274,8 +1293,8 @@ public class GameplayController {
         addCombatLog("Bắt đầu chiến đấu với " + enemyName + "!");
         letterGrid.regenerateGrid();
 
-        playerStatusDuration.put("BURN",2);
-        playerStatusDuration.put("TOXIC",2);
+        playerStatusDuration.put("BURN", 2);
+        playerStatusDuration.put("TOXIC", 2);
         float difficultyScore = (enemyHealth * 0.5f + enemy.getAttackPower() * 1.5f) / (currentLevel + 1);
 
         if (enemyName.contains("Lord")) {

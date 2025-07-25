@@ -49,8 +49,8 @@ public class MainMenu {
     private boolean titleAnimationComplete = false;
     private final float TITLE_ANIMATION_SPEED = 100f; // pixels per second
 
-    public MainMenu(GameController gameController) {
-        this.font = generateVietNameseFont("GrenzeGotisch.ttf", 35);
+    public MainMenu(GameController gameController, BitmapFont font) {
+        this.font = font;
         this.font.setColor(Color.WHITE);
         this.gameController = gameController;
 
@@ -270,7 +270,6 @@ public class MainMenu {
             }
         }
 
-        font.dispose();
         buttonNormal.dispose();
         titleTexture.dispose();
         buttonSelected.dispose();

@@ -459,6 +459,14 @@ public class WordNetValidator {
     /**
      * Counts synonyms for a word using WordNet
      */
+
+    public void dispose() {
+        if (dictionary != null && dictionary.isOpen()) {
+            dictionary.close();
+            dictionary = null;
+            dictionaryLoaded = false;
+        }
+    }
     private static int countSynonyms(String word) {
         if (dictionary == null) {
             return 0;

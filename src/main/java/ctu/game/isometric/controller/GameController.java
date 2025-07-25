@@ -41,6 +41,8 @@ import ctu.game.isometric.view.view.QuestTrackerView;
 
 import java.util.*;
 
+import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
+
 public class GameController {
     private IsometricGame game;
     private Character character;
@@ -48,8 +50,6 @@ public class GameController {
     public IsometricGame getGame() {
         return game;
     }
-
-
     private AssetManager assetManager;
 
     private IsometricMap map;
@@ -82,7 +82,6 @@ public class GameController {
     private MulChoiceQuizController mulChoiceQuizController;
     private ctu.game.isometric.view.view.DictionaryView dictionaryView;
     private Dictionary dictionary;
-    private BitmapFont font;
     private CharacterInfoDisplay characterDisplay;
 
     private EventManager eventManager;
@@ -158,8 +157,13 @@ public class GameController {
 
     }
 
+    BitmapFont font;
+    BitmapFont titleFont;
+
     public GameController(IsometricGame game) {
         this.game = game;
+        this.font = generateVietNameseFont("GrenzeGotisch.ttf", 35);
+        this.titleFont = generateVietNameseFont("GrenzeGotisch.ttf", 50);
 
         this.map = new IsometricMap();
         this.eventManager = new EventManager(map, "board");
@@ -187,13 +191,13 @@ public class GameController {
         this.dialogController = new DialogController(this);
         this.musicController = new MusicController();
         characterCreationController = new CharacterCreation(this);
-        this.pauseMenu = new PauseMenu(this);
+        this.pauseMenu = new PauseMenu(this,titleFont, font);
 
 
         effectManager = new EffectManager();
         this.loadEffects();
-        this.settingsMenu = new SettingsMenu(this);
-        this.mainMenuController = new MainMenu(this);
+        this.settingsMenu = new SettingsMenu(this,titleFont, font);
+        this.mainMenuController = new MainMenu(this,font);
         this.transitionRenderer = new TransitionRenderer();
         this.cutsceneController = new CutsceneRenderer(this);
         loadGameController = new LoadGameController(this);
@@ -764,21 +768,12 @@ public class GameController {
         return tutorialUI;
     }
 
-    // You might want to add methods to show/hide the tutorial at appropriate times
-    public void showTutorial() {
-        tutorialUI.show();
-    }
-
     public void hideTutorial() {
         tutorialUI.hide();
     }
 
     public BountyBoardController getBountyBoardController() {
         return bountyBoardController;
-    }
-
-    public void setBountyBoardController(BountyBoardController bountyBoardController) {
-        this.bountyBoardController = bountyBoardController;
     }
 
     public void showAchievementUI() {
@@ -812,17 +807,10 @@ public class GameController {
         return eventManagerMap;
     }
 
-    public void setEventManagerMap(Map<String, EventManager> eventManagerMap) {
-        this.eventManagerMap = eventManagerMap;
-    }
-
     public Map<String, IsometricMap> getMapList() {
         return mapList;
     }
 
-    public void setMapList(Map<String, IsometricMap> mapList) {
-        this.mapList = mapList;
-    }
 
     public void loadCharacter(Character character, Date lastSaveTime) {
         if (character == null) {
@@ -863,13 +851,6 @@ public class GameController {
         // Load the saved character
         this.isCreated = true;
 
-        // Re-initialize map and other references
-//        this.character.setGameMap(this.getMap());
-//
-//        // Now load the saved dictionary from file
-//        if (character.getWordFilePath() != null) {
-//
-//        }
     }
 
 
@@ -969,7 +950,6 @@ public class GameController {
         mulChoiceQuizController.startQuiz(numQuestions);
     }
 
-
     public void startQuiz(int numQuestions) {
         setPreviousState(currentState);
         setState(GameState.QUIZZES);
@@ -980,16 +960,8 @@ public class GameController {
         return mulChoiceQuizController;
     }
 
-    public void setMulChoiceQuizController(MulChoiceQuizController mulChoiceQuizController) {
-        this.mulChoiceQuizController = mulChoiceQuizController;
-    }
-
     public TransitionRenderer getTransitionController() {
         return transitionRenderer;
-    }
-
-    public void setTransitionController(TransitionRenderer transitionRenderer) {
-        this.transitionRenderer = transitionRenderer;
     }
 
     public ctu.game.isometric.view.view.DictionaryView getDictionaryView() {
@@ -1037,12 +1009,6 @@ public class GameController {
         });
 
     }
-
-
-    private void onStateChanged(GameState oldState, GameState newState) {
-        // Notify relevant subsystems about state change
-    }
-
     public void startCutscene(String cutsceneName) {
         setPreviousState(currentState);
         setState(GameState.CUTSCENE);
@@ -1092,8 +1058,6 @@ public class GameController {
 
 
     public void moveCharacter(int dx, int dy) {
-
-
         if (!canMove(dx, dy)) {
             return; // Skip this move if it's invalid
         }
@@ -1121,10 +1085,7 @@ public class GameController {
             this.boardEventManager.checkBoardPlayerPosition((int) newX, (int) newY);
 
         checkPositionEvents(newX, newY);
-
-
     }
-
     private Set<String> activeEvents = new HashSet<>();
 
     public void checkForestEvents(float x, float y) {
@@ -1280,7 +1241,6 @@ public class GameController {
             }
         }
 
-
         // Find path with a reasonable maximum length
         Array<int[]> path = pathfinder.findPath((int) startX, (int) startY, targetX, targetY, 30);
 
@@ -1302,12 +1262,6 @@ public class GameController {
 //
 
         }
-    }
-
-    public float[] toIsometric(float x, float y) {
-        float isoX = (x + y) * (map.getTileWidth() / 2.0f);
-        float isoY = (y - x) * (map.getTileHeight() / 2.0f);
-        return new float[]{isoX, isoY};
     }
 
     public void disposeSome() {
@@ -1335,17 +1289,10 @@ public class GameController {
                     tutorialUI.show("movement");
                     character.setTutorialCompleted("movement");
                 }
-//            changeForestMap();
             }
 
         }
     }
-
-    public void initMap() {
-
-
-    }
-
     public void resetEventsManager() {
         eventManagerMap.get("board").resetEvents(mapList.get("board"));
         eventManagerMap.get("main").resetEvents(mapList.get("main"));
@@ -1401,7 +1348,6 @@ public class GameController {
         System.gc(); // Request garbage collection
 
     }
-
     public LoadGameController getLoadGameController() {
         return loadGameController;
     }
@@ -1415,7 +1361,6 @@ public class GameController {
     private int currentEventY;
     private boolean hasActiveEvent = false;
     private MapProperties properties;
-
     boolean isRenderCharacter = true;
 
     public boolean isRenderCharacter() {
@@ -1425,7 +1370,6 @@ public class GameController {
     public void setRenderCharacter(boolean renderCharacter) {
         isRenderCharacter = renderCharacter;
     }
-
     private void checkPositionEvents(float x, float y) {
         getMapRenderer().setZoomed(false);
         currentEvent = eventManager.checkPositionEvents(x, y);
@@ -1456,7 +1400,6 @@ public class GameController {
         }
     }
 
-
     public void setEndEvent() {
         currentEventType = null;
         hasActiveEvent = false;
@@ -1470,11 +1413,6 @@ public class GameController {
     public String getCurrentEventId() {
         return currentEventId;
     }
-
-    public void setCurrentEventId(String currentEventId) {
-        this.currentEventId = currentEventId;
-    }
-
     public void setCompletedEvent() {
         eventManager.completeEvent(currentEventId);
         currentEventType = null;
@@ -1493,10 +1431,6 @@ public class GameController {
         return currentEvent;
     }
 
-    public void setCurrentEvent(MapEvent currentEvent) {
-        this.currentEvent = currentEvent;
-    }
-
     Map<String, Boolean> trapUnlock = new HashMap<>();
 
     public void unlockTrap(String trapId) {
@@ -1504,8 +1438,6 @@ public class GameController {
             return; // Trap already unlocked
         trapUnlock.put(trapId, true);
     }
-
-
     public void handleEventProperties(MapProperties properties, String event) {
 
         int gridX = (int) getCharacter().getGridX();
@@ -1852,8 +1784,6 @@ public class GameController {
         }
 
     }
-
-
     private void applyQuizMovementEffect(float scoreDifference) {
         if (scoreDifference == 0) {
             getDialogController().showSimpleMessage("Bạn đã trả lời sai. Không có phần thưởng.");
@@ -1863,25 +1793,7 @@ public class GameController {
             character.setBonusRolls(getDice().getBonusCount());
         }
     }
-
-
     boolean isNewRun = false;
-
-    public boolean isNewRun() {
-        return isNewRun;
-    }
-
-    public Map<String, Boolean> getTrapUnlock() {
-        return trapUnlock;
-    }
-
-    public void setTrapUnlock(Map<String, Boolean> trapUnlock) {
-        this.trapUnlock = trapUnlock;
-    }
-
-    public void setNewRun(boolean newRun) {
-        isNewRun = newRun;
-    }
 
     private void openTreasureWithAnimation(Items item, int amount, int x, int y) {
 
@@ -1899,25 +1811,12 @@ public class GameController {
         });
     }
 
-
     public Dice getDice() {
         return getInputController().getMapRenderer().getDiceRenderer();
     }
 
     public BoardEventManager getBoardEventManager() {
         return boardEventManager;
-    }
-
-    public void setBoardEventManager(BoardEventManager boardEventManager) {
-        this.boardEventManager = boardEventManager;
-    }
-
-    public AchievementManager getAchievementManager() {
-        return achievementManager;
-    }
-
-    public void setAchievementManager(AchievementManager achievementManager) {
-        this.achievementManager = achievementManager;
     }
 
     public boolean hasActiveEvent() {
@@ -1944,20 +1843,8 @@ public class GameController {
         return eventManager;
     }
 
-    public void setEventManager(EventManager eventManager) {
-        this.eventManager = eventManager;
-    }
-
     public void setFont(BitmapFont font) {
         this.font = font;
-    }
-
-    public Pathfinder getPathfinder() {
-        return pathfinder;
-    }
-
-    public void setPathfinder(Pathfinder pathfinder) {
-        this.pathfinder = pathfinder;
     }
 
     public Character getCharacter() {
@@ -1976,17 +1863,11 @@ public class GameController {
         return questTrackerView;
     }
 
-    public void setQuestTrackerView(QuestTrackerView questTrackerView) {
-        this.questTrackerView = questTrackerView;
-    }
 
     public DialogController getDialogController() {
         return dialogController;
     }
 
-    public void setDialogController(DialogController dialogController) {
-        this.dialogController = dialogController;
-    }
 
     public MusicController getMusicController() {
         return musicController;
@@ -2000,23 +1881,12 @@ public class GameController {
         this.previousState = previousState;
     }
 
-    public void setMenuController(PauseMenu pauseMenu) {
-        this.pauseMenu = pauseMenu;
-    }
-
     public SettingsMenu getSettingsMenuController() {
         return settingsMenu;
     }
 
     public MainMenu getMainMenuController() {
         return mainMenuController;
-    }
-
-    public void cycleTransitionType() {
-        TransitionRenderer.TransitionType[] types = TransitionRenderer.TransitionType.values();
-        int nextIndex = (transitionRenderer.getCurrentType().ordinal() + 1) % types.length;
-        transitionRenderer.setTransitionType(types[nextIndex]);
-        System.out.println("Changed transition to: " + types[nextIndex]);
     }
 
     public void dispose() {
@@ -2045,13 +1915,35 @@ public class GameController {
         if (quizController != null) {
             quizController.dispose();
         }
+        if (mulChoiceQuizController != null) {
+            mulChoiceQuizController.dispose();
+        }
+        if (wordNetValidator != null) {
+            wordNetValidator.dispose();
+        }
+        if (font!= null) {
+            font.dispose();
+        }
+        if(titleFont != null) {
+            titleFont.dispose();
+        }
+        if (assetManager != null) {
+            assetManager.dispose();
+        }
+        if (mapRenderer != null) {
+            mapRenderer.dispose();
+        }
+        if (characterDisplay != null) {
+            characterDisplay.dispose();
+        }
+        if (inventoryUI != null) {
+            inventoryUI.dispose();
+        }
+        if (exploringUI != null) {
+            exploringUI.dispose();
+        }
 
 
-    }
-
-    public IsometricMap setMap(String mapName) {
-        this.map = this.mapList.get(mapName);
-        return this.map;
     }
 
     public QuizController getQuizController() {
@@ -2086,10 +1978,6 @@ public class GameController {
         this.mapRenderer = mapRenderer;
     }
 
-    public void setGameplayController(GameplayController gameplayController) {
-        this.gameplayController = gameplayController;
-    }
-
     public CharacterCreation getCharacterCreationController() {
         return characterCreationController;
     }
@@ -2118,24 +2006,12 @@ public class GameController {
         this.character = character;
     }
 
-    public boolean isLoadNPCs() {
-        return isLoadNPCs;
-    }
-
-    public void setLoadNPCs(boolean loadNPCs) {
-        isLoadNPCs = loadNPCs;
-    }
-
     public ExploringUI getExploringUI() {
         return exploringUI;
     }
 
     public void setExploringUI(ExploringUI exploringUI) {
         this.exploringUI = exploringUI;
-    }
-
-    public void setInputController(InputController inputController) {
-        this.inputController = inputController;
     }
 
     public InventoryUI getInventoryUI() {
@@ -2154,22 +2030,6 @@ public class GameController {
         return npcRenderer;
     }
 
-    public void setNpcRenderer(NPCRenderer npcRenderer) {
-        this.npcRenderer = npcRenderer;
-    }
-
-    public void setEffectManager(EffectManager effectManager) {
-        this.effectManager = effectManager;
-    }
-
-    public WordNetValidator getWordNetValidator() {
-        return wordNetValidator;
-    }
-
-    public void setWordNetValidator(WordNetValidator wordNetValidator) {
-        this.wordNetValidator = wordNetValidator;
-    }
-
     public LevelUpNotification getLevelUpNotification() {
         return levelUpNotification;
     }
@@ -2178,13 +2038,6 @@ public class GameController {
         return bountyBoardView;
     }
 
-    public void setBountyBoardView(BountyBoardView bountyBoardView) {
-        this.bountyBoardView = bountyBoardView;
-    }
-
-    /**
-     * Show a level up notification when character levels up
-     */
     public void showLevelUpNotification() {
         if (levelUpNotification != null && character != null) {
             levelUpNotification.showLevelUp(character.getLevel());
@@ -2196,12 +2049,15 @@ public class GameController {
 
         }
     }
-
     public NPCManager getNpcManager() {
         return npcManager;
     }
 
-    public void setNpcManager(NPCManager npcManager) {
-        this.npcManager = npcManager;
+    public WordNetValidator getWordNetValidator() {
+        return wordNetValidator;
+    }
+
+    public AchievementManager getAchievementManager() {
+        return achievementManager;
     }
 }

@@ -39,14 +39,12 @@ public class EventManager {
                     int objGridY = (int) (rect.y / map.getTileHeight());
 
                     if (map.getMapName().equals("main")) {
-                        System.out.println("Loading event at grid position: " + objGridX + ", " + objGridY);
                     }
 
                     MapProperties props = object.getProperties();
                     if (props.containsKey("event")) {
                         String eventType = getStringProperty(props, "event", "");
                         if (map.getMapName().equals("main")) {
-                            System.out.println("Loading event at grid position: " + eventType + " :" + objGridX + ", " + objGridY);
                         }
                         String eventId = props.containsKey("id") ?
                                 getStringProperty(props, "id", "") :

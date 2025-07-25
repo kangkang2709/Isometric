@@ -88,18 +88,10 @@ public class DarkestDungeon implements Screen {
     private final float STATUS_PANEL_HEIGHT = 200;
     private final float PLAYER_STATUS_X = 50;
     private final float ENEMY_STATUS_X = SCREEN_WIDTH - STATUS_PANEL_WIDTH - 50;
-    private final float STATUS_PANEL_Y = 50;
     // Skill bar layout
     private final float SKILL_BAR_WIDTH = 400;
-    private final float SKILL_BAR_HEIGHT = 80;
     private final float SKILL_BAR_X = (SCREEN_WIDTH - SKILL_BAR_WIDTH) / 2;
-    private final float SKILL_BAR_Y = 250;
-    private final float SKILL_BUTTON_SIZE = 64;
-    private final float SKILL_BUTTON_SPACING = 12;
-    // Health/Mana bars
-    private final float BAR_WIDTH = 200;
-    private final float BAR_HEIGHT = 14;
-    private final float MANA_BAR_HEIGHT = 12;
+
     // Skills configuration
     private String[] skillNames = {"Attack", "Word", "TypeW", "Heal", "Defend"};
     private int[] skillManaCost = {0, 5, 5, 10, 0};

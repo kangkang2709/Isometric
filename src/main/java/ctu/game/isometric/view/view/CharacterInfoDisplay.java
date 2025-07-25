@@ -1,135 +1,273 @@
 package ctu.game.isometric.view.view;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.FrameBuffer;
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.TimeUtils;
 import ctu.game.isometric.model.entity.Character;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
 
 public class CharacterInfoDisplay {
-    // Constants for Persona-style UI
-    private static final Color CYAN_BLUE = new Color(0x00f0ffff);
-    private static final Color DARK_BACKGROUND = new Color(0x111111ff);
-    private static final Color DARKER_BACKGROUND = new Color(0x0d0d0dff);
-    private static final Color STATS_BACKGROUND = new Color(0x222222ff);
-    private static final Color WHITE = Color.WHITE;
-    private static final Color BLACK = Color.BLACK;
+    // FF7R-inspired color scheme
+    private static final Color BACKGROUND = new Color(0.05f, 0.08f, 0.12f, 0.85f);
+    private static final Color PANEL_BACKGROUND = new Color(0.08f, 0.1f, 0.15f, 0.92f);
+    private static final Color PRIMARY_BLUE = new Color(0.12f, 0.65f, 0.89f, 1f);
+    private static final Color SECONDARY_BLUE = new Color(0.2f, 0.4f, 0.8f, 1f);
+    private static final Color HIGHLIGHT = new Color(0.12f, 0.9f, 0.9f, 1f);
+    private static final Color HP_COLOR = new Color(0.18f, 0.8f, 0.44f, 1f);
+    private static final Color MP_COLOR = new Color(0.25f, 0.6f, 0.9f, 1f);
+    private static final Color EXP_COLOR = new Color(0.9f, 0.78f, 0.25f, 1f);
 
-    private static final int TITLE_FONT_SIZE = 32;
+    private static final int TITLE_FONT_SIZE = 28;
+    private static final int TAB_FONT_SIZE = 22;
     private static final int STAT_FONT_SIZE = 20;
-    private static final int SCORE_FONT_SIZE = 24;
-    private static final float BORDER_WIDTH = 6f;
-    private static final float UI_MARGIN = 40f;
-    private static final float AVATAR_SIZE = 150f;
+    private static final float GLOW_INTENSITY = 0.8f;
+    private static final float ANIMATION_SPEED = 0.6f;
 
+    // UI Components
     private Character character;
     private BitmapFont titleFont;
+    private BitmapFont tabFont;
     private BitmapFont statFont;
-    private BitmapFont scoreFont;
     private GlyphLayout layout;
     private ShapeRenderer shapeRenderer;
+    private FrameBuffer blurBuffer;
+    private ShaderProgram glowShader;
+    private ShaderProgram blurShader;
 
-    private Texture maleAvatar;
-    private Texture femaleAvatar;
-    private Texture currentAvatar;
+    // Textures and visual assets
+    private Texture avatarTexture;
+    private Texture tabIcons;
+    private Texture borderTexture;
     private Texture glowTexture;
+    private Texture backgroundTexture;
 
+    // UI Layout
     private Rectangle mainPanel;
-    private Rectangle topSection;
-    private Rectangle bottomSection;
-    private Rectangle avatarRect;
-    private Rectangle statsRect;
-    private Rectangle scoreRect;
+    private Rectangle headerSection;
+    private Rectangle tabSection;
+    private Rectangle contentSection;
+    private Rectangle portraitSection;
+    private Rectangle[] tabRects;
+
+    // Animation state
+    private Map<String, Float> animatedValues = new HashMap<>();
+    private long lastUpdateTime;
+    private int activeTab = 0;
+    private float tabTransition = 1.0f;
+    private boolean isAnimating = false;
+
+    // Audio
+    private Sound selectSound;
+    private Sound tabSound;
+    private Sound hoverSound;
+
+    // Tab content components
+    private StatsTabContent statsTab;
 
     private boolean initialized = false;
 
     public CharacterInfoDisplay(Character character) {
         this.character = character;
+        lastUpdateTime = TimeUtils.millis();
         initialize();
     }
 
     private void initialize() {
         if (!initialized) {
             try {
-                // Initialize fonts with different sizes
-                this.titleFont = generateVietNameseFont("Roboto-Black.ttf", TITLE_FONT_SIZE);
-                this.statFont = generateVietNameseFont("Roboto-Black.ttf", STAT_FONT_SIZE);
-                this.scoreFont = generateVietNameseFont("Roboto-Black.ttf", SCORE_FONT_SIZE);
+                // Initialize fonts
+                this.titleFont = generateVietNameseFont("NovaSquare-Regular.ttf", TITLE_FONT_SIZE);
+                this.tabFont = generateVietNameseFont("NovaSquare-Regular.ttf", TAB_FONT_SIZE);
+                this.statFont = generateVietNameseFont("NovaSquare-Regular.ttf", STAT_FONT_SIZE);
                 this.layout = new GlyphLayout();
                 this.shapeRenderer = new ShapeRenderer();
 
-                // Load avatars
-                loadAvatars();
+                // Initialize shaders
+                initializeShaders();
 
-                // Create glow effect texture
-                createGlowTexture();
+                // Load textures and assets
+                loadTextures();
+                loadSounds();
+
+                // Initialize animation values
+                initializeAnimationValues();
 
                 // Setup UI layout
                 setupLayout();
 
+                // Initialize tab contents
+                initializeTabs();
+
                 initialized = true;
             } catch (Exception e) {
-                Gdx.app.error("PersonaStyleCharacterInfoDisplay", "Failed to initialize: " + e.getMessage());
+                Gdx.app.error("CharacterInfoDisplay", "Failed to initialize: " + e.getMessage());
+                e.printStackTrace();
             }
         }
     }
 
-    private void loadAvatars() {
-        maleAvatar = new Texture(Gdx.files.internal("characters/male_avatar.png"));
-        femaleAvatar = new Texture(Gdx.files.internal("characters/female_avatar.png"));
-        currentAvatar = character.getGender().name().equals("MALE") ? maleAvatar : femaleAvatar;
+    private void initializeShaders() {
+        // Glow shader for borders and highlights
+        String vertexShader = Gdx.files.internal("shaders/default.vert").readString();
+        String glowFragmentShader = Gdx.files.internal("shaders/glow.frag").readString();
+        glowShader = new ShaderProgram(vertexShader, glowFragmentShader);
+
+        // Blur shader for background effects
+        String blurFragmentShader = Gdx.files.internal("shaders/blur.frag").readString();
+        blurShader = new ShaderProgram(vertexShader, blurFragmentShader);
+
+        // Create framebuffer for blur effect
+        blurBuffer = new FrameBuffer(Pixmap.Format.RGBA8888,
+                Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false);
     }
 
-    private void createGlowTexture() {
-        // Create a simple glow effect texture
-        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        pixmap.setColor(CYAN_BLUE);
-        pixmap.fill();
-        glowTexture = new Texture(pixmap);
-        pixmap.dispose();
+    private void loadTextures() {
+        // Load avatar based on character gender
+        avatarTexture = character.getGender().name().equals("MALE") ?
+                new Texture(Gdx.files.internal("characters/male2.png")) :
+                new Texture(Gdx.files.internal("characters/female2.png"));
+
+        // Load tab icons
+        tabIcons = new Texture(Gdx.files.internal("ui/button.png"));
+
+        // Create decorative textures
+        createDecoTextures();
+
+        // Load background texture
+        backgroundTexture = new Texture(Gdx.files.internal("ui/button.png"));
+    }
+
+    private void loadSounds() {
+        selectSound = Gdx.audio.newSound(Gdx.files.internal("audio/effects/click.ogg"));
+        tabSound = Gdx.audio.newSound(Gdx.files.internal("audio/effects/click.ogg"));
+        hoverSound = Gdx.audio.newSound(Gdx.files.internal("audio/effects/click.ogg"));
+    }
+
+    private void createDecoTextures() {
+        // Create glow texture
+        Pixmap glowPixmap = new Pixmap(64, 64, Pixmap.Format.RGBA8888);
+        glowPixmap.setColor(1, 1, 1, 1);
+        glowPixmap.fillCircle(32, 32, 30);
+        glowTexture = new Texture(glowPixmap);
+        glowPixmap.dispose();
+
+        // Create border texture
+        Pixmap borderPixmap = new Pixmap(3, 3, Pixmap.Format.RGBA8888);
+        borderPixmap.setColor(1, 1, 1, 1);
+        borderPixmap.fill();
+        borderTexture = new Texture(borderPixmap);
+        borderPixmap.dispose();
+    }
+
+    private void initializeAnimationValues() {
+        // Initialize with current values to avoid jumps
+        animatedValues.put("health", (float) character.getHealth());
+        animatedValues.put("mana", (float) character.getMana());
+        animatedValues.put("exp", (float) character.getExp());
     }
 
     private void setupLayout() {
         float screenWidth = Gdx.graphics.getWidth();
         float screenHeight = Gdx.graphics.getHeight();
 
-        float panelWidth = Math.min(1000f, screenWidth - UI_MARGIN * 2);
-        float panelHeight = screenHeight - UI_MARGIN * 2;
+        float panelWidth = Math.min(1100f, screenWidth * 0.85f);
+        float panelHeight = screenHeight * 0.85f;
         float panelX = (screenWidth - panelWidth) / 2;
-        float panelY = UI_MARGIN;
+        float panelY = (screenHeight - panelHeight) / 2;
 
+        // Main panel
         mainPanel = new Rectangle(panelX, panelY, panelWidth, panelHeight);
 
-        // Top section for avatar and stats
-        float topHeight = panelHeight * 0.6f;
-        topSection = new Rectangle(panelX + 30, panelY + panelHeight - topHeight - 60, panelWidth - 60, topHeight);
+        // Header section (title + portrait)
+        headerSection = new Rectangle(
+                mainPanel.x + 20,
+                mainPanel.y + mainPanel.height - 100,
+                mainPanel.width - 40,
+                80
+        );
 
-        // Avatar rectangle
-        avatarRect = new Rectangle(topSection.x + 20, topSection.y + (topSection.height - AVATAR_SIZE) / 2, AVATAR_SIZE, AVATAR_SIZE);
+        // Portrait section
+        portraitSection = new Rectangle(
+                mainPanel.x + 40,
+                mainPanel.y + mainPanel.height - 345,
+                180,
+                180
+        );
 
-        // Stats rectangle (remaining space in top section)
-        statsRect = new Rectangle(avatarRect.x + AVATAR_SIZE + 230, topSection.y + 20,
-                topSection.width - AVATAR_SIZE - 70, topSection.height - 40);
+        // Tab navigation section
+        tabSection = new Rectangle(
+                mainPanel.x + 20,
+                mainPanel.y + mainPanel.height - 140,
+                mainPanel.width - 40,
+                40
+        );
 
-        // Bottom section for additional stats
-        float bottomHeight = panelHeight * 0.2f;
-        bottomSection = new Rectangle(panelX + 30, panelY + 120, panelWidth - 60, bottomHeight);
+        // Content area for tab content
+        contentSection = new Rectangle(
+                mainPanel.x + 240,
+                mainPanel.y + 40,
+                mainPanel.width - 280,
+                mainPanel.height - 200
+        );
 
-        // Score section
-        scoreRect = new Rectangle(panelX + 30, panelY + 30, panelWidth - 60, 60);
+        // Tab button rectangles
+        tabRects = new Rectangle[3];
+        float tabWidth = tabSection.width / 3;
+        for (int i = 0; i < 3; i++) {
+            tabRects[i] = new Rectangle(
+                    tabSection.x + i * tabWidth,
+                    tabSection.y,
+                    tabWidth,
+                    tabSection.height
+            );
+        }
     }
 
+    // Tab content components
+    private SkillsTabContent skillsTab;
+    private BiographyTabContent bioTab;
+
+    private void initializeTabs() {
+        statsTab = new StatsTabContent(character, statFont);
+        skillsTab = new SkillsTabContent(character, statFont);
+        bioTab = new BiographyTabContent(character, statFont, getMainObjectiveDescriptions());
+    }
+
+    // Helper method to get objectives from GameController
+    private Map<String, String> getMainObjectiveDescriptions() {
+        Map<String, String> objectives = new HashMap<>();
+        objectives.put("intro", "Mình cần tìm đường rời khỏi khu rừng này trước tiên.");
+        objectives.put("forest_done", "Có vẻ như mình đã đến một ngôi làng nhỏ, mình nên khám phá xung quanh.");
+        objectives.put("god_intro", "Cleric Klein có thể giúp mình hiểu rõ hơn về thế giới này.");
+        objectives.put("klein_meet", "Nói chuyện với Cleric Klein");
+        objectives.put("dungeon_call", "Tiến đến hầm ngục thông qua cổng dịch chuyển theo lời chỉ dẫn của Cleric Klein.");
+        objectives.put("dungeon_entry", "Vượt qua hầm ngục và tìm hiểu bí mật của thế giới này.\nMục tiêu: tìm kiếm 3 viên ngọc và sống sót đến tầng cuối.");
+        return objectives;
+    }
+
+    Matrix4 uiProjectionMatrix = new Matrix4().setToOrtho2D(0, 0,
+            Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
     public void render(SpriteBatch batch) {
+        update();
+
         Matrix4 originalMatrix = batch.getProjectionMatrix().cpy();
         boolean batchWasDrawing = batch.isDrawing();
 
@@ -138,21 +276,20 @@ public class CharacterInfoDisplay {
                 batch.end();
             }
 
-            // Set up orthographic projection for UI
-            Matrix4 uiMatrix = new Matrix4().setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+            // Render blur effect for background
+            renderBlurredBackground(batch);
 
-            // Draw shapes first
-            renderBackground();
+            // Draw UI elements
+            renderPanels();
 
-            // Then draw sprites and text
             batch.begin();
-            batch.setProjectionMatrix(uiMatrix);
+            batch.setProjectionMatrix(uiProjectionMatrix);
 
-            renderTitle(batch);
-            renderAvatar(batch);
-            renderStats(batch);
-            renderBottomStats(batch);
-            renderScore(batch);
+            renderHeader(batch);
+            renderPortrait(batch);
+            renderTabs(batch);
+            renderActiveTabContent(batch);
+            renderStatusBars(batch);
 
         } finally {
             if (batchWasDrawing) {
@@ -165,195 +302,403 @@ public class CharacterInfoDisplay {
         }
     }
 
-    private void renderBackground() {
-        shapeRenderer.setProjectionMatrix(new Matrix4().setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
+    private void update() {
+        long currentTime = TimeUtils.millis();
+        float deltaTime = Math.min((currentTime - lastUpdateTime) / 1000f, 0.1f);
+        lastUpdateTime = currentTime;
 
-        // Draw main panel background with glow effect
+        // Update animated values with smooth transitions
+        updateAnimatedValues(deltaTime);
+
+        // Update tab transition animation
+        if (isAnimating) {
+            tabTransition -= deltaTime * 5f;
+            if (tabTransition <= 0) {
+                tabTransition = 0;
+                isAnimating = false;
+            }
+        }
+    }
+
+    private void updateAnimatedValues(float deltaTime) {
+        // Add null checks and default values to prevent NullPointerException
+
+        // Smoothly animate health value
+        float targetHealth = character.getHealth();
+        float currentHealth = animatedValues.getOrDefault("health", targetHealth);
+        animatedValues.put("health", interpolateValue(currentHealth, targetHealth, deltaTime));
+
+        // Smoothly animate mana value
+        float targetMana = character.getMana();
+        float currentMana = animatedValues.getOrDefault("mana", targetMana);
+        animatedValues.put("mana", interpolateValue(currentMana, targetMana, deltaTime));
+
+        // Smoothly animate exp value
+        float targetExp = character.getExp();
+        float currentExp = animatedValues.getOrDefault("exp", targetExp);
+        animatedValues.put("exp", interpolateValue(currentExp, targetExp, deltaTime));
+    }
+
+    private float interpolateValue(float current, float target, float deltaTime) {
+        float diff = target - current;
+        if (Math.abs(diff) < 0.1f) return target;
+        return current + diff * Math.min(1.0f, deltaTime * ANIMATION_SPEED * 5);
+    }
+
+    private void renderBlurredBackground(SpriteBatch batch) {
+        // Use frame buffer to create blur effect for background
+        blurBuffer.begin();
+        Gdx.gl.glClearColor(0, 0, 0, 0);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        batch.begin();
+        batch.setShader(null);
+        batch.draw(backgroundTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        batch.end();
+
+        blurBuffer.end();
+
+        // Draw the blurred background
+        batch.begin();
+        batch.setShader(blurShader);
+        blurShader.setUniformf("resolution", Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        blurShader.setUniformf("radius", 2.5f);
+
+        TextureRegion blurRegion = new TextureRegion(blurBuffer.getColorBufferTexture());
+        blurRegion.flip(false, true);
+        batch.draw(blurRegion, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
+        batch.setShader(null);
+        batch.end();
+    }
+
+    private void renderPanels() {
+        shapeRenderer.setProjectionMatrix(new Matrix4().setToOrtho2D(0, 0,
+                Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
+
+        // Draw panel backgrounds
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
-        // Outer glow
-        shapeRenderer.setColor(CYAN_BLUE.r, CYAN_BLUE.g, CYAN_BLUE.b, 0.3f);
-        shapeRenderer.rect(mainPanel.x - 10, mainPanel.y - 10, mainPanel.width + 20, mainPanel.height + 20);
-
-        // Border
-        shapeRenderer.setColor(CYAN_BLUE);
-        shapeRenderer.rect(mainPanel.x - BORDER_WIDTH, mainPanel.y - BORDER_WIDTH,
-                mainPanel.width + BORDER_WIDTH * 2, mainPanel.height + BORDER_WIDTH * 2);
-
-        // Main background
-        shapeRenderer.setColor(DARK_BACKGROUND);
+        // Main panel background
+        shapeRenderer.setColor(BACKGROUND);
         shapeRenderer.rect(mainPanel.x, mainPanel.y, mainPanel.width, mainPanel.height);
 
-        // Bottom section background (dashed effect simulation)
-        shapeRenderer.setColor(STATS_BACKGROUND);
-        shapeRenderer.rect(bottomSection.x, bottomSection.y, bottomSection.width, bottomSection.height);
-
-        // Dashed border effect for bottom section
-        shapeRenderer.setColor(CYAN_BLUE);
-        float dashSize = 10f;
-        float gapSize = 5f;
-        for (float x = bottomSection.x; x < bottomSection.x + bottomSection.width; x += dashSize + gapSize) {
-            shapeRenderer.rect(x, bottomSection.y - 3, Math.min(dashSize, bottomSection.x + bottomSection.width - x), 3);
-            shapeRenderer.rect(x, bottomSection.y + bottomSection.height, Math.min(dashSize, bottomSection.x + bottomSection.width - x), 3);
-        }
-
-        // Score background
-        shapeRenderer.setColor(CYAN_BLUE);
-        shapeRenderer.rect(scoreRect.x + scoreRect.width / 2 - 150, scoreRect.y, 300, scoreRect.height);
+        // Content panel background
+        shapeRenderer.setColor(PANEL_BACKGROUND);
+        shapeRenderer.rect(contentSection.x, contentSection.y, contentSection.width, contentSection.height);
 
         shapeRenderer.end();
+
+        // Draw glowing borders
+        renderGlowingBorders();
     }
 
-    private void renderTitle(SpriteBatch batch) {
-        titleFont.setColor(CYAN_BLUE);
-        String title = "🧠 CHARACTER PROFILE";
-        layout.setText(titleFont, title);
-        float titleX = mainPanel.x + (mainPanel.width - layout.width) / 2;
-        float titleY = mainPanel.y + mainPanel.height - 30;
+    private void renderGlowingBorders() {
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE);
 
-        // Text shadow effect
-        titleFont.setColor(BLACK);
-        titleFont.draw(batch, title, titleX + 2, titleY - 2);
-        titleFont.setColor(CYAN_BLUE);
-        titleFont.draw(batch, title, titleX, titleY);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+
+        // Outer border glow effect
+        float pulseIntensity = 0.7f + 0.3f * (float) Math.sin(TimeUtils.millis() / 1000.0 * 2);
+        Color glowColor = new Color(PRIMARY_BLUE);
+        glowColor.a = GLOW_INTENSITY * pulseIntensity;
+
+        shapeRenderer.setColor(glowColor);
+
+        // Main panel border
+        drawBorderLines(mainPanel, 2f);
+
+        // Content panel border
+        drawBorderLines(contentSection, 1.5f);
+
+        // Tab section border
+        drawBorderLines(tabSection, 1.5f);
+
+        shapeRenderer.end();
+
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
     }
 
-    private void renderAvatar(SpriteBatch batch) {
-        if (currentAvatar != null) {
-            // Avatar border
-            batch.setColor(CYAN_BLUE);
-            batch.draw(glowTexture, avatarRect.x - 4, avatarRect.y - 4, avatarRect.width + 8, avatarRect.height + 8);
+    private void drawBorderLines(Rectangle rect, float thickness) {
+        shapeRenderer.rectLine(rect.x, rect.y, rect.x + rect.width, rect.y, thickness);
+        shapeRenderer.rectLine(rect.x + rect.width, rect.y, rect.x + rect.width, rect.y + rect.height, thickness);
+        shapeRenderer.rectLine(rect.x + rect.width, rect.y + rect.height, rect.x, rect.y + rect.height, thickness);
+        shapeRenderer.rectLine(rect.x, rect.y + rect.height, rect.x, rect.y, thickness);
+    }
 
-            // Avatar
-            batch.setColor(WHITE);
-            batch.draw(currentAvatar, avatarRect.x, avatarRect.y, avatarRect.width, avatarRect.height);
+    private void renderHeader(SpriteBatch batch) {
+        // Draw character name and level
+        titleFont.setColor(PRIMARY_BLUE);
+        String headerText = character.getName() + " - Lv. " + character.getLevel();
+        layout.setText(titleFont, headerText);
+
+        float textX = headerSection.x + 20;
+        float textY = headerSection.y + headerSection.height - 20;
+
+        // Shadow effect
+        titleFont.setColor(0, 0, 0, 0.5f);
+        titleFont.draw(batch, headerText, textX + 2, textY - 2);
+
+        // Main text
+        titleFont.setColor(PRIMARY_BLUE);
+        titleFont.draw(batch, headerText, textX, textY);
+
+        // Character class/job
+        statFont.setColor(HIGHLIGHT);
+        String classText = "Adventurer";  // Replace with actual character class if available
+        layout.setText(statFont, classText);
+        statFont.draw(batch, classText, textX, textY - 30);
+    }
+
+    private void renderPortrait(SpriteBatch batch) {
+        // Draw portrait background with glow
+        batch.setColor(PRIMARY_BLUE);
+        batch.setShader(glowShader);
+        glowShader.setUniformf("u_intensity", GLOW_INTENSITY * 0.8f);
+
+        batch.draw(glowTexture,
+                portraitSection.x - 10,
+                portraitSection.y - 10,
+                portraitSection.width + 20,
+                portraitSection.height + 20);
+
+        batch.setShader(null);
+
+        // Draw portrait frame
+        batch.setColor(SECONDARY_BLUE);
+        batch.draw(borderTexture,
+                portraitSection.x - 2,
+                portraitSection.y - 2,
+                portraitSection.width + 4,
+                portraitSection.height + 4);
+
+        // Draw character portrait
+        batch.setColor(Color.WHITE);
+        batch.draw(avatarTexture,
+                portraitSection.x,
+                portraitSection.y,
+                portraitSection.width,
+                portraitSection.height);
+
+        // Draw status effect icons if applicable
+    }
+
+    private void renderTabs(SpriteBatch batch) {
+        String[] tabNames = {"Stats", "Skills", "Bio"};
+
+        for (int i = 0; i < tabRects.length; i++) {
+            Rectangle tabRect = tabRects[i];
+            boolean isActive = i == activeTab;
+
+            // Tab background
+            Color tabColor = isActive ? PRIMARY_BLUE : PANEL_BACKGROUND;
+            batch.setColor(tabColor);
+            batch.draw(borderTexture, tabRect.x, tabRect.y, tabRect.width, tabRect.height);
+
+            // Tab text
+            tabFont.setColor(isActive ? Color.WHITE : SECONDARY_BLUE);
+            layout.setText(tabFont, tabNames[i]);
+            float textX = tabRect.x + (tabRect.width - layout.width) / 2;
+            float textY = tabRect.y + (tabRect.height + layout.height) / 2;
+
+            tabFont.draw(batch, tabNames[i], textX, textY);
+
+            // Tab highlight for active tab
+            if (isActive) {
+                batch.setColor(HIGHLIGHT);
+                batch.draw(borderTexture,
+                        tabRect.x, tabRect.y + tabRect.height - 3,
+                        tabRect.width, 3);
+            }
         }
     }
 
-    private void renderStats(SpriteBatch batch) {
-        float currentY = statsRect.y + statsRect.height - 40;
-        float lineHeight = 45f;
+    private void renderActiveTabContent(SpriteBatch batch) {
+        // Apply tab transition animation if active
+        if (isAnimating) {
+            batch.setColor(1, 1, 1, 1 - tabTransition);
+        } else {
+            batch.setColor(1, 1, 1, 1);
+        }
 
-        // Character name
-        renderStatLine(batch, "Tên: " + character.getName(), statsRect.x, currentY, CYAN_BLUE);
-        currentY -= lineHeight;
+        // Render the appropriate tab content based on activeTab
+        switch (activeTab) {
+            case 0:
+                if (statsTab != null) statsTab.render(batch, contentSection);
+                break;
+            case 1:
+                if (skillsTab != null) skillsTab.render(batch, contentSection);
+                break;
+            case 2:
+                if (bioTab != null) bioTab.render(batch, contentSection);
+                break;
+        }
 
-        // Level and EXP
+        // Reset color
+        batch.setColor(1, 1, 1, 1);
+    }
+
+    private void renderStatusBars(SpriteBatch batch) {
+        float barWidth = 180;
+        float barHeight = 18;
+        float barX = portraitSection.x;
+        float barY = portraitSection.y - 60;
+        float spacing = barHeight + 10;
+
+        batch.setColor(Color.WHITE);
+
+        // HP bar
+        renderBar(batch, barX, barY, barWidth, barHeight,
+                animatedValues.get("health"), character.getMaxHealth(),
+                "HP", HP_COLOR);
+
+        // MP bar
+        renderBar(batch, barX, barY - spacing, barWidth, barHeight,
+                animatedValues.get("mana"), character.getMaxMana(),
+                "MP", MP_COLOR);
+
+        // EXP bar
         int expRequired = character.getLevel() * 50;
-        renderStatLine(batch, "Cấp: " + character.getLevel() + " | EXP: " + character.getExp() + " / " + expRequired,
-                statsRect.x, currentY, WHITE);
-        currentY -= lineHeight;
-
-        // Health
-        renderStatLine(batch, "HP: " + character.getHealth() + " / " + character.getMaxHealth(),
-                statsRect.x, currentY, Color.CORAL);
-        currentY -= lineHeight;
-
-        // Mana
-        renderStatLine(batch, "MP: " + character.getMana() + " / " + character.getMaxMana(),
-                statsRect.x, currentY, Color.CYAN);
-        currentY -= lineHeight;
-
-        // Attack and Defense
-        renderStatLine(batch, "ATK: " + character.getDamage() + " |  DEF: " + character.getDefend(),
-                statsRect.x, currentY, Color.ORANGE);
+        renderBar(batch, barX, barY - spacing * 2, barWidth, barHeight,
+                animatedValues.get("exp"), expRequired,
+                "EXP", EXP_COLOR);
     }
 
-    private void renderStatLine(SpriteBatch batch, String text, float x, float y, Color color) {
-        // Left border line
-        batch.setColor(CYAN_BLUE);
-        batch.draw(glowTexture, x - 15, y - 12, 6, 25);
+    private void renderBar(SpriteBatch batch, float x, float y, float width, float height,
+                           float current, float max, String label, Color barColor) {
+        float percentage = Math.min(current / max, 1.0f);
 
-        // Text
-        statFont.setColor(color);
-        statFont.draw(batch, text, x, y);
+        // Draw bar background
+        batch.draw(borderTexture, x, y, width, height);
+
+        // Draw bar fill with glow shader
+        batch.setShader(glowShader);
+        glowShader.setUniformf("u_intensity", 0.4f);
+
+        batch.setColor(barColor);
+        batch.draw(borderTexture, x, y, width * percentage, height);
+        batch.setShader(null);
+
+        // Draw bar border
+        batch.setColor(PRIMARY_BLUE);
+        batch.draw(borderTexture, x, y, width, 1);
+        batch.draw(borderTexture, x, y + height - 1, width, 1);
+        batch.draw(borderTexture, x, y, 1, height);
+        batch.draw(borderTexture, x + width - 1, y, 1, height);
+
+        // Draw text
+        statFont.setColor(Color.WHITE);
+        String text = label + ": " + (int) current + "/" + (int) max;
+        layout.setText(statFont, text);
+
+        float textX = x + 10;
+        float textY = y + (height + layout.height) / 2;
+
+        // Text shadow
+        statFont.setColor(0, 0, 0, 0.7f);
+        statFont.draw(batch, text, textX + 1, textY - 1);
+
+        statFont.setColor(Color.WHITE);
+        statFont.draw(batch, text, textX, textY);
     }
 
-    private void renderBottomStats(SpriteBatch batch) {
-        Map<String, Integer> attemptFlags = character.getEttempFlags();
-        if (attemptFlags != null) {
-            float sectionWidth = bottomSection.width / 3;
-            float textY = bottomSection.y + bottomSection.height / 2 + 5;
+    public boolean handleClick(float screenX, float screenY) {
+        if (!initialized) return false;
 
-            statFont.setColor(WHITE);
+        float y = Gdx.graphics.getHeight() - screenY; // Convert to OpenGL coordinates
 
-            // Quiz attempts
-            String quizText = "Lượt quiz 1 hôm nay: " + attemptFlags.getOrDefault("quizAttempts", 0);
-            layout.setText(statFont, quizText);
-            statFont.draw(batch, quizText, bottomSection.x + sectionWidth * 0.5f - layout.width / 2, textY + 10);
-            // Quiz attempts
-            String quizText2 = "Lượt quiz 2 hôm nay: " + attemptFlags.getOrDefault("mulQuizAttempts", 0);
-            layout.setText(statFont, quizText);
-            statFont.draw(batch, quizText2, bottomSection.x + sectionWidth * 0.5f - layout.width / 2, textY - 25);
+        // Check tab clicks
+        System.out.println("Handling click at: " + screenX + ", " + y);
 
-            // Falls
-            String fallText = "Gục ngã: " + attemptFlags.getOrDefault("fallen", 0);
-            layout.setText(statFont, fallText);
-            statFont.draw(batch, fallText, bottomSection.x + sectionWidth * 1.5f - layout.width / 2, textY);
+        for (int i = 0; i < tabRects.length; i++) {
+            if (tabRects[i] != null && tabRects[i].contains(screenX, y)) {
+                if (activeTab != i) {
+                    setActiveTab(i);
+                    return true;
+                }
+                return true; // Return true even if already active
+            }
+        }
 
-            // Wrong words
-            String wrongText = "Từ sai đã gặp: " + attemptFlags.getOrDefault("wrongWord", 0);
-            layout.setText(statFont, wrongText);
-            statFont.draw(batch, wrongText, bottomSection.x + sectionWidth * 2.5f - layout.width / 2, textY + 10);
+        // Handle other interactive elements based on active tab
+        switch (activeTab) {
+            case 0:
+                return statsTab != null && statsTab.handleClick(screenX, y, contentSection);
+            case 1:
+                return skillsTab != null && skillsTab.handleClick(screenX, y, contentSection);
+            case 2:
+                return bioTab != null && bioTab.handleClick(screenX, y, contentSection);
+        }
 
-            String wordCount = "Số từ đã dùng: " + character.getLearnedWords().size() + character.getNewlearneWords().size();
-            layout.setText(statFont, wrongText);
-            statFont.draw(batch, wordCount, bottomSection.x + sectionWidth * 2.5f - layout.width / 2, textY - 25);
+        return false;
+    }
+
+    public boolean handleHover(float screenX, float screenY) {
+        float y = Gdx.graphics.getHeight() - screenY; // Convert to OpenGL coordinates
+
+        // Check tab hovers for visual feedback
+        for (int i = 0; i < tabRects.length; i++) {
+            if (tabRects[i].contains(screenX, y)) {
+                if (i != activeTab) {
+                    hoverSound.play(0.2f);
+                }
+                return true;
+            }
+        }
+
+        // Check for hoverable elements in skill tab
+        if (activeTab == 1) {
+            return skillsTab.handleHover(screenX, y, contentSection);
+        }
+
+        return false;
+    }
+
+    private void setActiveTab(int tabIndex) {
+        // Fix check to match 3 tabs instead of 4
+        if (tabIndex != activeTab && tabIndex >= 0 && tabIndex < 3) {
+            isAnimating = true;
+            tabTransition = 0f;
+            activeTab = tabIndex;
+
+            // Play sound when changing tabs
+            if (tabSound != null) {
+                tabSound.play(0.3f);
+            }
         }
     }
 
-    private void renderScore(SpriteBatch batch) {
-        String scoreText = "Tổng điểm (GOLD):  " + character.getScore();
-        scoreFont.setColor(BLACK);
-        layout.setText(scoreFont, scoreText);
-        float scoreX = scoreRect.x + scoreRect.width / 2 - layout.width / 2;
-        float scoreY = scoreRect.y + scoreRect.height / 2 + layout.height / 2;
-        scoreFont.draw(batch, scoreText, scoreX, scoreY);
+    public boolean handleScroll(float amountY) {
+
+        return bioTab.handleScroll(amountY);
     }
 
     public void dispose() {
-        if (titleFont != null) {
-            titleFont.dispose();
-            titleFont = null;
-        }
-        if (statFont != null) {
-            statFont.dispose();
-            statFont = null;
-        }
-        if (scoreFont != null) {
-            scoreFont.dispose();
-            scoreFont = null;
-        }
-        if (shapeRenderer != null) {
-            shapeRenderer.dispose();
-            shapeRenderer = null;
-        }
-        if (maleAvatar != null) {
-            maleAvatar.dispose();
-            maleAvatar = null;
-        }
-        if (femaleAvatar != null) {
-            femaleAvatar.dispose();
-            femaleAvatar = null;
-        }
-        if (glowTexture != null) {
-            glowTexture.dispose();
-            glowTexture = null;
-        }
+        if (titleFont != null) titleFont.dispose();
+        if (tabFont != null) tabFont.dispose();
+        if (statFont != null) statFont.dispose();
+        if (shapeRenderer != null) shapeRenderer.dispose();
+        if (blurBuffer != null) blurBuffer.dispose();
+        if (glowShader != null) glowShader.dispose();
+        if (blurShader != null) blurShader.dispose();
+        if (avatarTexture != null) avatarTexture.dispose();
+        if (borderTexture != null) borderTexture.dispose();
+        if (glowTexture != null) glowTexture.dispose();
+        if (backgroundTexture != null) backgroundTexture.dispose();
+        if (tabIcons != null) tabIcons.dispose();
+        if (selectSound != null) selectSound.dispose();
+        if (tabSound != null) tabSound.dispose();
+        if (hoverSound != null) hoverSound.dispose();
+
+        // Dispose tab content resources
+        if (statsTab != null) statsTab.dispose();
+        if (skillsTab != null) skillsTab.dispose();
+        if (bioTab != null) bioTab.dispose();
+
         initialized = false;
-    }
-
-    public void updateCharacter(Character newCharacter) {
-        this.character = newCharacter;
-        if (initialized && currentAvatar != null) {
-            currentAvatar = character.getGender().name().equals("MALE") ? maleAvatar : femaleAvatar;
-        }
-    }
-
-    // Optional: Method to handle screen resize
-    public void resize(int width, int height) {
-        if (initialized) {
-            setupLayout();
-        }
     }
 }

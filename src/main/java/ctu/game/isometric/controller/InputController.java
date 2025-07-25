@@ -210,7 +210,8 @@ public class InputController extends InputAdapter {
 
             case MENU:
                 return gameController.getMenuController().handleMouseClick(screenX, screenY);
-
+            case INFORMATION: gameController.getCharacterDisplay().handleClick(screenX, screenY);
+                return true; // Click handled by character display
             case LOAD_GAME:
                 return gameController.getLoadGameController().handleMouseClick(screenX, screenY);
             case MAIN_MENU:
@@ -784,6 +785,9 @@ public class InputController extends InputAdapter {
             }
             case MENU -> {
                 return gameController.getMenuController().handleKeyBindingScroll(amountY);
+            }
+            case INFORMATION -> {
+                 return gameController.getCharacterDisplay().handleScroll(amountY);
             }
             case EXPLORING -> {
                 if (gameController.getMap().getMapName().equals("board1") || gameController.getMap().getMapName().equals("forest") || gameController.getMap().getMapName().equals("main"))

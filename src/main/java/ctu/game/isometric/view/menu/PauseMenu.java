@@ -61,14 +61,14 @@ public class PauseMenu {
 
     // Animation properties
 
-    public PauseMenu(GameController gameController) {
+    public PauseMenu(GameController gameController,BitmapFont titleFont, BitmapFont font) {
         this.gameController = gameController;
         this.selectedIndex = 0;
         this.menuItems = new ArrayList<>();
 
-        this.titleFont = generateVietNameseFont("GrenzeGotisch.ttf", 50);
+        this.titleFont = titleFont;
 
-        this.itemFont = generateVietNameseFont("GrenzeGotisch.ttf", 30);
+        this.itemFont = font;
 
         // Initialize rendering tools
         this.shapeRenderer = new ShapeRenderer();
@@ -434,8 +434,6 @@ public class PauseMenu {
     }
 
     public void dispose() {
-        if (titleFont != null) titleFont.dispose();
-        if (itemFont != null) itemFont.dispose();
         if (shapeRenderer != null) shapeRenderer.dispose();
         if (buttonTexture != null && buttonTexture.getTexture() != null) buttonTexture.getTexture().dispose();
         if (buttonSelectedTexture != null && buttonSelectedTexture.getTexture() != null)

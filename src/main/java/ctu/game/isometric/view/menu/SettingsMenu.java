@@ -44,16 +44,16 @@ public class SettingsMenu {
     private boolean isDraggingSlider = false;
     private int draggingSliderIndex = -1;
 
-    public SettingsMenu(GameController gameController) {
+    public SettingsMenu(GameController gameController,BitmapFont titleFont, BitmapFont font) {
         this.gameController = gameController;
         this.menuOptions = new ArrayList<>();
         this.selectedIndex = 0;
         this.buttonRectangles = new ArrayList<>();
         this.sliderRectangles = new ArrayList<>();
 
-        this.font = generateVietNameseFont("GrenzeGotisch.ttf", 30);
+        this.font = font;
 
-        this.titleFont = generateVietNameseFont("GrenzeGotisch.ttf", 50);
+        this.titleFont = titleFont;
 
         this.shapeRenderer = new ShapeRenderer();
 
@@ -318,12 +318,6 @@ public class SettingsMenu {
     }
 
     public void dispose() {
-        if (font != null) {
-            font.dispose();
-        }
-        if (titleFont != null) {
-            titleFont.dispose();
-        }
         if (shapeRenderer != null) {
             shapeRenderer.dispose();
         }

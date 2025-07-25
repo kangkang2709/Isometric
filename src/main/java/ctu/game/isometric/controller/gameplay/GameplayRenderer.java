@@ -58,6 +58,17 @@ public class GameplayRenderer {
     // Effect animation
     private Map<String, Float> effectAlphaPhase = new HashMap<>();
 
+
+    private float hpBarAnimationTime = 0f;
+    private float mpBarAnimationTime = 0f;
+    private float turnTransitionTime = 0f;
+    private boolean previousTurnWasPlayer = true;
+    private Texture gradientTexture;
+    private Texture buttonTextureFancy;
+    private Color hpColor = new Color(1f, 0.2f, 0.2f, 1f);
+    private Color mpColor = new Color(0.2f, 0.5f, 1f, 1f);
+
+
     public GameplayRenderer(GameplayController controller, LetterGrid letterGrid, Viewport viewport) {
         this.controller = controller;
         this.letterGrid = letterGrid;
@@ -72,8 +83,56 @@ public class GameplayRenderer {
         createWhiteTexture();
         loadUITextures();
         createSpecialCellTextures();
-    }
 
+        createGradientTexture();
+        if (buttonTextureFancy == null) buttonTextureFancy = createFancyButtonTexture();
+    }
+    private Texture createFancyButtonTexture() {
+        Pixmap pixmap = new Pixmap(200, 50, Pixmap.Format.RGBA8888);
+        // Base color
+        pixmap.setColor(0.2f, 0.2f, 0.4f, 1f);
+        pixmap.fill();
+
+        // Top gradient
+        for (int y = 0; y < 15; y++) {
+            float alpha = 0.8f * (1 - y / 15f);
+            pixmap.setColor(1f, 1f, 1f, alpha);
+            pixmap.drawLine(0, y, 199, y);
+        }
+
+        // Bottom shadow
+        pixmap.setColor(0.1f, 0.1f, 0.2f, 1f);
+        pixmap.fillRectangle(0, 45, 200, 5);
+
+        // Border
+        pixmap.setColor(0.5f, 0.5f, 0.8f, 1f);
+        pixmap.drawRectangle(0, 0, 200, 50);
+
+        Texture texture = new Texture(pixmap);
+        pixmap.dispose();
+        return texture;
+    }
+    private Texture createPanelDecorationTexture() {
+        Pixmap pixmap = new Pixmap(32, 32, Pixmap.Format.RGBA8888);
+        pixmap.setColor(0.7f, 0.7f, 1.0f, 0.8f);
+        // Draw a corner decoration
+        for (int i = 0; i < 15; i++) {
+            pixmap.drawLine(0, i, i, 0);
+        }
+        Texture texture = new Texture(pixmap);
+        pixmap.dispose();
+        return texture;
+    }
+    private void createGradientTexture() {
+        Pixmap pixmap = new Pixmap(256, 1, Pixmap.Format.RGBA8888);
+        for (int x = 0; x < 256; x++) {
+            float factor = x / 255f;
+            pixmap.setColor(factor, factor * 0.7f, factor * 0.3f, 1f);
+            pixmap.drawPixel(x, 0);
+        }
+        gradientTexture = new Texture(pixmap);
+        pixmap.dispose();
+    }
     private void createWhiteTexture() {
         if (whiteTexture != null) whiteTexture.dispose();
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
@@ -85,8 +144,6 @@ public class GameplayRenderer {
 
     private void loadUITextures() {
         try {
-            buttonTexture = getTexture("ui/button.png");
-            buttonSelectedTexture = getTexture("ui/button_selected.png");
             if (buttonTexture == null) buttonTexture = createFallbackTexture(200, 50, Color.DARK_GRAY);
             if (buttonSelectedTexture == null) buttonSelectedTexture = createFallbackTexture(200, 50, Color.GRAY);
         } catch (Exception e) {
@@ -252,7 +309,7 @@ public class GameplayRenderer {
         drawEnemyInfoPanel(batch, 300, 580, 400, 120);
         drawEnemyStatusEffects(batch, 335, 597);
         drawPlayerInfo(batch, 720, PANEL_Y + OPTION_PANEL_HEIGHT + STATUS_PANEL_HEIGHT + 36, 400, STATUS_PANEL_HEIGHT + 20);
-        drawMainActionPanel2(batch, MAIN_PANEL_WIDTH + MARGIN, PANEL_Y + MARGIN + 90, 500 - 2 * MARGIN, UI_PANEL_HEIGHT - 2 * MARGIN - 90);
+//        drawMainActionPanel2(batch, MAIN_PANEL_WIDTH + MARGIN, PANEL_Y + MARGIN + 90, 500 - 2 * MARGIN, UI_PANEL_HEIGHT - 2 * MARGIN - 90);
         drawMainActionPanel(batch, MARGIN, PANEL_Y + MARGIN, MAIN_PANEL_WIDTH - MARGIN, UI_PANEL_HEIGHT - 2 * MARGIN);
 
         if (controller.getCurrentOverlay() == GameplayController.OverlayType.SPELL) {
@@ -328,21 +385,38 @@ public class GameplayRenderer {
     }
 
     private void drawEnemyInfoPanel(SpriteBatch batch, float x, float y, float width, float height) {
-        batch.setColor(0.8f, 0.8f, 1.0f, 1);
+        // Panel background with gradient
+        batch.setColor(0.2f, 0.2f, 0.35f, 0.9f);
+        batch.draw(whiteTexture, x, y, width, height);
+
+        // Glowing border based on turn
+        float glowIntensity = controller.isPlayerTurn() ? 0.5f : 0.8f + 0.2f * MathUtils.sin(hpBarAnimationTime * 3f);
+        Color borderColor = new Color(0.8f, 0.1f, 0.1f, glowIntensity);
+        batch.setColor(borderColor);
         drawBorder(batch, x, y, width, height, 3);
 
+        // Enemy name with glowing effect for bosses
         titleFont.setColor(Color.WHITE);
-        titleFont.draw(batch, controller.getEnemyName(), x + 10, y + height - 15);
+        String enemyName = controller.getEnemyName();
+        if (controller.isEnemyBoss()) {
+            Color bossColor = new Color(1f, 0.6f + 0.4f * MathUtils.sin(hpBarAnimationTime * 2f), 0.2f, 1f);
+            titleFont.setColor(bossColor);
+        }
+        titleFont.draw(batch, enemyName, x + 10, y + height - 15);
 
+        // Level display
         String levelText = "Lv." + controller.getCurrentLevel();
         layout.setText(regularFont, levelText);
         regularFont.setColor(Color.YELLOW);
         regularFont.draw(batch, levelText, x + width - layout.width - 10, y + height - 15);
 
-        drawPokemonStyleHPBar(batch, controller.getEnemyHealth(), controller.getEnemyMaxHealth(), x + 40, y + 45, width - 60, 20);
+        // Enhanced HP bar
+        drawModernHPBar(batch, controller.getEnemyHealth(), controller.getEnemyMaxHealth(),
+                x + 40, y + 45, width - 60, 20);
 
         regularFont.setColor(Color.WHITE);
-        regularFont.draw(batch, String.format("%.2f", controller.getEnemyHealth()) + "/" + (int) controller.getEnemyMaxHealth(), x + 80, y + 58);
+        regularFont.draw(batch, String.format("%.0f", controller.getEnemyHealth()) +
+                "/" + (int)controller.getEnemyMaxHealth(), x + 80, y + 58);
     }
 
     private void renderEnemyTooltip(SpriteBatch batch) {
@@ -366,36 +440,86 @@ public class GameplayRenderer {
     }
 
     private void drawPlayerInfo(SpriteBatch batch, float x, float y, float width, float height) {
-        batch.setColor(0.2f, 0.3f, 0.5f, 0.9f);
+        // Panel background with gradient
+        batch.setColor(0.15f, 0.2f, 0.35f, 0.9f);
         batch.draw(whiteTexture, x, y, width, height);
 
-        batch.setColor(0.8f, 0.8f, 1.0f, 1);
+
+        // Glowing border based on turn
+        float glowIntensity = controller.isPlayerTurn() ? 0.8f + 0.2f * MathUtils.sin(hpBarAnimationTime * 3f) : 0.5f;
+        Color borderColor = new Color(0.2f, 0.5f, 0.9f, glowIntensity);
+        batch.setColor(borderColor);
         drawBorder(batch, x, y, width, height, 3);
 
+        // Player name
         titleFont.setColor(Color.WHITE);
         titleFont.draw(batch, controller.getPlayerName(), x + 10, y + height - 15);
 
+        // Level display
         String levelText = "Lv." + controller.getCurrentLevel();
         layout.setText(regularFont, levelText);
         regularFont.setColor(Color.YELLOW);
         regularFont.draw(batch, levelText, x + width - layout.width - 10, y + height - 15);
 
+        // Enhanced HP and MP bars
+        drawModernHPBar(batch, controller.getPlayerHealth(), controller.getPlayerMaxHealth(),
+                x + 40, y + 80, width - 60, 20);
+        drawModernMPBar(batch, controller.getPlayerMana(), controller.getPlayerMaxMana(),
+                x + 40, y + 50, width - 60, 20);
+
+        // Health and mana values
         regularFont.setColor(Color.WHITE);
-        drawPokemonStyleHPBar(batch, controller.getPlayerHealth(), controller.getPlayerMaxHealth(), x + 40, y + 80, width - 60, 20);
-        drawPokemonStyleMPBar(batch, controller.getPlayerMana(), controller.getPlayerMaxMana(), x + 40, y + 50, width - 60, 20);
-        regularFont.draw(batch, String.format("%.2f", controller.getPlayerHealth()) + "/" + (int) controller.getPlayerMaxHealth(), x + 80, y + 93);
-        regularFont.draw(batch, (int) controller.getPlayerMana() + "/" + (int) controller.getPlayerMaxMana(), x + 80, y + 63);
+        regularFont.draw(batch, String.format("%.0f", controller.getPlayerHealth()) +
+                "/" + (int)controller.getPlayerMaxHealth(), x + 80, y + 93);
+        regularFont.draw(batch, (int)controller.getPlayerMana() +
+                "/" + (int)controller.getPlayerMaxMana(), x + 80, y + 63);
 
         drawStatusEffects(batch, x + 30, y + height - 133);
     }
+    private void drawConsoleStyleButton(SpriteBatch batch, Rectangle rect, String text, Color color) {
+        boolean isSelected = false;
+
+        // Check if this button represents the current overlay
+        if ((controller.getCurrentOverlay() == GameplayController.OverlayType.SPELL && rect.equals(controller.getSpellButton())) ||
+                (controller.getCurrentOverlay() == GameplayController.OverlayType.INVENTORY && rect.equals(controller.getItemButton()))) {
+            isSelected = true;
+        }
+
+        // Base button texture
+        batch.setColor(isSelected ? color : Color.WHITE);
+        batch.draw(buttonTextureFancy, rect.x, rect.y, rect.width, rect.height);
+
+        // Add glow effect for selected buttons
+        if (isSelected) {
+            batch.setColor(color.r, color.g, color.b, 0.5f + 0.3f * MathUtils.sin(hpBarAnimationTime * 4f));
+            drawBorder(batch, rect.x, rect.y, rect.width, rect.height, 3);
+        }
+
+        // Draw text with shadow for depth
+        layout.setText(regularFont, text);
+        float textX = rect.x + (rect.width - layout.width) / 2;
+        float textY = rect.y + (rect.height + layout.height) / 2;
+
+        // Draw shadow
+        regularFont.setColor(0.2f, 0.2f, 0.2f, 0.8f);
+        regularFont.draw(batch, text, textX + 2, textY - 2);
+
+        // Draw main text
+        regularFont.setColor(isSelected ? Color.WHITE : color);
+        regularFont.draw(batch, text, textX, textY);
+    }
 
     private void drawActionButtons(SpriteBatch batch, float screenWidth, float screenHeight) {
-        batch.setColor(0.1f, 0.1f, 0.3f, 0.95f);
+        // Panel background for buttons
+        batch.setColor(0.1f, 0.1f, 0.2f, 0.95f);
         batch.draw(whiteTexture, 788, 20, 460, 75);
 
-        drawPokemonStyleButton(batch, controller.getSpellButton(), "Tấn công", Color.CYAN);
-        drawPokemonStyleButton(batch, controller.getItemButton(), "Vật Phẩm", Color.ORANGE);
-        drawPokemonStyleButton(batch, controller.getNormalAttackButton(), "Tấn Công Thường", Color.GRAY);
+
+        // Draw JRPG-style buttons
+        drawConsoleStyleButton(batch, controller.getSpellButton(), "Kỹ năng", new Color(0.2f, 0.6f, 1f, 1f));
+        drawConsoleStyleButton(batch, controller.getItemButton(), "Vật Phẩm", new Color(1f, 0.6f, 0.2f, 1f));
+        drawConsoleStyleButton(batch, controller.getNormalAttackButton(), "Tấn Công", new Color(0.6f, 0.6f, 0.6f, 1f));
+        drawConsoleStyleButton(batch, controller.getInfoButton(), "Thông tin", new Color(0.8f, 0.4f, 0.2f, 1f));
     }
 
 
@@ -825,6 +949,83 @@ public class GameplayRenderer {
                 batch.setColor(Color.WHITE); // Reset after each effect
                 iconIndex++;
             }
+        }
+    }
+    private void drawModernHPBar(SpriteBatch batch, float currentHP, float maxHP, float x, float y, float width, float height) {
+        // Base background
+        batch.setColor(0.2f, 0.2f, 0.3f, 0.8f);
+        batch.draw(whiteTexture, x, y, width, height);
+
+        // Calculate fill percentage
+        float fillPercentage = Math.max(0, currentHP / maxHP);
+        float fillWidth = width * fillPercentage;
+
+        // Calculate pulse effect for low health
+        float pulse = 1.0f;
+        if (fillPercentage < 0.3f) {
+            pulse = 0.7f + 0.3f * MathUtils.sin(hpBarAnimationTime * 5f);
+        }
+
+        // Main HP bar with gradient
+        Color hpFillColor = new Color(hpColor);
+        hpFillColor.r *= pulse;
+        batch.setColor(hpFillColor);
+        batch.draw(whiteTexture, x, y, fillWidth, height);
+
+        // Gradient overlay
+        batch.setColor(1, 1, 1, 0.2f + 0.1f * MathUtils.sin(hpBarAnimationTime));
+        batch.draw(gradientTexture, x, y, fillWidth, height);
+
+        // Border
+        batch.setColor(0.8f, 0.8f, 1.0f, 1);
+        drawBorder(batch, x, y, width, height, 2);
+
+        // HP text
+        titleFont.setColor(Color.WHITE);
+        titleFont.draw(batch, "HP", x - 30, y + height/2 + 5);
+    }
+
+    // Enhanced MP Bar with FF7 Remake style
+    private void drawModernMPBar(SpriteBatch batch, float currentMP, float maxMP, float x, float y, float width, float height) {
+        // Base background
+        batch.setColor(0.2f, 0.2f, 0.3f, 0.8f);
+        batch.draw(whiteTexture, x, y, width, height);
+
+        // Calculate fill percentage
+        float fillPercentage = Math.max(0, currentMP / maxMP);
+        float fillWidth = width * fillPercentage;
+
+        // Main MP bar with shimmer effect
+        Color mpFillColor = new Color(mpColor);
+        mpFillColor.b += 0.2f * MathUtils.sin(mpBarAnimationTime * 3f);
+        batch.setColor(mpFillColor);
+        batch.draw(whiteTexture, x, y, fillWidth, height);
+
+        // Gradient overlay
+        batch.setColor(1, 1, 1, 0.3f + 0.1f * MathUtils.sin(mpBarAnimationTime * 2f));
+        batch.draw(gradientTexture, x, y, fillWidth, height);
+
+        // Border
+        batch.setColor(0.8f, 0.8f, 1.0f, 1);
+        drawBorder(batch, x, y, width, height, 2);
+
+        // MP text
+        titleFont.setColor(Color.WHITE);
+        titleFont.draw(batch, "MP", x - 30, y + height/2 + 5);
+    }
+    public void updateFlicker2(float delta) {
+        hpBarAnimationTime += delta * 2f;
+//        mpBarAnimationTime += delta * 1.5f;
+
+        // Check if turn has changed
+        boolean isPlayerTurn = controller.isPlayerTurn();
+        if (isPlayerTurn != previousTurnWasPlayer) {
+            turnTransitionTime = 1.0f;
+            previousTurnWasPlayer = isPlayerTurn;
+        }
+
+        if (turnTransitionTime > 0) {
+            turnTransitionTime = Math.max(0, turnTransitionTime - delta * 2f);
         }
     }
 
