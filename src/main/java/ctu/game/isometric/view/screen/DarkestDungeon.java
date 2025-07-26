@@ -350,7 +350,7 @@ public class DarkestDungeon implements Screen {
                                 gameController.setState(GameState.EXPLORING);
                                 gameController.getCharacter().setHealth(playerHP);
                                 gameController.getCharacter().setMana(playerMana);
-                                gameController.getMapRenderer().setZoomed(true);
+                                gameController.getMapRenderer().setZoomed(false);
                                 gameController.setRenderCharacter(true);
                                 game.changeScreen("GAME");
 

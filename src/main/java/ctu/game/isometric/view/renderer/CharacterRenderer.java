@@ -17,16 +17,22 @@ public class CharacterRenderer {
     private AssetManager assetManager;
     private AnimationManager animationManager;
     private MapRenderer mapRenderer;
-    Gender gender;
-    GameController gameController;
+    private GameController gameController;
+
+    private Texture darkBackgroundTexture;
+    private SpriteBatch darkBackgroundBatch = new SpriteBatch();
+
+    private static final float OFFSET_Y = 17.5f;
+    private static final float OFFSET_X = -3f;
+    private static final float OFFSET_PLAYER_X = 10;
+    private static final float OFFSET_PLAYER_Y = -5;
 
     public CharacterRenderer(Character character, AssetManager assetManager, MapRenderer mapRenderer) {
         this.character = character;
-//        character.setGameMap(mapRenderer.getMap());
         this.assetManager = assetManager;
         this.mapRenderer = mapRenderer;
         this.animationManager = assetManager.getAnimationManager();
-        // Use the character's gender instead of the uninitialized field
+
         Gender characterGender = character.getGender();
         if (characterGender == null || characterGender.equals(Gender.MALE)) {
             this.animationManager.loadKnockedDownAnimation("characters/knocked_down_male.png");
@@ -35,33 +41,49 @@ public class CharacterRenderer {
             this.animationManager.loadKnockedDownAnimation("characters/knocked_down_female.png");
             this.animationManager.loadCharacterAnimations("characters/female_idle.png", "characters/female_walk.png");
         }
+        darkBackgroundMatrix = new Matrix4().idt().setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
+        darkBackgroundMatrix = new Matrix4().idt().setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        darkBackgroundMatrix = new Matrix4().idt().setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        darkBackgroundTexture = assetManager.loadTexture("dark", "textures/darkness2.png");
     }
 
+    Matrix4 darkBackgroundMatrix;
 
-    float offsetY = 17.5f;
-    float offsetX = -3f;
+    public void renderDarkBackground(SpriteBatch batch) {
+        if (darkBackgroundTexture != null) {
+            // Save the current batch transformation matrix
+            Matrix4 originalMatrix = batch.getProjectionMatrix().cpy();
+
+            // Set identity matrix for screen-space rendering
+            batch.setProjectionMatrix(darkBackgroundMatrix);
+
+            // Draw the dark background in screen coordinates
+            batch.draw(darkBackgroundTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
+            // Restore the original transformation matrix
+            batch.setProjectionMatrix(originalMatrix);
+        }
+    }
+
 
     public void render(SpriteBatch batch) {
         float gridX = character.getGridX();
         float gridY = character.getGridY();
 
-
         float[] screenPos = mapRenderer.toIsometric(gridX, gridY);
-
 
         float isoX = screenPos[0];
         float isoY = screenPos[1];
 
-
         if (mapRenderer.getMap().getMapName().equals("board")) {
-            isoY += offsetY;
-            isoX += offsetX;
+            isoY += OFFSET_Y;
+            isoX += OFFSET_X;
         }
-        // Get animation frame with translated direction
+
         String direction = translateDirection(character.getDirection());
 
-        if(direction.equals("knocked_down")) {
+        if (direction.equals("knocked_down")) {
             isoY += 14;
             isoX += 14;
         }
@@ -73,13 +95,11 @@ public class CharacterRenderer {
         );
 
 
-        // Position character at the center of the tile
-        float offsetPlayerX = 10; // Half of sprite width (48/2)
-        float offsetPlayerY = -5; // Position the feet at tile base (character sprite height - tile height)
-
-        batch.draw(currentFrame, isoX + offsetPlayerX, isoY + offsetPlayerY);
+        batch.draw(currentFrame, isoX + OFFSET_PLAYER_X, isoY + OFFSET_PLAYER_Y);
+        if (mapRenderer.isRenderDarknessWithLight()){
+            renderDarkBackground(batch);
+        }
     }
-
 
     public GameController getGameController() {
         return gameController;
@@ -89,7 +109,6 @@ public class CharacterRenderer {
         this.gameController = gameController;
     }
 
-    // Convert simplified direction to sprite sheet direction
     private String translateDirection(String direction) {
         switch (direction) {
             case "up":
@@ -97,9 +116,9 @@ public class CharacterRenderer {
             case "down":
                 return "down";
             case "left":
-                return "left_down"; // In isometric, pure left maps to left_down
+                return "left_down";
             case "right":
-                return "right_down"; // In isometric, pure right maps to right_down
+                return "right_down";
             case "left_up":
                 return "left_up";
             case "right_up":
@@ -114,7 +133,9 @@ public class CharacterRenderer {
     }
 
     public void dispose() {
-        // Dispose of any resources if needed
         animationManager.dispose();
+        if (darkBackgroundBatch != null) {
+            darkBackgroundBatch.dispose();
+        }
     }
 }

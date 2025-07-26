@@ -57,7 +57,7 @@ public class MainMenu {
         initializeParallaxBackground();
 
         buttonNormal = new Texture(Gdx.files.internal("ui/button.png"));
-        buttonSelected = new Texture(Gdx.files.internal("ui/button_selected.png"));
+        buttonSelected = new Texture(Gdx.files.internal("ui/panel-header-4.png"));
 
         buttonRects = new Rectangle[menuOptions.length];
         int menuX = (screenWidth - BUTTON_WIDTH) / 2;

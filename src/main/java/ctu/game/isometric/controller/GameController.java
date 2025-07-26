@@ -257,6 +257,7 @@ public class GameController {
     public IsometricMap changeMap(String mapName) {
 
         IsometricMap newMap = this.mapList.get(mapName);
+
         if (newMap != null) {
             System.out.println("Changing map to: " + mapName);
             transitionRenderer.startLoadingScreen(() -> {
@@ -288,9 +289,12 @@ public class GameController {
                 }
 
                 this.map = newMap;
-                if (mapName.equals("board")) boardEventManager.randomBoardEveryRun();
                 this.character.setGameMap(map);
                 this.pathfinder.setMap(newMap);
+                if (mapName.equals("board")) {
+                    boardEventManager.setMap(this.map);
+                    boardEventManager.randomBoardEveryRun();
+                }
                 this.eventManager = this.eventManagerMap.get(mapName);
                 this.game.getGameScreen().getMapRenderer().changeTiledMapRenderer(this.map, this.eventManager);
             });
@@ -353,13 +357,13 @@ public class GameController {
 
             if (mapName.equalsIgnoreCase("board")) {
                 newMap.generateRandomMaze(getCharacter().getRun() / 2);
-                boardEventManager.randomBoardEveryRun();
                 System.out.println("New run generated with run level: " + getCharacter().getRun());
                 isNewRun = false;
             }
 
 
             this.map = newMap;
+            boardEventManager.randomBoardEveryRun();
             this.character.setGameMap2(map);
             if (mapName.equals("forest")) {
                 this.character.setPosition(10, 14);
@@ -1266,8 +1270,7 @@ public class GameController {
             inputController.showTargetIndicator(targetX, targetY);
 
             if (eventManager.getMapName().equals("board"))
-                this.boardEventManager.checkBoardPlayerPosition((int) targetX, (int) targetY);
-            checkPositionEvents((int) targetX, (int) targetY);
+                checkPositionEvents((int) targetX, (int) targetY);
 //
 
         }
@@ -1388,6 +1391,8 @@ public class GameController {
     private void checkPositionEvents(float x, float y) {
         getMapRenderer().setZoomed(false);
         currentEvent = eventManager.checkPositionEvents(x, y);
+        mapRenderer.setRenderInfoCard(false);
+
         isRenderCharacter = true;
         if (currentEvent != null) {
             hasActiveEvent = true;
@@ -1396,10 +1401,11 @@ public class GameController {
                 isRenderCharacter = false;
                 mapRenderer.setRenderInfoCard(true);
                 getMapRenderer().setAcceptingRoll(true);
-            } else if (currentEventType.equals("trap") && !trapUnlock.containsKey(currentEventId))
+            } else if (currentEventType.equals("trap") && !trapUnlock.containsKey(currentEventId)) {
                 getMapRenderer().setAcceptingRoll(true);
-            else getMapRenderer().setAcceptingRoll(false);
-
+            } else {
+                getMapRenderer().setAcceptingRoll(false);
+            }
             currentEventId = currentEvent.getId();
             currentEventX = currentEvent.getGridX();
             currentEventY = currentEvent.getGridY();
@@ -1804,7 +1810,10 @@ public class GameController {
 
     private void applyQuizMovementEffect(float scoreDifference) {
         if (scoreDifference == 0) {
-            getDialogController().showSimpleMessage("Bạn đã trả lời sai. Không có phần thưởng.");
+            int dmg = 3 + (int) (Math.random() * 3); // Random damage between 1 and 3
+            getDialogController().showSimpleMessage("Bạn đã trả lời sai. Bị tổn thương tinh thần -" + dmg + " HP.");
+            character.decreaseHealth(dmg);
+
         } else {
             getDialogController().showSimpleMessage("Bạn đã trả lời đúng. Nhận thêm 1 lượt tung xúc sắc!");
             getDice().setBonusRoll(true);

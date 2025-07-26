@@ -1196,7 +1196,7 @@ public class GameplayController {
                     break;
             }
 
-
+            gameController.getMapRenderer().setZoomed(false);
             gameController.setRenderCharacter(true);
             achievementManager.updateProgress(Achievement.AchievementType.COMBAT_WIN, 1);
 
