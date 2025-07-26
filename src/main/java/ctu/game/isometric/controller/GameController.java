@@ -50,6 +50,7 @@ public class GameController {
     public IsometricGame getGame() {
         return game;
     }
+
     private AssetManager assetManager;
 
     private IsometricMap map;
@@ -161,12 +162,15 @@ public class GameController {
     BitmapFont titleFont;
     BitmapFont regularFont;
     BitmapFont commonFont;
+    BitmapFont bigCommonFont;
+
     public GameController(IsometricGame game) {
         this.game = game;
         this.font = generateVietNameseFont("GrenzeGotisch.ttf", 35);
         this.titleFont = generateVietNameseFont("GrenzeGotisch.ttf", 50);
         this.regularFont = generateVietNameseFont("Roboto-Black.ttf", 16);
         this.commonFont = generateVietNameseFont("NovaSquare-Regular.ttf", 20);
+        this.bigCommonFont = generateVietNameseFont("NovaSquare-Regular.ttf", 26);
 
         this.map = new IsometricMap();
         this.eventManager = new EventManager(map, "board");
@@ -194,13 +198,13 @@ public class GameController {
         this.dialogController = new DialogController(this);
         this.musicController = new MusicController();
         characterCreationController = new CharacterCreation(this);
-        this.pauseMenu = new PauseMenu(this,titleFont, font);
+        this.pauseMenu = new PauseMenu(this, titleFont, font);
 
 
         effectManager = new EffectManager();
         this.loadEffects();
-        this.settingsMenu = new SettingsMenu(this,titleFont, font);
-        this.mainMenuController = new MainMenu(this,font);
+        this.settingsMenu = new SettingsMenu(this, titleFont, font);
+        this.mainMenuController = new MainMenu(this, font);
         this.transitionRenderer = new TransitionRenderer();
         this.cutsceneController = new CutsceneRenderer(this);
         loadGameController = new LoadGameController(this);
@@ -219,7 +223,7 @@ public class GameController {
         inputController.setEffectManager(effectManager);
 
         achievementManager = new AchievementManager(this);
-        achievementUI = new AchievementUI(achievementManager,font, regularFont);
+        achievementUI = new AchievementUI(achievementManager, font, regularFont);
         this.currentPlayTime = new Date();
 
         // Initialize the level up notification
@@ -229,7 +233,7 @@ public class GameController {
         npcManager = new NPCManager(this);
 
         bountyBoardController = new BountyBoardController(this);
-        bountyBoardView = new BountyBoardView(bountyBoardController,font,commonFont);
+        bountyBoardView = new BountyBoardView(bountyBoardController, font, commonFont);
         questTrackerView = new QuestTrackerView(this);
 
         tutorialUI = new TutorialUI(this);
@@ -1012,6 +1016,7 @@ public class GameController {
         });
 
     }
+
     public void startCutscene(String cutsceneName) {
         setPreviousState(currentState);
         setState(GameState.CUTSCENE);
@@ -1089,6 +1094,7 @@ public class GameController {
 
         checkPositionEvents(newX, newY);
     }
+
     private Set<String> activeEvents = new HashSet<>();
 
     public void checkForestEvents(float x, float y) {
@@ -1296,6 +1302,7 @@ public class GameController {
 
         }
     }
+
     public void resetEventsManager() {
         eventManagerMap.get("board").resetEvents(mapList.get("board"));
         eventManagerMap.get("main").resetEvents(mapList.get("main"));
@@ -1338,6 +1345,9 @@ public class GameController {
             gameplayController.dispose();
             gameplayController = new GameplayController(this);
         }
+        if (merchantUI != null) {
+            merchantUI.dispose();
+        }
 
         transitionRenderer = new TransitionRenderer();
 
@@ -1351,6 +1361,7 @@ public class GameController {
         System.gc(); // Request garbage collection
 
     }
+
     public LoadGameController getLoadGameController() {
         return loadGameController;
     }
@@ -1373,6 +1384,7 @@ public class GameController {
     public void setRenderCharacter(boolean renderCharacter) {
         isRenderCharacter = renderCharacter;
     }
+
     private void checkPositionEvents(float x, float y) {
         getMapRenderer().setZoomed(false);
         currentEvent = eventManager.checkPositionEvents(x, y);
@@ -1416,6 +1428,7 @@ public class GameController {
     public String getCurrentEventId() {
         return currentEventId;
     }
+
     public void setCompletedEvent() {
         eventManager.completeEvent(currentEventId);
         currentEventType = null;
@@ -1441,6 +1454,7 @@ public class GameController {
             return; // Trap already unlocked
         trapUnlock.put(trapId, true);
     }
+
     public void handleEventProperties(MapProperties properties, String event) {
 
         int gridX = (int) getCharacter().getGridX();
@@ -1787,6 +1801,7 @@ public class GameController {
         }
 
     }
+
     private void applyQuizMovementEffect(float scoreDifference) {
         if (scoreDifference == 0) {
             getDialogController().showSimpleMessage("Bạn đã trả lời sai. Không có phần thưởng.");
@@ -1796,6 +1811,7 @@ public class GameController {
             character.setBonusRolls(getDice().getBonusCount());
         }
     }
+
     boolean isNewRun = false;
 
     private void openTreasureWithAnimation(Items item, int amount, int x, int y) {
@@ -1840,6 +1856,18 @@ public class GameController {
 
     public BitmapFont getFont() {
         return font;
+    }
+
+    public BitmapFont getRegularFont() {
+        return regularFont;
+    }
+
+    public BitmapFont getCommonFont() {
+        return commonFont;
+    }
+
+    public BitmapFont getTitleFont() {
+        return titleFont;
     }
 
     public EventManager getEventManager() {
@@ -1924,10 +1952,10 @@ public class GameController {
         if (wordNetValidator != null) {
             wordNetValidator.dispose();
         }
-        if (font!= null) {
+        if (font != null) {
             font.dispose();
         }
-        if(titleFont != null) {
+        if (titleFont != null) {
             titleFont.dispose();
         }
         if (assetManager != null) {
@@ -2052,12 +2080,17 @@ public class GameController {
 
         }
     }
+
     public NPCManager getNpcManager() {
         return npcManager;
     }
 
     public WordNetValidator getWordNetValidator() {
         return wordNetValidator;
+    }
+
+    public BitmapFont getBigCommonFont() {
+        return bigCommonFont;
     }
 
     public AchievementManager getAchievementManager() {

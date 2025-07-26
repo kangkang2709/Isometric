@@ -375,7 +375,7 @@ public class InputController extends InputAdapter {
         }
         if (state == GameState.EXPLORING) {
             if (gameController.getMerchantUI().isVisible()) {
-                gameController.getMerchantUI().handleMouseMove(screenX, screenY);
+                gameController.getMerchantUI().handleHover(screenX, screenY);
                 return true;
             }
             if (gameController.getInventoryUI().isVisible()) {
@@ -792,7 +792,7 @@ public class InputController extends InputAdapter {
                  return gameController.getCharacterDisplay().handleScroll(amountY);
             }
             case EXPLORING -> {
-                if (gameController.getMap().getMapName().equals("board1") || gameController.getMap().getMapName().equals("forest") || gameController.getMap().getMapName().equals("main"))
+                if (gameController.getMap().getMapName().equals("board") || gameController.getMap().getMapName().equals("forest") || gameController.getMap().getMapName().equals("main"))
                     return false;
                 float defaultZoom = 1.0f;
                 float minZoom = 0.5f;

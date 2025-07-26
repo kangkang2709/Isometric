@@ -112,9 +112,12 @@ public class InventoryUI {
 
     public InventoryUI(GameController gameController) {
         this.gameController = gameController;
-        this.font = generateVietNameseFont("NovaSquare-Regular.ttf", 20);
-        this.titleFont = generateVietNameseFont("NovaSquare-Regular.ttf", 28);
-        this.buttonFont = generateVietNameseFont("NovaSquare-Regular.ttf", 18);
+        this.font = gameController.getCommonFont();
+        this.titleFont = gameController.getBigCommonFont();
+
+        this.buttonFont = font;
+        this.buttonFont.getData().setScale(0.9f);
+
         this.shapeRenderer = new ShapeRenderer();
 
         // Create projection matrix once
@@ -318,7 +321,7 @@ public class InventoryUI {
 
         // Draw inventory icon
         batch.draw(iconTexture,
-                inventoryBounds.x +20,
+                inventoryBounds.x + 20,
                 inventoryBounds.y + inventoryBounds.height - 50,
                 40, 40);
 
@@ -443,7 +446,7 @@ public class InventoryUI {
                 font.setColor(textColor.r, textColor.g, textColor.b, alpha);
 
                 // Draw item stats with icons or visual styling
-                String itemType = item.getItemEffect().equals("N/A") ? item.getItemEffect() : "KEY ITEM";
+                String itemType = !item.getItemEffect().equals("N/A") ? item.getItemEffect() : "KEY ITEM";
                 drawItemStat(batch, "Effect:", itemType, detailsX + 90, detailsY - 40);
                 drawItemStat(batch, "Value:", String.valueOf(item.getValue()), detailsX + 90, detailsY - 70);
                 drawItemStat(batch, "Mana:", String.valueOf(item.getManaCost()), detailsX + 90, detailsY - 100);
@@ -783,11 +786,6 @@ public class InventoryUI {
         if (buttonTexture != null) buttonTexture.dispose();
         if (buttonHoverTexture != null) buttonHoverTexture.dispose();
         if (iconTexture != null) iconTexture.dispose();
-
-        for (Texture texture : itemTextures.values()) {
-            if (texture != null) texture.dispose();
-        }
-        itemTextures.clear();
 
         if (font != null) font.dispose();
         if (titleFont != null) titleFont.dispose();
