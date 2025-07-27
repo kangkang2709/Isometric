@@ -1,14 +1,13 @@
 package ctu.game.isometric.view.scene;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.PerspectiveCamera;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.VertexAttributes;
+import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g3d.*;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
+import com.badlogic.gdx.math.Vector3;
 
 public class CombatEnvironment3D {
     private ModelBatch modelBatch;
@@ -42,45 +41,136 @@ public class CombatEnvironment3D {
         ModelBuilder modelBuilder = new ModelBuilder();
         modelBatch = new ModelBatch();
 
-        // Tạo sàn 3D
-        // Load texture (đảm bảo file tồn tại trong assets)
-        Texture floorTexture = new Texture(Gdx.files.internal("ui/grass.png"));
-        floorTexture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
+        // Tạo terrain từ heightmap
+        createHeightmapTerrain(modelBuilder);
+    }
 
-// Create material with texture
-        Material floorMaterial = new Material(TextureAttribute.createDiffuse(floorTexture));
+    private void createHeightmapTerrain(ModelBuilder modelBuilder) {
+        // Load heightmap texture (grayscale image)
+        Texture heightmapTexture = new Texture(Gdx.files.internal("terrain/heightmap1.png"));
+        Pixmap heightmapPixmap = new Pixmap(Gdx.files.internal("terrain/heightmap1.png"));
 
-// Create the floor model using the textured material
-        Model floorModel = modelBuilder.createBox(
-                50f, 0.5f, 15f,
-                floorMaterial,
-                VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal | VertexAttributes.Usage.TextureCoordinates
-        );
+        // Load diffuse texture for terrain
+        Texture terrainTexture = new Texture(Gdx.files.internal("ui/grass.png"));
+        terrainTexture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
 
-// Create instance
-        floorInstance = new ModelInstance(floorModel);
+        // Terrain parameters
+        int terrainWidth = 64;  // Number of vertices in width
+        int terrainDepth = 64;  // Number of vertices in depth
+        float terrainScale = 50f; // World size scale
+        float heightScale = 8f;   // Maximum height variation
 
-        floorInstance.transform.setToTranslation(0, -0.25f, 0);
+        // Create vertices and indices for terrain mesh
+        float[] vertices = createTerrainVertices(heightmapPixmap, terrainWidth, terrainDepth, terrainScale, heightScale);
+        short[] indices = createTerrainIndices(terrainWidth, terrainDepth);
 
-        // Tạo tường backdrop
-//        wallInstances = new ModelInstance[3];
-//        Model wallModel = modelBuilder.createBox(20f, 12f, 0.5f,
-//                new Material(ColorAttribute.createDiffuse(0.2f, 0.15f, 0.1f, 1f)),
-//                VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
-//
-////        wallInstances[0] = new ModelInstance(wallModel);
-////        wallInstances[0].transform.setToTranslation(0, 6f, -7.5f);
-////
-////        // Tường bên trái
-////        Model sideWallModel = modelBuilder.createBox(0.5f, 12f, 15f,
-////                new Material(ColorAttribute.createDiffuse(0.15f, 0.1f, 0.08f, 1f)),
-////                VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
-////
-////        wallInstances[1] = new ModelInstance(sideWallModel);
-////        wallInstances[1].transform.setToTranslation(0f, 6f, 0);
-////
-////        wallInstances[2] = new ModelInstance(sideWallModel);
-////        wallInstances[2].transform.setToTranslation(0f, 6f, 0);
+        // Create mesh
+        // Create mesh
+        Mesh terrainMesh = new Mesh(true, vertices.length / 8, indices.length,
+                new VertexAttribute(VertexAttributes.Usage.Position, 3, "a_position"),
+                new VertexAttribute(VertexAttributes.Usage.Normal, 3, "a_normal"),
+                new VertexAttribute(VertexAttributes.Usage.TextureCoordinates, 2, "a_texCoord0"));
+
+        terrainMesh.setVertices(vertices);
+        terrainMesh.setIndices(indices);
+
+// Create material
+        Material terrainMaterial = new Material(TextureAttribute.createDiffuse(terrainTexture));
+
+// Create model from mesh
+        modelBuilder.begin();
+        modelBuilder.part("terrain", terrainMesh, GL20.GL_TRIANGLES, terrainMaterial);
+        Model terrainModel = modelBuilder.end();
+        floorInstance = new ModelInstance(terrainModel);
+
+// Cleanup
+        heightmapPixmap.dispose();
+    }
+
+
+    private float[] createTerrainVertices(Pixmap heightmap, int width, int depth, float scale, float heightScale) {
+        float[] vertices = new float[width * depth * 8]; // position(3) + normal(3) + texCoord(2)
+        int vertexIndex = 0;
+
+        for (int z = 0; z < depth; z++) {
+            for (int x = 0; x < width; x++) {
+                // Calculate world position
+                float worldX = (x / (float)(width - 1) - 0.5f) * scale;
+                float worldZ = (z / (float)(depth - 1) - 0.5f) * scale;
+
+                // Sample height from heightmap
+                int pixelX = (int)((x / (float)(width - 1)) * (heightmap.getWidth() - 1));
+                int pixelZ = (int)((z / (float)(depth - 1)) * (heightmap.getHeight() - 1));
+                int pixel = heightmap.getPixel(pixelX, pixelZ);
+                float height = ((pixel & 0xff) / 255f) * heightScale;
+
+                // Position
+                vertices[vertexIndex++] = worldX;
+                vertices[vertexIndex++] = height;
+                vertices[vertexIndex++] = worldZ;
+
+                // Calculate normal (simplified - you might want to improve this)
+                Vector3 normal = calculateNormal(heightmap, x, z, width, depth, heightScale);
+                vertices[vertexIndex++] = normal.x;
+                vertices[vertexIndex++] = normal.y;
+                vertices[vertexIndex++] = normal.z;
+
+                // Texture coordinates
+                vertices[vertexIndex++] = x / (float)(width - 1) * 4f; // Repeat texture 4 times
+                vertices[vertexIndex++] = z / (float)(depth - 1) * 4f;
+            }
+        }
+
+        return vertices;
+    }
+
+    private Vector3 calculateNormal(Pixmap heightmap, int x, int z, int width, int depth, float heightScale) {
+        // Sample neighboring heights for normal calculation
+        float heightL = getHeight(heightmap, x - 1, z, width, depth, heightScale);
+        float heightR = getHeight(heightmap, x + 1, z, width, depth, heightScale);
+        float heightD = getHeight(heightmap, x, z - 1, width, depth, heightScale);
+        float heightU = getHeight(heightmap, x, z + 1, width, depth, heightScale);
+
+        Vector3 normal = new Vector3(heightL - heightR, 2.0f, heightD - heightU);
+        normal.nor();
+        return normal;
+    }
+
+    private float getHeight(Pixmap heightmap, int x, int z, int width, int depth, float heightScale) {
+        // Clamp coordinates
+        x = Math.max(0, Math.min(width - 1, x));
+        z = Math.max(0, Math.min(depth - 1, z));
+
+        int pixelX = (int)((x / (float)(width - 1)) * (heightmap.getWidth() - 1));
+        int pixelZ = (int)((z / (float)(depth - 1)) * (heightmap.getHeight() - 1));
+        int pixel = heightmap.getPixel(pixelX, pixelZ);
+        return ((pixel & 0xff) / 255f) * heightScale;
+    }
+
+    private short[] createTerrainIndices(int width, int depth) {
+        short[] indices = new short[(width - 1) * (depth - 1) * 6];
+        int index = 0;
+
+        for (int z = 0; z < depth - 1; z++) {
+            for (int x = 0; x < width - 1; x++) {
+                int topLeft = z * width + x;
+                int topRight = topLeft + 1;
+                int bottomLeft = (z + 1) * width + x;
+                int bottomRight = bottomLeft + 1;
+
+                // First triangle
+                indices[index++] = (short)topLeft;
+                indices[index++] = (short)bottomLeft;
+                indices[index++] = (short)topRight;
+
+                // Second triangle
+                indices[index++] = (short)topRight;
+                indices[index++] = (short)bottomLeft;
+                indices[index++] = (short)bottomRight;
+            }
+        }
+
+        return indices;
     }
 
     public void render() {

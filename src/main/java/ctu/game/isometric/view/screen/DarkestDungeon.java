@@ -4,9 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.*;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.utils.Array;
@@ -135,8 +133,8 @@ public class DarkestDungeon implements Screen {
     private Vector3 enemyWorldPos = new Vector3(5f, 1f, -2f);
 
     // Camera movement
-    private Vector3 cameraTargetPos = new Vector3(0f, 8f, 12f);
-    private Vector3 cameraCurrentPos = new Vector3(0f, 8f, 12f);
+    private Vector3 cameraTargetPos = new Vector3(0f, 4f, 12f);
+    private Vector3 cameraCurrentPos = new Vector3(0f, 4f, 12f);
     private float cameraLerpSpeed = 2f;
 
 
@@ -277,7 +275,6 @@ public class DarkestDungeon implements Screen {
         camera = new OrthographicCamera();
         camera.setToOrtho(false, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-
         combatCamera = new OrthographicCamera();
         combatCamera.setToOrtho(false, SCREEN_WIDTH, SCREEN_HEIGHT);
 
@@ -291,6 +288,7 @@ public class DarkestDungeon implements Screen {
         rewardRenderer = new RewardRenderer(batch, font, titleFont, inputFont, shapeRenderer, assetManager);
         defeatRenderer = new DefeatRenderer(batch, font, titleFont, inputFont, shapeRenderer);
         tutorialRenderer = new TutorialRenderer(batch, font, titleFont, inputFont, shapeRenderer);
+        loadAnimations();
 
         Gdx.input.setInputProcessor(new com.badlogic.gdx.InputAdapter() {
             @Override
@@ -642,6 +640,9 @@ public class DarkestDungeon implements Screen {
             if (showWordDisplay && !isPaused) {
                 drawWordDisplay();
             }
+            batch.begin();
+            renderActionAnimation(batch);
+            batch.end();
 
             drawBottomUI();
             if (showTooltip && !isPaused) {
@@ -704,25 +705,147 @@ public class DarkestDungeon implements Screen {
     private void updateCameraMovement(float delta) {
         PerspectiveCamera cam = environment3D.getCamera();
 
-        // Smooth camera movement
-        cameraCurrentPos.lerp(cameraTargetPos, cameraLerpSpeed * delta);
+        // Apply camera positioning based on combat state - gentler movements
+        if (isAnimating) {
+            switch (animState) {
+                case MOVE_TO_CENTER:
+                    // Different camera behavior based on skill type
+                    if (isPlayerAction) {
+                        // For heal/defend, use more subtle camera movement
+                        if (currentSkill == 3 || currentSkill == 4) { // Heal or Defend
+                            float prepProgress = Math.min(1.0f, animationTimer / (MOVE_DURATION * 0.7f));
+                            cameraTargetPos.set(
+                                    Interpolation.smooth.apply(1f, 1.5f, prepProgress),
+                                    Interpolation.smooth.apply(4f, 4.5f, prepProgress),
+                                    Interpolation.smooth.apply(12f, 10f, prepProgress)
+                            );
+                            // No camera shake
+                        } else { // Attack skills - still dramatic but less intense
+                            float prepProgress = Math.min(1.0f, animationTimer / (MOVE_DURATION * 0.7f));
+                            cameraTargetPos.set(
+                                    Interpolation.smooth.apply(-1.5f, -2f, prepProgress),
+                                    Interpolation.smooth.apply(4f, 5f, prepProgress),
+                                    Interpolation.smooth.apply(12f, 9.5f, prepProgress)
+                            );
+                        }
+                    } else {
+                        // Enemy attack - gentler camera angle
+                        float prepProgress = Math.min(1.0f, animationTimer / (MOVE_DURATION * 0.7f));
+                        cameraTargetPos.set(
+                                Interpolation.smooth.apply(1.5f, 2.5f, prepProgress),
+                                Interpolation.smooth.apply(4f, 5f, prepProgress),
+                                Interpolation.smooth.apply(12f, 10f, prepProgress)
+                        );
+                    }
+                    break;
+
+                case SKILL_EFFECT:
+                    // More subtle camera effects during skills
+                    if (currentSkill == 0 || enemyAction == 0) { // Basic attack
+                        // No shake, just subtle FOV change
+                        cam.fieldOfView = MathUtils.lerp(
+                                67f,
+                                64f,
+                                Math.max(0, 1.0f - Math.abs(animationTimer - SKILL_EFFECT_DURATION / 2) * 2)
+                        );
+                    } else if (currentSkill == 1 || enemyAction == 1) { // Word skill
+                        // Subtle camera movement for special moves
+                        float angle = animationTimer * 10f; // Reduced rotation speed
+                        float radius = 13f;
+                        float height = 4.5f + (float) Math.sin(animationTimer * 2) * 0.2f; // Less vertical movement
+
+                        cameraTargetPos.set(
+                                (float) Math.cos(Math.toRadians(angle)) * radius,
+                                height,
+                                (float) Math.sin(Math.toRadians(angle)) * radius
+                        );
+                        cam.lookAt(0f, 2f, 0f);
+                    } else if (currentSkill == 2) { // TypeW - much gentler camera when waiting for input
+                        if (waitingForInput) {
+//                            // Very subtle movement while waiting for player input
+//                            float angle = animationTimer * 10f; // Much slower rotation
+//                            float radius = 12f;
+//
+//                            cameraTargetPos.set(
+//                                    (float)Math.cos(Math.toRadians(angle)) * radius * 0.2f,
+//                                    4.5f,
+//                                    11f + (float)Math.sin(Math.toRadians(angle)) * radius * 0.2f
+//                            );
+                        } else {
+                            // Gentle movement during skill execution
+                            startActionAnimation(3);
+                            float angle = animationTimer * 20f;
+                            float radius = 12f;
+
+                            cameraTargetPos.set(
+                                    (float) Math.cos(Math.toRadians(angle)) * radius * 0.5f,
+                                    4.5f + (float) Math.sin(animationTimer * 2) * 0.2f,
+                                    11f + (float) Math.sin(Math.toRadians(angle)) * radius * 0.5f
+                            );
+                        }
+                        cam.lookAt(0f, 2f, 0f);
+                    } else if (currentSkill == 3 || currentSkill == 4 || enemyAction == 2) { // Heal/Defend
+//                        // Zoom in gently on the character
+//                        Vector3 targetPos = isPlayerAction ?
+//                                new Vector3(1.5f, 3.8f, 8f) :
+//                                new Vector3(3f, 3.8f, 8f);
+//
+//                        cameraTargetPos.lerp(targetPos, delta * 2f);
+//                        cam.lookAt(isPlayerAction ? playerWorldPos : enemyWorldPos);
+                    }
+                    break;
+
+                case MOVE_BACK:
+                    // Smooth transition back to default with reduced speed
+                    float returnProgress = Math.min(1.0f, animationTimer / (MOVE_DURATION * 0.8f));
+                    cameraTargetPos.set(
+                            Interpolation.smooth.apply(cam.position.x, 0f, returnProgress),
+                            Interpolation.smooth.apply(cam.position.y, 4f, returnProgress),
+                            Interpolation.smooth.apply(cam.position.z, 12f, returnProgress)
+                    );
+                    // Gradually restore default FOV
+                    cam.fieldOfView = MathUtils.lerp(cam.fieldOfView, 67f, delta * 2.5f);
+                    break;
+            }
+        } else {
+            // Very subtle ambient camera movement during idle states
+            float idleTime = idleAnimationTimer * 0.3f; // Reduced speed
+            cameraTargetPos.set(
+                    (float) Math.sin(idleTime) * 0.2f,
+                    4f + (float) Math.sin(idleTime * 0.5f) * 0.15f,
+                    12f + (float) Math.cos(idleTime * 0.4f) * 0.25f
+            );
+
+            // Restore default FOV smoothly
+            cam.fieldOfView = MathUtils.lerp(cam.fieldOfView, 67f, delta * 2f);
+        }
+
+        // Smoother camera position interpolation with reduced speed
+        float lerpSpeed = isAnimating ?
+                (currentSkill == 3 || currentSkill == 4 || enemyAction == 2) ? 1.5f : 2.0f
+                : 1.2f;
+        cameraCurrentPos.lerp(cameraTargetPos, delta * lerpSpeed);
+
+        // Apply very subtle tilt based on turn state
+        if (combatState == CombatState.PLAYER_TURN && !isAnimating) {
+            cam.up.set(0, 1, 0.03f * (float) Math.sin(idleAnimationTimer * 0.6f));
+        } else if (combatState == CombatState.ENEMY_TURN && !isAnimating) {
+            cam.up.set(0, 1, -0.03f * (float) Math.sin(idleAnimationTimer * 0.6f));
+        } else {
+            cam.up.lerp(new Vector3(0, 1, 0), delta * 2f);
+        }
+
+        // Apply position without camera shake
         cam.position.set(cameraCurrentPos);
+
         cam.lookAt(0f, 2f, 0f);
         cam.update();
-
-        // Camera shake effect
-        if (cameraShake > 0) {
-            float shakeX = (float) (Math.random() - 0.5) * cameraShake;
-            float shakeY = (float) (Math.random() - 0.5) * cameraShake;
-            cam.position.add(shakeX, shakeY, 0);
-            cam.update();
-        }
     }
 
     private void updateCharacterPositions(float delta) {
         if (isAnimating) {
             // Cập nhật vị trí 3D của nhân vật trong animation
-            updateCharacterAnimation3D(delta);
+//            updateCharacterAnimation3D(delta);
         }
     }
 
@@ -752,7 +875,7 @@ public class DarkestDungeon implements Screen {
                 } else {
                     enemyWorldPos.lerp(new Vector3(5f, 1f, -2f), progress);
                 }
-                cameraTargetPos.set(0f, 8f, 12f);
+                cameraTargetPos.set(0f, 4f, 12f);
                 break;
         }
     }
@@ -848,6 +971,8 @@ public class DarkestDungeon implements Screen {
         if (isAnimating) {
             animationTimer += delta;
             updateAnimation();
+            updateAnimations(delta);
+
         }
 
         // Delay combat end if flagged
@@ -898,6 +1023,145 @@ public class DarkestDungeon implements Screen {
         }
     }
 
+    // Animation fields
+    private Animation<TextureRegion>[] actionAnimations; // def, heal, attack, skill
+    private float stateTime = 0;
+    private boolean isPlayingAnimation = false;
+    private int currentAnimationIndex = -1;
+    private float animationScale = 1.5f; // Scale for rendering animations
+
+    @SuppressWarnings("unchecked")
+    private void loadAnimations() {
+        // Initialize animation array
+        actionAnimations = new Animation[5];
+
+        // Load animation spritesheets
+        loadActionAnimation(0, "animations/def.png", 5);    // Defense animation
+        loadActionAnimation(1, "animations/heal.png", 5);   // Heal animation
+        loadActionAnimation(2, "animations/attack.png", 5); // Attack animation
+        loadActionAnimation(3, "animations/skill.png", 5);  // Skill animation
+        loadActionAnimation(4, "animations/aura.png", 3);  // Skill animation
+    }
+
+    private void loadActionAnimation(int index, String path, int frameCount) {
+        try {
+            // Load the spritesheet
+            Texture sheet = new Texture(path);
+            sheet.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+
+            // Frame size is 192x192
+            int frameWidth = 192;
+            int frameHeight = 192;
+
+            // Create an array of TextureRegions for the animation frames
+            TextureRegion[] frames = new TextureRegion[frameCount];
+
+            // Extract each frame from the spritesheet
+            TextureRegion[][] tmp = TextureRegion.split(sheet, frameWidth, frameHeight);
+
+            // Flatten the 2D array into 1D for the animation
+            for (int i = 0; i < frameCount; i++) {
+                frames[i] = tmp[i / (sheet.getWidth() / frameWidth)][i % (sheet.getWidth() / frameWidth)];
+            }
+
+            // Create the animation with a fixed frame duration
+            actionAnimations[index] = new Animation<>(0.12f, frames);
+        } catch (Exception e) {
+            Gdx.app.error("Animation", "Failed to load animation: " + path, e);
+        }
+    }
+
+
+    private void startActionAnimation(int animationIndex) {
+        currentAnimationIndex = animationIndex;
+        isPlayingAnimation = true;
+        stateTime = 0;
+    }
+
+    private boolean isAuraAnimationActive = false;
+
+    private void updateAnimations(float delta) {
+        // Update regular animations
+        if (isPlayingAnimation && currentAnimationIndex >= 0 && currentAnimationIndex < actionAnimations.length) {
+            stateTime += delta;
+
+            // Check if animation is complete
+            if (actionAnimations[currentAnimationIndex].isAnimationFinished(stateTime)) {
+                isPlayingAnimation = false;
+            }
+        }
+
+        // Handle aura animation separately - start or stop based on waitingForInput
+        if (currentSkill == 2) {
+            if (waitingForInput && !isAuraAnimationActive) {
+                // Start aura animation
+                isAuraAnimationActive = true;
+                // Reset state time for smooth animation start
+                stateTime = 0;
+            } else if (!waitingForInput && isAuraAnimationActive) {
+                // Stop aura animation
+                isAuraAnimationActive = false;
+            }
+
+            // Always update aura animation time while active
+            if (isAuraAnimationActive) {
+                stateTime += delta;
+            }
+        } else if (isAuraAnimationActive) {
+            // If skill changed, stop aura animation
+            isAuraAnimationActive = false;
+        }
+    }
+
+    private void renderActionAnimation(SpriteBatch batch) {
+        // Special case for skill 2 (TypeW) - show looping aura when waiting for input
+        if (isAuraAnimationActive) {
+            // Use aura animation (index 4) and make it loop
+            TextureRegion currentFrame = actionAnimations[4].getKeyFrame(stateTime, true); // true = looping
+
+            // Show on player character's position
+            Vector3 position = playerWorldPos;
+
+            // Convert 3D world position to screen coordinates
+            Vector3 screenPos = environment3D.getCamera().project(new Vector3(position));
+
+            // Center the animation on the character
+            float x = screenPos.x - (192 * animationScale / 2)-40;
+            float y = screenPos.y - (192 * animationScale / 2)-20;
+
+            // Draw the looping aura animation
+            batch.draw(currentFrame, x, y, 192 * animationScale, 192 * animationScale);
+        }
+
+        // Original animation rendering logic
+        if (!isPlayingAnimation || currentAnimationIndex < 0 || currentAnimationIndex >= actionAnimations.length) {
+            return;
+        }
+
+        // Get current frame
+        TextureRegion currentFrame = actionAnimations[currentAnimationIndex].getKeyFrame(stateTime, false);
+
+        Vector3 position;
+
+        // For attack and skill animations, show them on the target instead of the actor
+        if (currentAnimationIndex == 2 || currentAnimationIndex == 3) { // Attack or Skill
+            // Show on opponent's position (reverse of isPlayerAction)
+            position = isPlayerAction ? enemyWorldPos : playerWorldPos;
+        } else { // Defense and Heal animations
+            // Show on the acting character's position
+            position = isPlayerAction ? playerWorldPos : enemyWorldPos;
+        }
+
+        // Convert 3D world position to screen coordinates
+        Vector3 screenPos = environment3D.getCamera().project(new Vector3(position));
+
+        // Center the animation on the character
+        float x = screenPos.x - (192 * animationScale / 2);
+        float y = screenPos.y - (192 * animationScale / 2);
+
+        // Draw the animation frame
+        batch.draw(currentFrame, x, y, 192 * animationScale, 192 * animationScale);
+    }
 
     private void updateAnimation() {
         float progress = animationTimer;
@@ -1051,6 +1315,7 @@ public class DarkestDungeon implements Screen {
     private void applyPlayerSkillEffects() {
         switch (currentSkill) {
             case 0: // Attack
+                startActionAnimation(2);
                 int damage = MathUtils.random(playerATK - 2, playerATK + 2) - enemyDEF;
                 damage = Math.max(1, damage);
                 enemyHP = Math.max(0, enemyHP - damage);
@@ -1058,6 +1323,7 @@ public class DarkestDungeon implements Screen {
                 showDamageNumber(damage, true, false);
                 break;
             case 1: // Word (Random from learned words)
+                startActionAnimation(3);
                 playerMana -= 5;
                 Set<String> learnedWords = gameController.getCharacter().getLearnedWords();
                 if (learnedWords != null && !learnedWords.isEmpty()) {
@@ -1082,6 +1348,7 @@ public class DarkestDungeon implements Screen {
                 }
                 break;
             case 2: // TypeW (Input word)
+                startActionAnimation(4);
                 playerMana -= 5;
                 showInputField = true;
                 waitingForInput = true;
@@ -1089,13 +1356,15 @@ public class DarkestDungeon implements Screen {
                 combatLog = "Nhập một từ và nhấn ENTER\n Từ không hợp lệ sẽ gây sát thương (Phản sát thương) cho bạn!";
                 return;
             case 3: // Heal
+                startActionAnimation(1);
                 playerMana -= 10;
-                int heal = (int)(playerMaxHP * 0.2f);
+                int heal = (int) (playerMaxHP * 0.2f);
                 playerHP = Math.min(playerMaxHP, playerHP + heal);
                 combatLog = "Bạn hồi phục" + heal + " sinh lực!";
                 showDamageNumber(heal, false, true);
                 break;
             case 4: // Defend
+                startActionAnimation(0);
                 playerMana = Math.min(playerMaxMana, playerMana + 5);
                 playerDEF += 3;
                 combatLog = "Bạn phòng thủ và hồi phục 5 mana! Phòng thủ tăng lên!";
@@ -1183,6 +1452,7 @@ public class DarkestDungeon implements Screen {
     private void applyEnemySkillEffects() {
         switch (enemyAction) {
             case 0: // Attack
+                startActionAnimation(2);
                 int damage = MathUtils.random(enemyATK - 2, enemyATK + 2) - playerDEF;
                 damage = Math.max(1, damage);
                 playerHP = Math.max(0, playerHP - damage);
@@ -1190,6 +1460,7 @@ public class DarkestDungeon implements Screen {
                 showDamageNumber(damage, false, false);
                 break;
             case 1: // Special
+                startActionAnimation(3);
                 if (enemyMana >= 8) {
                     enemyMana -= 8;
                     int specialDamage = MathUtils.random(enemyATK + 5, enemyATK + 10) - playerDEF;
@@ -1205,6 +1476,7 @@ public class DarkestDungeon implements Screen {
                 }
                 break;
             case 2: // Heal
+                startActionAnimation(1);
                 if (enemyMana >= 7) {
                     enemyMana -= 7;
                     int healAmount = enemyMaxHP / 4;
@@ -1772,7 +2044,13 @@ public class DarkestDungeon implements Screen {
         batch.dispose();
         font.dispose();
         shapeRenderer.dispose();
-
+        if (actionAnimations != null) {
+            for (Animation<TextureRegion> animation : actionAnimations) {
+                if (animation != null && animation.getKeyFrame(0) != null) {
+                    animation.getKeyFrame(0).getTexture().dispose();
+                }
+            }
+        }
         for (Texture texture : playerIdleTextures) {
             if (texture != null) texture.dispose();
         }
