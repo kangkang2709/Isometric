@@ -24,6 +24,7 @@ import ctu.game.isometric.util.RewardLoader;
 import ctu.game.isometric.util.WordNetValidator;
 import ctu.game.isometric.view.scene.Character2DRenderer;
 import ctu.game.isometric.view.scene.CombatEnvironment3D;
+import ctu.game.isometric.view.scene.OctopathCombatEnvironment3D;
 import ctu.game.isometric.view.ui.DefeatRenderer;
 import ctu.game.isometric.view.ui.RewardRenderer;
 import ctu.game.isometric.view.ui.TutorialRenderer;
@@ -128,7 +129,6 @@ public class DarkestDungeon implements Screen {
 
     WordNetValidator wordNetValidator;
 
-    private CombatEnvironment3D environment3D;
     private Character2DRenderer character2DRenderer;
 
     private Vector3 playerWorldPos = new Vector3(-3f, 1f, 2f);
@@ -262,10 +262,12 @@ public class DarkestDungeon implements Screen {
         backgroundBlurTexture = new Texture("backgrounds/dungeon_blur.png");
     }
 
+    OctopathCombatEnvironment3D environment3D;
     @Override
     public void show() {
 
-        environment3D = new CombatEnvironment3D();
+//        environment3D = new CombatEnvironment3D();
+        environment3D = new OctopathCombatEnvironment3D();
         character2DRenderer = new Character2DRenderer(environment3D.getCamera());
 
         batch = new SpriteBatch();
@@ -1698,11 +1700,13 @@ public class DarkestDungeon implements Screen {
 
         if (skillIdx == 3) { // Heal
             currentEffectTexture = effectTextures[1];
+            environment3D.triggerSkillCameraMovement("MAGIC");
             effectOnPlayer = true;
         } else if (skillIdx == 4) { // Defend
             currentEffectTexture = effectTextures[2];
             effectOnPlayer = true;
         } else { // Attack skills
+            environment3D.triggerSkillCameraMovement("ATTACK");
             currentEffectTexture = effectTextures[0];
             effectOnPlayer = false;
         }
