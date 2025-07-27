@@ -1153,6 +1153,8 @@ public class GameplayController {
             timerAction = 0;
             achievementManager.updateProgress(Achievement.AchievementType.FALLEN, 1);
             gameController.getMusicController().playMusic("defeat");
+            gameController.getMapRenderer().setRenderInfoCard(false);
+
         } else if (enemyHealth <= 0) {
             addCombatLog("Bạn đã hạ gục " + enemyName + "!");
             enemyHealth = 0;
@@ -1190,7 +1192,7 @@ public class GameplayController {
             achievementManager.updateProgress(Achievement.AchievementType.COMBAT_WIN, 1);
 
             this.newLevel = gameController.getCharacter().addExperience(calculateCombatRewards());
-
+            gameController.getMapRenderer().setRenderInfoCard(false);
             gameController.getMusicController().playMusic("victory");
         }
     }

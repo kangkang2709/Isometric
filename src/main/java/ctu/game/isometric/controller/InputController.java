@@ -450,8 +450,10 @@ public class InputController extends InputAdapter {
 
             case Keys.PAUSE -> {
                 mapRenderer.printCurrentPosition();
-                gameController.addFlag("klein_unlock");
-                gameController.getCharacter().setScore(600);
+//                gameController.addFlag("klein_unlock");
+//                gameController.getCharacter().setScore(600);
+
+                gameController.getCharacter().setPosition(29, 1);
             }
             case Keys.HOME -> {
                 gameController.getCharacter().setPosition(gameController.getMap().getEndX(), gameController.getMap().getEndY());

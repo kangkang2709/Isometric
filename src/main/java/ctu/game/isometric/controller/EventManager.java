@@ -38,20 +38,16 @@ public class EventManager {
                     int objGridX = (int) (rect.x / map.getTileHeight());
                     int objGridY = (int) (rect.y / map.getTileHeight());
 
-                    if (map.getMapName().equals("main")) {
-                    }
-
                     MapProperties props = object.getProperties();
                     if (props.containsKey("event")) {
                         String eventType = getStringProperty(props, "event", "");
-                        if (map.getMapName().equals("main")) {
-                        }
                         String eventId = props.containsKey("id") ?
                                 getStringProperty(props, "id", "") :
                                 "event_" + objGridX + "_" + objGridY;
                         boolean isOneTime = false; // Declare and initialize outside the block
                         if (props.containsKey("one_time"))
                             isOneTime = getBooleanProperty(props, "one_time", false);
+                        System.out.println("Loading event: " + eventId + " at grid position: " + objGridX + ", " + objGridY);
                         events.put(eventId, new MapEvent(eventId, eventType, objGridX, objGridY, props, isOneTime));
                     }
                 }
@@ -133,7 +129,7 @@ public class EventManager {
     public MapEvent checkPositionEvents(float x, float y) {
         int gridX = (int) x;
         int gridY = (int) y;
-//        System.out.println("Checking events at grid position: " + gridX + ", " + gridY);
+        System.out.println("Checking events at grid position: " + gridX + ", " + gridY);
 
         for (MapEvent event : events.values()) {
             if (event.getGridX() == gridX && event.getGridY() == gridY) {

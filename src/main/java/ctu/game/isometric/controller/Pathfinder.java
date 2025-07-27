@@ -196,7 +196,7 @@ public class Pathfinder {
         // Check immediate neighbors (1-tile radius)
         int[] closestTile = null;
         double closestDistance = Double.MAX_VALUE;
-        System.out.println(map.getMapName());
+//        System.out.println(map.getMapName());
         // Determine how many directions to check based on map name
         int directionsToCheck = "board".equals(map.getMapName()) ? 4 : DIRECTIONS.length;
 

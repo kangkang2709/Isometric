@@ -263,6 +263,7 @@ public class GameController {
             transitionRenderer.startLoadingScreen(() -> {
 
                 if (mapName.equalsIgnoreCase("board")) {
+                    mapRenderer.setRenderInfoCard(false);
                     newMap.generateRandomMaze(getCharacter().getRun() / 2);
                     isNewRun = false;
                     if (!character.isTutorialCompleted("maze")) {
@@ -1071,7 +1072,7 @@ public class GameController {
 
     public void moveCharacter(int dx, int dy) {
         if (!canMove(dx, dy)) {
-            return; // Skip this move if it's invalid
+            return;
         }
         if (map.getMapName().equals("forest")) {
             if (!character.getFlags().contains("forest_info")) {
@@ -1269,8 +1270,8 @@ public class GameController {
             // Set the target indicator position
             inputController.showTargetIndicator(targetX, targetY);
 
-            if (eventManager.getMapName().equals("board"))
-                checkPositionEvents((int) targetX, (int) targetY);
+
+            checkPositionEvents((int) targetX, (int) targetY);
 //
 
         }
@@ -1825,7 +1826,7 @@ public class GameController {
 
     private void openTreasureWithAnimation(Items item, int amount, int x, int y) {
 
-        effectManager.spawnEffectEvent("Star_Trail", 660, 370);
+        effectManager.spawnEffectEvent("Star_Trail", 680, 400);
 
         // Create dialog message about the found item
         String message = "Bạn nhận được +" + amount + " " + item.getItemName() + "!";

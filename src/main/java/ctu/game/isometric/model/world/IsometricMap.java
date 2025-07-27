@@ -73,8 +73,8 @@ public class IsometricMap {
 
         switch (mapName) {
             case "main":
-                startX = 31;
-                startY = 0;
+                startX = 29;
+                startY = 1;
                 break;
             case "tavern":
                 startX = 10;
