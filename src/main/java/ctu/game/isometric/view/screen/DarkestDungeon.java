@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.Timer;
 import ctu.game.isometric.IsometricGame;
 import ctu.game.isometric.controller.GameController;
@@ -149,6 +150,13 @@ public class DarkestDungeon implements Screen {
         this.player = gameController.getCharacter();
         this.assetManager = game.getAssetManager();
         this.wordNetValidator = gameController.getWordNetValidator();
+
+        environment3D = new CombatEnvironment3D();
+        character2DRenderer = new Character2DRenderer(environment3D.getCamera());
+
+
+        loadTextures();
+        loadAnimations();
     }
 
     private RewardRenderer rewardRenderer;
@@ -217,7 +225,6 @@ public class DarkestDungeon implements Screen {
     BitmapFont titleFont;
 
     private OrthographicCamera combatCamera;
-    private float cameraShake = 0f;
     private float cameraZoom = 1f;
 
 
@@ -263,8 +270,6 @@ public class DarkestDungeon implements Screen {
     @Override
     public void show() {
 
-        environment3D = new CombatEnvironment3D();
-        character2DRenderer = new Character2DRenderer(environment3D.getCamera());
 
         batch = new SpriteBatch();
         font = generateVietNameseFont("GrenzeGotisch.ttf", 20);
@@ -280,15 +285,14 @@ public class DarkestDungeon implements Screen {
 
         combatLog = "Chiến đấu bắt đầu! Chọn hành động.";
 
-        loadTextures();
 
         currentPlayerTexture = playerIdleTextures[0];
         currentEnemyTexture = enemyIdleTextures[0];
 
+
         rewardRenderer = new RewardRenderer(batch, font, titleFont, inputFont, shapeRenderer, assetManager);
         defeatRenderer = new DefeatRenderer(batch, font, titleFont, inputFont, shapeRenderer);
         tutorialRenderer = new TutorialRenderer(batch, font, titleFont, inputFont, shapeRenderer);
-        loadAnimations();
 
         Gdx.input.setInputProcessor(new com.badlogic.gdx.InputAdapter() {
             @Override
@@ -611,6 +615,7 @@ public class DarkestDungeon implements Screen {
 
     @Override
     public void render(float delta) {
+
         if (victory) {
             renderReward(batch);
         } else if (defeated && !victory) {
@@ -1084,32 +1089,29 @@ public class DarkestDungeon implements Screen {
         // Update regular animations
         if (isPlayingAnimation && currentAnimationIndex >= 0 && currentAnimationIndex < actionAnimations.length) {
             stateTime += delta;
-
-            // Check if animation is complete
             if (actionAnimations[currentAnimationIndex].isAnimationFinished(stateTime)) {
                 isPlayingAnimation = false;
             }
         }
 
-        // Handle aura animation separately - start or stop based on waitingForInput
+        // Handle aura animation separately with smoother transitions
         if (currentSkill == 2) {
             if (waitingForInput && !isAuraAnimationActive) {
                 // Start aura animation
                 isAuraAnimationActive = true;
-                // Reset state time for smooth animation start
                 stateTime = 0;
             } else if (!waitingForInput && isAuraAnimationActive) {
                 // Stop aura animation
                 isAuraAnimationActive = false;
             }
-
-            // Always update aura animation time while active
-            if (isAuraAnimationActive) {
-                stateTime += delta;
-            }
         } else if (isAuraAnimationActive) {
             // If skill changed, stop aura animation
             isAuraAnimationActive = false;
+        }
+
+        // Always update aura animation time while active for smooth looping
+        if (isAuraAnimationActive) {
+            stateTime += delta;
         }
     }
 
@@ -1762,13 +1764,12 @@ public class DarkestDungeon implements Screen {
         shapeRenderer.rectLine(x, y + height, x + width, y + height, 1);
     }
 
-    private void drawRebirthStyleCombatLog() {
-        // Draw combat log in a stylized box at the top
-        float logWidth = 580;
-        float logHeight = 40;
-        float logX = (SCREEN_WIDTH - logWidth) / 2 + 10;
-        float logY = 5;
+    float logWidth = 580;
+    float logHeight = 40;
+    float logX = (SCREEN_WIDTH - logWidth) / 2 + 10;
+    float logY = 5;
 
+    private void drawRebirthStyleCombatLog() {
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(0.05f, 0.1f, 0.15f, 0.4f);
         shapeRenderer.rect(logX, logY, logWidth, logHeight);
@@ -2044,6 +2045,7 @@ public class DarkestDungeon implements Screen {
         batch.dispose();
         font.dispose();
         shapeRenderer.dispose();
+
         if (actionAnimations != null) {
             for (Animation<TextureRegion> animation : actionAnimations) {
                 if (animation != null && animation.getKeyFrame(0) != null) {
@@ -2054,24 +2056,20 @@ public class DarkestDungeon implements Screen {
         for (Texture texture : playerIdleTextures) {
             if (texture != null) texture.dispose();
         }
-        for (Texture texture : enemyIdleTextures) {
+        for (Texture texture : playerSkillTextures) {
             if (texture != null) texture.dispose();
         }
-
-        if (backgroundTexture != null) backgroundTexture.dispose();
-
-        for (Texture texture : playerSkillTextures) {
+        for (Texture texture : enemyIdleTextures) {
             if (texture != null) texture.dispose();
         }
         for (Texture texture : enemySkillTextures) {
             if (texture != null) texture.dispose();
         }
-        for (Texture texture : skillButtonTextures) {
-            if (texture != null) texture.dispose();
-        }
         for (Texture texture : effectTextures) {
             if (texture != null) texture.dispose();
         }
+        if (backgroundTexture != null) backgroundTexture.dispose();
+
         if (backgroundBlurTexture != null) backgroundBlurTexture.dispose();
         if (titleFont != null) titleFont.dispose();
         if (inputFont != null) inputFont.dispose();
@@ -2088,8 +2086,11 @@ public class DarkestDungeon implements Screen {
             }
         }
 
+
         // Clear the cache maps
         enemyIdleTexturesCache.clear();
         enemySkillTexturesCache.clear();
+        environment3D.dispose();
     }
+
 }

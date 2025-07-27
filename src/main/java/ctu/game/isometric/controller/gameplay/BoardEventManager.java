@@ -69,7 +69,7 @@ public class BoardEventManager {
             loadItems();
             loadEnemies();
 
-            randomBoardEveryRun();
+//            randomBoardEveryRun();
 
         } catch (Exception e) {
             System.err.println("Lỗi khởi tạo BoardEventManager: " + e.getMessage());

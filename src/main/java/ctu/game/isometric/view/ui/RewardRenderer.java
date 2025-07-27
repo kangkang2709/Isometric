@@ -77,4 +77,8 @@ public class RewardRenderer extends UIRenderer {
     public Rectangle getContinueButtonBounds() {
         return continueButtonBounds;
     }
+
+    public void dispose() {
+        assetManager.dispose();
+    }
 }

@@ -14,7 +14,6 @@ public class CombatEnvironment3D {
     private Environment environment;
     private PerspectiveCamera camera3D;
     private ModelInstance floorInstance;
-    private ModelInstance[] wallInstances;
 
     public CombatEnvironment3D() {
         setupCamera();
@@ -176,11 +175,6 @@ public class CombatEnvironment3D {
     public void render() {
         modelBatch.begin(camera3D);
         modelBatch.render(floorInstance, environment);
-        if( wallInstances != null) {
-            for (ModelInstance wall : wallInstances) {
-                modelBatch.render(wall, environment);
-            }
-        }
 
         modelBatch.end();
     }
@@ -193,11 +187,13 @@ public class CombatEnvironment3D {
         return camera3D;
     }
 
+    // In CombatEnvironment3D.java
     public void dispose() {
         modelBatch.dispose();
-        floorInstance.model.dispose();
-        for (ModelInstance wall : wallInstances) {
-            wall.model.dispose();
+
+        // Properly dispose all models
+        if (floorInstance != null && floorInstance.model != null) {
+            floorInstance.model.dispose();
         }
     }
 }

@@ -58,7 +58,6 @@ public class IsometricGame extends Game {
                 setScreen(splashScreen);
                 break;
             case "GAME":
-                darkestDungeonScreen.dispose();
                 setScreen(gameScreen);
                 break;
             case "DARK_DUNGEON":
