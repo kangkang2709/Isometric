@@ -211,7 +211,7 @@ public class GameController {
 //        this.wordValidator.loadDictionary();
         this.wordNetValidator = new WordNetValidator();
         this.wordNetValidator.loadDictionary();
-
+        this.assetManager = game.getAssetManager();
 
         this.gameplayController = new GameplayController(this);
         this.quizController = new QuizController(this);

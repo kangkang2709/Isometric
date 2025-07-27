@@ -19,6 +19,7 @@ public class AssetManager implements Disposable {
     public AssetManager() {
         textures = new HashMap<>();
         animationManager = new AnimationManager();
+        animationManager.loadAnimations();
     }
 
     public Map<String, Texture> getTextures() {

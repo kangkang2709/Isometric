@@ -12,7 +12,52 @@ public class AnimationManager {
     private Map<String, Animation<TextureRegion>> characterAnimations = new HashMap<>();
     private Map<String, Animation<TextureRegion>> npcAnimations = new HashMap<>();
     private Map<String, Animation<TextureRegion>> diceAnimations = new HashMap<>();
+    private Animation<TextureRegion>[] actionAnimations;
 
+    public void loadAnimations() {
+        // Initialize animation array
+        actionAnimations = new Animation[5];
+
+        // Load animation spritesheets
+        loadActionAnimation(0, "animations/def.png", 5);    // Defense animation
+        loadActionAnimation(1, "animations/heal.png", 5);   // Heal animation
+        loadActionAnimation(2, "animations/attack.png", 5); // Attack animation
+        loadActionAnimation(3, "animations/skill.png", 5);  // Skill animation
+        loadActionAnimation(4, "animations/aura.png", 3);  // Skill animation
+    }
+
+
+    public Animation<TextureRegion>[] getActionAnimations() {
+        return actionAnimations;
+    }
+
+    private void loadActionAnimation(int index, String path, int frameCount) {
+        try {
+            // Load the spritesheet
+            Texture sheet = new Texture(path);
+            sheet.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+
+            // Frame size is 192x192
+            int frameWidth = 192;
+            int frameHeight = 192;
+
+            // Create an array of TextureRegions for the animation frames
+            TextureRegion[] frames = new TextureRegion[frameCount];
+
+            // Extract each frame from the spritesheet
+            TextureRegion[][] tmp = TextureRegion.split(sheet, frameWidth, frameHeight);
+
+            // Flatten the 2D array into 1D for the animation
+            for (int i = 0; i < frameCount; i++) {
+                frames[i] = tmp[i / (sheet.getWidth() / frameWidth)][i % (sheet.getWidth() / frameWidth)];
+            }
+
+            // Create the animation with a fixed frame duration
+            actionAnimations[index] = new Animation<>(0.12f, frames);
+        } catch (Exception e) {
+            Gdx.app.error("Animation", "Failed to load animation: " + path, e);
+        }
+    }
 
     public void loadDiceAnimations(String staticDicePath, String rollingDicePath) {
         // Load texture sheets

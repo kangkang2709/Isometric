@@ -4,9 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
@@ -68,12 +66,60 @@ public class GameplayRenderer {
     private Color hpColor = new Color(1f, 0.2f, 0.2f, 1f);
     private Color mpColor = new Color(0.2f, 0.5f, 1f, 1f);
 
+    private Animation<TextureRegion>[] actionAnimations; // def, heal, attack, skill
+    private float stateTime = 0;
+    private boolean isPlayingAnimation = false;
+    private int currentAnimationIndex = -1;
+    private float animationScale = 1.5f; // Scale for rendering animations
 
-    public GameplayRenderer(GameplayController controller, LetterGrid letterGrid, Viewport viewport) {
+    public GameplayRenderer(GameplayController controller, LetterGrid letterGrid, Viewport viewport, Animation<TextureRegion>[] actionAnimations) {
         this.controller = controller;
         this.letterGrid = letterGrid;
         this.viewport = viewport;
         initializeUI();
+        this.actionAnimations = actionAnimations;
+    }
+
+
+    boolean isPlayer = false;
+
+    public void startActionAnimation(int animationIndex, boolean isPlayer) {
+        this.isPlayer = isPlayer;
+        currentAnimationIndex = animationIndex;
+        isPlayingAnimation = true;
+        stateTime = 0;
+    }
+
+    public void updateAnimations(float delta) {
+        if (isPlayingAnimation && currentAnimationIndex >= 0 && currentAnimationIndex < actionAnimations.length) {
+            stateTime += delta;
+
+            // Check if animation is complete
+            if (actionAnimations[currentAnimationIndex].isAnimationFinished(stateTime)) {
+                isPlayingAnimation = false;
+            }
+        }
+    }
+
+
+    public void renderActionAnimation(SpriteBatch batch) {
+        if (!isPlayingAnimation || currentAnimationIndex < 0 || currentAnimationIndex >= actionAnimations.length) {
+            return;
+        }
+
+        // Get current frame
+        TextureRegion currentFrame = actionAnimations[currentAnimationIndex].getKeyFrame(stateTime, false);
+        float x, y;
+
+        if (isPlayer) {
+            x = 239;
+            y = 200;
+        } else {
+            x = 770;
+            y = 350;
+        }
+        // Draw the animation frame
+        batch.draw(currentFrame, x, y, 200 * animationScale, 200 * animationScale);
     }
 
     private void initializeUI() {
@@ -87,6 +133,7 @@ public class GameplayRenderer {
         createGradientTexture();
         if (buttonTextureFancy == null) buttonTextureFancy = createFancyButtonTexture();
     }
+
     private Texture createFancyButtonTexture() {
         Pixmap pixmap = new Pixmap(200, 50, Pixmap.Format.RGBA8888);
         // Base color
@@ -112,6 +159,7 @@ public class GameplayRenderer {
         pixmap.dispose();
         return texture;
     }
+
     private Texture createPanelDecorationTexture() {
         Pixmap pixmap = new Pixmap(32, 32, Pixmap.Format.RGBA8888);
         pixmap.setColor(0.7f, 0.7f, 1.0f, 0.8f);
@@ -123,6 +171,7 @@ public class GameplayRenderer {
         pixmap.dispose();
         return texture;
     }
+
     private void createGradientTexture() {
         Pixmap pixmap = new Pixmap(256, 1, Pixmap.Format.RGBA8888);
         for (int x = 0; x < 256; x++) {
@@ -133,6 +182,7 @@ public class GameplayRenderer {
         gradientTexture = new Texture(pixmap);
         pixmap.dispose();
     }
+
     private void createWhiteTexture() {
         if (whiteTexture != null) whiteTexture.dispose();
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
@@ -219,17 +269,20 @@ public class GameplayRenderer {
         if (controller.isCombatMode()) {
             renderCombatUI(batch);
             renderFloatingTexts(batch);
+            renderActionAnimation(batch);
+            CardAnimationManager cardAnimationManager = controller.getCardAnimationManager();
+            if (cardAnimationManager != null) {
+                cardAnimationManager.render(batch);
+            }
         } else if (controller.isVictory()) {
             renderReward(batch);
         } else {
             renderGameOver(batch);
         }
 
-        CardAnimationManager cardAnimationManager = controller.getCardAnimationManager();
-        if (cardAnimationManager != null) {
-            cardAnimationManager.render(batch);
-        }
+
         renderEnemyTooltip(batch);
+
     }
 
     public void renderGameOver(SpriteBatch batch) {
@@ -416,7 +469,7 @@ public class GameplayRenderer {
 
         regularFont.setColor(Color.WHITE);
         regularFont.draw(batch, String.format("%.0f", controller.getEnemyHealth()) +
-                "/" + (int)controller.getEnemyMaxHealth(), x + 80, y + 58);
+                "/" + (int) controller.getEnemyMaxHealth(), x + 80, y + 58);
     }
 
     private void renderEnemyTooltip(SpriteBatch batch) {
@@ -470,12 +523,13 @@ public class GameplayRenderer {
         // Health and mana values
         regularFont.setColor(Color.WHITE);
         regularFont.draw(batch, String.format("%.0f", controller.getPlayerHealth()) +
-                "/" + (int)controller.getPlayerMaxHealth(), x + 80, y + 93);
-        regularFont.draw(batch, (int)controller.getPlayerMana() +
-                "/" + (int)controller.getPlayerMaxMana(), x + 80, y + 63);
+                "/" + (int) controller.getPlayerMaxHealth(), x + 80, y + 93);
+        regularFont.draw(batch, (int) controller.getPlayerMana() +
+                "/" + (int) controller.getPlayerMaxMana(), x + 80, y + 63);
 
         drawStatusEffects(batch, x + 30, y + height - 133);
     }
+
     private void drawConsoleStyleButton(SpriteBatch batch, Rectangle rect, String text, Color color) {
         boolean isSelected = false;
 
@@ -802,7 +856,7 @@ public class GameplayRenderer {
     }
 
     private void drawCurrentWordCells(SpriteBatch batch, String currentWord, float columnX, float y, float columnWidth) {
-        if (currentWord.isEmpty() && !controller.isDrawingWordMeaning()) {
+        if (currentWord.isEmpty()) {
             regularFont.setColor(Color.GRAY);
             drawCenteredText(batch, regularFont, "Chọn các chữ cái để tạo từ", columnX + columnWidth / 2, y + 22, Color.GRAY);
             return;
@@ -951,6 +1005,7 @@ public class GameplayRenderer {
             }
         }
     }
+
     private void drawModernHPBar(SpriteBatch batch, float currentHP, float maxHP, float x, float y, float width, float height) {
         // Base background
         batch.setColor(0.2f, 0.2f, 0.3f, 0.8f);
@@ -982,7 +1037,7 @@ public class GameplayRenderer {
 
         // HP text
         titleFont.setColor(Color.WHITE);
-        titleFont.draw(batch, "HP", x - 30, y + height/2 + 5);
+        titleFont.draw(batch, "HP", x - 30, y + height / 2 + 5);
     }
 
     // Enhanced MP Bar with FF7 Remake style
@@ -1011,8 +1066,9 @@ public class GameplayRenderer {
 
         // MP text
         titleFont.setColor(Color.WHITE);
-        titleFont.draw(batch, "MP", x - 30, y + height/2 + 5);
+        titleFont.draw(batch, "MP", x - 30, y + height / 2 + 5);
     }
+
     public void updateFlicker2(float delta) {
         hpBarAnimationTime += delta * 2f;
 //        mpBarAnimationTime += delta * 1.5f;

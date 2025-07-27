@@ -156,7 +156,7 @@ public class DarkestDungeon implements Screen {
 
 
         loadTextures();
-        loadAnimations();
+        this.actionAnimations = game.getAssetManager().getAnimationManager().getActionAnimations();
     }
 
     private RewardRenderer rewardRenderer;
@@ -1035,47 +1035,6 @@ public class DarkestDungeon implements Screen {
     private int currentAnimationIndex = -1;
     private float animationScale = 1.5f; // Scale for rendering animations
 
-    @SuppressWarnings("unchecked")
-    private void loadAnimations() {
-        // Initialize animation array
-        actionAnimations = new Animation[5];
-
-        // Load animation spritesheets
-        loadActionAnimation(0, "animations/def.png", 5);    // Defense animation
-        loadActionAnimation(1, "animations/heal.png", 5);   // Heal animation
-        loadActionAnimation(2, "animations/attack.png", 5); // Attack animation
-        loadActionAnimation(3, "animations/skill.png", 5);  // Skill animation
-        loadActionAnimation(4, "animations/aura.png", 3);  // Skill animation
-    }
-
-    private void loadActionAnimation(int index, String path, int frameCount) {
-        try {
-            // Load the spritesheet
-            Texture sheet = new Texture(path);
-            sheet.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-
-            // Frame size is 192x192
-            int frameWidth = 192;
-            int frameHeight = 192;
-
-            // Create an array of TextureRegions for the animation frames
-            TextureRegion[] frames = new TextureRegion[frameCount];
-
-            // Extract each frame from the spritesheet
-            TextureRegion[][] tmp = TextureRegion.split(sheet, frameWidth, frameHeight);
-
-            // Flatten the 2D array into 1D for the animation
-            for (int i = 0; i < frameCount; i++) {
-                frames[i] = tmp[i / (sheet.getWidth() / frameWidth)][i % (sheet.getWidth() / frameWidth)];
-            }
-
-            // Create the animation with a fixed frame duration
-            actionAnimations[index] = new Animation<>(0.12f, frames);
-        } catch (Exception e) {
-            Gdx.app.error("Animation", "Failed to load animation: " + path, e);
-        }
-    }
-
 
     private void startActionAnimation(int animationIndex) {
         currentAnimationIndex = animationIndex;
@@ -1128,8 +1087,8 @@ public class DarkestDungeon implements Screen {
             Vector3 screenPos = environment3D.getCamera().project(new Vector3(position));
 
             // Center the animation on the character
-            float x = screenPos.x - (192 * animationScale / 2)-40;
-            float y = screenPos.y - (192 * animationScale / 2)-20;
+            float x = screenPos.x - (192 * animationScale / 2) - 40;
+            float y = screenPos.y - (192 * animationScale / 2) - 20;
 
             // Draw the looping aura animation
             batch.draw(currentFrame, x, y, 192 * animationScale, 192 * animationScale);

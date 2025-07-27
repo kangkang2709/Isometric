@@ -30,7 +30,7 @@ import java.util.List;
 
 public class GameplayController {
     // Core constants
-    private static final float ENEMY_TURN_DELAY = 2.5f;
+    private static final float ENEMY_TURN_DELAY = 2.4f;
     private static final float COMBAT_TIME_LIMIT = 300f;
     private static final int MAX_COMBAT_LOG_LINES = 40;
     // Core components
@@ -56,7 +56,6 @@ public class GameplayController {
     private float enemyActionTimer = 0;
     private List<String> combatLogLines = new ArrayList<>();
     private boolean isVictory = false;
-    private boolean isDrawingWordMeaning = false;
     private String lastSubmittedWord = "";
     // UI components
     private GlyphLayout layout;
@@ -89,7 +88,7 @@ public class GameplayController {
         this.cardAnimationService = new CardAnimationService(cardAnimationManager, effectManager);
         initializeUI();
 
-        renderer = new GameplayRenderer(this, letterGrid, viewport);
+        renderer = new GameplayRenderer(this, letterGrid, viewport, gameController.getAssetManager().getAnimationManager().getActionAnimations());
     }
 
     private void initializeUI() {
@@ -175,12 +174,15 @@ public class GameplayController {
             renderer.updateFlicker(delta);
             renderer.updateFlicker2(delta);
         }
+        renderer.updateAnimations(delta);
     }
 
     // Add getter for floating texts
     public List<FloatingText> getFloatingTexts() {
         return floatingTexts;
     }
+
+    private boolean enemyHasActed = false;
 
     private void updateCombat(float delta) {
         combatTimer += delta;
@@ -191,14 +193,16 @@ public class GameplayController {
             return;
         }
 
-        if (!isPlayerTurn) {
+        if (!isPlayerTurn && !enemyHasActed) {
             enemyActionTimer += delta;
             if (enemyActionTimer >= ENEMY_TURN_DELAY) {
                 performEnemyAction();
                 enemyActionTimer = 0;
+                enemyHasActed = true; // Mark that enemy has acted this turn
             }
         }
     }
+
 
     public GameplayRenderer getRenderer() {
         return renderer;
@@ -308,7 +312,7 @@ public class GameplayController {
             return;
         }
 
-
+        enemyHasActed = false;
         Map<String, Integer> items = gameController.getCharacter().getItems();
         if (items.containsKey(item.getItemName()) && items.get(item.getItemName()) > 0) {
 
@@ -323,9 +327,8 @@ public class GameplayController {
                 case "Elixir":
                     playerHealing((int) item.getValue(), () -> {
                         addCombatLog("Đã hồi " + item.getValue() + " Sinh Lực!");
-
+                        renderer.startActionAnimation(1, true);
                         playerHealth = Math.min(playerMaxHealth, playerHealth + item.getValue());
-
                         checkCombatEnd();
                         if (isCombatMode && enemyHealth > 0) {
                             isPlayerTurn = false;
@@ -336,11 +339,9 @@ public class GameplayController {
                 case "Big Arcane Essence":
                 case "Arcane Essence":
                     playerHealingMana((int) item.getValue(), () -> {
+                        renderer.startActionAnimation(1, true);
                         addCombatLog("Đã hồi " + item.getValue() + " Năng lượng!");
-
                         playerMana = Math.min(playerMaxMana, playerMana + item.getValue());
-
-
                         checkCombatEnd();
                         if (isCombatMode && enemyHealth > 0) {
                             isPlayerTurn = false;
@@ -351,10 +352,9 @@ public class GameplayController {
                 case "Draught of Fury":
                     playerBuff(1, () -> {
                         addCombatLog("Đã tăng 8 sức mạnh trong trận!");
+                        renderer.startActionAnimation(0, true);
                         gameController.getCharacter().upAttack(item.getValue());
                         playerStatusDuration.put("BUFF_ATK", 2);
-
-
                         checkCombatEnd();
                         if (isCombatMode && enemyHealth > 0) {
                             isPlayerTurn = false;
@@ -364,6 +364,7 @@ public class GameplayController {
                     break;
                 case "Aegis Brew":
                     playerBuff(1, () -> {
+                        renderer.startActionAnimation(0, true);
                         addCombatLog("Đã tăng 8 phòng thủ trong trận!");
                         gameController.getCharacter().upDefend(item.getValue());
                         playerStatusDuration.put("BUFF_DEF", 5);
@@ -624,10 +625,6 @@ public class GameplayController {
 
     public int getCurrentLevel() {
         return currentLevel;
-    }
-
-    public boolean isDrawingWordMeaning() {
-        return isDrawingWordMeaning;
     }
 
 
@@ -891,9 +888,9 @@ public class GameplayController {
                     addFloatingText("+5 HP", 960, 605, Color.BLUE);
 
                     enemyStatusDuration.put("FREEZE", freezeDuration - 1);
+
                     enemyAttack(-1, action, (int) heal, () -> {
                         checkCombatEnd();
-
                         if (isCombatMode) {
                             letterGrid.regenerateGrid();
                             addCombatLog("---Đến lượt của bạn!---");
@@ -939,6 +936,8 @@ public class GameplayController {
         enemyAttack((int) damage, action, (int) heal, () -> {
             checkCombatEnd();
             if (isCombatMode) {
+                if (isEnemyBoss()) renderer.startActionAnimation(3, true);
+                else renderer.startActionAnimation(2, true);
                 isPlayerTurn = true;
                 letterGrid.regenerateGrid();
                 addCombatLog("---Đến lượt của bạn!---");
@@ -953,6 +952,7 @@ public class GameplayController {
     float timerAction = 0;
 
     public boolean normalAttack() {
+        enemyHasActed = false;
         if (isCombatMode && isPlayerTurn) {
             float damage = currentLevel + (wordDamageMultiplier - playerNerf + attackBuff) - enemy.getDefensePower() * 0.5f;
             damage = Math.max(1, damage);
@@ -971,8 +971,10 @@ public class GameplayController {
             letterGrid.clearWord();
 
             if (damage > 0) {
+
                 playerAttack("", (int) damage, () -> {
                     checkCombatEnd();
+                    renderer.startActionAnimation(2, false);
                     if (isCombatMode && enemyHealth > 0) {
                         isPlayerTurn = false;
                         addCombatLog("---Đến lượt của " + enemyName + "!---");
@@ -989,19 +991,13 @@ public class GameplayController {
         }
 
         timerAction = 5f;
-        Timer.schedule(new Timer.Task() {
-            @Override
-            public void run() {
-                isDrawingWordMeaning = false;
-            }
-        }, 2.4f);
 
         return true;
     }
 
     public boolean submitWord() {
         if (!active) return false;
-
+        enemyHasActed = false;
         String word = letterGrid.getCurrentWord();
         if (word.isEmpty()) {
             addCombatLog("Từ phải có ít nhất 1 chữ cái!");
@@ -1011,7 +1007,6 @@ public class GameplayController {
             int points = wordValidator.getTotalScore(word.trim());
             this.experienceGain += points;
 
-            isDrawingWordMeaning = true;
             lastSubmittedWord = word;
             String effectLog = "";
             String stats = "";
@@ -1079,12 +1074,12 @@ public class GameplayController {
 
                     if (damage > 0) {
                         playerAttack(word, (int) damage, () -> {
+                            renderer.startActionAnimation(3, false);
                             checkCombatEnd();
+                            renderer.startActionAnimation(3, false);
                             if (isCombatMode && enemyHealth > 0) {
                                 isPlayerTurn = false;
-
                                 addCombatLog("---Đến lượt của " + enemyName + "!---");
-
                             }
                         });
 
@@ -1116,20 +1111,14 @@ public class GameplayController {
             }
             achievementManager.updateProgress(Achievement.AchievementType.WORD_COUNT, 1);
             timerAction = 5f;
-            Timer.schedule(new Timer.Task() {
-                @Override
-                public void run() {
-                    isDrawingWordMeaning = false;
-                }
-            }, 2.4f);
 
             return true;
         } else {
             timerAction = 5f;
             addCombatLog("Từ '" + word + "' không hợp lệ!");
             gameController.getCharacter().updateWrongWordCount();
+            checkCombatEnd();
             playerMiss("", 0, () -> {
-                checkCombatEnd();
                 if (isCombatMode && enemyHealth > 0) {
                     isPlayerTurn = false;
 
@@ -1241,7 +1230,6 @@ public class GameplayController {
         combatTimeUp = false;
         disabledCells.clear();
         combatLogLines.clear();
-        isDrawingWordMeaning = false;
         lastSubmittedWord = "";
 
         playerStatusDuration.clear();
