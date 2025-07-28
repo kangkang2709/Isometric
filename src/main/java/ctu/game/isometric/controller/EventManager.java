@@ -47,7 +47,6 @@ public class EventManager {
                         boolean isOneTime = false; // Declare and initialize outside the block
                         if (props.containsKey("one_time"))
                             isOneTime = getBooleanProperty(props, "one_time", false);
-                        System.out.println("Loading event: " + eventId + " at grid position: " + objGridX + ", " + objGridY);
                         events.put(eventId, new MapEvent(eventId, eventType, objGridX, objGridY, props, isOneTime));
                     }
                 }

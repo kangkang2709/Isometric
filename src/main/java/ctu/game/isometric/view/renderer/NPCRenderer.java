@@ -10,6 +10,7 @@ import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.entity.NPC;
 import ctu.game.isometric.util.AnimationManager;
 
+import java.util.List;
 import java.util.Map;
 
 import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
@@ -31,19 +32,22 @@ public class NPCRenderer {
 
     private BitmapFont font;
 
-    public NPCRenderer(Map<Integer, NPC> npcs, MapRenderer mapRenderer, Character player) {
-        this.npcs = npcs;
-        this.mapRenderer = mapRenderer;
+    public NPCRenderer(AnimationManager animationManager) {
         this.stateTime = 0f;
-        this.animationManager = mapRenderer.getAnimationManager();
-        this.player = player;
-
         // Load button textures
+        this.animationManager = animationManager;
         Texture interactTexture = new Texture(Gdx.files.internal("ui/interact_button.png"));
         interactButton = new TextureRegion(interactTexture);
 
         this.font = new BitmapFont(Gdx.files.internal("fonts/IMFellEnglishSC-Regular.fnt"));
         this.font.getRegion().getTexture().setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+
+    }
+
+    public void renewRenderer(Map<Integer, NPC> npcs, MapRenderer mapRenderer, Character player) {
+        this.npcs = npcs;
+        this.mapRenderer = mapRenderer;
+        this.player = player;
 
     }
 
@@ -112,11 +116,14 @@ public class NPCRenderer {
         );
 
         if (currentFrame != null) {
-            batch.draw(currentFrame, isoX, isoY + 4, 64, 64);
+            if (npc.getNpcID() == 11)
+                batch.draw(currentFrame, isoX, isoY, 95, currentFrame.getRegionHeight()/2);
+            else
+                batch.draw(currentFrame, isoX, isoY + 4, 64, 64);
         }
 
         // Draw NPC name above the sprite
-        if( npc.getNpcName() == null || npc.getNpcName().isEmpty()) {
+        if (npc.getNpcName() == null || npc.getNpcName().isEmpty()) {
             return; // Skip rendering if name is not set
         }
         String name = npc.getNpcName();
@@ -127,8 +134,8 @@ public class NPCRenderer {
 
 
     // Method to preload animations for all NPCs
-    public void loadNPCAnimations() {
-        for (NPC npc : npcs.values()) {
+    public void loadNPCAnimations(Map<Integer, NPC> npcs1) {
+        for (NPC npc : npcs1.values()) {
             String npcId = String.valueOf(npc.getNpcID());
             String idlePath = "npc/" + npcId + "/Idle.png";
             String dialoguePath = "npc/" + npcId + "/Dialogue.png";

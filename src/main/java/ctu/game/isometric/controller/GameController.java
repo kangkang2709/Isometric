@@ -238,6 +238,7 @@ public class GameController {
 
         tutorialUI = new TutorialUI(this);
         subtitles = new Array<>();
+        npcRenderer = new NPCRenderer(assetManager.getAnimationManager());
 
         subtitles.add("Mình chỉ đang tìm tài liệu cho bài luận văn thôi...");
         subtitles.add("Nhưng cuốn sách này... không tiêu đề, đầy bụi... có gì đó thu hút mình.");
@@ -292,6 +293,7 @@ public class GameController {
                 this.map = newMap;
                 this.character.setGameMap(map);
                 this.pathfinder.setMap(newMap);
+
                 if (mapName.equals("board")) {
                     boardEventManager.setMap(this.map);
                     boardEventManager.randomBoardEveryRun();
@@ -319,22 +321,21 @@ public class GameController {
 
                 switch (mapName) {
                     case "tavern":
-                        this.character.setPosition(28, 9);
+                        this.character.setPosition(5, 13);
                         break;
                     case "library":
-                        this.character.setPosition(35, 19);
+                        this.character.setPosition(6, 5);
                         break;
                     case "main":
-                        this.character.setPosition(31, 15);
+                        this.character.setPosition(19, 10);
                         break;
                     case "tower":
-                        this.character.setPosition(28, 36);
+                        this.character.setPosition(13, 27);
                         break;
                     case "unknown":
-                        this.character.setPosition(28, 22);
+                        this.character.setPosition(24, 26);
                         break;
                     case "forest":
-
                         this.character.setPosition(10, 14);
                         break;
                 }
@@ -356,15 +357,15 @@ public class GameController {
         if (newMap != null) {
             System.out.println("Changing map to: " + mapName);
 
-            if (mapName.equalsIgnoreCase("board")) {
-                newMap.generateRandomMaze(getCharacter().getRun() / 2);
-                System.out.println("New run generated with run level: " + getCharacter().getRun());
-                isNewRun = false;
-            }
+//            if (mapName.equalsIgnoreCase("board")) {
+//                newMap.generateRandomMaze(getCharacter().getRun() / 2);
+//                System.out.println("New run generated with run level: " + getCharacter().getRun());
+//                isNewRun = false;
+//            }
 
 
             this.map = newMap;
-            boardEventManager.randomBoardEveryRun();
+//            boardEventManager.randomBoardEveryRun();
             this.character.setGameMap2(map);
             if (mapName.equals("forest")) {
                 this.character.setPosition(10, 14);
@@ -439,10 +440,10 @@ public class GameController {
     boolean isLoadNPCs = false;
 
     public void initializeNPCs(MapRenderer mapRenderer) {
-        this.npcRenderer = new NPCRenderer(npcManager.getNpcs(), mapRenderer, character);
+        this.npcRenderer.renewRenderer(npcManager.getNpcs(), mapRenderer, character);
 
-        if (isLoadNPCs == false) {
-            npcRenderer.loadNPCAnimations();
+        if (!isLoadNPCs) {
+            npcRenderer.loadNPCAnimations(npcManager.getOriginalNpcs());
             isLoadNPCs = true;
         }
         this.pathfinder.setNpcPositions(npcManager.getNpcPositions());
@@ -1138,7 +1139,7 @@ public class GameController {
             return;
         }
 
-        if (x > 4 && y > 20 && !character.getFlags().contains("dungeon2_library_entry")) {
+        if (y == 23 && (x == 4 || x == 3 || x == 5) && !character.getFlags().contains("dungeon2_library_entry")) {
             activeEvents.add(positionKey);
             character.clearPath();
             dialogController.showSimpleMessage(Arrays.asList(
@@ -1202,12 +1203,12 @@ public class GameController {
             return;
         }
 
-        if ((x == 31 && y == 4) || (x == 32 && y == 4)) {
+        if ((x == 27 && y == 3) || (x == 27 && y == 4)) {
             if (!character.getFlags().contains("god_intro")) {
                 activeEvents.add(positionKey);
                 character.clearPath();
                 dialogController.setOnDialogFinishedAction(() -> {
-                    mapRenderer.moveCameraToTarget(2048, 128, 0.5f, 2.5f, 1.5f, 1.0f);
+                    mapRenderer.moveCameraToTarget(1344, 288, 0.5f, 2.5f, 1.5f, 1.0f);
                     Timer.schedule(new Timer.Task() {
                         @Override
                         public void run() {
@@ -1218,7 +1219,7 @@ public class GameController {
                 });
                 dialogController.startDialog("god_intro", "scene_01");
                 addFlag("god_intro");
-                character.setPosition(31, 5);
+//                character.setPosition(31, 5);
                 activeEvents.remove(positionKey); // Ensure removal after processing
             } else if (character.getFlags().contains("god_intro") && character.getFlags().contains("loop_dialogue") && !character.getFlags().contains("god_dialogue")) {
                 activeEvents.add(positionKey);
@@ -1321,11 +1322,9 @@ public class GameController {
         // Reset character with a new instance
         character = new Character(10, 14);
         checkPositionEvents(0, 0); // Reset current event
-
         isRenderCharacter = true;
 
         resetEventsManager();
-        npcManager.resetNPCManager();
 
         // Reset controllers to initial state - make sure to reset character creation controller
         characterCreationController = null;
@@ -1361,6 +1360,7 @@ public class GameController {
         setState(GameState.MAIN_MENU);
         // Reset music
         musicController.playMusicForState(GameState.MAIN_MENU);
+        npcManager.resetNPCManager();
 
         System.gc(); // Request garbage collection
 

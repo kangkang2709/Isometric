@@ -118,7 +118,9 @@ public class GameScreen implements Screen {
             gameController.setCharacterDisplay();
             gameController.getAchievementUI().hide();
             gameController.setMerchantUI(new MerchantUI(gameController));
+
             gameController.initializeNPCs(mapRenderer);
+
             gameController.getBountyBoardController().reset();
 
             mapRenderer.setDialogController(gameController.getDialogController());

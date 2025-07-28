@@ -8,8 +8,8 @@
     "npcImage": "healer.png",
     "npcBackStory": "Elara studied ancient healing arts in the mystical forest before settling in this village.",
     "behaviorState": "idle",
-    "xPosition": 7,
-    "yPosition": 27,
+    "xPosition": 3,
+    "yPosition": 29,
     "mapName": "main"
   },
   {
@@ -47,8 +47,8 @@
     "npcImage": "riddler.png",
     "npcBackStory": "No one knows where he came from, but his riddles have stumped even the wisest scholars.",
     "behaviorState": "idle",
-    "xPosition": 39,
-    "yPosition": 15,
+    "xPosition": 28,
+    "yPosition": 16,
     "mapName": "main"
   },
   {
@@ -127,6 +127,19 @@
     "behaviorState": "idle",
     "xPosition": 5,
     "yPosition": 9,
+    "mapName": "main"
+  },
+  {
+    "npcID": 11,
+    "npcName": "Obilik Gate",
+    "npcDescription": "A skilled healer who can restore your health and mana",
+    "arcId": "guardian_backstory",
+    "sceneId": "scene_intro",
+    "npcImage": "healer.png",
+    "npcBackStory": "Elara studied ancient healing arts in the mystical forest before settling in this village.",
+    "behaviorState": "idle",
+    "xPosition": 13,
+    "yPosition": 19,
     "mapName": "main"
   }
 ]

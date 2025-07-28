@@ -176,25 +176,47 @@ public class AnimationManager {
         idleSpriteSheet.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         dialogueSpriteSheet.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
+
+        if (npcId.equals("11")) {
+            int idleFrameCount = idleSpriteSheet.getWidth() / 190;
+            int dialogueFrameCount = dialogueSpriteSheet.getWidth() / 190;
+
+            // Create idle animation frames
+            TextureRegion[] idleFrames = new TextureRegion[idleFrameCount];
+            for (int i = 0; i < idleFrameCount; i++) {
+                idleFrames[i] = new TextureRegion(idleSpriteSheet, i * 190, 0, 190, 240);
+            }
+
+            // Create dialogue animation frames
+            TextureRegion[] dialogueFrames = new TextureRegion[dialogueFrameCount];
+            for (int i = 0; i < dialogueFrameCount; i++) {
+                dialogueFrames[i] = new TextureRegion(dialogueSpriteSheet, i * 190, 0, 190, 380);
+            }
+            npcAnimations.put(npcId + "_idle", new Animation<>(0.1f, idleFrames));
+            npcAnimations.put(npcId + "_dialogue", new Animation<>(0.1f, dialogueFrames));
+        } else {
+            int idleFrameCount = idleSpriteSheet.getWidth() / 128;
+            int dialogueFrameCount = dialogueSpriteSheet.getWidth() / 128;
+
+            // Create idle animation frames
+            TextureRegion[] idleFrames = new TextureRegion[idleFrameCount];
+            for (int i = 0; i < idleFrameCount; i++) {
+                idleFrames[i] = new TextureRegion(idleSpriteSheet, i * 128, 0, 128, 128);
+            }
+
+            // Create dialogue animation frames
+            TextureRegion[] dialogueFrames = new TextureRegion[dialogueFrameCount];
+            for (int i = 0; i < dialogueFrameCount; i++) {
+                dialogueFrames[i] = new TextureRegion(dialogueSpriteSheet, i * 128, 0, 128, 128);
+            }
+            npcAnimations.put(npcId + "_idle", new Animation<>(0.1f, idleFrames));
+            npcAnimations.put(npcId + "_dialogue", new Animation<>(0.1f, dialogueFrames));
+
+        }
         // Calculate number of frames based on texture width (each frame is 128x128)
-        int idleFrameCount = idleSpriteSheet.getWidth() / 128;
-        int dialogueFrameCount = dialogueSpriteSheet.getWidth() / 128;
-
-        // Create idle animation frames
-        TextureRegion[] idleFrames = new TextureRegion[idleFrameCount];
-        for (int i = 0; i < idleFrameCount; i++) {
-            idleFrames[i] = new TextureRegion(idleSpriteSheet, i * 128, 0, 128, 128);
-        }
-
-        // Create dialogue animation frames
-        TextureRegion[] dialogueFrames = new TextureRegion[dialogueFrameCount];
-        for (int i = 0; i < dialogueFrameCount; i++) {
-            dialogueFrames[i] = new TextureRegion(dialogueSpriteSheet, i * 128, 0, 128, 128);
-        }
 
         // Add animations to map with unique keys for this NPC
-        npcAnimations.put(npcId + "_idle", new Animation<>(0.1f, idleFrames));
-        npcAnimations.put(npcId + "_dialogue", new Animation<>(0.1f, dialogueFrames));
+
     }
 
     // Helper method to efficiently extract frames
