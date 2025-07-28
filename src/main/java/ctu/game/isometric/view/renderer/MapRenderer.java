@@ -3,33 +3,23 @@ package ctu.game.isometric.view.renderer;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapObject;
-import com.badlogic.gdx.maps.objects.PolygonMapObject;
-import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
-import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
-import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.maps.tiled.renderers.IsometricTiledMapRenderer;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Timer;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import ctu.game.isometric.controller.DialogController;
 import ctu.game.isometric.controller.EventManager;
 import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.entity.Enemy;
 import ctu.game.isometric.model.game.Dice;
-import ctu.game.isometric.model.game.Items;
 import ctu.game.isometric.model.puzzle.PressurePlatePuzzle;
 import ctu.game.isometric.model.world.IsometricMap;
 import ctu.game.isometric.model.world.MapEvent;
@@ -41,7 +31,6 @@ import ctu.game.isometric.util.ItemLoader;
 import java.util.*;
 
 import static ctu.game.isometric.IsometricGame.getGameController;
-import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
 
 public class MapRenderer {
     private IsometricMap map;
@@ -96,8 +85,8 @@ public class MapRenderer {
         this.font = generator.generateFont(parameter);
         generator.dispose();
 
-        this.cardFont = generateVietNameseFont("ModernAntiqua-Regular.ttf", 20);
-        this.titleFont = generateVietNameseFont("GrenzeGotisch.ttf", 35);
+        this.cardFont = getGameController().getCommonFont();
+        this.titleFont = getGameController().getFont();
         this.titleFont.setColor(Color.BLACK);
 
         // Use the provided camera instead of creating a new one
@@ -111,7 +100,6 @@ public class MapRenderer {
 
         this.weatherRenderer = new WeatherRenderer(camera);
 
-        animationManager.loadDiceAnimations("textures/dice_static.png", "textures/dice_rolling.png");
 
         setSlowMotion(true);
         setSpeedMultiplier(0.01f);
@@ -171,9 +159,10 @@ public class MapRenderer {
 
             if (map.getMapName().equals("board")) {
                 renderBoard(batch);
+            } else {
+                weatherRenderer.render(batch);
             }
 
-            weatherRenderer.render(batch);
         }
 
     }

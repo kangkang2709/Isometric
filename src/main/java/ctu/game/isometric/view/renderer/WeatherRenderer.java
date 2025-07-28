@@ -22,6 +22,9 @@ public class WeatherRenderer {
     private ParticleEffect snowEffect;
     private ParticleEffectPool rainPool;
     private ParticleEffectPool snowPool;
+
+    private ParticleEffectPool leafPool;
+
     private Array<PooledEffect> activeEffects = new Array<>();
 
 
@@ -37,8 +40,12 @@ public class WeatherRenderer {
         rainEffect.load(Gdx.files.internal("effects/Rain/Rain.p"), Gdx.files.internal("effects/Rain/"));
         rainPool = new ParticleEffectPool(rainEffect, 5, 10);
 
+//        snowEffect = new ParticleEffect();
+//        snowEffect.load(Gdx.files.internal("effects/Leaf_fall/Leaf_fall.p"), Gdx.files.internal("effects/Leaf_fall/"));
+//        snowPool = new ParticleEffectPool(snowEffect, 5, 10);
+
         snowEffect = new ParticleEffect();
-        snowEffect.load(Gdx.files.internal("effects/Leaf_fall/Leaf_fall.p"), Gdx.files.internal("effects/Leaf_fall/"));
+        snowEffect.load(Gdx.files.internal("effects/Snow_fall/Snow_fall.p"), Gdx.files.internal("effects/Snow_fall/"));
         snowPool = new ParticleEffectPool(snowEffect, 5, 10);
     }
 

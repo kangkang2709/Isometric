@@ -20,6 +20,7 @@ public class AssetManager implements Disposable {
         textures = new HashMap<>();
         animationManager = new AnimationManager();
         animationManager.loadAnimations();
+        animationManager.loadDiceAnimations("textures/dice_static.png", "textures/dice_rolling.png");
     }
 
     public Map<String, Texture> getTextures() {

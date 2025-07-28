@@ -86,6 +86,9 @@ public class Character {
         return level;
     }
 
+    public float expNeedToLevelUp() {
+        return level * 50 - exp; // Calculate experience needed for next level
+    }
 
     public void decreaseHealth(float amount) {
         if (amount < 0) {
@@ -133,6 +136,7 @@ public class Character {
         this.ettempFlags.put("fallen", 0);
         this.ettempFlags.put("wrongWord", 0);
         this.ettempFlags.put("loop", 0);
+        this.ettempFlags.put("prayer", 0);
         this.questTracker = new QuestTracker();
         mapName = "forest";
         initialTutorial();
@@ -205,6 +209,7 @@ public class Character {
         this.ettempFlags.put("wrongWord", 0);
         this.ettempFlags.put("run", 0);
         this.ettempFlags.put("loop", 0);
+        this.ettempFlags.put("prayer", 0);
         this.score = 0;
         this.questTracker = new QuestTracker();
         mapName = "forest";

@@ -2004,6 +2004,48 @@
               "next_scene": "scene_1",
               "required_item": null,
               "reward_item": null
+            },
+            {
+              "text": "Tôi muốn hỏi về bia đá ma thuật ở trung tâm ngôi làng.",
+              "next_scene": "scene_obelisk",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_obelisk",
+          "background": "obelisk.png",
+          "music": "mystic_obelisk.mp3",
+          "dialogues": [
+            {
+              "character": "Armon",
+              "characterImage": "ghost.png",
+              "text": "Bia đá ma thuật là một phần của nghi thức cổ xưa do chủ nh ân cũ của ta tìm được từ Căn Hầm Ký Ức . \n Nó được chế tạo lại dùng để bảo vệ ký ức của chủ nhân khỏi những kẻ xâm nhập."
+            },
+            {
+              "character": "Armon",
+              "characterImage": "ghost.png",
+              "text": "Bên cạnh đó, mỗi ngày có thể cầu nguyện với nó có thể nhận một phần thưởng tùy vào sự thành tâm của ngươi."
+            },
+            {
+              "character": "Armon",
+              "characterImage": "ghost.png",
+              "text": "Nhưng ngươi chưa thể sử dụng nó nếu chưa được linh hồn của chủ nhân ta chấp thuận."
+            }
+          ],
+          "choices": [
+            {
+              "text": "Tôi sẽ chứng minh mình xứng đáng.",
+              "next_scene": "scene_1",
+              "required_item": null,
+              "reward_item": null
+            },
+            {
+              "text": "Tôi chưa sẵn sàng. Cho tôi thêm thời gian chuẩn bị được không?",
+              "next_scene": "scene_end",
+              "required_item": null,
+              "reward_item": null
             }
           ]
         },
@@ -2020,7 +2062,7 @@
             {
               "character": "Armon",
               "characterImage": "ghost.png",
-              "text": "Nếu ngươi thắng, ta sẽ cho phép ngươi tiếp cận ký ức của chủ nhân. Nhưng nếu ngươi thua, ngươi sẽ trở thành 1 phần của ngọn lửa nơi kia."
+              "text": "Nếu ngươi thắng, ta sẽ cho phép ngươi tiếp cận ký ức linh hồn của chủ nhân. Nhưng nếu ngươi thua, ngươi sẽ trở thành 1 phần của ngọn lửa nơi kia."
             }
           ],
           "choices": [
@@ -2073,6 +2115,85 @@
       ]
     },
     {
+      "id": "oblisk_usage",
+      "title": "Sử dụng bia đá ma thuật",
+      "description": "Sử dụng bia đá ma thuật để nhận phần thưởng hàng ngày.",
+      "scenes": [
+        {
+          "id": "scene_intro",
+          "background": "obelisk.png",
+          "music": "mystic_obelisk.mp3",
+          "dialogues": [
+            {
+              "character": "Obelisk",
+              "characterImage": "obelisk.png",
+              "text": "Ngươi muốn cầu nguyện hay dịch chuyển đến Căn Hầm Ký Ức?"
+            }
+          ],
+          "choices": [
+            {
+              "text": "Hãy cầu nguyện và tung lời ca ngợi tới Thần Linh **The Fool.[NO]",
+              "next_scene": "scene_prayer",
+              "required_item": null,
+              "reward_item": null
+            },
+            {
+              "text": "Dịch chuyển đến Căn Hầm Ký Ức.[YES]",
+              "next_scene": "scene_teleport",
+              "required_item": null,
+              "reward_item": null
+            },
+            {
+              "text": "Tôi muốn suy nghĩ thêm.",
+              "next_scene": "scene_end",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_prayer",
+          "background": "obelisk.png",
+          "music": "prayer_theme.mp3",
+          "dialogues": [
+            {
+              "character": "Obelisk",
+              "characterImage": "obelisk.png",
+              "text": "Hãy đặt tay lên bia đá và cầu nguyện. Sự thành tâm của ngươi sẽ được đền đáp."
+            }
+          ],
+          "choices": [
+          ]
+        },
+        {
+          "id": "scene_teleport",
+          "background": "obelisk.png",
+          "music": "mystic_obelisk.mp3",
+          "dialogues": [
+            {
+              "character": "Obelisk",
+              "characterImage": "obelisk.png",
+              "text": "Hãy chuẩn bị tinh thần. Ngươi sẽ được đưa đến Căn Hầm Ký Ức."
+            }
+          ],
+          "choices": []
+        },
+        {
+          "id": "scene_end",
+          "background": "obelisk.png",
+          "music": "village_theme.mp3",
+          "dialogues": [
+            {
+              "character": "Obelisk",
+              "characterImage": "obelisk.png",
+              "text": "Hãy trở lại khi ngươi đã sẵn sàng. Ta vẫn luôn thủ hộ ngôi làng này."
+            }
+          ],
+          "choices": []
+        }
+      ]
+    },
+    {
       "id": "frostguardian_ending",
       "title": "Vị Hộ Vệ Hồ Băng",
       "description": "Gặp gỡ vị hộ vệ do thần chỉ điểm tại ngôi hồ bên cạnh làng, vượt qua thử thách để nhận phần thưởng giúp đánh bại Quỷ Vương.",
@@ -2093,7 +2214,7 @@
             {
               "character": "Frost Guardian",
               "characterImage": "frost_guardian.png",
-              "text": "Ngươi là kẻ được thần chỉ điểm, đến từ ngôi làng bên hồ. Sứ mệnh của ngươi không chỉ là giải phong ấn cho ta, mà còn vượt qua thử thách của \nchính bản thân mình."
+              "text": "Ngươi là kẻ được thần chỉ điểm, đến từ ngôi làng ở phía trên hầm ngục ký ức. Sứ mệnh của ngươi không chỉ là giải phong ấn cho ta, mà còn vượt qua thử thách của \nchính bản thân mình."
             },
             {
               "character": "Frost Guardian",
@@ -2175,7 +2296,6 @@
         }
       ]
     },
-
     {
       "id": "scene_boss_floor_4",
       "title": "",
@@ -2215,20 +2335,20 @@
           ]
         },
         {
-            "id": "scene_boss_crystal_fight",
-            "music": "battle_theme.mp3",
-            "sound_effects": [
-                "battle_start.mp3"
-            ],
-            "dialogues": [
-                {
-                "character": "mc_default",
-                "characterImage": "mc_default.png",
-                "text": "Sẵn sàng đối đầu với Quái vật đá khổng lồ. Cuộc chiến cam go bắt đầu..."
-                }
-            ],
-            "choices": []
-            },
+          "id": "scene_boss_crystal_fight",
+          "music": "battle_theme.mp3",
+          "sound_effects": [
+            "battle_start.mp3"
+          ],
+          "dialogues": [
+            {
+              "character": "mc_default",
+              "characterImage": "mc_default.png",
+              "text": "Sẵn sàng đối đầu với Quái vật đá khổng lồ. Cuộc chiến cam go bắt đầu..."
+            }
+          ],
+          "choices": []
+        },
         {
           "id": "scene_boss_crystal_escape",
           "music": "escape_theme.mp3",
@@ -2285,19 +2405,19 @@
           ]
         },
         {
-            "id": "scene_boss_dragon_fight",
-            "music": "battle_theme.mp3",
-            "sound_effects": [
-                "battle_start.mp3"
-            ],
-            "dialogues": [
-                {
-                "character": "mc_default",
-                "characterImage": "mc_default.png",
-                "text": "Sẵn sàng đối đầu với Rồng Lửa khổng lồ. Cuộc chiến cam go bắt đầu..."
-                }
-            ],
-            "choices": []
+          "id": "scene_boss_dragon_fight",
+          "music": "battle_theme.mp3",
+          "sound_effects": [
+            "battle_start.mp3"
+          ],
+          "dialogues": [
+            {
+              "character": "mc_default",
+              "characterImage": "mc_default.png",
+              "text": "Sẵn sàng đối đầu với Rồng Lửa khổng lồ. Cuộc chiến cam go bắt đầu..."
+            }
+          ],
+          "choices": []
         },
         {
           "id": "scene_boss_dragon_escape",
@@ -2355,19 +2475,19 @@
           ]
         },
         {
-            "id": "scene_boss_crystal_fight",
-            "music": "battle_theme.mp3",
-            "sound_effects": [
-                "battle_start.mp3"
-            ],
-            "dialogues": [
-                {
-                "character": "mc_default",
-                "characterImage": "mc_default.png",
-                "text": "Sẵn sàng đối đầu với Linh Hồn Lục Quang. Cuộc chiến cam go bắt đầu..."
-                }
-            ],
-            "choices": []
+          "id": "scene_boss_crystal_fight",
+          "music": "battle_theme.mp3",
+          "sound_effects": [
+            "battle_start.mp3"
+          ],
+          "dialogues": [
+            {
+              "character": "mc_default",
+              "characterImage": "mc_default.png",
+              "text": "Sẵn sàng đối đầu với Linh Hồn Lục Quang. Cuộc chiến cam go bắt đầu..."
+            }
+          ],
+          "choices": []
         },
         {
           "id": "scene_boss_crystal_escape",
@@ -2386,7 +2506,5 @@
         }
       ]
     }
-
-
   ]
 }

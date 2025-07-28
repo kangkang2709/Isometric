@@ -309,11 +309,11 @@ public class DialogController {
                             gameController.changeSaveMap("dungeon2");
                             gameController.getCharacter().setPosition(1, 20);
                         } else if (itemName.equalsIgnoreCase("Saphire Alpha")) {
-                            gameController.changeSaveMap("main");
-                            gameController.getCharacter().setPosition(11, 9);
+                            gameController.changeSaveMap("frozen");
+                            gameController.getCharacter().setPosition(7, 7);
                         } else if (itemName.equalsIgnoreCase("Emeral Delta")) {
-                            gameController.changeSaveMap("main");
-                            gameController.getCharacter().setPosition(13, 27);
+                            gameController.changeSaveMap("forest");
+                            gameController.getCharacter().setPosition(14, 10);
                         } else
                             gameController.getCharacter().addItem(ItemLoader.getItemByName(itemName), 1);
 

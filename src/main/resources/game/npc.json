@@ -125,15 +125,15 @@
     "npcImage": "healer.png",
     "npcBackStory": "Elara studied ancient healing arts in the mystical forest before settling in this village.",
     "behaviorState": "idle",
-    "xPosition": 5,
-    "yPosition": 9,
-    "mapName": "main"
+    "xPosition": 7,
+    "yPosition": 14,
+    "mapName": "frozen"
   },
   {
     "npcID": 11,
-    "npcName": "Obilik Gate",
+    "npcName": "Obelisk",
     "npcDescription": "A skilled healer who can restore your health and mana",
-    "arcId": "guardian_backstory",
+    "arcId": "oblisk_usage",
     "sceneId": "scene_intro",
     "npcImage": "healer.png",
     "npcBackStory": "Elara studied ancient healing arts in the mystical forest before settling in this village.",

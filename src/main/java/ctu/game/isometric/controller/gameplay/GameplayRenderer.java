@@ -377,7 +377,11 @@ public class GameplayRenderer {
     }
 
     private void drawMainActionPanel(SpriteBatch batch, float x, float y, float width, float height) {
-
+        Texture battlefieldBg = getTexture("ui/panel-1.png");
+        if (battlefieldBg != null) {
+            batch.setColor(Color.WHITE);
+            batch.draw(battlefieldBg, x, y, width, height);
+        }
 
         regularFont.setColor(Color.GRAY);
         regularFont.draw(batch, "Độ khó: " + controller.getDifficultyText(), x + 20, y + height - 15);
@@ -396,15 +400,6 @@ public class GameplayRenderer {
         Color turnColor = controller.isPlayerTurn() ? Color.GREEN : Color.RED;
         drawCenteredText(batch, titleFont, turnText, x + width / 2, y + height - 15, turnColor);
     }
-
-    private void drawMainActionPanel2(SpriteBatch batch, float x, float y, float width, float height) {
-        regularFont.setColor(Color.WHITE);
-        float attack = controller.getGameController().getCharacter().getDamage() + controller.getAttackBuff() - controller.getPlayerNerf();
-        float defend = controller.getPlayerDefend() + controller.getPlayerDef();
-        regularFont.draw(batch, "Sức mạnh: " + (int) attack, x + 20, y + height - 15);
-        regularFont.draw(batch, "Phòng thủ: " + (int) defend, x + 20, y + height - 35);
-    }
-
     Texture playerTexture;
 
     private void drawBattlefield(SpriteBatch batch, float x, float y, float width, float height) {
@@ -566,9 +561,7 @@ public class GameplayRenderer {
     private void drawActionButtons(SpriteBatch batch, float screenWidth, float screenHeight) {
         // Panel background for buttons
         batch.setColor(0.1f, 0.1f, 0.2f, 0.95f);
-        batch.draw(whiteTexture, 788, 20, 460, 75);
-
-
+        batch.draw(getTexture("ui/item-slot-3"), 788, 20, 460, 75);
         // Draw JRPG-style buttons
         drawConsoleStyleButton(batch, controller.getSpellButton(), "Kỹ năng", new Color(0.2f, 0.6f, 1f, 1f));
         drawConsoleStyleButton(batch, controller.getItemButton(), "Vật Phẩm", new Color(1f, 0.6f, 0.2f, 1f));
@@ -710,50 +703,6 @@ public class GameplayRenderer {
         regularFont.draw(batch, text, buttonRect.x + (buttonRect.width - layout.width) / 2, buttonRect.y + (buttonRect.height + layout.height) / 2);
     }
 
-    private void drawPokemonStyleHPBar(SpriteBatch batch, float current, float max, float x, float y, float width, float height) {
-        if (max <= 0) return;
-
-        float percentage = Math.max(0, current / max);
-
-        batch.setColor(0.1f, 0.1f, 0.1f, 1);
-        batch.draw(whiteTexture, x - 2, y - 2, width + 4, height + 4);
-
-        batch.setColor(0.3f, 0.3f, 0.3f, 1);
-        batch.draw(whiteTexture, x, y, width, height);
-
-        Color hpColor = percentage > 0.5f ? Color.valueOf("4CAF50") : percentage > 0.2f ? Color.valueOf("FFEB3B") : Color.valueOf("F44336");
-
-        batch.setColor(hpColor);
-        batch.draw(whiteTexture, x, y, width * percentage, height);
-
-        batch.setColor(Color.BLACK);
-        drawBorder(batch, x, y, width, height, 1);
-
-        regularFont.setColor(Color.WHITE);
-        regularFont.draw(batch, "HP", x - 30, y + height - 2);
-    }
-
-    private void drawPokemonStyleMPBar(SpriteBatch batch, float current, float max, float x, float y, float width, float height) {
-        if (max <= 0) return;
-
-        float percentage = Math.max(0, current / max);
-
-        batch.setColor(0.1f, 0.1f, 0.1f, 1);
-        batch.draw(whiteTexture, x - 2, y - 2, width + 4, height + 4);
-
-        batch.setColor(0.3f, 0.3f, 0.3f, 1);
-        batch.draw(whiteTexture, x, y, width, height);
-
-        Color mpColor = new Color(0.2f, 0.4f, 0.95f, 1);
-        batch.setColor(mpColor);
-        batch.draw(whiteTexture, x, y, width * percentage, height);
-
-        batch.setColor(Color.BLACK);
-        drawBorder(batch, x, y, width, height, 1);
-
-        regularFont.setColor(Color.WHITE);
-        regularFont.draw(batch, "MP", x - 30, y + height - 2);
-    }
 
     private void drawBorder(SpriteBatch batch, float x, float y, float width, float height, float thickness) {
         batch.draw(whiteTexture, x, y + height - thickness, width, thickness);

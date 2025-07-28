@@ -183,6 +183,7 @@ public class GameController {
         this.mapList.put("tower", new IsometricMap("maps/tower.tmx"));
         this.mapList.put("unknown", new IsometricMap("maps/unknown.tmx"));
         this.mapList.put("dungeon2", new IsometricMap("maps/dungeon2.tmx"));
+        this.mapList.put("frozen", new IsometricMap("maps/frozen.tmx"));
 
         this.eventManagerMap.put("board", eventManager);
         this.eventManagerMap.put("main", new EventManager(this.mapList.get("main"), "main"));
@@ -192,6 +193,7 @@ public class GameController {
         this.eventManagerMap.put("tower", new EventManager(this.mapList.get("tower"), "tower"));
         this.eventManagerMap.put("dungeon2", new EventManager(this.mapList.get("dungeon2"), "dungeon2"));
         this.eventManagerMap.put("unknown", new EventManager(this.mapList.get("unknown"), "unknown"));
+        this.eventManagerMap.put("frozen", new EventManager(this.mapList.get("frozen"), "frozen"));
 
         this.character = new Character(10, 0);
         this.inputController = new InputController(this);
@@ -469,9 +471,9 @@ public class GameController {
             public void run() {
                 dialogController.showSimpleMessage(Arrays.asList(
                         "Ngươi đã chứng minh bản lĩnh và vượt qua thử thách của ta.",
-                        "Phần thưởng dành cho ngươi đang nằm trong chiếc rương bên cạnh. Hãy nhận lấy, nó sẽ giúp ngươi đối đầu Quỷ Vương.",
+                        "Phần thưởng dành cho ngươi đang nằm phía sau ta. Hãy nhận lấy, nó sẽ giúp ngươi đối đầu Quỷ Vương.",
                         "Nhớ kỹ, Quỷ Vương là bậc thầy về ngôn ngữ. Hắn có thể vô hiệu hóa mọi sát thương dưới 15. Hãy chuẩn bị thật tốt trước khi đối mặt với hắn.",
-                        "Đường về nằm ở gần trại lửa, nó có sức mạnh đưa ngươi trở về nơi ngươi đã đến.",
+                        "Đường về nằm ở phía sau, nó có sức mạnh đưa ngươi trở về nơi ngươi đã đến.",
                         "Giờ đây nhiệm vụ của ta đã hoàn thành. Chúc ngươi thành công trên hành trình phía trước."
                 ));
                 npcManager.removeNPC(10);
@@ -649,7 +651,7 @@ public class GameController {
                         Timer.schedule(new Timer.Task() {
                             @Override
                             public void run() {
-                                Enemy enemy = new Enemy(11, "Thủ vệ hồ", "Frost Guardian", "frost_guardian", 1, 21, 16);
+                                Enemy enemy = new Enemy(11, "Thủ vệ Băng giá", "Frost Guardian", "frost_guardian", 1, 21, 16);
                                 enemy.setDefensePower(25);
                                 game.getDarkestDungeonScreen().startCombat(enemy);
                                 game.changeScreen("DARK_DUNGEON");
@@ -658,6 +660,78 @@ public class GameController {
                     });
                     dialogController.startDialog("frostguardian_ending", "scene_intro");
                     break;
+                case "Obelisk": {
+                    if (!character.getFlags().contains("completed_ghost_quest")) {
+                        dialogController.showSimpleMessage(Arrays.asList("Ngươi chưa đủ sức mạnh để sử dụng bia đá này",
+                                "Dưới tảng đá này có khắc tên ai đó, **Armon ",
+                                "Hãy tìm Armon và hỏi về bia đá này. Có thể hắn sẽ giúp ngươi hiểu rõ hơn về nó.",
+                                "Ngươi hỏi hắn ở đâu, hắn đang thủ hộ lăng mộ của *Ngài nhưng chìa khóa để vào đã bị Crystal Serpent ở tầng 4 của mê cung đánh cắp.",
+                                "Đó là viên ngọc *Ruby, nắm giữ sức mạnh của ** Concept **",
+                                "Nếu ngươi tìm được thì đó sẽ là vận mệnh của ngươi, người được chọn"));
+                    } else if (character.getFlags().contains("completed_ghost_quest") && character.getFlags().contains("prove_to_armon") && !character.getFlags().contains("oblisk_meet")) {
+                        addFlag("oblisk_meet");
+                        dialogController.showSimpleMessage(Arrays.asList("Ngươi đã gặp được Armon rồi sao?",
+                                "Ta và hắn đã từng là người đồng hành trong hành trình tiêu diệt quỷ vương.",
+                                "Nhưng chúng ta đã thất bại và bị đẩy lùi về đây. Và *Ngài ấy đã ra đi trước khi Azrok bị đánh bại.",
+                                "Giờ đây, Armon chỉ có thể thủ hộ lăng mộ của ngài, còn ta thì ở đây để bảo vệ ngôi làng này",
+                                "Nếu ngươi có thể vượt qua được thử thách của Armon và được ngài tán thành, ta sẽ cố hết sức để hổ trợ ngươi \n trên hành trình tiêu diệt Azrok."));
+                    } else if (character.getFlags().contains("oblisk_meet") && character.getFlags().contains("completed_dungeon2")) {
+                        dialogController.setOnCanncelFinishedAction(() -> {
+                            if (character.getAttempFlags().getOrDefault("prayer", 0) > 0) {
+                                Timer.schedule(new Timer.Task() {
+                                    @Override
+                                    public void run() {
+                                        dialogController.showSimpleMessage("Hôm nay ngươi đã cầu nguyện rồi, hãy quay lại sau 1 ngày để cầu nguyện tiếp");
+                                    }
+                                }, 1f);
+                            } else {
+                                int random = new Random().nextInt(5);
+                                String rewardMessage = "";
+                                character.getAttempFlags().put("prayer", 1);
+                                switch (random) {
+                                    case 0:
+                                        rewardMessage = "Elixir";
+                                        character.addItem(ItemLoader.getItemById(1), 1);
+                                        break;
+                                    case 1:
+                                        rewardMessage = "Arcane Essence";
+                                        character.addItem(ItemLoader.getItemById(2), 1);
+                                        break;
+                                    case 2: // BỊ THIẾU TRƯỚC ĐÓ
+                                        rewardMessage = "Talisman of Luck";
+                                        character.addItem(ItemLoader.getItemById(3), 1);
+                                        break;
+                                    case 3:
+                                        rewardMessage = "150 GOLD";
+                                        character.addScore(150);
+                                        break;
+                                    case 4:
+                                        rewardMessage = "LÊN CẤP!";
+                                        character.addExperience(character.expNeedToLevelUp());
+                                        break;
+                                    default:
+                                        rewardMessage = "Một làn khói mờ... Không có gì cả.";
+                                        break;
+                                }
+
+                                final String rewardMessageTemp = rewardMessage; // now this is effectively final
+
+                                Timer.schedule(new Timer.Task() {
+                                    @Override
+                                    public void run() {
+                                        dialogController.showSimpleMessage("Ngươi đã cầu nguyện với bia đá thần linh - GOD, nhận được **" + rewardMessageTemp + "** từ Obelisk.");
+                                    }
+                                }, 1.5f);
+
+                            }
+                        });
+                        dialogController.setOnDialogFinishedAction(() -> {
+                            changeMap("board");
+                        });
+                        dialogController.startDialog("oblisk_usage", "scene_intro");
+                    }
+                    break;
+                }
                 case "":
                 case "Armon":
                     if (character.getFlags().contains("completed_ghost_quest")) {
@@ -678,7 +752,6 @@ public class GameController {
                             }
                         });
                         dialogController.setOnCanncelFinishedAction(() -> {
-//
                             Timer.schedule(new Timer.Task() {
                                 @Override
                                 public void run() {
@@ -689,6 +762,7 @@ public class GameController {
                                 }
                             }, 1f);
                         });
+                        addFlag("prove_to_armon");
                         dialogController.startDialog("armon_ending", "scene_intro");
                     } else if (character.getFlags().contains("ghost_name") && character.getFlags().contains("acient_note") && character.getFlags().contains("ghost_ashes")) {
                         dialogController.showMessageWithChoices("Ngươi đã lấy được **mảnh vỡ của bia đá rồi.\n" +
@@ -728,7 +802,7 @@ public class GameController {
                                 "Nếu tìm được manh mối, hãy quay trở lại tìm ta"
                         ));
                     } else {
-                        dialogController.showSimpleMessage("Một linh hồn xa lạ đang đứng trước mặt mình, nó luon ông miệng nói `Tên của ta.. tên..là..gì`.\n"
+                        dialogController.showSimpleMessage("Một linh hồn xa lạ đang đứng trước mặt mình, nó luôn miệng nói `Tên của ta.. tên..là..gì`.\n"
                                 + "Ngôi nhà bên cạnh và lăng mộ phía sau nó là của ai?.");
                     }
                     break;
@@ -855,6 +929,7 @@ public class GameController {
 
                 this.character.getAttempFlags().put("quizAttempts", 0);
                 this.character.getAttempFlags().put("mulQuizAttempts", 0);
+                this.character.getAttempFlags().put("prayer", 0);
             } else {
                 System.out.println(this.character.getAttempFlags().get("quizAttempts"));
                 System.out.println(this.character.getAttempFlags().get("mulQuizAttempts"));
@@ -1729,7 +1804,7 @@ public class GameController {
                         break;
                     case 10:
                         dialogController.setOnDialogFinishedAction(() -> {
-                            Enemy enemy = EnemyLoader.getEnemyById(8);
+                            Enemy enemy = EnemyLoader.getEnemyById(9);
                             setState(GameState.GAMEPLAY);
                             gameplayController.activate();
                             gameplayController.startCombat(enemy);
