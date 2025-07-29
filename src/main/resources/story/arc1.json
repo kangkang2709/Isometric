@@ -2505,6 +2505,77 @@
           "choices": []
         }
       ]
+    },
+    {
+      "id": "scene_final_boss",
+      "title": "Trận Chiến Cuối Cùng",
+      "description": "Giáp mặt Quỷ Vương – kẻ gieo rắc bóng tối và đe dọa sự diệt vong của toàn thế giới.",
+      "scenes": [
+        {
+          "id": "scene_intro",
+          "background": "demon_king_throne.png",
+          "music": "final_battle_theme.mp3",
+          "dialogues": [
+            {
+              "character": "Demon King",
+              "characterImage": "demon_king.png",
+              "text": "Cuối cùng ngươi cũng đến, kẻ phàm trần đầy ảo tưởng. Nhưng mọi nỗ lực của ngươi đều vô ích – ta là hiện thân của bóng tối vĩnh hằng, là sự lãng quên của mọi hy vọng!"
+            },
+            {
+              "character": "MC",
+              "characterImage": "mc_default.png",
+              "text": "Bóng tối của ngươi sẽ không bao giờ che lấp được ánh sáng của tri thức! Vì tương lai của thế giới này, ta sẽ kết thúc triều đại đẫm máu của ngươi, ngay tại đây!"
+            }
+          ],
+          "choices": [
+            {
+              "text": "Lao vào trận chiến định mệnh. [YES]",
+              "next_scene": "scene_battle",
+              "required_item": null,
+              "reward_item": null
+            },
+            {
+              "text": "Rút lui để chuẩn bị lần cuối. [NO]",
+              "next_scene": "scene_escape",
+              "required_item": null,
+              "reward_item": null
+            }
+          ]
+        },
+        {
+          "id": "scene_battle",
+          "background": "demon_king_arena.png",
+          "music": "epic_battle_theme.mp3",
+          "dialogues": [
+            {
+              "character": "MC",
+              "characterImage": "mc_default.png",
+              "text": "Đây là thời khắc định đoạt vận mệnh thế giới. Toàn bộ sức mạnh và ý chí của ta – giờ là lúc khai phá chúng!"
+            },
+            {
+              "character": "Demon King",
+              "characterImage": "demon_king.png",
+              "text": "Hahaha... Ngươi thật sự tin rằng mình có thể chống lại một thực thể vượt xa thời gian và sự sống? Hãy để tuyệt vọng nhấn chìm ngươi!"
+            }
+          ],
+          "choices": []
+        },
+        {
+          "id": "scene_escape",
+          "background": "demon_king_throne.png",
+          "music": "escape_theme.mp3",
+          "dialogues": [
+            {
+              "character": "MC",
+              "characterImage": "mc_default.png",
+              "text": "Không... mình chưa sẵn sàng. Trận chiến này cần nhiều hơn sức mạnh – cần chiến lược, tri thức và niềm tin. Mình sẽ quay lại... mạnh mẽ hơn bao giờ hết!"
+            }
+          ],
+          "choices": []
+        }
+      ]
     }
-  ]
+
+
+    ]
 }

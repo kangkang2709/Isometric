@@ -744,13 +744,14 @@ public class InputController extends InputAdapter {
                 }
                 return true;
             }
-            case Keys.UP -> {
+
+            case Keys.UP,Keys.W -> {
                 gameController.getDialogController().selectPreviousChoice();
                 effectManager.playClickSound();
 
                 return true;
             }
-            case Keys.DOWN -> {
+            case Keys.DOWN,Keys.S  -> {
                 gameController.getDialogController().selectNextChoice();
                 effectManager.playClickSound();
                 return true;

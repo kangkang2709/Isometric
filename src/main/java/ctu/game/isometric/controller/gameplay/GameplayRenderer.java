@@ -334,6 +334,8 @@ public class GameplayRenderer {
                     public void run() {
                         if (controller.isEnemyBoss()) {
                             controller.getGameController().returnToTowerAfterBoss(controller.getEnemyName());
+                        } else if (controller.isEnemyLord()) {
+                            controller.getGameController().returnToTowerAfterFinalBoss();
                         }
                         controller.getGameController().setState(GameState.EXPLORING);
                         if (controller.getNewLevel() > controller.getCurrentLevel())

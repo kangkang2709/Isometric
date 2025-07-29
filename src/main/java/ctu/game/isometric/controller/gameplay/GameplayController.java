@@ -237,7 +237,7 @@ public class GameplayController {
         return enemyName.toLowerCase().contains("boss");
     }
 
-    private boolean isEnemyLord() {
+    public boolean isEnemyLord() {
         return enemyName.contains("Lord") || enemyName.contains("Azrok");
     }
 

@@ -174,9 +174,11 @@ public class CutsceneRenderer {
         cutsceneType = CutsceneType.MULTIPLE_BACKGROUNDS_WITH_SUBTITLES;
     }
 
+    String cutSceneName;
 
     public void loadOctopathStyleCutscene(String cutsceneName, Array<String> subtitleTexts) {
         cutsceneEnded = false;
+        this.cutSceneName = cutsceneName;
         disposePages();
         disposeBackgrounds();
 
@@ -342,6 +344,7 @@ public class CutsceneRenderer {
 
         batch.setProjectionMatrix(originalMatrix);
     }
+
     private void renderOctopathStyleCutscene(SpriteBatch batch, float screenWidth, float screenHeight) {
         // Draw background
         if (currentPage < backgroundTextures.size && backgroundTextures.get(currentPage) != null) {
@@ -395,6 +398,7 @@ public class CutsceneRenderer {
 
         batch.setColor(1, 1, 1, 1);
     }
+
     private void renderPagesCutscene(SpriteBatch batch, float screenWidth, float screenHeight) {
         if (!isTransitioning) {
             if (currentPage < pages.size) {
@@ -686,7 +690,9 @@ public class CutsceneRenderer {
 
             @Override
             public void run() {
-                if (gameController != null) {
+                if (cutSceneName.equals("true_ending"))
+                    gameController.changeCreditScreen();
+                else if (gameController != null) {
                     gameController.setState(GameState.EXPLORING);
                     gameController.setPreviousState(GameState.EXPLORING);
                 }
@@ -737,9 +743,11 @@ public class CutsceneRenderer {
             frameTexture = null;
         }
     }
+
     public void setTypewriterSpeed(float charactersPerSecond) {
         this.typewriterSpeed = charactersPerSecond;
     }
+
     private void disposePages() {
         for (Texture page : pages) {
             try {

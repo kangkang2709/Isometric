@@ -313,7 +313,6 @@ public class DialogController {
                             gameController.getCharacter().setPosition(7, 7);
                         } else if (itemName.equalsIgnoreCase("Emeral Delta")) {
                             gameController.changeSaveMap("forest");
-                            gameController.getCharacter().setPosition(14, 10);
                         } else
                             gameController.getCharacter().addItem(ItemLoader.getItemByName(itemName), 1);
 

@@ -359,18 +359,30 @@ public class GameController {
         if (newMap != null) {
             System.out.println("Changing map to: " + mapName);
 
-//            if (mapName.equalsIgnoreCase("board")) {
-//                newMap.generateRandomMaze(getCharacter().getRun() / 2);
-//                System.out.println("New run generated with run level: " + getCharacter().getRun());
-//                isNewRun = false;
-//            }
-
-
             this.map = newMap;
 //            boardEventManager.randomBoardEveryRun();
             this.character.setGameMap2(map);
             if (mapName.equals("forest")) {
                 this.character.setPosition(10, 14);
+                if (character.getFlags().contains("defeated_final_boss") && !character.getFlags().contains("return_world")) {
+                    Timer.schedule(new Timer.Task() {
+                        @Override
+                        public void run() {
+                            dialogController.showMessageWithChoices("Mình đã hoàn thành sứ mệnh ở đây, nhưng có điều gì đó khiến mình không nỡ rời đi" +
+                                            "\nCó lẽ, thế giới này vẫn cần một người canh giữ tri thức." +
+                                            "Hãy chọn hành động tiếp theo của mình.", "Trở về thế giới cũ [YES]", "Tiếp tục ở lại [NO]",
+                                    () -> {
+                                        character.setCurrentObject("Hãy trở về và tiếp tục hành trình của mình.");
+                                        startMulBGSubTitleCutscene("true_ending", createTrueEndingSubtitles());
+                                    }, () -> {
+                                        character.getFlags().remove("return_world");
+                                        character.setCurrentObject("Tiếp tục ở lại và bảo vệ thế giới này.");
+                                        startMulBGSubTitleCutscene("ending", createEndingSubtitles());
+                                        changeMap("main");
+                                    });
+                        }
+                    }, 1.5f);
+                }
             }
             this.pathfinder.setMap(newMap);
             this.eventManager = this.eventManagerMap.get(mapName);
@@ -428,10 +440,78 @@ public class GameController {
                 public void run() {
                     dialogController.showSimpleMessage(Arrays.asList(
                             "Chúc mừng ngươi đã đánh bại " + BossName + ".",
-                            "Hãy tận dụng phần thưởng từ chiến thắng này để tiếp tục hành trình."
+                            "Hãy tận dụng phần thưởng từ chiến thắng này để tiếp tục hành trình.",
+                            "Ngôi nhà hoang bên cạnh tòa tháp có cánh cổng dịch chuyển có thể phát huy tác dụng của những viên ngọc mà ngươi đã thu thập."
                     ));
                 }
             }, 1.5f);
+
+
+        } else {
+            Gdx.app.error("GameController", "Tower map not found.");
+        }
+    }
+
+
+    Array<String> bossSubtitles;
+
+    public void createBossSubtitles() {
+        bossSubtitles = new Array<>();
+        bossSubtitles.add("Trong tiếng gào rít xé toạc không gian,Qủy vương bóng tối cuối cùng cũng sụp đổ. \n Hắc khí tan biến vào hư vô, để lại một cõi tàn lụi thinh lặng.");
+        bossSubtitles.add("Giữa đống đổ nát đẫm khí thiêng và tro tàn, một ánh sáng nhè nhẹ vẫy gọi.\n Trên bàn thờ đá cổ, quyển sách cổ ngữ đang nằm yên lặng như đợi được đánh thức.");
+        bossSubtitles.add("Khi tay chạm đến bìa sách lạnh ngắt, một làn sóng ánh sáng bừng lên. \n Hàng trăm ký tự cổ xưa tung bay, xoáy quanh không trung như hồi sinh sau ngàn năm bị phong ấn.");
+        bossSubtitles.add("Những dòng năng lượng chảy qua đá, tường và không khí, thắp sáng toàn bộ đại mê cung bằng ánh sáng của tri thức và sự cứu rỗi.");
+        bossSubtitles.add("Từng mảnh đất nứt nẻ được vá lại bằng sắc xanh của sự sống. Cây cối nảy mầm, nước trong lành tràn về – thế giới lại một lần nữa thở ra nhịp sống nguyên sơ!");
+        bossSubtitles.add(
+                "- Vận mệnh của mình... đã hoàn thành rồi sao?\n - Mình thật sự mệt...\n- Giờ đây... mình chỉ muốn trở về và nghỉ ngơi."
+        );
+        bossSubtitles.add("Khi trời chớm bình minh, người du hành trở lại nơi khởi đầu. Không còn khói lửa, chỉ còn ánh sáng, tiếng chim và sự thanh thản sâu thẳm trong tâm hồn.");
+    }
+
+    public Array<String> createTrueEndingSubtitles() {
+        Array<String> sub = new Array<>();
+        sub.add("Khu rừng nơi mọi chuyện bắt đầu – yên tĩnh, linh thiêng, như đang chờ đón điều gì đó cuối cùng.");
+        sub.add("Trên bàn thờ cổ, ba viên ngọc phát sáng – đỏ, xanh dương và xanh lá – xoay quanh quyển sách cổ như một nghi thức linh thiêng chuẩn bị khởi động");
+        sub.add("Khi lời cầu nguyện vang lên, một thực thể thần thánh từ ánh sáng xuất hiện – mang theo sự tha thứ, hoàn thành và giải thoát.");
+        sub.add("Ánh sáng cuốn lấy nhân vật – không còn ranh giới giữa thế giới và giấc mơ. Sự trở về đang bắt đầu.");
+        sub.add("Mở mắt... giữa ánh sáng vàng  hoàng hôn rọi qua cửa kính… nơi mọi thứ vẫn bình yên, như thể chưa từng có điều gì xảy ra.");
+        sub.add("Giữa không gian học thuật yên bình, những dòng chữ đầu tiên của khóa luận được viết nên – như hồi âm cho một hành trình đã khép lại.\n - Chúc ngươi thành công giữa dòng đời hỡi Người lữ hành");
+        return sub;
+    }
+
+    public Array<String> createEndingSubtitles() {
+        Array<String> sub = new Array<>();
+        sub.add("Mình đã có thể trở về... nhưng nơi này... có điều gì đó khiến mình không nỡ rời đi.");
+        sub.add("Có lẽ, thế giới này vẫn cần một người canh giữ tri thức..");
+        return sub;
+    }
+
+
+    public void changeCreditScreen() {
+        game.changeScreen("credit");
+    }
+
+    public void returnToTowerAfterFinalBoss() {
+        IsometricMap newMap = this.mapList.get("tower");
+        if (newMap != null) {
+            createBossSubtitles();
+            startMulBGSubTitleCutscene("boss", bossSubtitles);
+            this.map = newMap;
+            this.character.setGameMap(map);
+            this.character.setPosition(5, 7);
+            this.pathfinder.setMap(newMap);
+            this.eventManager = this.eventManagerMap.get("tower");
+            this.game.getGameScreen().getMapRenderer().changeTiledMapRenderer(this.map, this.eventManager);
+            Timer.schedule(new Timer.Task() {
+                @Override
+                public void run() {
+                    dialogController.showSimpleMessage(Arrays.asList(
+                            "Cảm ơn ngươi đã đánh bại Quỷ Vương Azrok và giải phóng thế giới khỏi sự thống trị của hắn.",
+                            "Hành trình của ngươi đã kết thúc, nhưng những câu chuyện về ngươi sẽ được kể lại mãi mãi.",
+                            "Người dân chúng tôi có thể xin thần nghi thức để giúp ngày chở về thế giới cũ của ngài."
+                    ));
+                }
+            }, 1.2f);
 
         } else {
             Gdx.app.error("GameController", "Tower map not found.");
@@ -1415,10 +1495,6 @@ public class GameController {
             cutsceneController = new CutsceneRenderer(this);
         }
 
-        if (dialogController != null) {
-            dialogController = new DialogController(this);
-        }
-
         if (gameplayController != null) {
             gameplayController.dispose();
             gameplayController = new GameplayController(this);
@@ -1816,7 +1892,6 @@ public class GameController {
                         changeMap("main");
                         character.updateRun();
                         break;
-
                 }
                 break;
             case "dungeon":
