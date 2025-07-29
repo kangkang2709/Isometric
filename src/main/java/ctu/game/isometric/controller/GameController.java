@@ -372,13 +372,12 @@ public class GameController {
                                             "\nCó lẽ, thế giới này vẫn cần một người canh giữ tri thức." +
                                             "Hãy chọn hành động tiếp theo của mình.", "Trở về thế giới cũ [YES]", "Tiếp tục ở lại [NO]",
                                     () -> {
-                                        character.setCurrentObject("Hãy trở về và tiếp tục hành trình của mình.");
                                         startMulBGSubTitleCutscene("true_ending", createTrueEndingSubtitles());
                                     }, () -> {
                                         character.getFlags().remove("return_world");
                                         character.setCurrentObject("Tiếp tục ở lại và bảo vệ thế giới này.");
                                         startMulBGSubTitleCutscene("ending", createEndingSubtitles());
-                                        changeMap("main");
+//                                        changeMap("main");
                                     });
                         }
                     }, 1.5f);
@@ -433,7 +432,7 @@ public class GameController {
             this.pathfinder.setMap(newMap);
             this.eventManager = this.eventManagerMap.get("tower");
             this.game.getGameScreen().getMapRenderer().changeTiledMapRenderer(this.map, this.eventManager);
-
+            addFlag("klein_unlock");
 
             Timer.schedule(new Timer.Task() {
                 @Override
@@ -488,7 +487,7 @@ public class GameController {
 
 
     public void changeCreditScreen() {
-        game.changeScreen("credit");
+        game.changeScreen("CREDITS");
     }
 
     public void returnToTowerAfterFinalBoss() {
@@ -661,6 +660,14 @@ public class GameController {
                     dialogController.startDialog("teleporting_background", "scene_intro");
                     break;
                 case "Cleric Klein":
+                    if (character.getFlags().contains("defeated_final_boss")) {
+                        dialogController.showSimpleMessage(Arrays.asList("Chúc mừng ngươi đã đánh bại Quỷ Vương Azrok và giải phóng thế giới khỏi sự thống trị của hắn.",
+                                "Hành trình của ngươi đã kết thúc, nhưng những câu chuyện về ngươi sẽ được kể lại mãi mãi.",
+                                "Người dân chúng tôi có thể xin thần nghi thức để giúp ngày chở về thế giới cũ của ngài.",
+                                "Ngài có thể sử dụng cổng dịch chuyển ở ngôi nhà hoang bên cạnh tòa tháp để đến nơi cử hành nghi thức trở về."));
+                        addFlag("klein_meet");
+                        break;
+                    }
                     if (!getCharacter().getFlags().contains("klein_meet")) {
                         dialogController.setOnDialogFinishedAction(() -> {
                             Enemy enemy = EnemyLoader.getEnemyById(1);
@@ -1476,7 +1483,7 @@ public class GameController {
     public void resetGame() {
         // Reset character with a new instance
         character = new Character(10, 14);
-        checkPositionEvents(0, 0); // Reset current event
+//        checkPositionEvents(0, 0); // Reset current event
         isRenderCharacter = true;
 
         resetEventsManager();

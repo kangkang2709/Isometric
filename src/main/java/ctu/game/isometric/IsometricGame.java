@@ -18,6 +18,7 @@ public class IsometricGame extends Game {
     private LinearCaveScreen dungeonScreen;
     private EndScreen gameOverScreen;
     private DarkestDungeon darkestDungeonScreen;
+    private CreditsScreen creditsScreen;
 
     @Override
     public void create() {
@@ -29,14 +30,20 @@ public class IsometricGame extends Game {
 
 //        splashScreen = new SplashScreen(this);
         gameScreen = new GameScreen(this, gameController);
-//        gameOverScreen = new EndScreen(() -> {
-//            gameController.setState(GameState.MAIN_MENU);
-//            gameController.resetGame();
-//            changeScreen("GAME");
-//       });
+        creditsScreen = new CreditsScreen(() -> {
+            gameController.setState(GameState.MAIN_MENU);
+            gameController.resetGame();
+            changeScreen("GAME");
+        },gameController.getCommonFont());
+        gameOverScreen = new EndScreen(() -> {
+            gameController.setState(GameState.MAIN_MENU);
+            gameController.resetGame();
+            changeScreen("GAME");
+            gameOverScreen.dispose();
+        }, gameController.getTitleFont(), gameController.getCommonFont());
 //        dungeonScreen = new LinearCaveScreen(this, gameController);
 
-//        darkestDungeonScreen = new DarkestDungeon(this, gameController);
+        darkestDungeonScreen = new DarkestDungeon(this, gameController);
 
         setScreen(gameScreen);
     }
@@ -69,6 +76,9 @@ public class IsometricGame extends Game {
                 break;
             case "GAME_OVER":
                 setScreen(gameOverScreen);
+                break;
+            case "CREDITS":
+                setScreen(creditsScreen);
                 break;
             default:
                 break;

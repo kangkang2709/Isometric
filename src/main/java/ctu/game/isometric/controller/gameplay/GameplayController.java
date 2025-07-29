@@ -1136,7 +1136,6 @@ public class GameplayController {
             playerHealth = 0;
             endCombat(false);
             isGameOver = gameController.getCharacter().gameOver();
-
             gameController.getMusicController().playMusic("defeat");
 
             if (!isGameOver) {

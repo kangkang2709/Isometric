@@ -289,63 +289,271 @@ public class GameplayRenderer {
         if (!controller.isGameOver()) {
             controller.getGameController().setState(GameState.EXPLORING);
         } else {
-            drawCenteredText(batch, regularFont, "Game Over!", viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2, Color.RED);
+            controller.getGameController().getGame().changeScreen("GAME_OVER");
         }
     }
 
     private void renderReward(SpriteBatch batch) {
-        float panelWidth = 600, panelHeight = 400;
+        float panelWidth = 650, panelHeight = 450;
         float panelX = (viewport.getWorldWidth() - panelWidth) / 2;
         float panelY = (viewport.getWorldHeight() - panelHeight) / 2;
 
-        batch.setColor(0.2f, 0.2f, 0.4f, 0.9f);
-        batch.draw(whiteTexture, panelX, panelY, panelWidth, panelHeight);
+        // Enhanced background with gradient effect
+        renderRewardBackground(batch, panelX, panelY, panelWidth, panelHeight);
 
-        drawCenteredText(batch, titleFont, "CHIẾN THẮNG!", viewport.getWorldWidth() / 2, panelY + panelHeight - 50, Color.GOLD);
+        // Animated title with glow effect
+        renderVictoryTitle(batch, panelX, panelY, panelWidth, panelHeight);
 
         Enemy enemy = controller.getEnemy();
         Reward reward = RewardLoader.getRewardById(enemy.getRewardID());
         Items item = ItemLoader.getItemById(reward.getItemID());
 
         if (item != null) {
-            Texture itemTexture = getTexture(item.getTexturePath());
-            if (itemTexture != null) {
-                batch.setColor(Color.WHITE);
-                batch.draw(itemTexture, panelX + 90, panelY + panelHeight / 2 - 32, 64, 64);
-            }
-            regularFont.setColor(Color.YELLOW);
-            regularFont.draw(batch, item.getItemName() + " x" + reward.getAmount(), panelX + 180, panelY + panelHeight / 2 + 30);
-            drawWrappedText(batch, regularFont, item.getItemDescription(), panelX + 150, panelY + panelHeight / 2, panelWidth - 200);
+            renderRewardItem(batch, item, reward, panelX, panelY, panelWidth, panelHeight);
         }
 
-        Rectangle continueButton = new Rectangle(viewport.getWorldWidth() / 2 - 100, panelY + 50, 200, 50);
-        drawButton(batch, continueButton, "Tiếp tục");
+        // Enhanced continue button
+        Rectangle continueButton = new Rectangle(viewport.getWorldWidth() / 2 - 120, panelY + 40, 240, 60);
+        renderFFVIIStyleButton(batch, continueButton, "Tiếp tục", Color.CYAN);
 
+        handleRewardInput(continueButton, item, reward);
+    }
 
+    private void renderRewardBackground(SpriteBatch batch, float panelX, float panelY, float panelWidth, float panelHeight) {
+        // Semi-transparent dark background overlay
+        batch.setColor(0, 0, 0, 0.7f);
+        batch.draw(whiteTexture, 0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
+
+        // Main panel with gradient effect
+        batch.setColor(0.15f, 0.2f, 0.35f, 0.95f);
+        batch.draw(whiteTexture, panelX, panelY, panelWidth, panelHeight);
+
+        // Subtle gradient overlay
+        if (gradientTexture != null) {
+            batch.setColor(1f, 1f, 1f, 0.1f);
+            batch.draw(gradientTexture, panelX, panelY, panelWidth, panelHeight);
+        }
+
+        // Glowing border with pulsing effect
+        float pulseIntensity = 0.6f + 0.4f * MathUtils.sin(hpBarAnimationTime * 2f);
+        batch.setColor(0.3f, 0.7f, 1f, pulseIntensity);
+        drawEnhancedBorder(batch, panelX, panelY, panelWidth, panelHeight, 4);
+
+        // Corner decorations
+        renderCornerDecorations(batch, panelX, panelY, panelWidth, panelHeight);
+    }
+
+    private void renderVictoryTitle(SpriteBatch batch, float panelX, float panelY, float panelWidth, float panelHeight) {
+        float titleY = panelY + panelHeight - 60;
+
+        // Title shadow for depth
+        titleFont.setColor(0.2f, 0.2f, 0.2f, 0.8f);
+        drawCenteredText(batch, titleFont, "CHIẾN THẮNG!", panelX + panelWidth / 2 + 3, titleY - 3, titleFont.getColor());
+
+        // Animated title with golden glow
+        float goldIntensity = 0.8f + 0.2f * MathUtils.sin(hpBarAnimationTime * 3f);
+        Color goldColor = new Color(1f, 0.8f + 0.2f * goldIntensity, 0.2f, 1f);
+        drawCenteredText(batch, titleFont, "CHIẾN THẮNG!", panelX + panelWidth / 2, titleY, goldColor);
+
+        // Subtitle
+        regularFont.setColor(0.8f, 0.8f, 1f, 0.9f);
+        drawCenteredText(batch, regularFont, "Bạn đã nhận được phần thưởng!",
+                        panelX + panelWidth / 2, titleY - 35, regularFont.getColor());
+    }
+
+    private void renderRewardItem(SpriteBatch batch, Items item, Reward reward,
+                                float panelX, float panelY, float panelWidth, float panelHeight) {
+        float contentY = panelY + panelHeight / 2;
+
+        // Item showcase panel
+        float itemPanelX = panelX + 40;
+        float itemPanelY = contentY - 80;
+        float itemPanelWidth = panelWidth - 80;
+        float itemPanelHeight = 120;
+
+        // Item panel background
+        batch.setColor(0.1f, 0.15f, 0.25f, 0.8f);
+        batch.draw(whiteTexture, itemPanelX, itemPanelY, itemPanelWidth, itemPanelHeight);
+
+        // Item panel border
+        batch.setColor(0.4f, 0.6f, 0.8f, 0.7f);
+        drawBorder(batch, itemPanelX, itemPanelY, itemPanelWidth, itemPanelHeight, 2);
+
+        // Item icon with glow effect
+        Texture itemTexture = getTexture(item.getTexturePath());
+        if (itemTexture != null) {
+            float iconSize = 80;
+            float iconX = itemPanelX + 20;
+            float iconY = itemPanelY + (itemPanelHeight - iconSize) / 2;
+            // Main icon
+            batch.setColor(Color.WHITE);
+            batch.draw(itemTexture, iconX, iconY, iconSize, iconSize);
+        }
+
+        // Item information
+        float textX = itemPanelX + 120;
+        float textStartY = itemPanelY + itemPanelHeight - 20;
+// Item name with rarity coloring and proper positioning
+        Color rarityColor = getRarityColor(item);
+        titleFont.setColor(rarityColor);
+        layout.setText(titleFont, item.getItemName());
+        float nameWidth = layout.width;
+        titleFont.draw(batch, item.getItemName(), textX + 30, textStartY);
+
+// Amount with emphasis - positioned relative to item name
+        regularFont.setColor(Color.YELLOW);
+        String amountText = "x" + reward.getAmount();
+        layout.setText(regularFont, amountText);
+        float amountX = textX + 30 + nameWidth + 20; // 20px spacing after name
+        regularFont.draw(batch, amountText, amountX, textStartY);
+
+// Add visual separator if needed
+        float separatorX = amountX + layout.width + 10;
+        if (separatorX < textX + itemPanelWidth - 50) {
+            regularFont.setColor(0.6f, 0.6f, 0.8f, 0.7f);
+            regularFont.draw(batch, "•", separatorX, textStartY);
+        }
+
+// Item description with proper wrapping
+        regularFont.setColor(0.9f, 0.9f, 1f, 1f);
+        String description = item.getItemDescription();
+        layout.setText(regularFont, description, regularFont.getColor(), itemPanelWidth - 160, -1, true);
+        float descriptionY = textStartY - 35;
+        regularFont.draw(batch, layout, textX + 30, descriptionY);
+    }
+
+    private void renderFFVIIStyleButton(SpriteBatch batch, Rectangle buttonRect, String text, Color accentColor) {
+        Vector3 mousePos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
+        viewport.unproject(mousePos);
+        boolean isHovered = buttonRect.contains(mousePos.x, mousePos.y);
+
+        // Button base
+        batch.setColor(0.2f, 0.25f, 0.4f, 0.9f);
+        batch.draw(whiteTexture, buttonRect.x, buttonRect.y, buttonRect.width, buttonRect.height);
+
+        // Hover effect
+        if (isHovered) {
+            batch.setColor(accentColor.r, accentColor.g, accentColor.b, 0.3f);
+            batch.draw(whiteTexture, buttonRect.x, buttonRect.y, buttonRect.width, buttonRect.height);
+        }
+
+        // Border with glow
+        float borderIntensity = isHovered ? 1f : 0.7f;
+        batch.setColor(accentColor.r, accentColor.g, accentColor.b, borderIntensity);
+        drawEnhancedBorder(batch, buttonRect.x, buttonRect.y, buttonRect.width, buttonRect.height, 3);
+
+        // Button text with shadow
+        layout.setText(titleFont, text);
+        float textX = buttonRect.x + (buttonRect.width - layout.width) / 2;
+        float textY = buttonRect.y + (buttonRect.height + layout.height) / 2;
+
+        // Text shadow
+        titleFont.setColor(0.1f, 0.1f, 0.1f, 0.8f);
+        titleFont.draw(batch, text, textX + 2, textY - 2);
+
+        // Main text
+        titleFont.setColor(isHovered ? Color.WHITE : accentColor);
+        titleFont.draw(batch, text, textX, textY);
+
+        // Corner highlights for FF7 style
+        if (isHovered) {
+            batch.setColor(Color.WHITE);
+            float cornerSize = 8;
+            // Top-left corner
+            batch.draw(whiteTexture, buttonRect.x, buttonRect.y + buttonRect.height - cornerSize, cornerSize, cornerSize);
+            // Bottom-right corner
+            batch.draw(whiteTexture, buttonRect.x + buttonRect.width - cornerSize, buttonRect.y, cornerSize, cornerSize);
+        }
+    }
+
+    private void renderCornerDecorations(SpriteBatch batch, float panelX, float panelY, float panelWidth, float panelHeight) {
+        batch.setColor(0.5f, 0.7f, 1f, 0.6f);
+        float decorSize = 20;
+
+        // Corner lines for modern UI feel
+        // Top-left
+        batch.draw(whiteTexture, panelX + 10, panelY + panelHeight - 10, decorSize, 2);
+        batch.draw(whiteTexture, panelX + 10, panelY + panelHeight - decorSize - 10, 2, decorSize);
+
+        // Top-right
+        batch.draw(whiteTexture, panelX + panelWidth - decorSize - 10, panelY + panelHeight - 10, decorSize, 2);
+        batch.draw(whiteTexture, panelX + panelWidth - 12, panelY + panelHeight - decorSize - 10, 2, decorSize);
+
+        // Bottom corners
+        batch.draw(whiteTexture, panelX + 10, panelY + 10, decorSize, 2);
+        batch.draw(whiteTexture, panelX + 10, panelY + 10, 2, decorSize);
+
+        batch.draw(whiteTexture, panelX + panelWidth - decorSize - 10, panelY + 10, decorSize, 2);
+        batch.draw(whiteTexture, panelX + panelWidth - 12, panelY + 10, 2, decorSize);
+    }
+
+    private void drawEnhancedBorder(SpriteBatch batch, float x, float y, float width, float height, float thickness) {
+        // Main border
+        batch.draw(whiteTexture, x, y + height - thickness, width, thickness); // top
+        batch.draw(whiteTexture, x, y, width, thickness); // bottom
+        batch.draw(whiteTexture, x, y, thickness, height); // left
+        batch.draw(whiteTexture, x + width - thickness, y, thickness, height); // right
+
+        // Inner glow effect
+        batch.setColor(batch.getColor().r, batch.getColor().g, batch.getColor().b, batch.getColor().a * 0.3f);
+        float innerThickness = thickness - 1;
+        if (innerThickness > 0) {
+            batch.draw(whiteTexture, x + 1, y + height - innerThickness - 1, width - 2, innerThickness);
+            batch.draw(whiteTexture, x + 1, y + 1, width - 2, innerThickness);
+            batch.draw(whiteTexture, x + 1, y + 1, innerThickness, height - 2);
+            batch.draw(whiteTexture, x + width - innerThickness - 1, y + 1, innerThickness, height - 2);
+        }
+    }
+
+    private Color getRarityColor(Items item) {
+        // You can implement rarity system based on item properties
+        // For now, return different colors based on item type or value
+        if (item.getItemName().toLowerCase().contains("legendary")) {
+            return new Color(1f, 0.5f, 0f, 1f); // Orange
+        } else if (item.getItemName().toLowerCase().contains("rare")) {
+            return new Color(0.5f, 0.5f, 1f, 1f); // Blue
+        } else if (item.getItemName().toLowerCase().contains("epic")) {
+            return new Color(0.8f, 0.2f, 0.8f, 1f); // Purple
+        }
+        return new Color(1f, 1f, 1f, 1f); // White (common)
+    }
+
+    private void handleRewardInput(Rectangle continueButton, Items item, Reward reward) {
         if (Gdx.input.justTouched()) {
             Vector3 touchPos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
             viewport.unproject(touchPos);
+
             if (continueButton.contains(touchPos.x, touchPos.y)) {
+                // Add reward to player
                 controller.getGameController().getCharacter().addItem(item, reward.getAmount());
                 controller.getGameController().getCharacter().setHealth(controller.getPlayerHealth());
                 controller.getGameController().getCharacter().setMana(controller.getPlayerMana());
+
+                // Transition with delay for better UX
                 Timer.schedule(new Timer.Task() {
                     @Override
                     public void run() {
-                        if (controller.isEnemyBoss()) {
-                            controller.getGameController().returnToTowerAfterBoss(controller.getEnemyName());
-                        } else if (controller.isEnemyLord()) {
-                            controller.getGameController().returnToTowerAfterFinalBoss();
-                        }
-                        controller.getGameController().setState(GameState.EXPLORING);
-                        if (controller.getNewLevel() > controller.getCurrentLevel())
-                            controller.getGameController().showLevelUpNotification();
-                        controller.cleanupCombatState();
-
+                        handlePostRewardTransition();
                     }
                 }, 0.5f);
             }
         }
+    }
+
+    private void handlePostRewardTransition() {
+        if (controller.isEnemyBoss()) {
+            controller.getGameController().returnToTowerAfterBoss(controller.getEnemyName());
+        } else if (controller.isEnemyLord()) {
+            controller.getGameController().returnToTowerAfterFinalBoss();
+        }
+
+        controller.getGameController().setState(GameState.EXPLORING);
+
+        if (controller.getNewLevel() > controller.getCurrentLevel()) {
+            controller.getGameController().showLevelUpNotification();
+        }
+
+        controller.cleanupCombatState();
     }
 
     private void renderCombatUI(SpriteBatch batch) {
@@ -402,6 +610,7 @@ public class GameplayRenderer {
         Color turnColor = controller.isPlayerTurn() ? Color.GREEN : Color.RED;
         drawCenteredText(batch, titleFont, turnText, x + width / 2, y + height - 15, turnColor);
     }
+
     Texture playerTexture;
 
     private void drawBattlefield(SpriteBatch batch, float x, float y, float width, float height) {
@@ -562,8 +771,11 @@ public class GameplayRenderer {
 
     private void drawActionButtons(SpriteBatch batch, float screenWidth, float screenHeight) {
         // Panel background for buttons
-        batch.setColor(0.1f, 0.1f, 0.2f, 0.95f);
-        batch.draw(getTexture("ui/item-slot-3"), 788, 20, 460, 75);
+        Texture battlefieldBg = getTexture("ui/panel-header-2.png");
+        if (battlefieldBg != null) {
+            batch.setColor(Color.WHITE);
+            batch.draw(battlefieldBg, 788, 10, 460, 196);
+        }
         // Draw JRPG-style buttons
         drawConsoleStyleButton(batch, controller.getSpellButton(), "Kỹ năng", new Color(0.2f, 0.6f, 1f, 1f));
         drawConsoleStyleButton(batch, controller.getItemButton(), "Vật Phẩm", new Color(1f, 0.6f, 0.2f, 1f));
