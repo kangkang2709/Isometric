@@ -193,6 +193,8 @@ public class MapRenderer {
         if (minimapData == null) return;
 
         // Define minimap position and size
+
+        cardFont.draw(batch, "Floor/Run: " + character.getRun(), 1110, 210);
         float minimapX = 1100; // Right side of the screen
         float minimapY = 16;
         float tileSize = 8;

@@ -13,6 +13,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Timer;
 import ctu.game.isometric.controller.quiz.QuizController;
 import ctu.game.isometric.model.entity.Enemy;
 import ctu.game.isometric.model.game.GameState;
@@ -128,6 +129,7 @@ public class InputController extends InputAdapter {
             case INFORMATION: // Handle information screen inputs
                 if (keycode == Keys.ESCAPE || keycode == Keys.F1) {
                     gameController.returnToPreviousState();
+
                     return true;
                 }
                 return false; // No other keys handled in INFORMATION state
@@ -669,7 +671,6 @@ public class InputController extends InputAdapter {
                     gameController.getMenuController().showTutorialMenu();
                 } else
                     gameController.returnToPreviousState();
-
 
             }
             case Keys.UP -> gameController.getMenuController().selectPreviousItem();

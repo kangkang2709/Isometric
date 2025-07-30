@@ -80,7 +80,7 @@ public class ExploringUI {
         timeFrameTexture = new Texture(Gdx.files.internal("ui/time_frame.png"));
         healthBarTexture = new Texture(Gdx.files.internal("ui/health_bar.png"));
         manaBarTexture = new Texture(Gdx.files.internal("ui/health_bar.png")); // Reuse health bar texture or use dedicated texture
-        questBoxTexture = new Texture(Gdx.files.internal("ui/quest_box.png"));
+        questBoxTexture = new Texture(Gdx.files.internal("ui/panel-dialogue-4.png"));
     }
 
 
@@ -172,9 +172,9 @@ public class ExploringUI {
     }
 
     private void setupTopCenter() {
-        topCenterTable = new Table();
-        runLabel = new Label("Run: " + character.getRun(), skin, "title");
-        topCenterTable.add(runLabel).center().top().padTop(5);
+//        topCenterTable = new Table();
+//        runLabel = new Label("Floor: " + character.getRun(), skin, "title");
+//        topCenterTable.add(runLabel).center().top().padTop(5);
     }
 
     private void setupTopLeft() {
@@ -285,7 +285,7 @@ public class ExploringUI {
         Stack questStack = new Stack();
         questStack.add(questBoxImage);
         Table questLabelTable = new Table();
-        questLabelTable.add(questLabel).center();
+        questLabelTable.add(questLabel).center().padLeft(-80);
         questStack.add(questLabelTable);
 
         topRightTable.add(questStack).right().top();
@@ -297,14 +297,13 @@ public class ExploringUI {
             int charLevel = character.getLevel();
             timeLabel.setText(charLevel);
 
-            // Update player info
-            if (character.getGameMap().getMapName().equals("board")) {
-                runLabel.setText("Floor: " + character.getRun());
-                playerNameLabel.setText(character.getName().replaceAll("_", " "));
-            } else {
-                runLabel.setText((character.getGameMap().getMapName().toUpperCase().equalsIgnoreCase("main") ? "Village Forest" : character.getGameMap().getMapName().toUpperCase()));
-                playerNameLabel.setText(character.getName().replaceAll("_", " ") + " (Lv " + charLevel + ")");
-            }
+
+            playerNameLabel.setText(character.getName().replaceAll("_", " "));
+
+//            else {
+//                runLabel.setText((character.getGameMap().getMapName().toUpperCase().equalsIgnoreCase("main") ? "Village Forest" : character.getGameMap().getMapName().toUpperCase()));
+//                playerNameLabel.setText(character.getName().replaceAll("_", " ") + " (Lv " + charLevel + ")");
+//            }
             // Update health and max health
             float health = character.getHealth();
             maxHealth = character.getMaxHealth(); // Get dynamic max health

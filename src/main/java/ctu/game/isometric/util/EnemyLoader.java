@@ -8,6 +8,7 @@ import ctu.game.isometric.model.entity.Enemy;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class EnemyLoader {
     private static Map<Integer, Enemy> enemies = new HashMap<>();
@@ -65,10 +66,20 @@ public class EnemyLoader {
         return template;
     }
 
+//    public static List<Enemy> getAllEnemies() {
+//        if (!initialized) initialize();
+//        return List.copyOf(enemies.values());
+//    }
+
     public static List<Enemy> getAllEnemies() {
-        if (!initialized) initialize();
-        return List.copyOf(enemies.values());
+        if (!initialized) {
+            initialize();
+        }
+        return enemies.values().stream()
+                .filter(enemy -> enemy.getEnemyID() < 6)
+                .collect(Collectors.toList());
     }
+
 
     private static Enemy createDefaultEnemy() {
         Enemy enemy = new Enemy();

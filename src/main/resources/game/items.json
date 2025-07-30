@@ -82,7 +82,7 @@
   {
     "itemID": 9,
     "itemName": "Sapphire Alpha",
-    "itemDescription": "Charting Gem. Use at -Teleport Gate- to reach the lakeside.",
+    "itemDescription": "Charting Gem. Use at -Teleport Gate- to reach the Frost Land.",
     "texturePath": "game/items/saphire_alpha.png",
     "itemEffect": "N/A",
     "value": 0.0,
@@ -92,7 +92,7 @@
   {
     "itemID": 10,
     "itemName": "Emerald Delta",
-    "itemDescription": "Flowing Gem. Use at -Teleport Gate- to reach the roots of the world tree Yggdrasil.",
+    "itemDescription": "Flowing Gem. Use at -Teleport Gate- to reach the Magic Forest.",
     "texturePath": "game/items/emeral_delta.png",
     "itemEffect": "N/A",
     "value": 0.0,

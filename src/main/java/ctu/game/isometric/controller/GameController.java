@@ -122,7 +122,18 @@ public class GameController {
         mainObjectiveDescriptions.put("return", "Two choices: Return or Stay.");
     }
 
+    public void playCombatMusic() {
+        String enemyName = gameplayController.getEnemyName().toLowerCase();
 
+        if (enemyName.contains("boss")) {
+            musicController.playMusic("boss");
+        } else if (enemyName.contains("lord")) {
+            musicController.playMusic("lord");
+        } else {
+            musicController.playMusic("combat_theme");
+        }
+
+    }
 
 
     public void startMazeCutScene() {
@@ -1183,6 +1194,9 @@ public class GameController {
             // Update music for the new state
             if (musicController != null) {
                 musicController.playMusicForState(newState);
+                if (newState == GameState.GAMEPLAY) {
+                    playCombatMusic();
+                }
             }
         });
 

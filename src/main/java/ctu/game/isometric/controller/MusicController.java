@@ -23,7 +23,7 @@ public class MusicController {
         loadMusic("main_theme", "audio/musics/menu.mp3");
         loadMusic("menu_theme", "audio/musics/Ambient.mp3");
         loadMusic("setting_theme", "audio/musics/setting_theme.mp3");
-        loadMusic("combat_theme", "audio/musics/combat_theme.mp3");
+        loadMusic("combat_theme", "audio/musics/combat.mp3");
         loadMusic("victory", "audio/musics/Victory.mp3");
         loadMusic("defeat", "audio/musics/Defeat.mp3");
         loadMusic("boss", "audio/musics/BOSS.mp3");
@@ -81,12 +81,6 @@ public class MusicController {
     }
 
 
-    public void playDungeonMusic() {
-        if (!enabled) {
-            return;
-        }
-        playMusic("dungeon");
-    }
 
 
     public void playMusicForState(GameState state) {
@@ -103,17 +97,19 @@ public class MusicController {
             case LOAD_GAME:
                 break;
             case GAMEPLAY:
+//                playMusic("combat_theme");
                 break;
             case MAIN_MENU:
                 playMusic("main_theme");
                 break;
             case MENU:
                 playMusic("main_theme");
-                System.out.println("Playing menu theme music");
                 break;
             case SETTINGS:
                 break;
             case CHARACTER_CREATION:
+                break;
+            case INFORMATION:
                 break;
             default:
                 stopCurrentTrack();

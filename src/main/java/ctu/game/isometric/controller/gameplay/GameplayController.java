@@ -1311,16 +1311,14 @@ public class GameplayController {
         renderer.loadPlayerTexture(gameController.getCharacter().getGender().toString());
 
         if (isEnemyBoss()) {
-            gameController.getMusicController().playMusic("boss");
             if (enemyName.equals("Sapphire Dragon Boss")) enemyStatusDuration.put("REGEN", 10);
             applyBossEffects();
 
         } else if (isEnemyLord()) {
-            gameController.getMusicController().playMusic("lord");
             if (!gameController.getCharacter().getFlags().contains("frost_guardian_defeated")) {
                 enemy.getEnemyDescription().replace("15", "**");
             }
-        } else gameController.getMusicController().playMusic("main_theme");
+        }
     }
 
     public void activate() {

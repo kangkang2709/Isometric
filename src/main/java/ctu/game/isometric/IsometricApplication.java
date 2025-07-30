@@ -8,7 +8,7 @@ public class IsometricApplication {
 	public static void main(String[] args) {
 		// Configure LibGDX window
 		Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
-		config.setTitle("CHRONO VEIL");
+		config.setTitle("Labyrinth of Wisdom");
 		config.setWindowedMode(1280, 720);
 		config.setResizable(false);
 		config.setForegroundFPS(120);
