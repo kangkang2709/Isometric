@@ -50,7 +50,7 @@ public class CharacterRenderer {
 
     Matrix4 darkBackgroundMatrix;
 
-    public void renderDarkBackground(SpriteBatch batch) {
+    public void renderDarkBackgroundWithMinimap(SpriteBatch batch) {
         if (darkBackgroundTexture != null) {
             // Save the current batch transformation matrix
             Matrix4 originalMatrix = batch.getProjectionMatrix().cpy();
@@ -60,6 +60,9 @@ public class CharacterRenderer {
 
             // Draw the dark background in screen coordinates
             batch.draw(darkBackgroundTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
+            // Render the minimap mask on top of the dark background
+            mapRenderer.renderMinimap(batch);
 
             // Restore the original transformation matrix
             batch.setProjectionMatrix(originalMatrix);
@@ -96,8 +99,8 @@ public class CharacterRenderer {
 
 
         batch.draw(currentFrame, isoX + OFFSET_PLAYER_X, isoY + OFFSET_PLAYER_Y);
-        if (mapRenderer.isRenderDarknessWithLight()){
-            renderDarkBackground(batch);
+        if (mapRenderer.isRenderDarknessWithLight()) {
+            renderDarkBackgroundWithMinimap(batch);
         }
     }
 

@@ -110,7 +110,19 @@ public class MapRenderer {
     }
 
     public boolean isRenderDarknessWithLight() {
-        return map.getMapName().equals("board") && !isRenderInfoCard;
+        if (!isRenderDarkNessWithLight) {
+            return false;
+        } else return map.getMapName().equals("board") && !isRenderInfoCard;
+    }
+
+    boolean isRenderDarkNessWithLight = true;
+
+    public boolean isRenderDarkNessWithLight() {
+        return isRenderDarkNessWithLight;
+    }
+
+    public void toogleRenderDarkNessWithLight() {
+        isRenderDarkNessWithLight = !isRenderDarkNessWithLight;
     }
 
     public void render(SpriteBatch batch) {
@@ -159,6 +171,7 @@ public class MapRenderer {
 
             if (map.getMapName().equals("board")) {
                 renderBoard(batch);
+
             } else {
                 weatherRenderer.render(batch);
             }
@@ -167,6 +180,76 @@ public class MapRenderer {
 
     }
 
+    boolean isRenderPath = true;
+
+    public void toggleRenderPath() {
+        isRenderPath = !isRenderPath;
+    }
+
+    public void renderMinimap(SpriteBatch batch) {
+        // Only render minimap when we're on the board map
+
+        int[][] minimapData = map.getMinimapMask();
+        if (minimapData == null) return;
+
+        // Define minimap position and size
+        float minimapX = 1100; // Right side of the screen
+        float minimapY = 16;
+        float tileSize = 8;
+
+        // Define colors for different map elements
+        Color pathColor = new Color(0.2f, 0.8f, 0.2f, 0.8f);      // Green for path
+        Color wallColor = new Color(0.6f, 0.6f, 0.6f, 0.6f);      // Gray for walls
+        Color unexploredColor = new Color(0.1f, 0.1f, 0.1f, 0.3f); // Dark for unexplored
+        Color playerColor = new Color(1f, 0.2f, 0.2f, 1f);        // Red for player position
+
+        // Save original batch color
+        Color originalColor = batch.getColor().cpy();
+
+        // Draw background for minimap
+        batch.setColor(0, 0, 0, 0.7f);
+        batch.draw(whitePixelTexture,
+                minimapX - 5,
+                minimapY - 5,
+                minimapData[0].length * tileSize + 10,
+                minimapData.length * tileSize + 10);
+
+        // Draw the minimap tiles
+        for (int y = 0; y < minimapData.length; y++) {
+            for (int x = 0; x < minimapData[y].length; x++) {
+                float tileX = minimapX + x * tileSize;
+                float tileY = minimapY + y * tileSize;
+
+                switch (minimapData[y][x]) {
+                    case 1: // Path
+                        if (!isRenderPath) break;
+                        batch.setColor(pathColor);
+                        batch.draw(whitePixelTexture, tileX, tileY, tileSize, tileSize);
+                        break;
+                    case 0: // Wall
+                        batch.setColor(wallColor);
+                        batch.draw(whitePixelTexture, tileX, tileY, tileSize, tileSize);
+                        break;
+                    case -1: // Unexplored
+                        batch.setColor(unexploredColor);
+                        batch.draw(whitePixelTexture, tileX, tileY, tileSize, tileSize);
+                        break;
+                }
+            }
+        }
+
+        // Draw player position on minimap
+        int playerGridX = (int) character.getGridX();
+        int playerGridY = (int) character.getGridY();
+        batch.setColor(playerColor);
+        batch.draw(whitePixelTexture,
+                minimapX + playerGridX * tileSize - 1,
+                minimapY + playerGridY * tileSize - 1,
+                tileSize + 2, tileSize + 2);
+
+        // Reset batch color
+        batch.setColor(originalColor);
+    }
 
     private Dice diceRenderer;
 
@@ -409,12 +492,16 @@ public class MapRenderer {
     Texture cardBackTexture;
     Map<String, TextureRegion> textureRegions = new HashMap<>();
 
+    Texture whitePixelTexture;
+
     public void loadTextures() {
         this.textures.clear();
         this.textures.putAll(assetManager.getTextures());
 
         this.cardTexture = textures.get("enemy_card_large");
         this.cardBackTexture = textures.get("enemy_card_back");
+
+        this.whitePixelTexture = textures.get("white_pixel");
 
         this.cardBlockTexture = textures.get("block_card");
         this.cardBlockTextureBack = textures.get("block_card_back");

@@ -168,7 +168,19 @@ public class IsometricMap {
         }
 
 
+        minimapMask = this.maze.minimapMask;
+
         System.out.println("Maze generated from (" + startX + "," + startY + ") to (" + endX + "," + endY + ")");
+    }
+
+    private int[][] minimapMask;
+
+    public int[][] getMinimapMask() {
+        return minimapMask;
+    }
+
+    public void setMinimapMask(int[][] minimapMask) {
+        this.minimapMask = minimapMask;
     }
 
     public static void printMatrix(int[][] matrix) {

@@ -48,6 +48,7 @@ public class AssetManager implements Disposable {
         loadTexture("card-frame", "textures/card-frame.png");
         loadTexture("block_card", "textures/block_card.png");
         loadTexture("block_card_back", "textures/block_card.png");
+        loadTexture("white_pixel", "ui/white_pixel.png");
 
 
         loadTexture("card_bg_attack", "textures/card_bg_attack.png");

@@ -210,7 +210,8 @@ public class InputController extends InputAdapter {
 
             case MENU:
                 return gameController.getMenuController().handleMouseClick(screenX, screenY);
-            case INFORMATION: gameController.getCharacterDisplay().handleClick(screenX, screenY);
+            case INFORMATION:
+                gameController.getCharacterDisplay().handleClick(screenX, screenY);
                 return true; // Click handled by character display
             case LOAD_GAME:
                 return gameController.getLoadGameController().handleMouseClick(screenX, screenY);
@@ -340,7 +341,7 @@ public class InputController extends InputAdapter {
         if (state == GameState.SETTINGS) {
             return gameController.getSettingsMenuController().handleMouseDrag(screenX, screenY);
         }
-        if(state == GameState.BOUNTY_BOARD) {
+        if (state == GameState.BOUNTY_BOARD) {
             gameController.getBountyBoardView().handleDrag(screenX, screenY);
             return true;
         }
@@ -442,8 +443,8 @@ public class InputController extends InputAdapter {
                 gameController.getGame().changeScreen("DARK_DUNGEON");
             }
             case Keys.F7 -> {
-              Enemy enemy = new Enemy(11, "Thủ vệ hồ", "Frost Guardian", "frost_guardian", 1, 25, 16);
-                                    enemy.setDefensePower(21);
+                Enemy enemy = new Enemy(11, "Thủ vệ hồ", "Frost Guardian", "frost_guardian", 1, 25, 16);
+                enemy.setDefensePower(21);
                 gameController.getGame().getDarkestDungeonScreen().startCombat(enemy);
                 gameController.getGame().changeScreen("DARK_DUNGEON");
             }
@@ -478,7 +479,12 @@ public class InputController extends InputAdapter {
                 gameController.getGameplayController().activate();
                 gameController.getGameplayController().startCombat(enemy);
             }
-
+            case Keys.NUM_1 -> {
+                gameController.getMapRenderer().toogleRenderDarkNessWithLight();
+            }
+            case Keys.NUM_2 -> {
+                gameController.getMapRenderer().toggleRenderPath();
+            }
             case Keys.F10 -> {
                 gameController.changeMap("board");
             }
@@ -744,13 +750,13 @@ public class InputController extends InputAdapter {
                 return true;
             }
 
-            case Keys.UP,Keys.W -> {
+            case Keys.UP, Keys.W -> {
                 gameController.getDialogController().selectPreviousChoice();
                 effectManager.playClickSound();
 
                 return true;
             }
-            case Keys.DOWN,Keys.S  -> {
+            case Keys.DOWN, Keys.S -> {
                 gameController.getDialogController().selectNextChoice();
                 effectManager.playClickSound();
                 return true;
@@ -798,7 +804,7 @@ public class InputController extends InputAdapter {
                 return gameController.getMenuController().handleKeyBindingScroll(amountY);
             }
             case INFORMATION -> {
-                 return gameController.getCharacterDisplay().handleScroll(amountY);
+                return gameController.getCharacterDisplay().handleScroll(amountY);
             }
             case EXPLORING -> {
                 if (gameController.getMap().getMapName().equals("board") || gameController.getMap().getMapName().equals("forest") || gameController.getMap().getMapName().equals("main"))
