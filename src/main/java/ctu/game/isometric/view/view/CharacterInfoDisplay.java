@@ -253,13 +253,33 @@ public class CharacterInfoDisplay {
     // Helper method to get objectives from GameController
     private Map<String, String> getMainObjectiveDescriptions() {
         Map<String, String> objectives = new HashMap<>();
-        objectives.put("intro", "Mình cần tìm đường rời khỏi khu rừng này trước tiên.");
-        objectives.put("forest_done", "Có vẻ như mình đã đến một ngôi làng nhỏ, mình nên khám phá xung quanh.");
-        objectives.put("god_intro", "Cleric Klein có thể giúp mình hiểu rõ hơn về thế giới này.");
-        objectives.put("klein_meet", "Nói chuyện với Cleric Klein");
-        objectives.put("dungeon_call", "Tiến đến hầm ngục thông qua cổng dịch chuyển theo lời chỉ dẫn của Cleric Klein.");
-        objectives.put("dungeon_entry", "Vượt qua hầm ngục và tìm hiểu bí mật của thế giới này.\nMục tiêu: tìm kiếm 3 viên ngọc và sống sót đến tầng cuối.");
+        objectives.put("intro", "I need to find a way out of this forest first.");
+        objectives.put("forest_done", "It seems I've arrived at a small village. I should explore the surroundings.");
+        objectives.put("god_intro", "Cleric Klein might help me understand this world better.");
+        objectives.put("klein_meet", "Talk to Cleric Klein.");
+        objectives.put("dungeon_call", "Head to the dungeon through the teleportation gate as instructed by Cleric Klein.");
+        objectives.put("dungeon_entry", "Defeat 3 Demon Generals and reclaim 3 gems on floors 4, 6, and 8 of the dungeon.");
+        objectives.put("boss", "Prepare yourself and advance to floor 10 to defeat the Demon King.");
+        objectives.put("return", "Two choices: Return or Stay.");
         return objectives;
+    }
+
+    public Map<String, String> getSubObjectives(String mainObjectiveKey) {
+        // Create a map to store sub-objectives for the given main objective
+        Map<String, String> subObjectives = new HashMap<>();
+
+        // Add sub-objectives based on the main objective key
+        if ("dungeon_entry".equals(mainObjectiveKey)) {
+            subObjectives.put("gem_floor4", "Defeat the Demon General on floor 4");
+            subObjectives.put("gem_floor6", "Defeat the Demon General on floor 6");
+            subObjectives.put("gem_floor8", "Defeat the Demon General on floor 8");
+        } else if ("boss".equals(mainObjectiveKey)) {
+            subObjectives.put("prepare_equipment", "Prepare your equipment for the final battle");
+            subObjectives.put("reach_floor10", "Reach floor 10 of the dungeon");
+            subObjectives.put("defeat_boss", "Defeat the Demon King");
+        }
+
+        return subObjectives.isEmpty() ? null : subObjectives;
     }
 
     Matrix4 uiProjectionMatrix = new Matrix4().setToOrtho2D(0, 0,

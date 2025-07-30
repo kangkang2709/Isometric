@@ -1179,10 +1179,12 @@ public class GameplayController {
                 case "Emerald Revenant Boss":
                     achievementManager.updateProgress(Achievement.AchievementType.ENEMY_WIN_3, 1);
                     gameController.addFlag("emerald_revenant_boss_defeated");
+                    gameController.addFlag("boss");
                     break;
                 case "Demon Lord Azrok":
                     achievementManager.updateProgress(Achievement.AchievementType.ENEMY_WIN, 1);
                     gameController.addFlag("demon_lord_azrok_defeated");
+                    gameController.addFlag("return");
                     break;
             }
 

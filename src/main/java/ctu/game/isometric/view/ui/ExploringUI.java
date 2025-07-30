@@ -275,20 +275,20 @@ public class ExploringUI {
     }
 
     private void setupTopRight() {
-//        topRightTable = new Table();
-//
-//        // Quest box with quest text
-//        questBoxImage = new Image(new TextureRegionDrawable(questBoxTexture));
-//        questLabel = new Label(character.getCurrentObject(), skin, "quest");
-//
-//        // Stack quest label on quest box
-//        Stack questStack = new Stack();
-//        questStack.add(questBoxImage);
-//        Table questLabelTable = new Table();
-//        questLabelTable.add(questLabel).center();
-//        questStack.add(questLabelTable);
-//
-//        topRightTable.add(questStack).right().top();
+        topRightTable = new Table();
+
+        // Quest box with quest text
+        questBoxImage = new Image(new TextureRegionDrawable(questBoxTexture));
+        questLabel = new Label(character.getCurrentObject(), skin, "quest");
+
+        // Stack quest label on quest box
+        Stack questStack = new Stack();
+        questStack.add(questBoxImage);
+        Table questLabelTable = new Table();
+        questLabelTable.add(questLabel).center();
+        questStack.add(questLabelTable);
+
+        topRightTable.add(questStack).right().top();
     }
 
     public void update() {

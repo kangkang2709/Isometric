@@ -415,7 +415,25 @@ public class Character {
         }
         this.score -= score;
     }
+    public Map<String, String> getSubObjectives(String mainObjectiveKey) {
+        Map<String, String> subObjectives = new HashMap<>();
 
+        // Example sub-objectives for specific main objectives
+        switch (mainObjectiveKey) {
+            case "dungeon_entry" -> {
+                subObjectives.put("gem_floor4", "Defeat the Demon General on floor 4");
+                subObjectives.put("gem_floor6", "Defeat the Demon General on floor 6");
+                subObjectives.put("gem_floor8", "Defeat the Demon General on floor 8");
+            }
+            case "boss" -> {
+                subObjectives.put("prepare", "Use Obisilk Stone in center village or teleport gate on the old house next to Mage Tower to enhaced yourself.");
+                subObjectives.put("reach_floor10", "Reach floor 10 of the dungeon");
+                subObjectives.put("defeat_final_boss", "Defeat the Demon King");
+            }
+        }
+
+        return subObjectives.isEmpty() ? null : subObjectives;
+    }
     public boolean upgradeItem(String itemName, int score) {
 
         if (items == null || !items.containsKey(itemName) || items.get(itemName) <= 0) {

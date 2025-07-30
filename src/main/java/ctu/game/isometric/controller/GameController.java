@@ -112,13 +112,17 @@ public class GameController {
     Map<String, String> mainObjectiveDescriptions = new HashMap<>();
 
     public void createMainObjectiveDescriptions() {
-        mainObjectiveDescriptions.put("intro", "Mình cần tìm đường rời khỏi khu rừng này trước tiên.");
-        mainObjectiveDescriptions.put("forest_done", "Có vẻ như mình đã đến một ngôi làng nhỏ, mình nên khám phá xung quanh.");
-        mainObjectiveDescriptions.put("god_intro", "Cleric Klein có thể giúp mình hiểu rõ hơn về thế giới này.");
-        mainObjectiveDescriptions.put("klein_meet", "Nói chuyện với Cleric Klein\n");
-        mainObjectiveDescriptions.put("dungeon_call", "Tiến đến hầm ngục thông qua cổng dịch chuyển theo lời chỉ dẫn của Cleric Klein.\n");
-        mainObjectiveDescriptions.put("dungeon_entry", "Vượt qua hầm ngục và tìm hiểu bí mật của thế giới này.\nMục tiêu: tìm kiếm 3 viên ngọc và sống sót đến tầng cuối.");
+        mainObjectiveDescriptions.put("intro", "I need to find a way out of this forest first.");
+        mainObjectiveDescriptions.put("forest_done", "It seems I've arrived at a small village. I should explore the surroundings.");
+        mainObjectiveDescriptions.put("god_intro", "Cleric Klein might help me understand this world better.");
+        mainObjectiveDescriptions.put("klein_meet", "Talk to Cleric Klein.");
+        mainObjectiveDescriptions.put("dungeon_call", "Head to the dungeon through the teleportation gate as instructed by Cleric Klein.");
+        mainObjectiveDescriptions.put("dungeon_entry", "Defeat 3 Demon Generals and reclaim 3 gems on floors 4, 6, and 8 of the dungeon.");
+        mainObjectiveDescriptions.put("boss", "Prepare yourself and advance to floor 10 to defeat the Demon King.");
+        mainObjectiveDescriptions.put("return", "Two choices: Return or Stay.");
     }
+
+
 
 
     public void startMazeCutScene() {
@@ -433,7 +437,6 @@ public class GameController {
             this.eventManager = this.eventManagerMap.get("tower");
             this.game.getGameScreen().getMapRenderer().changeTiledMapRenderer(this.map, this.eventManager);
             addFlag("klein_unlock");
-
             Timer.schedule(new Timer.Task() {
                 @Override
                 public void run() {

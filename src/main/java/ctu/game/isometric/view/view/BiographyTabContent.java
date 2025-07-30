@@ -38,8 +38,9 @@ class BiographyTabContent {
     private static final Color COMPLETED_COLOR = new Color(0.2f, 0.9f, 0.4f, 1f);
 
     private Map<String, String> objectiveDescriptions;
+    private Map<String, String> subobjectiveDescriptions;
     private String[] objectiveKeys = {
-            "intro", "forest_done", "god_intro", "klein_meet", "dungeon_call", "dungeon_entry"
+            "intro", "forest_done", "god_intro", "klein_meet", "dungeon_call", "dungeon_entry","boss","return"
     };
 
     public BiographyTabContent(Character character, BitmapFont font, Map<String, String> objectives) {
@@ -160,13 +161,26 @@ class BiographyTabContent {
         layout.setText(font, introText, Color.WHITE, maxWidth, Align.left, true);
         height += layout.height + 40;
 
-        height += 40;
+        height += 40; // Space for "MAIN OBJECTIVES" header
 
         for (String key : objectiveKeys) {
             if (objectiveDescriptions.containsKey(key)) {
                 String description = objectiveDescriptions.get(key);
                 layout.setText(font, description, Color.WHITE, maxWidth, Align.left, true);
                 height += layout.height + 20;
+
+                // Account for sub-objectives height
+                boolean isCompleted = character.getFlags() != null && character.getFlags().contains(key);
+                boolean isInProgress = character.getCurrentObject() != null &&
+                        character.getCurrentObject().equals(key);
+
+                // Add height for sub-objectives if they exist and should be displayed
+                if ((isInProgress || isCompleted) && character.getSubObjectives(key) != null) {
+                    for (Map.Entry<String, String> subObj : character.getSubObjectives(key).entrySet()) {
+                        layout.setText(font, subObj.getValue(), Color.WHITE, maxWidth - 20, Align.left, true);
+                        height += layout.height + 15; // Match spacing in drawScrollableContent
+                    }
+                }
             }
         }
 
@@ -198,18 +212,56 @@ class BiographyTabContent {
             if (objectiveDescriptions.containsKey(key)) {
                 boolean isCompleted = character.getFlags() != null &&
                         character.getFlags().contains(key);
+                boolean isInProgress = character.getCurrentObject() != null &&
+                        character.getCurrentObject().equals(objectiveDescriptions.get(key));
 
                 batch.setColor(Color.WHITE);
                 batch.draw(isCompleted ? checkboxFilledTexture : checkboxEmptyTexture,
                         startX, startY - checkboxSize, checkboxSize, checkboxSize);
 
-                font.setColor(isCompleted ? COMPLETED_COLOR : TEXT_COLOR);
-                String description = objectiveDescriptions.get(key);
+                // Choose color based on objective status
+                if (isCompleted) {
+                    font.setColor(COMPLETED_COLOR);
+                } else if (isInProgress) {
+                    font.setColor(new Color(1f, 0.8f, 0.2f, 1f)); // Yellow/gold for in-progress
+                } else {
+                    font.setColor(TEXT_COLOR);
+                }
 
+                String description = objectiveDescriptions.get(key);
                 layout.setText(font, description, font.getColor(), maxWidth, Align.left, true);
                 font.draw(batch, layout, textX, startY);
 
-                startY -= layout.height + 20;
+                // Draw in-progress indicator
+                if (isInProgress) {
+                    System.out.println("Drawing in-progress indicator for objective: " + key);
+                    String inProgressText = " In Progress";
+                    font.draw(batch, inProgressText, textX + maxWidth - 150, startY);
+                }
+
+                // Handle sub-objectives if this objective is in progress or completed
+                if ((isInProgress || isCompleted) && character.getSubObjectives(key) != null) {
+                    startY -= layout.height + 10;
+
+                    for (Map.Entry<String, String> subObj : character.getSubObjectives(key).entrySet()) {
+                        // If main objective is complete, automatically mark sub-objectives as complete
+                        boolean subCompleted = isCompleted || character.getFlags().contains(subObj.getKey());
+
+                        // Indent the sub-objective
+                        batch.setColor(Color.WHITE);
+                        batch.draw(subCompleted ? checkboxFilledTexture : checkboxEmptyTexture,
+                                startX + 20, startY - checkboxSize, checkboxSize, checkboxSize);
+
+                        font.setColor(subCompleted ? COMPLETED_COLOR : TEXT_COLOR);
+
+                        layout.setText(font, subObj.getValue(), font.getColor(), maxWidth - 20, Align.left, true);
+                        font.draw(batch, layout, textX + 20, startY);
+
+                        startY -= layout.height + 15;
+                    }
+                } else {
+                    startY -= layout.height + 20;
+                }
             }
         }
     }
@@ -220,18 +272,31 @@ class BiographyTabContent {
         float barX = bounds.x + bounds.width - 35;
         float barY = bounds.y + 30;
 
-        batch.setColor(Color.WHITE);
+        // Draw scrollbar track
+        batch.setColor(new Color(0.3f, 0.3f, 0.4f, 0.5f));
         batch.draw(scrollBarTexture, barX, barY, barWidth, barHeight);
 
-        if (maxScrollPosition > 0) {
-            float contentHeight = calculateContentHeight(bounds);
-            float visibleRatio = Math.min(1, (bounds.height - 120) / contentHeight);
-            float handleHeight = Math.max(40, barHeight * visibleRatio);
-            float scrollRatio = scrollPosition / maxScrollPosition;
-            float handleY = barY + (barHeight - handleHeight) * scrollRatio;
+        // Calculate visible ratio (viewport height / content height)
+        float contentHeight = calculateContentHeight(bounds);
+        float visibleHeight = bounds.height - 120;
+        float visibleRatio = Math.min(1, visibleHeight / contentHeight);
 
-            batch.draw(scrollHandleTexture, barX, handleY, barWidth, handleHeight);
-        }
+        // Calculate handle height and position
+        float handleHeight = Math.max(40, barHeight * visibleRatio);
+
+        // Position the handle based on current scroll position
+        float availableScrollSpace = barHeight - handleHeight;
+        float scrollPercentage = maxScrollPosition > 0 ? scrollPosition / maxScrollPosition : 0;
+        float handleY = barY + availableScrollSpace * (1 - scrollPercentage);
+
+        // Draw handle with highlight color
+        batch.setColor(new Color(0.6f, 0.8f, 1.0f, 0.8f));
+        batch.draw(scrollHandleTexture, barX, handleY, barWidth, handleHeight);
+
+        // Draw handle border for better visibility
+        batch.setColor(new Color(0.7f, 0.9f, 1.0f, 1.0f));
+        batch.draw(scrollBarTexture, barX, handleY, barWidth, 2); // Top border
+        batch.draw(scrollBarTexture, barX, handleY + handleHeight - 2, barWidth, 2); // Bottom border
     }
 
     public boolean handleClick(float screenX, float screenY, Rectangle bounds) {
