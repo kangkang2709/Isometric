@@ -45,7 +45,6 @@ public class GameSaveController {
 
     public boolean saveGame(Character character, String saveName, List<EventManager> eventManager) {
         try {
-            maintainSaveLimit();
 
             // Create a serializable copy of the character
             Character saveCharacter = createSerializableCopy(character);
@@ -93,6 +92,11 @@ public class GameSaveController {
                     existingSave = file;
                     break;
                 }
+            }
+
+            // Only maintain save limit if creating a new save file
+            if (existingSave == null) {
+                maintainSaveLimit();
             }
 
             filename = (existingSave != null) ? existingSave.name() : saveName;
