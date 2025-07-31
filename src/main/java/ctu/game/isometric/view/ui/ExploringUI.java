@@ -80,7 +80,7 @@ public class ExploringUI {
         timeFrameTexture = new Texture(Gdx.files.internal("ui/time_frame.png"));
         healthBarTexture = new Texture(Gdx.files.internal("ui/health_bar.png"));
         manaBarTexture = new Texture(Gdx.files.internal("ui/health_bar.png")); // Reuse health bar texture or use dedicated texture
-        questBoxTexture = new Texture(Gdx.files.internal("ui/panel-dialogue-4.png"));
+        questBoxTexture = new Texture(Gdx.files.internal("ui/panel-header-2.png"));
     }
 
 
@@ -285,7 +285,7 @@ public class ExploringUI {
         Stack questStack = new Stack();
         questStack.add(questBoxImage);
         Table questLabelTable = new Table();
-        questLabelTable.add(questLabel).center().padLeft(-80);
+        questLabelTable.add(questLabel).center();
         questStack.add(questLabelTable);
 
         topRightTable.add(questStack).right().top();

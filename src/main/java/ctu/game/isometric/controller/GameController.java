@@ -1643,6 +1643,7 @@ public class GameController {
         int gridY = (int) getCharacter().getGridY();
 
         float score = getCharacter().getScore();
+        System.out.println("Current Event: with score: " + score);
 
         if (currentEventX != gridX || currentEventY != gridY || getCharacter().isMoving() == true) {
             return;
@@ -1831,10 +1832,12 @@ public class GameController {
                 quizController.setQuizCompletionListener(success -> {
                     if (success) {
                         // Apply random movement effect after successful quiz
+                        System.out.println("Quiz completed with score: " + getCharacter().getScore());
                         applyQuizMovementEffect(getCharacter().getScore() - score);
                         setCompletedEvent();
 
                     } else {
+                        System.out.println("Quiz completed with score: " + getCharacter().getScore());
                         applyQuizMovementEffect(getCharacter().getScore() - score);
                         setCompletedEvent();
 
@@ -1951,6 +1954,7 @@ public class GameController {
 
                     }
                 });
+                setCompletedEvent();
                 break;
             case "rest":
                 dialogController.showSimpleMessage("Bạn đã nghỉ ngơi và hồi phục năng lượng. [FULL MP]");
@@ -1984,7 +1988,7 @@ public class GameController {
     }
 
     private void applyQuizMovementEffect(float scoreDifference) {
-        if (scoreDifference == 0) {
+        if (scoreDifference <= 0) {
             int dmg = 3 + (int) (Math.random() * 3); // Random damage between 1 and 3
             getDialogController().showSimpleMessage("Bạn đã trả lời sai. Bị tổn thương tinh thần -" + dmg + " HP.");
             character.decreaseHealth(dmg);

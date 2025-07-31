@@ -147,6 +147,9 @@ public class WordNetValidator {
     }
 
     public String getWordMeaning(String wordText) {
+        if (wordText == null || wordText.isEmpty()) {
+            return null;
+        }
         if (!dictionaryLoaded) {
             loadDictionary();
             if (!dictionaryLoaded) {
@@ -186,6 +189,9 @@ public class WordNetValidator {
     }
 
     public Word getWordDetails(String wordText) {
+        if (wordText == null || wordText.isEmpty()) {
+            return null;
+        }
         if (!dictionaryLoaded) {
             loadDictionary();
         }
@@ -302,9 +308,6 @@ public class WordNetValidator {
     public static int calculateScore(String word) {
         if (word == null || word.length() < 3) return 0;
 
-
-        System.out.println("Length of word: " + word.length());
-
         int length = word.length();
 
         if (length <= 5) {
@@ -326,7 +329,6 @@ public class WordNetValidator {
         for (char c : word.toCharArray()) {
             bonus += LETTER_BONUS.getOrDefault(Character.toUpperCase(c), 0);
         }
-        System.out.println("Bonus points for rare letters: " + bonus);
         return bonus;
     }
 

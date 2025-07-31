@@ -248,7 +248,7 @@ public class TimedQuizSystem extends SymbolicQuizSystem implements QuizTimer.Tim
         return quizData;
     }
 
-    private void setupQuizSession(Map<String, Object> quizData) {
+    public void setupQuizSession(Map<String, Object> quizData) {
         int difficulty = (int) quizData.getOrDefault("difficulty", 3);
         float timeLimit = getTimeLimitForDifficulty(difficulty);
 
@@ -275,13 +275,19 @@ public class TimedQuizSystem extends SymbolicQuizSystem implements QuizTimer.Tim
     }
 
     private String getDifficultyLabel(int difficulty) {
-        switch(difficulty) {
-            case 1: return "Easy";
-            case 2: return "Medium";
-            case 3: return "Standard";
-            case 4: return "Hard";
-            case 5: return "Expert";
-            default: return "Standard";
+        switch (difficulty) {
+            case 1:
+                return "Easy";
+            case 2:
+                return "Medium";
+            case 3:
+                return "Standard";
+            case 4:
+                return "Hard";
+            case 5:
+                return "Expert";
+            default:
+                return "Standard";
         }
     }
 
@@ -298,7 +304,7 @@ public class TimedQuizSystem extends SymbolicQuizSystem implements QuizTimer.Tim
         pendingAutoSubmit = false;
     }
 
-    public float calculateTimeLimitForDifficulty(){
+    public float calculateTimeLimitForDifficulty() {
         if (currentQuiz == null) {
             return defaultTimeLimit;
         }
@@ -310,6 +316,16 @@ public class TimedQuizSystem extends SymbolicQuizSystem implements QuizTimer.Tim
         float timeTaken = timer.getElapsedTime();
         timer.pause();
 
+
+        if (answer == null) {
+            Map<String, Object> errorResult = new HashMap<>();
+            errorResult.put("error", "Quiz answer cannot be null");
+            errorResult.put("correct", false);
+            errorResult.put("score", 0);
+            errorResult.put("timeTaken", timeTaken);
+            return errorResult;
+        }
+
         if (currentQuiz == null) {
             Map<String, Object> errorResult = new HashMap<>();
             errorResult.put("error", "No active quiz");
@@ -319,7 +335,10 @@ public class TimedQuizSystem extends SymbolicQuizSystem implements QuizTimer.Tim
             return errorResult;
         }
 
+
         String correctAnswer = (String) currentQuiz.get("answer");
+
+
         String normalizedCorrectAnswer = correctAnswer.trim().toUpperCase();
         String normalizedUserAnswer = answer.trim().toUpperCase();
         boolean isCorrect = normalizedUserAnswer.equals(normalizedCorrectAnswer);
@@ -333,8 +352,10 @@ public class TimedQuizSystem extends SymbolicQuizSystem implements QuizTimer.Tim
                 score = 0;
             }
         }
-
         Map<String, Object> result = new HashMap<>();
+        if (answer.isEmpty())
+            result.put("message", "Correct answer should not be empty");
+        else result.put("message", "Answer submitted successfully");
         result.put("correct", isCorrect);
         result.put("score", score);
         result.put("timeTaken", timeTaken);

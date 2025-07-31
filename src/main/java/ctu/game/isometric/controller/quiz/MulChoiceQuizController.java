@@ -445,7 +445,30 @@ public class MulChoiceQuizController {
     }
 
     public void submitAnswer() {
-        if (!quizActive || showingResults || selectedAnswer.isEmpty()) return;
+        if (!quizActive || showingResults) return;
+
+        // If no answer selected and time ran out, auto-select a wrong answer
+        if (selectedAnswer.isEmpty()) {
+            String correctAnswer = (String) currentQuiz.get("answer");
+            @SuppressWarnings("unchecked")
+            List<String> options = (List<String>) currentQuiz.get("options");
+
+            // Find first option that's not the correct answer
+            for (String option : options) {
+                if (!option.equals(correctAnswer)) {
+                    selectedAnswer = option;
+                    break;
+                }
+            }
+
+            // Fallback: if somehow all options are correct (shouldn't happen), use first option
+            if (selectedAnswer.isEmpty() && !options.isEmpty()) {
+                selectedAnswer = options.get(0);
+            }
+        }
+
+        // Proceed with submission only if we have an answer
+        if (selectedAnswer.isEmpty()) return;
 
         lastResult = quizSystem.submitAnswer(selectedAnswer);
 
