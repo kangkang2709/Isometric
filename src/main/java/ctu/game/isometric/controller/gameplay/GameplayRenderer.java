@@ -114,12 +114,15 @@ public class GameplayRenderer {
         if (isPlayer) {
             x = 239;
             y = 200;
+            batch.draw(currentFrame, x, y, 150 * animationScale, 150 * animationScale);
+
         } else {
             x = 770;
             y = 350;
+            batch.draw(currentFrame, x, y, 150 * animationScale, 150 * animationScale);
+
         }
         // Draw the animation frame
-        batch.draw(currentFrame, x, y, 200 * animationScale, 200 * animationScale);
     }
 
     private void initializeUI() {
@@ -262,6 +265,7 @@ public class GameplayRenderer {
     public void render(SpriteBatch batch) {
         batch.setProjectionMatrix(viewport.getCamera().combined);
 
+        // Set background color
         batch.setColor(0.1f, 0.1f, 0.2f, 1);
         batch.draw(whiteTexture, 0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
         batch.setColor(Color.WHITE);
@@ -270,6 +274,7 @@ public class GameplayRenderer {
             renderCombatUI(batch);
             renderFloatingTexts(batch);
             renderActionAnimation(batch);
+
             CardAnimationManager cardAnimationManager = controller.getCardAnimationManager();
             if (cardAnimationManager != null) {
                 cardAnimationManager.render(batch);
@@ -280,9 +285,7 @@ public class GameplayRenderer {
             renderGameOver(batch);
         }
 
-
         renderEnemyTooltip(batch);
-
     }
 
     public void renderGameOver(SpriteBatch batch) {
@@ -358,11 +361,11 @@ public class GameplayRenderer {
         // Subtitle
         regularFont.setColor(0.8f, 0.8f, 1f, 0.9f);
         drawCenteredText(batch, regularFont, "Bạn đã nhận được phần thưởng!",
-                        panelX + panelWidth / 2, titleY - 35, regularFont.getColor());
+                panelX + panelWidth / 2, titleY - 35, regularFont.getColor());
     }
 
     private void renderRewardItem(SpriteBatch batch, Items item, Reward reward,
-                                float panelX, float panelY, float panelWidth, float panelHeight) {
+                                  float panelX, float panelY, float panelWidth, float panelHeight) {
         float contentY = panelY + panelHeight / 2;
 
         // Item showcase panel
@@ -774,7 +777,7 @@ public class GameplayRenderer {
         Texture battlefieldBg = getTexture("ui/panel-header-2.png");
         if (battlefieldBg != null) {
             batch.setColor(Color.WHITE);
-            batch.draw(battlefieldBg, 788, 10, 460, 196);
+            batch.draw(battlefieldBg, 815, 10, 460, 196);
         }
         // Draw JRPG-style buttons
         drawConsoleStyleButton(batch, controller.getSpellButton(), "Kỹ năng", new Color(0.2f, 0.6f, 1f, 1f));

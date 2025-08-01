@@ -28,6 +28,13 @@ public class EffectManager implements Disposable {
 
 
     public void loadSoundEffects() {
+        loadSound("explosion", "audio/effects");
+        loadSound("fire", "audio/effects");
+        loadSound("heal", "audio/effects");
+        loadSound("poison", "audio/effects");
+        loadSound("buff", "audio/effects");
+        loadSound("miss", "audio/effects");
+        loadSound("attack", "audio/effects");
         loadSound("click", "audio/effects");
     }
 

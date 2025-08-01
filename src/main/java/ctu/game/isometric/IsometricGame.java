@@ -4,6 +4,7 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
+import ctu.game.isometric.animation.DissolveShaderManager;
 import ctu.game.isometric.controller.GameController;
 import ctu.game.isometric.model.game.GameState;
 import ctu.game.isometric.util.AssetManager;
@@ -26,7 +27,7 @@ public class IsometricGame extends Game {
         assetManager.loadAssets();
         Gdx.graphics.setVSync(true);
         gameController = new GameController(this);
-
+        DissolveShaderManager.initialize();
 
 //        splashScreen = new SplashScreen(this);
         gameScreen = new GameScreen(this, gameController);

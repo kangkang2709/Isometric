@@ -1527,6 +1527,7 @@ public class GameController {
             merchantUI.dispose();
         }
 
+        dialogController.endDialog();
         transitionRenderer = new TransitionRenderer();
 
         createBoard();

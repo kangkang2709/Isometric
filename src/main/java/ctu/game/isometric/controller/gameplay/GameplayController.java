@@ -105,9 +105,6 @@ public class GameplayController {
     }
 
     public void playerAttack(String word, int dmg, Runnable onComplete) {
-        if (dmg > 0) {
-            addFloatingText("-" + dmg, 950, 600, Color.RED);
-        }
         cardAnimationService.playerAttack(word, dmg, onComplete);
     }
 
@@ -142,10 +139,6 @@ public class GameplayController {
     }
 
     public void enemyAttack(int dmg, int action, int heal, Runnable onComplete) {
-        if (dmg > 0) {
-            addFloatingText("-" + dmg, 320, 460, Color.RED);
-        }
-        // Add floating heal text on enemy when they heal
         if (heal > 0) {
             addFloatingText("+" + heal + " HP", 950, 600, Color.LIME);
         }
@@ -741,7 +734,7 @@ public class GameplayController {
             int burnDamage = Math.max(1, (int) (playerMaxHealth * 0.02f));
             playerHealth = Math.max(0, playerHealth - burnDamage);
 
-            addFloatingText("-" + burnDamage + " HP", 315, 455, Color.PURPLE);
+            addFloatingText("-" + burnDamage + " HP", 320, 450, Color.ORANGE);
 
             addCombatLog("Bạn mất " + burnDamage + " HP do bỏng! Và giảm 20% sát thương!");
             playerNerf = (int) (enemy.getAttackPower() * 0.2f);
@@ -759,7 +752,7 @@ public class GameplayController {
             int toxicDamage = Math.max(1, (int) (playerMaxHealth * 0.05f));
             playerHealth = Math.max(0, playerHealth - toxicDamage);
 
-            addFloatingText("-" + toxicDamage + " HP", 325, 465, Color.ORANGE);
+            addFloatingText("-" + toxicDamage + " HP", 330, 465, Color.PURPLE);
 
             addCombatLog("Bạn mất " + toxicDamage + " HP do độc tố!");
 
@@ -817,7 +810,7 @@ public class GameplayController {
             int burnDamage = Math.max(1, (int) (enemyMaxHealth * 0.02f));
             enemyHealth = Math.max(0, enemyHealth - burnDamage);
 
-            addFloatingText("-" + burnDamage + " HP", 940, 605, Color.ORANGE);
+            addFloatingText("-" + burnDamage + " HP", 940, 600, Color.ORANGE);
 
             atkNerf = enemy.getAttackPower() * 0.2f;
             addCombatLog(enemyName + " mất " + burnDamage + " HP do bỏng và giảm 20% sát thương!");
@@ -933,11 +926,25 @@ public class GameplayController {
             playerHealth = Math.max(0, playerHealth - damage);
         }
 
+        int finalDamage = (int)damage;
+
         enemyAttack((int) damage, action, (int) heal, () -> {
             checkCombatEnd();
             if (isCombatMode) {
-                if (isEnemyBoss()) renderer.startActionAnimation(3, true);
-                else renderer.startActionAnimation(2, true);
+                if (finalDamage == 0) {
+                    renderer.startActionAnimation(1, false); // e.g. Miss or block animation
+                } else if (finalDamage < 0) {
+
+                } else {
+                    if (isEnemyBoss()) {
+                        renderer.startActionAnimation(3, true); // Boss hit reaction
+                    } else {
+                        renderer.startActionAnimation(2, true); // Normal hit reaction
+                    }
+                    addFloatingText("-" + finalDamage + " HP" , 327, 480, Color.RED);
+
+                }
+
                 isPlayerTurn = true;
                 letterGrid.regenerateGrid();
                 addCombatLog("---Đến lượt của bạn!---");
@@ -970,6 +977,7 @@ public class GameplayController {
 
             letterGrid.clearWord();
 
+            final float finalDamage = damage;
             if (damage > 0) {
 
                 playerAttack("", (int) damage, () -> {
@@ -979,6 +987,8 @@ public class GameplayController {
                         isPlayerTurn = false;
                         addCombatLog("---Đến lượt của " + enemyName + "!---");
                     }
+                    addFloatingText("-" + finalDamage, 900, 600, Color.RED);
+
                 });
                 enemyHealth = Math.max(0, enemyHealth - damage);
             } else {

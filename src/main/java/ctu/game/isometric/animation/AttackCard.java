@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Interpolation;
 
 import java.util.ArrayList;
@@ -64,6 +65,9 @@ public class AttackCard {
 
     Runnable sfxCallback;
 
+    private float dissolvePhase = 1.2f; // Duration of dissolve effect
+    private boolean dissolveComplete = false;
+
     public void setSFXCallback(Runnable callback) {
         this.sfxCallback = callback;
     }
@@ -88,6 +92,14 @@ public class AttackCard {
         this.onComplete = null;
         this.impactPlayed = false;
         this.sfxCallback = null;
+
+        if (type == CardType.ATTACK || type == CardType.STRONG) {
+            this.dissolvePhase = 1.2f;
+        } else {
+            this.dissolvePhase = 0f;
+            this.dissolveComplete = true; // Đánh dấu là đã hoàn thành
+            this.opacity = 1f; // Hiển thị ngay lập tức
+        }
     }
 
     public void setOnComplete(Runnable callback) {
@@ -99,27 +111,73 @@ public class AttackCard {
 
     public void update(float delta) {
         animTime += delta;
-        float phase1 = toMidDuration;
+
+        float phase0 = dissolvePhase; // Dissolve appear phase
+        float phase1 = phase0 + toMidDuration;
         float phase2 = phase1 + impactDuration;
         float phase3 = phase2 + toEndDuration;
         float totalDuration = phase3 + displayDuration + fadeOutDuration;
 
-        // A -> B (chuẩn bị va chạm)
-        if (animTime <= phase1) {
+
+        // Xử lý khi dissolvePhase = 0 (bỏ qua giai đoạn dissolve)
+        if (dissolvePhase == 0 && animTime <= toMidDuration) {
             float t = animTime / toMidDuration;
             float interp = Interpolation.pow2Out.apply(t);
             x = startX + (midX - startX) * interp;
             y = startY + (midY - startY) * interp;
-            scale = 0.85f + 0.17f * interp; // bật nhẹ khi đến B
-            opacity = Math.min(1f, t * 2f);
+            scale = 0.85f + 0.17f * interp;
+            opacity = 1f;
 
             float dx = midX - startX;
             float dy = midY - startY;
             rotation = (float) Math.toDegrees(Math.atan2(dy, dx));
         }
-        // Hiệu ứng va chạm tại B (rung, pop, flash)
-        else if (animTime <= phase2) {
+        // Xử lý dissolve phase nếu có
+        else if (animTime <= phase0 && !dissolveComplete) {
+            float t = animTime / dissolvePhase;
+            x = startX;
+            y = startY;
+            scale = 0.85f;
+            opacity = 1f;
 
+            // Hiệu ứng xuất hiện từ bóng tối
+            if (t < 0.6f) {
+                // Hiệu ứng nhỏ lên khi xuất hiện
+                scale = 0.7f + t * 0.25f;
+            }
+            if (t > 0.3f && t < 0.9f) {
+                float vibration = (float) Math.sin(t * Math.PI * 16) * 2f * (1f - t) * 0.5f;
+                x += vibration * (float) Math.cos(t * 25);
+                y += vibration * 0.3f * (float) Math.sin(t * 25);
+            }
+            if (t >= 1f && !dissolveComplete) {
+                dissolveComplete = true;
+                // Có thể thêm hiệu ứng âm thanh khi card hoàn thành xuất hiện
+                playSFX();
+            }
+        } else if (animTime <= phase0) {
+            x = startX;
+            y = startY;
+            scale = 0.85f;
+            opacity = 1f;
+            dissolveComplete = true;
+        }
+
+        // A -> B (prepare for impact)
+        else if (animTime <= phase1) {
+            float t = (animTime - phase0) / toMidDuration;
+            float interp = Interpolation.pow2Out.apply(t);
+            x = startX + (midX - startX) * interp;
+            y = startY + (midY - startY) * interp;
+            scale = 0.85f + 0.17f * interp;
+            opacity = 1f;
+
+            float dx = midX - startX;
+            float dy = midY - startY;
+            rotation = (float) Math.toDegrees(Math.atan2(dy, dx));
+        }
+        // Rest of the phases remain the same, but adjust timing
+        else if (animTime <= phase2) {
             float dx = midX - startX;
             float dy = midY - startY;
             rotation = (float) Math.toDegrees(Math.atan2(dy, dx));
@@ -127,16 +185,12 @@ public class AttackCard {
             float t = (animTime - phase1) / impactDuration;
             x = midX;
             y = midY;
-            // Rung nhanh
             float shake = (float) Math.sin(t * Math.PI * 12) * 5f * (1f - t);
             scale = 1.09f + 0.06f * (float) Math.sin(t * Math.PI * 8);
             x += shake;
             y += shake * 0.5f;
             opacity = 1f;
-        }
-        // B -> C (lao nhanh, thu nhỏ, fade)
-        else if (animTime <= phase3) {
-
+        } else if (animTime <= phase3) {
             float dx = endX - midX;
             float dy = endY - midY;
             rotation = (float) Math.toDegrees(Math.atan2(dy, dx));
@@ -147,9 +201,7 @@ public class AttackCard {
             y = midY + (endY - midY) * interp;
             scale = 1.0f - 0.23f * interp;
             opacity = 1f - 0.25f * t;
-        }
-        // Hiển thị tại điểm C rồi fade out
-        else if (animTime <= totalDuration - fadeOutDuration) {
+        } else if (animTime <= totalDuration - fadeOutDuration) {
             if (!impactPlayed) {
                 playImpactEffect();
                 impactPlayed = true;
@@ -158,10 +210,7 @@ public class AttackCard {
             y = endY;
             scale = 0.77f;
             opacity = 0.70f;
-        }
-        // Fade out cuối
-        else {
-
+        } else {
             float t = (animTime - (totalDuration - fadeOutDuration)) / fadeOutDuration;
             opacity = Math.max(0f, 0.70f - t);
             if (!finished && opacity <= 0.05f) {
@@ -170,11 +219,11 @@ public class AttackCard {
             }
         }
 
-        // Typewriter chữ
-        float showT = Math.min(1f, animTime / 0.7f);
+        // Typewriter effect - start after dissolve
+        float showT = Math.max(0f, Math.min(1f, (animTime - phase0) / 0.7f));
         charsToShow = Math.min(word.length(), (int) (word.length() * showT * 1.2f));
 
-        // Update all effects (crack, shard, blood)
+        // Update effects
         for (int i = impactEffects.size() - 1; i >= 0; --i) {
             ImpactEffect effect = impactEffects.get(i);
             effect.update(delta);
@@ -212,22 +261,77 @@ public class AttackCard {
         }
     }
 
-
     public void render(SpriteBatch batch) {
         if (opacity <= 0) return;
+
         float drawX = x;
         float drawY = y;
         float w = cardWidth * scale;
         float h = cardHeight * scale;
 
-        // Draw card bg with glow border
         Texture tex = getTextureForType();
-        if (tex != null) {
+        float dissolveAmount = 0; // Declare dissolveAmount at the start
+
+        if (animTime <= dissolvePhase && dissolvePhase > 0 && tex != null) {
+            dissolveAmount = Interpolation.fade.apply(animTime / dissolvePhase);
+            // Store original shader
+            ShaderProgram originalShader = batch.getShader();
+
+            // Apply dissolve shader
+            batch.setShader(DissolveShaderManager.getDissolveShader());
+
+            // Set shader uniforms
+            ShaderProgram shader = batch.getShader();
+            shader.setUniformf("u_dissolveAmount", dissolveAmount);
+            shader.setUniformf("u_dissolveEdgeWidth", 0.35f);
+            shader.setUniform3fv("u_dissolveEdgeColor", new float[]{1.0f, 0.3f, 0.1f}, 0, 3);
+            shader.setUniformf("u_time", DissolveShaderManager.getShaderTime());
+            shader.setUniformf("u_intensity", 2.0f);
+            shader.setUniformf("u_edgeSharpness", 0.6f);
+            shader.setUniform2fv("u_dissolveDirection", new float[]{0.0f, 1.0f}, 0, 2);
+
+            // Bind noise texture
+            DissolveShaderManager.getNoiseTexture().bind(1);
+            shader.setUniformi("u_dissolveTexture", 1);
+
+            // Bind burn texture if available
+            Texture burnOverlay = DissolveShaderManager.getBurnTexture();
+            if (burnOverlay != null) {
+                burnOverlay.bind(2);
+                shader.setUniformi("u_burnTexture", 2);
+                shader.setUniformi("u_useBurnTexture", 1);
+            } else {
+                shader.setUniformi("u_useBurnTexture", 0);
+            }
+
+            // Bind main texture
+            tex.bind(0);
+            shader.setUniformi("u_texture", 0);
+
+            // Draw with shader
             batch.setColor(1, 1, 1, opacity);
             batch.draw(
                     tex,
-                    drawX + w / 2, drawY + h / 2, // center position
-                    w / 2, h / 2,                 // origin
+                    drawX + w / 2, drawY + h / 2,
+                    w / 2, h / 2,
+                    w, h,
+                    1, 1,
+                    rotation,
+                    0, 0,
+                    tex.getWidth(), tex.getHeight(),
+                    false, false
+            );
+
+            // Restore original shader
+            batch.setShader(originalShader);
+        }
+        // Normal rendering after dissolve
+        else if (tex != null) {
+            batch.setColor(1, 1, 1, opacity);
+            batch.draw(
+                    tex,
+                    drawX + w / 2, drawY + h / 2,
+                    w / 2, h / 2,
                     w, h,
                     1, 1,
                     rotation,
@@ -240,30 +344,38 @@ public class AttackCard {
             batch.draw(getWhitePixel(), drawX, drawY, w, h);
         }
 
-        // Draw effects
+        // Render effects and text (rest remains the same)
         for (ImpactEffect effect : impactEffects)
             effect.render(batch);
-        // No batch transform, just draw text
-        FONT.getData().setScale(scale + 0.3f);
-        String shown = word.substring(0, Math.max(0, charsToShow));
-        float textX = drawX + 68 * scale;
-        float textY = drawY + h + 20 * scale;
-        // Glow effect
-        for (int dx = -2; dx <= 2; dx++)
-            for (int dy = -2; dy <= 2; dy++)
-                if (dx * dx + dy * dy != 0 && Math.abs(dx) + Math.abs(dy) <= 2) {
-                    FONT.setColor(0.08f, 0.85f, 1f, 0.28f * opacity);
-                    FONT.draw(batch, shown, textX + dx - 3, textY + dy - 3);
-                }
-        // Main text
-        FONT.setColor(0.5f, 1f, 1f, opacity);
-        FONT.draw(batch, shown, textX - 3, textY - 3);
 
-        // Value pop
-        if (value != 0) {
-            float impactT = Math.min(1f, animTime / 0.18f);
+        // Text rendering during and after dissolve
+        if (dissolveAmount > 0.3f) { // Start showing text when card is 30% visible
+            float textOpacity = Math.min(1f, (dissolveAmount - 0.3f) / 0.7f) * opacity;
+
+            FONT.getData().setScale(scale + 0.3f);
+            String shown = word.substring(0, Math.max(0, charsToShow));
+            float textX = drawX + 68 * scale;
+            float textY = drawY + h + 20 * scale;
+
+            // Glow effect
+            for (int dx = -2; dx <= 2; dx++)
+                for (int dy = -2; dy <= 2; dy++)
+                    if (dx * dx + dy * dy != 0 && Math.abs(dx) + Math.abs(dy) <= 2) {
+                        FONT.setColor(0.08f, 0.85f, 1f, 0.28f * textOpacity);
+                        FONT.draw(batch, shown, textX + dx - 3, textY + dy - 3);
+                    }
+
+            // Main text
+            FONT.setColor(0.5f, 1f, 1f, textOpacity);
+            FONT.draw(batch, shown, textX - 3, textY - 3);
+        }
+
+        // Value display (similar opacity adjustment)
+        if (value != 0 && dissolveAmount > 0.5f) {
+            float valueOpacity = Math.min(1f, (dissolveAmount - 0.5f) / 0.5f) * opacity;
+            float impactT = Math.min(1f, Math.max(0f, (animTime - dissolvePhase) / 0.18f));
             float bounce = Interpolation.sineOut.apply(impactT) * 13f * scale;
-            float glowAlpha = 0.7f * opacity * (1f - Math.abs(impactT - 0.5f) * 2f);
+            float glowAlpha = 0.7f * valueOpacity * (1f - Math.abs(impactT - 0.5f) * 2f);
             Color color = value > 0 ? new Color(1f, 0.95f, 0.2f, glowAlpha) : new Color(0.2f, 1f, 0.4f, glowAlpha);
 
             float valX = drawX + w / 2 - 18 * scale;
@@ -277,6 +389,7 @@ public class AttackCard {
                         FONT.setColor(color.r, color.g, color.b, 0.25f * glowAlpha);
                         FONT.draw(batch, (value > 0 ? "+" : "") + value, valX + dx, valY + dy);
                     }
+
             // Main value
             FONT.setColor(color);
             FONT.draw(batch, (value > 0 ? "+" : "") + value, valX, valY);
@@ -284,16 +397,6 @@ public class AttackCard {
 
         FONT.setColor(Color.WHITE);
         FONT.getData().setScale(1f);
-    }
-
-
-    private static float[] rotatePoint(float px, float py, float cx, float cy, float angleDeg) {
-        double angleRad = Math.toRadians(angleDeg);
-        float dx = px - cx;
-        float dy = py - cy;
-        float rx = (float) (dx * Math.cos(angleRad) - dy * Math.sin(angleRad)) + cx;
-        float ry = (float) (dx * Math.sin(angleRad) + dy * Math.cos(angleRad)) + cy;
-        return new float[]{rx, ry};
     }
 
     public void playSFX() {
