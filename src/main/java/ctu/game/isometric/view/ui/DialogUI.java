@@ -210,7 +210,7 @@ public class DialogUI {
             if (!isTextFullyDisplayed) {
                 promptFont.draw(batch, "Press SPACE to skip...", DIALOG_BOX_X + DIALOG_BOX_WIDTH - 300, DIALOG_BOX_Y + 20);
             } else {
-                promptFont.draw(batch, "Press ENTER to continue...", DIALOG_BOX_X + DIALOG_BOX_WIDTH - 300, DIALOG_BOX_Y + 20);
+                promptFont.draw(batch, "Press SPACES to continue...", DIALOG_BOX_X + DIALOG_BOX_WIDTH - 300, DIALOG_BOX_Y + 20);
             }
         }
 
