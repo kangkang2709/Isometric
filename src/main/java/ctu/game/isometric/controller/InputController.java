@@ -543,20 +543,32 @@ public class InputController extends InputAdapter {
                 }
             }
             case Keys.W, Keys.UP -> {
-                moveCharacter(1, 0);
-                moved = true;
+                if (gameController.isCanMoveCharacter()) {
+                    moveCharacter(1, 0);
+                    moved = true;
+                }
+                break;
             }
             case Keys.S, Keys.DOWN -> {
-                moveCharacter(-1, 0);
-                moved = true;
+                if (gameController.isCanMoveCharacter()) {
+                    moveCharacter(-1, 0);
+                    moved = true;
+                }
+                break;
             }
             case Keys.A, Keys.LEFT -> {
-                moveCharacter(0, -1);
-                moved = true;
+                if (gameController.isCanMoveCharacter()) {
+                    moveCharacter(0, -1);
+                    moved = true;
+                }
+                break;
             }
             case Keys.D, Keys.RIGHT -> {
-                moveCharacter(0, 1);
-                moved = true;
+                if (gameController.isCanMoveCharacter()) {
+                    moveCharacter(0, 1);
+                    moved = true;
+                }
+                break;
             }
             default -> {
             }

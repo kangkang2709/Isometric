@@ -53,7 +53,7 @@ public class AnimationManager {
             }
 
             // Create the animation with a fixed frame duration
-            actionAnimations[index] = new Animation<>(0.12f, frames);
+            actionAnimations[index] = new Animation<>(0.2f, frames);
         } catch (Exception e) {
             Gdx.app.error("Animation", "Failed to load animation: " + path, e);
         }

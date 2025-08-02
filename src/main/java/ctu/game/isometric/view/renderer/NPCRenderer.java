@@ -36,7 +36,7 @@ public class NPCRenderer {
         this.stateTime = 0f;
         // Load button textures
         this.animationManager = animationManager;
-        Texture interactTexture = new Texture(Gdx.files.internal("ui/interact_button.png"));
+        Texture interactTexture = new Texture(Gdx.files.internal("ui/emotion.png"));
         interactButton = new TextureRegion(interactTexture);
 
         this.font = new BitmapFont(Gdx.files.internal("fonts/IMFellEnglishSC-Regular.fnt"));
@@ -63,7 +63,7 @@ public class NPCRenderer {
             // Render if we're on main map (all NPCs) or if NPC belongs to current map
             if (currentMapName.equalsIgnoreCase(npc.getMapName())) {
                 renderNPC(npc, batch);
-                // Check if player is close enough to show action buttons
+
                 if (isPlayerNearNPC(npc)) {
                     renderActionButtons(npc, batch);
                 }
@@ -81,8 +81,8 @@ public class NPCRenderer {
 
     private void renderActionButtons(NPC npc, SpriteBatch batch) {
         // Use player's position instead of NPC's position
-        int gridX = (int) player.getGridX();
-        int gridY = (int) player.getGridY();
+        int gridX = npc.getXPosition();
+        int gridY = npc.getYPosition();
 
         // Convert player's grid position to isometric screen position
         float[] screenPos = mapRenderer.toIsometric(gridX, gridY);
@@ -117,7 +117,7 @@ public class NPCRenderer {
 
         if (currentFrame != null) {
             if (npc.getNpcID() == 11)
-                batch.draw(currentFrame, isoX, isoY, 95, currentFrame.getRegionHeight()/2);
+                batch.draw(currentFrame, isoX, isoY, 95, currentFrame.getRegionHeight() / 2);
             else
                 batch.draw(currentFrame, isoX, isoY + 4, 64, 64);
         }

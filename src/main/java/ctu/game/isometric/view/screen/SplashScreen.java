@@ -16,12 +16,12 @@ public class SplashScreen implements Screen {
     private SpriteBatch batch;
     private Texture splashTexture;
     private float timer = 0;
-    private final float SPLASH_DURATION = 1.0f; // 1 second duration
+    private final float SPLASH_DURATION = 2.0f; // 1 second duration
 
     public SplashScreen(IsometricGame game) {
         this.game = game;
         batch = new SpriteBatch();
-        splashTexture = new Texture(Gdx.files.internal("backgrounds/main_menu_bg.png")); // Add a splash.png to your assets folder
+        splashTexture = new Texture(Gdx.files.internal("backgrounds/bg_4.png")); // Add a splash.png to your assets folder
     }
 
 

@@ -54,7 +54,7 @@
     "enemyName": "Crystal Serpent Boss",
     "enemyDescription": "Mini-Boss – Guardian of the Ruby, an ancient soul that reduces character count.",
     "texturePath": "enemies/stone.png",
-    "health": 30,
+    "health": 40,
     "attackPower": 8,
     "defensePower": 5,
     "rewardId": 7
@@ -64,7 +64,7 @@
     "enemyName": "Sapphire Dragon Boss",
     "enemyDescription": "Mini-Boss – Guardian of the Sapphire, a dragon that constantly regenerates from flame, immune to burn but vulnerable to poison.",
     "texturePath": "enemies/dragon.png",
-    "health": 1,
+    "health": 35,
     "attackPower": 7,
     "defensePower": 4,
     "rewardId": 8
@@ -74,7 +74,7 @@
     "enemyName": "Emerald Revenant Boss",
     "enemyDescription": "Mini-Boss – Protector of the Emerald, a spirit that can make some vocabulary characters disappear and is immune to poison.",
     "texturePath": "enemies/undead.png",
-    "health": 23,
+    "health": 33,
     "attackPower": 5,
     "defensePower": 3,
     "rewardId": 9
@@ -84,7 +84,7 @@
     "enemyName": "Demon Lord Azrok",
     "enemyDescription": "Final Boss – Master of the linguistic shadows. Immune to damage under 15, inflicts poison or burn backlash.",
     "texturePath": "enemies/demon_king.png",
-    "health": 60,
+    "health": 80,
     "attackPower": 15,
     "defensePower": 10,
     "rewardId": 16

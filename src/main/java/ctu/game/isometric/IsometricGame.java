@@ -29,13 +29,13 @@ public class IsometricGame extends Game {
         gameController = new GameController(this);
         DissolveShaderManager.initialize();
 
-//        splashScreen = new SplashScreen(this);
+        splashScreen = new SplashScreen(this);
         gameScreen = new GameScreen(this, gameController);
         creditsScreen = new CreditsScreen(() -> {
             gameController.setState(GameState.MAIN_MENU);
             gameController.resetGame();
             changeScreen("GAME");
-        },gameController.getCommonFont());
+        }, gameController.getCommonFont());
         gameOverScreen = new EndScreen(() -> {
             gameController.setState(GameState.MAIN_MENU);
             gameController.resetGame();
@@ -46,7 +46,7 @@ public class IsometricGame extends Game {
 
         darkestDungeonScreen = new DarkestDungeon(this, gameController);
 
-        setScreen(gameScreen);
+        setScreen(splashScreen);
     }
 
     @Override

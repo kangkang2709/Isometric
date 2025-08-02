@@ -345,7 +345,7 @@ public class GameplayController {
                 case "Draught of Fury":
                     playerBuff(1, () -> {
                         addCombatLog("Đã tăng 8 sức mạnh trong trận!");
-                        renderer.startActionAnimation(0, true);
+                        renderer.startActionAnimation(4, true);
                         gameController.getCharacter().upAttack(item.getValue());
                         playerStatusDuration.put("BUFF_ATK", 2);
                         checkCombatEnd();
@@ -357,7 +357,7 @@ public class GameplayController {
                     break;
                 case "Aegis Brew":
                     playerBuff(1, () -> {
-                        renderer.startActionAnimation(0, true);
+//                        renderer.startActionAnimation(4, true);
                         addCombatLog("Đã tăng 8 phòng thủ trong trận!");
                         gameController.getCharacter().upDefend(item.getValue());
                         playerStatusDuration.put("BUFF_DEF", 5);
@@ -846,10 +846,9 @@ public class GameplayController {
             int regenHeal = Math.max(1, (int) (enemyMaxHealth * 0.05f));
 
             enemyHealth = Math.min(enemyMaxHealth, enemyHealth + regenHeal);
+            renderer.startActionAnimation(1, false);
             addFloatingText("+" + regenHeal + " HP", 955, 610, Color.GREEN);
-
             addCombatLog(enemyName + " hồi phục " + regenHeal + " HP liên tục!");
-
             int remaining = enemyStatusDuration.get("REGEN") - 1;
             if (remaining <= 0) {
                 enemyStatusDuration.remove("REGEN");
@@ -1294,9 +1293,9 @@ public class GameplayController {
         this.playerNerf = 0;
         addCombatLog("Bắt đầu chiến đấu với " + enemyName + "!");
         letterGrid.regenerateGrid();
-
-        playerStatusDuration.put("BURN", 2);
-        playerStatusDuration.put("TOXIC", 2);
+//
+//        playerStatusDuration.put("BURN", 2);
+//        playerStatusDuration.put("TOXIC", 2);
         float difficultyScore = (enemyHealth * 0.5f + enemy.getAttackPower() * 1.5f) / (currentLevel + 1);
 
         if (enemyName.contains("Lord")) {

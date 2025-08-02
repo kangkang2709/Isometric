@@ -180,7 +180,7 @@ public class MapRenderer {
 
     }
 
-    boolean isRenderPath = true;
+    boolean isRenderPath = false;
 
     public void toggleRenderPath() {
         isRenderPath = !isRenderPath;

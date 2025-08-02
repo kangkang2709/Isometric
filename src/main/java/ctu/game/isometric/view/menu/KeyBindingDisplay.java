@@ -61,6 +61,8 @@ public class KeyBindingDisplay {
         keyBindings.add(new KeyBinding("Q", "Mở theo dõi nhiệm vụ", Color.WHITE));
         keyBindings.add(new KeyBinding("F1", "Mở thông tin trạng thái nhân vật", Color.WHITE));
         keyBindings.add(new KeyBinding("F3", "Mở/đóng thành tựu", Color.WHITE));
+        keyBindings.add(new KeyBinding("1", "Bật/tắt bóng tối", Color.WHITE));
+        keyBindings.add(new KeyBinding("2", "Bật/tắt đường đi chính xác (PATH)", Color.WHITE));
 
 
         // Action keys

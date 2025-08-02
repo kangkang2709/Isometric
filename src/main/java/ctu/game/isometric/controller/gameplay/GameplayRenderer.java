@@ -113,12 +113,11 @@ public class GameplayRenderer {
 
         if (isPlayer) {
             x = 239;
-            y = 200;
-            batch.draw(currentFrame, x, y, 150 * animationScale, 150 * animationScale);
-
+            y = 210;
+            batch.draw(currentFrame, x, y, 200 * animationScale, 200 * animationScale);
         } else {
-            x = 770;
-            y = 350;
+            x = 780;
+            y = 390;
             batch.draw(currentFrame, x, y, 150 * animationScale, 150 * animationScale);
 
         }

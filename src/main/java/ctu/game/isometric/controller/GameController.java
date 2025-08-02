@@ -275,7 +275,7 @@ public class GameController {
     public IsometricMap changeMap(String mapName) {
 
         IsometricMap newMap = this.mapList.get(mapName);
-
+        currentEvent = null;
         if (newMap != null) {
             System.out.println("Changing map to: " + mapName);
             transitionRenderer.startLoadingScreen(() -> {
@@ -327,8 +327,8 @@ public class GameController {
     }
 
     public IsometricMap changeMapInVillage(String mapName) {
-
         IsometricMap newMap = this.mapList.get("main");
+        currentEvent = null;
 
         if (newMap != null) {
             transitionRenderer.startLoadingScreen(() -> {
@@ -369,6 +369,7 @@ public class GameController {
     }
 
     public void changeSaveMap(String mapName) {
+        currentEvent = null;
 
         IsometricMap newMap = this.mapList.get(mapName);
         if (newMap != null) {
@@ -407,6 +408,7 @@ public class GameController {
 
     public void returnToTower(String enemyName) {
         IsometricMap newMap = this.mapList.get("tower");
+        currentEvent = null;
 
         if (newMap != null) {
             this.map = newMap;
@@ -439,6 +441,7 @@ public class GameController {
 
     public void returnToTowerAfterBoss(String BossName) {
         IsometricMap newMap = this.mapList.get("tower");
+        currentEvent = null;
 
         if (newMap != null) {
             this.map = newMap;
@@ -739,7 +742,7 @@ public class GameController {
                             Timer.schedule(new Timer.Task() {
                                 @Override
                                 public void run() {
-                                    Enemy enemy = new Enemy(11, "Thủ vệ hồ", "Frost Guardian", "frost_guardian", 1, 25, 16);
+                                    Enemy enemy = new Enemy(11, "Thủ vệ hồ", "Frost Guardian", "frost_guardian", 50, 25, 16);
                                     enemy.setDefensePower(21);
                                     game.getDarkestDungeonScreen().startCombat(enemy);
                                     game.changeScreen("DARK_DUNGEON");
@@ -752,7 +755,7 @@ public class GameController {
                         Timer.schedule(new Timer.Task() {
                             @Override
                             public void run() {
-                                Enemy enemy = new Enemy(11, "Thủ vệ Băng giá", "Frost Guardian", "frost_guardian", 1, 21, 16);
+                                Enemy enemy = new Enemy(11, "Thủ vệ Băng giá", "Frost Guardian", "frost_guardian", 50, 21, 16);
                                 enemy.setDefensePower(25);
                                 game.getDarkestDungeonScreen().startCombat(enemy);
                                 game.changeScreen("DARK_DUNGEON");
@@ -843,7 +846,7 @@ public class GameController {
                                 Timer.schedule(new Timer.Task() {
                                     @Override
                                     public void run() {
-                                        Enemy enemy = new Enemy(11, "Flame Slime Guardian", "Flame Guardian Armon", "Demon", 1, 11, 16);
+                                        Enemy enemy = new Enemy(11, "Flame Slime Guardian", "Flame Guardian Armon", "Demon", 50, 11, 16);
                                         enemy.setDefensePower(15);
                                         game.getDarkestDungeonScreen().startCombat(enemy);
                                         game.changeScreen("DARK_DUNGEON");
@@ -856,7 +859,7 @@ public class GameController {
                             Timer.schedule(new Timer.Task() {
                                 @Override
                                 public void run() {
-                                    Enemy enemy = new Enemy(11, "Flame Slime Guardian", "Flame Guardian Armon", "Demon", 1, 15, 17);
+                                    Enemy enemy = new Enemy(11, "Flame Slime Guardian", "Flame Guardian Armon", "Demon", 50, 15, 17);
                                     enemy.setDefensePower(11);
                                     game.getDarkestDungeonScreen().startCombat(enemy);
                                     game.changeScreen("DARK_DUNGEON");
@@ -1565,17 +1568,24 @@ public class GameController {
         isRenderCharacter = renderCharacter;
     }
 
+    boolean canMoveCharacter = true;
+
+    public boolean isCanMoveCharacter() {
+        return canMoveCharacter;
+    }
+
     private void checkPositionEvents(float x, float y) {
         getMapRenderer().setZoomed(false);
         currentEvent = eventManager.checkPositionEvents(x, y);
         mapRenderer.setRenderInfoCard(false);
-
+        canMoveCharacter = true;
         isRenderCharacter = true;
         if (currentEvent != null) {
             hasActiveEvent = true;
             currentEventType = currentEvent.getEventType();
             if (currentEventType.equals("battle") && map.getMapName().equals("board")) {
                 isRenderCharacter = false;
+                canMoveCharacter = false; // Prevent character movement during battle
                 mapRenderer.setRenderInfoCard(true);
                 getMapRenderer().setAcceptingRoll(true);
             } else if (currentEventType.equals("trap") && !trapUnlock.containsKey(currentEventId)) {
@@ -1604,6 +1614,7 @@ public class GameController {
         currentEvent = null;
         properties = null;
         currentEventId = null;
+        canMoveCharacter = true;
     }
 
     String currentEventId;
@@ -1619,6 +1630,7 @@ public class GameController {
         currentEvent = null;
         properties = null;
         currentEventId = null;
+        canMoveCharacter = true;
     }
 
 
@@ -1928,13 +1940,13 @@ public class GameController {
                 boolean isDungeon = random.nextBoolean();
 
                 if (isDungeon) {
-                    Enemy enemy = new Enemy(11, "Thủ vệ hồ", "Frost Guardian", "frost", 1, 25, 16);
-                    enemy.setDefensePower(21);
+                    Enemy enemy = new Enemy(11, "Thủ vệ hồ", "Frog", "frost", 20, 15, 15);
+                    enemy.setDefensePower(10);
                     game.getDarkestDungeonScreen().startCombat(enemy);
                     game.changeScreen("DARK_DUNGEON");
                 } else {
-                    Enemy enemy = new Enemy(11, "Thủ vệ hồ", "Frost Guardian", "minotaur", 1, 25, 16);
-                    enemy.setDefensePower(21);
+                    Enemy enemy = new Enemy(11, "Thủ vệ hồ", "Minotaur", "minotaur", 1, 10, 15);
+                    enemy.setDefensePower(15);
                     game.getDarkestDungeonScreen().startCombat(enemy);
                     game.changeScreen("DARK_DUNGEON");
                 }

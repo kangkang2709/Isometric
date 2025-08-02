@@ -349,33 +349,26 @@ public class AttackCard {
             effect.render(batch);
 
         // Text rendering during and after dissolve
-        if (dissolveAmount > 0.3f) { // Start showing text when card is 30% visible
-            float textOpacity = Math.min(1f, (dissolveAmount - 0.3f) / 0.7f) * opacity;
+        FONT.getData().setScale(scale + 0.3f);
+        String shown = word.substring(0, Math.max(0, charsToShow));
+        float textX = drawX + 68 * scale;
+        float textY = drawY + h + 20 * scale;
+        // Glow effect
+        for (int dx = -2; dx <= 2; dx++)
+            for (int dy = -2; dy <= 2; dy++)
+                if (dx * dx + dy * dy != 0 && Math.abs(dx) + Math.abs(dy) <= 2) {
+                    FONT.setColor(0.08f, 0.85f, 1f, 0.28f * opacity);
+                    FONT.draw(batch, shown, textX + dx - 3, textY + dy - 3);
+                }
+        // Main text
+        FONT.setColor(0.5f, 1f, 1f, opacity);
+        FONT.draw(batch, shown, textX - 3, textY - 3);
 
-            FONT.getData().setScale(scale + 0.3f);
-            String shown = word.substring(0, Math.max(0, charsToShow));
-            float textX = drawX + 68 * scale;
-            float textY = drawY + h + 20 * scale;
-
-            // Glow effect
-            for (int dx = -2; dx <= 2; dx++)
-                for (int dy = -2; dy <= 2; dy++)
-                    if (dx * dx + dy * dy != 0 && Math.abs(dx) + Math.abs(dy) <= 2) {
-                        FONT.setColor(0.08f, 0.85f, 1f, 0.28f * textOpacity);
-                        FONT.draw(batch, shown, textX + dx - 3, textY + dy - 3);
-                    }
-
-            // Main text
-            FONT.setColor(0.5f, 1f, 1f, textOpacity);
-            FONT.draw(batch, shown, textX - 3, textY - 3);
-        }
-
-        // Value display (similar opacity adjustment)
-        if (value != 0 && dissolveAmount > 0.5f) {
-            float valueOpacity = Math.min(1f, (dissolveAmount - 0.5f) / 0.5f) * opacity;
-            float impactT = Math.min(1f, Math.max(0f, (animTime - dissolvePhase) / 0.18f));
+        // Value pop
+        if (value != 0) {
+            float impactT = Math.min(1f, animTime / 0.18f);
             float bounce = Interpolation.sineOut.apply(impactT) * 13f * scale;
-            float glowAlpha = 0.7f * valueOpacity * (1f - Math.abs(impactT - 0.5f) * 2f);
+            float glowAlpha = 0.7f * opacity * (1f - Math.abs(impactT - 0.5f) * 2f);
             Color color = value > 0 ? new Color(1f, 0.95f, 0.2f, glowAlpha) : new Color(0.2f, 1f, 0.4f, glowAlpha);
 
             float valX = drawX + w / 2 - 18 * scale;
@@ -389,7 +382,6 @@ public class AttackCard {
                         FONT.setColor(color.r, color.g, color.b, 0.25f * glowAlpha);
                         FONT.draw(batch, (value > 0 ? "+" : "") + value, valX + dx, valY + dy);
                     }
-
             // Main value
             FONT.setColor(color);
             FONT.draw(batch, (value > 0 ? "+" : "") + value, valX, valY);
