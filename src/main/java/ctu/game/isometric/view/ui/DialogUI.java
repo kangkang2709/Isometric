@@ -235,6 +235,7 @@ public class DialogUI {
                 String choiceText = (i == selectedIndex ? "> " : "  ") + choices.get(i).getText();
                 choiceText = choiceText.replace("[YES]", "").replace("[NO]", "");
                 dialogFont.draw(batch, choiceText, DIALOG_BOX_X + 150, DIALOG_BOX_Y + 120 - (i * 30));
+                promptFont.draw(batch, "Press SPACE to select...", DIALOG_BOX_X + DIALOG_BOX_WIDTH - 300, DIALOG_BOX_Y + 20);
             }
             dialogFont.setColor(Color.WHITE); // Reset after loop
         }

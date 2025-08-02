@@ -33,9 +33,9 @@ public class KeyBindingDisplay {
 
     public KeyBindingDisplay(GameController gameController) {
         this.gameController = gameController;
-        this.titleFont = generateVietNameseFont("GrenzeGotisch.ttf", 36);
-        this.keyFont = generateVietNameseFont("GrenzeGotisch.ttf", 24);
-        this.descriptionFont = generateVietNameseFont("GrenzeGotisch.ttf", 20);
+        this.titleFont = gameController.getBigCommonFont();
+        this.keyFont = gameController.getCommonFont();
+        this.descriptionFont = gameController.getCommonFont();
         this.shapeRenderer = new ShapeRenderer();
 
         initializeKeyBindings();
@@ -132,9 +132,9 @@ public class KeyBindingDisplay {
 
         // Draw content panel
         float panelX = 100;
-        float panelY = 50;
+        float panelY = 0;
         float panelWidth = Gdx.graphics.getWidth() - 200;
-        float panelHeight = Gdx.graphics.getHeight() - 100;
+        float panelHeight = Gdx.graphics.getHeight();
 
         shapeRenderer.setColor(0.1f, 0.1f, 0.2f, 0.9f);
         shapeRenderer.rect(panelX, panelY, panelWidth, panelHeight);
@@ -172,7 +172,7 @@ public class KeyBindingDisplay {
         // Draw scroll hint
         descriptionFont.setColor(Color.LIGHT_GRAY);
         descriptionFont.draw(batch, "ESC: Quay lại  |  ↑/↓: Cuộn  |  Mouse Wheel: Cuộn",
-                0, 30, Gdx.graphics.getWidth(), Align.center, false);
+                300, 30, Gdx.graphics.getWidth(), Align.center, false);
 
         batch.setProjectionMatrix(originalMatrix);
 

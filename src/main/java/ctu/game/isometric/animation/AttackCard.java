@@ -351,7 +351,7 @@ public class AttackCard {
         // Text rendering during and after dissolve
         FONT.getData().setScale(scale + 0.3f);
         String shown = word.substring(0, Math.max(0, charsToShow));
-        float textX = drawX + 68 * scale;
+        float textX = drawX + 48 * scale;
         float textY = drawY + h + 20 * scale;
         // Glow effect
         for (int dx = -2; dx <= 2; dx++)

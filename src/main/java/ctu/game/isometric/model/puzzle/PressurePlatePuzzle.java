@@ -151,6 +151,16 @@ public class PressurePlatePuzzle {
                 case "trap":
                     // Damage the character
                     character.setHealth(character.getHealth() - 5);
+                    if (character.getHealth() <= 0) {
+                        character.setHealth(0); // Ensure health doesn't go negative
+                        boolean isGameOver = character.gameOver();
+                        if (isGameOver) {
+                            getGameController().returnToTower("trap");
+                        } else {
+                            getGameController().getGame().changeScreen("GAME_OVER");
+                        }
+                    }
+
 
                     break;
                 case "teleport":

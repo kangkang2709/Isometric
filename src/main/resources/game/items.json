@@ -176,7 +176,7 @@
     "texturePath": "game/items/elixir2.png",
     "itemEffect": "heal",
     "value": 40.0,
-    "itemPrice": 400,
+    "itemPrice": 300,
     "manaCost": 5.0
   },
   {
@@ -186,7 +186,7 @@
     "texturePath": "game/items/arcane_essence2.png",
     "itemEffect": "heal",
     "value": 40.0,
-    "itemPrice": 400,
+    "itemPrice": 300,
     "manaCost": 0.0
   }
 ]

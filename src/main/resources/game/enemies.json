@@ -55,8 +55,8 @@
     "enemyDescription": "Mini-Boss – Guardian of the Ruby, an ancient soul that reduces character count.",
     "texturePath": "enemies/stone.png",
     "health": 40,
-    "attackPower": 8,
-    "defensePower": 5,
+    "attackPower": 9,
+    "defensePower": 9,
     "rewardId": 7
   },
   {
@@ -65,8 +65,8 @@
     "enemyDescription": "Mini-Boss – Guardian of the Sapphire, a dragon that constantly regenerates from flame, immune to burn but vulnerable to poison.",
     "texturePath": "enemies/dragon.png",
     "health": 35,
-    "attackPower": 7,
-    "defensePower": 4,
+    "attackPower": 12,
+    "defensePower": 11,
     "rewardId": 8
   },
   {
@@ -75,8 +75,8 @@
     "enemyDescription": "Mini-Boss – Protector of the Emerald, a spirit that can make some vocabulary characters disappear and is immune to poison.",
     "texturePath": "enemies/undead.png",
     "health": 33,
-    "attackPower": 5,
-    "defensePower": 3,
+    "attackPower": 15,
+    "defensePower": 12,
     "rewardId": 9
   },
   {
@@ -85,8 +85,8 @@
     "enemyDescription": "Final Boss – Master of the linguistic shadows. Immune to damage under 15, inflicts poison or burn backlash.",
     "texturePath": "enemies/demon_king.png",
     "health": 80,
-    "attackPower": 15,
-    "defensePower": 10,
-    "rewardId": 16
+    "attackPower": 18,
+    "defensePower": 16,
+    "rewardId": 18
   }
 ]

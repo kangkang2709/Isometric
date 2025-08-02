@@ -155,7 +155,7 @@
   <object id="15" x="64" y="384"/>
   <object id="17" x="128" y="32" width="32" height="32">
    <properties>
-    <property name="event" value="tele"/>
+    <property name="event" value="tele2"/>
     <property name="id" value="tower_7"/>
     <property name="map" value="board"/>
    </properties>

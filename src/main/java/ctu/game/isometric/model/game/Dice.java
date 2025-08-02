@@ -84,7 +84,7 @@ public class Dice {
         bounceTime = 0f;
         rollEffect.start();
 
-        currentFaceValue = MathUtils.random(MIN_DICE_VALUE,  3);
+        currentFaceValue = MathUtils.random(MIN_DICE_VALUE,  MAX_DICE_VALUE);
         isSuccessful = currentFaceValue >= target;
 
         return currentFaceValue;

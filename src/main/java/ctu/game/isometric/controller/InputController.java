@@ -195,6 +195,7 @@ public class InputController extends InputAdapter {
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         // Handle tutorial UI separately since it overrides other interactions
+
         if (gameController.getTutorialUI().isVisible()) {
             // Special case for tutorial showing in MENU state
             if (gameController.getCurrentState() == GameState.MENU && !gameController.getMenuController().isTutorialShowing()) {
@@ -292,6 +293,8 @@ public class InputController extends InputAdapter {
 
     private boolean handleCharacterMovement(int screenX, int screenY) {
         // Convert screen coordinates to world coordinates
+        if (gameController.getMap().getMapName().equals("board"))
+            return false; // No character movement in these maps
 
 
         Vector3 worldCoords = new Vector3(screenX, screenY, 0);
@@ -512,6 +515,7 @@ public class InputController extends InputAdapter {
                 }
                 gameController.setState(GameState.DICTIONARY);
             }
+
             case Keys.F1 -> gameController.setState(GameState.INFORMATION);
             case Keys.F2 -> {
                 if (gameController.getMerchantUI().isVisible())
@@ -651,6 +655,9 @@ public class InputController extends InputAdapter {
 //        }
         switch (keycode) {
             case Keys.ESCAPE -> gameController.setState(GameState.MENU);
+            case Keys.P -> {
+                gameController.getCutsceneController().endCutscene();
+            }
             default -> {
             }
         }

@@ -31,7 +31,7 @@ import java.util.List;
 public class GameplayController {
     // Core constants
     private static final float ENEMY_TURN_DELAY = 2.4f;
-    private static final float COMBAT_TIME_LIMIT = 300f;
+    private static final float COMBAT_TIME_LIMIT = 1200f;
     private static final int MAX_COMBAT_LOG_LINES = 40;
     // Core components
     private final GameController gameController;
@@ -169,6 +169,8 @@ public class GameplayController {
         }
         renderer.updateAnimations(delta);
     }
+
+
 
     // Add getter for floating texts
     public List<FloatingText> getFloatingTexts() {

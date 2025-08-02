@@ -106,5 +106,11 @@
     "itemID": 4,
     "amount": 3,
     "description": "Aegis Brew - Tăng chỉ số phòng thủ thêm 5."
+  },
+  {
+    "rewardID": 18,
+    "itemID": 5,
+    "amount": 1,
+    "description": "Phần thưởng nhận được khi đánh bại con trùm cuối của game."
   }
 ]

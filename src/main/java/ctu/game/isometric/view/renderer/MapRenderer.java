@@ -115,6 +115,10 @@ public class MapRenderer {
         } else return map.getMapName().equals("board") && !isRenderInfoCard;
     }
 
+    public void setRenderDarkNessWithLight(boolean renderDarkNessWithLight) {
+        isRenderDarkNessWithLight = renderDarkNessWithLight;
+    }
+
     boolean isRenderDarkNessWithLight = true;
 
     public boolean isRenderDarkNessWithLight() {
@@ -1102,7 +1106,9 @@ public class MapRenderer {
     }
 
     public void updateRollTargetValue() {
-        this.targetValue = character.getLevel() * 4 + character.getRun();
+        Random random = new Random();
+        int num = 3 + random.nextInt(6) + 1; // Random number between 1 and 6
+        this.targetValue = character.getRun() * 2 + num + character.getLevel(); // Set target value based on character's run and random number
     }
 
     Map<String, Enemy> enemies = new HashMap<>();

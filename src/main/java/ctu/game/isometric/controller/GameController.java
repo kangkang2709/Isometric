@@ -277,14 +277,17 @@ public class GameController {
         IsometricMap newMap = this.mapList.get(mapName);
         currentEvent = null;
         if (newMap != null) {
-            System.out.println("Changing map to: " + mapName);
+            canMoveCharacter = true;
             transitionRenderer.startLoadingScreen(() -> {
 
                 if (mapName.equalsIgnoreCase("board")) {
                     mapRenderer.setRenderInfoCard(false);
+                    mapRenderer.setRenderDarkNessWithLight(true);
                     newMap.generateRandomMaze(getCharacter().getRun() / 2);
                     isNewRun = false;
+
                     if (!character.isTutorialCompleted("maze")) {
+
                         tutorialUI.show("maze");
                         character.setTutorialCompleted("maze");
                         if (!character.getFlags().contains("dungeon_entry"))
@@ -318,6 +321,48 @@ public class GameController {
                 this.eventManager = this.eventManagerMap.get(mapName);
                 this.game.getGameScreen().getMapRenderer().changeTiledMapRenderer(this.map, this.eventManager);
             });
+
+            return newMap;
+        } else {
+            Gdx.app.error("GameController", "Map not found: " + mapName);
+            return null;
+        }
+    }
+
+    public IsometricMap changeMap2(String mapName) {
+
+        IsometricMap newMap = this.mapList.get(mapName);
+        currentEvent = null;
+        if (newMap != null) {
+            canMoveCharacter = true;
+
+            if (mapName.equalsIgnoreCase("board")) {
+                mapRenderer.setRenderInfoCard(false);
+                mapRenderer.setRenderDarkNessWithLight(true);
+                newMap.generateRandomMaze(getCharacter().getRun() / 2);
+                isNewRun = false;
+
+                if (!character.isTutorialCompleted("maze")) {
+
+                    tutorialUI.show("maze");
+                    character.setTutorialCompleted("maze");
+                    if (!character.getFlags().contains("dungeon_entry"))
+                        addFlag("dungeon_entry");
+                }
+
+            }
+
+
+            this.map = newMap;
+            this.character.setGameMap(map);
+            this.pathfinder.setMap(newMap);
+
+            if (mapName.equals("board")) {
+                boardEventManager.setMap(this.map);
+                boardEventManager.randomBoardEveryRun();
+            }
+            this.eventManager = this.eventManagerMap.get(mapName);
+            this.game.getGameScreen().getMapRenderer().changeTiledMapRenderer(this.map, this.eventManager);
 
             return newMap;
         } else {
@@ -846,7 +891,7 @@ public class GameController {
                                 Timer.schedule(new Timer.Task() {
                                     @Override
                                     public void run() {
-                                        Enemy enemy = new Enemy(11, "Flame Slime Guardian", "Flame Guardian Armon", "Demon", 50, 11, 16);
+                                        Enemy enemy = new Enemy(11, "Flame Slime Guardian", "Flame Guardian Armon", "Demon", 50, 11, 6);
                                         enemy.setDefensePower(15);
                                         game.getDarkestDungeonScreen().startCombat(enemy);
                                         game.changeScreen("DARK_DUNGEON");
@@ -859,7 +904,7 @@ public class GameController {
                             Timer.schedule(new Timer.Task() {
                                 @Override
                                 public void run() {
-                                    Enemy enemy = new Enemy(11, "Flame Slime Guardian", "Flame Guardian Armon", "Demon", 50, 15, 17);
+                                    Enemy enemy = new Enemy(11, "Flame Slime Guardian", "Flame Guardian Armon", "Demon", 50, 15, 6);
                                     enemy.setDefensePower(11);
                                     game.getDarkestDungeonScreen().startCombat(enemy);
                                     game.changeScreen("DARK_DUNGEON");
@@ -1674,17 +1719,12 @@ public class GameController {
                 }
 
 
-                if (eventManager.isEnemyDefeated(enemyId) &&
-                        eventManager.getBooleanProperty(properties, "one_time", true)) {
-                    eventManager.completeEvent(currentEvent.getId());
-                } else {
+                if (enemyId > 0) {
                     Enemy enemy = EnemyLoader.getEnemyById(enemyId);
-
                     setState(GameState.GAMEPLAY);
                     gameplayController.activate();
                     gameplayController.startCombat(enemy);
                     gameplayController.setCurrentEvent(currentEvent);
-
                 }
                 break;
             case "treasure":
@@ -1796,6 +1836,7 @@ public class GameController {
                                 "Ta nên hỏi ngài Klein về tác dụng của nó.");
                         return;
                     }
+
                     if (mapName.equals("unknown") && !character.getFlags().contains("klein_unlock")) {
                         getDialogController().showSimpleMessage("Ngôi nhà này đã bị khóa, có lẽ Cleric Klein sẽ mở khóa nó cho ta sau này.");
                         return;
@@ -1814,12 +1855,27 @@ public class GameController {
 
                         return;
                     }
-                    if (!mapName.equals(map.getMapName())) {
-                        changeMap(mapName);
-                        if (mapName.equals("board") && !character.getFlags().contains("maze_cutscene"))
-                            startMazeCutScene();
+//                    if (!mapName.equals(map.getMapName())) {
+                    changeMap(mapName);
 
+//                    }
+                }
+                break;
+            case "tele2":
+                if (properties != null) {
+                    String mapName = properties.get("map", String.class);
+
+                    if (mapName.equals("board") && !getCharacter().getFlags().contains("dungeon_call")) {
+                        getDialogController().showSimpleMessage("Cánh cổng thật kì lạ, nó dẫn đến đâu vậy?\n" +
+                                "Ta nên hỏi ngài Klein về tác dụng của nó.");
+                        return;
                     }
+                    if (mapName.equals("board") && getCharacter().getFlags().contains("dungeon_call") && !getCharacter().getFlags().contains("maze_cutscene")) {
+                        startMazeCutScene();
+                    }
+
+                    changeMap2(mapName);
+//
                 }
                 break;
             case "return":
@@ -1846,12 +1902,12 @@ public class GameController {
                     if (success) {
                         // Apply random movement effect after successful quiz
                         System.out.println("Quiz completed with score: " + getCharacter().getScore());
-                        applyQuizMovementEffect(getCharacter().getScore() - score);
+                        applyQuizMovementEffect();
                         setCompletedEvent();
 
                     } else {
                         System.out.println("Quiz completed with score: " + getCharacter().getScore());
-                        applyQuizMovementEffect(getCharacter().getScore() - score);
+                        applyQuizMovementEffectFailed();
                         setCompletedEvent();
 
                     }
@@ -1871,11 +1927,11 @@ public class GameController {
                 mulChoiceQuizController.setQuizCompletionListener(success -> {
                     if (success) {
                         // Apply random movement effect after successful quiz
-                        applyQuizMovementEffect(getCharacter().getScore() - score);
+                        applyQuizMovementEffect();
                         setCompletedEvent();
 
                     } else {
-                        applyQuizMovementEffect(getCharacter().getScore() - score);
+                        applyQuizMovementEffectFailed();
                         setCompletedEvent();
 
                     }
@@ -1928,7 +1984,7 @@ public class GameController {
                         });
                         break;
                     default:
-                        dialogController.showSimpleMessage("Bạn đã hoàn thành tầng " + character.getRun() + " của mê cung, hãy chuẩn bị cho tầng tiếp theo.");
+                        dialogController.showSimpleMessage("Bạn đã hoàn thành tầng " + (character.getRun() + 1) + " của mê cung, hãy chuẩn bị cho tầng tiếp theo.");
                         changeMap("main");
                         character.updateRun();
                         break;
@@ -1940,29 +1996,29 @@ public class GameController {
                 boolean isDungeon = random.nextBoolean();
 
                 if (isDungeon) {
-                    Enemy enemy = new Enemy(11, "Thủ vệ hồ", "Frog", "frost", 20, 15, 15);
-                    enemy.setDefensePower(10);
+                    Enemy enemy = new Enemy(21, "Thủ vệ hồ", "Frog", "frost", 1, 5, 3);
+                    enemy.setDefensePower(7);
                     game.getDarkestDungeonScreen().startCombat(enemy);
                     game.changeScreen("DARK_DUNGEON");
                 } else {
-                    Enemy enemy = new Enemy(11, "Thủ vệ hồ", "Minotaur", "minotaur", 1, 10, 15);
-                    enemy.setDefensePower(15);
+                    Enemy enemy = new Enemy(34, "Thủ vệ hồ", "Minotaur", "minotaur", 1, 7, 4);
+                    enemy.setDefensePower(5);
                     game.getDarkestDungeonScreen().startCombat(enemy);
                     game.changeScreen("DARK_DUNGEON");
                 }
 
                 isNewRun = true;
-                setEndEvent();
+                setCompletedEvent();
                 break;
             case "word_scramble":
                 boardEventManager.getWordScrambleGame().startGame();
                 boardEventManager.getWordScrambleGame().setQuizCompletionListener(success -> {
                     if (success) {
-                        applyQuizMovementEffect(getCharacter().getScore() - score);
+                        applyQuizMovementEffect();
                         setCompletedEvent();
 
                     } else {
-                        applyQuizMovementEffect(getCharacter().getScore() - score);
+                        applyQuizMovementEffectFailed();
                         setCompletedEvent();
 
                     }
@@ -2000,17 +2056,16 @@ public class GameController {
 
     }
 
-    private void applyQuizMovementEffect(float scoreDifference) {
-        if (scoreDifference <= 0) {
-            int dmg = 3 + (int) (Math.random() * 3); // Random damage between 1 and 3
-            getDialogController().showSimpleMessage("Bạn đã trả lời sai. Bị tổn thương tinh thần -" + dmg + " HP.");
-            character.decreaseHealth(dmg);
+    private void applyQuizMovementEffect() {
+        getDialogController().showSimpleMessage("Bạn đã trả lời đúng. Nhận thêm 1 lượt tung xúc sắc!");
+        getDice().setBonusRoll(true);
+        character.setBonusRolls(getDice().getBonusCount());
+    }
 
-        } else {
-            getDialogController().showSimpleMessage("Bạn đã trả lời đúng. Nhận thêm 1 lượt tung xúc sắc!");
-            getDice().setBonusRoll(true);
-            character.setBonusRolls(getDice().getBonusCount());
-        }
+    public void applyQuizMovementEffectFailed() {
+        int dmg = 3 + (int) (Math.random() * 3); // Random damage between 1 and 3
+        getDialogController().showSimpleMessage("Bạn đã trả lời sai. Bị tổn thương tinh thần -" + dmg + " HP.");
+        character.decreaseHealth(dmg);
     }
 
     boolean isNewRun = false;

@@ -461,8 +461,8 @@ public class InventoryUI {
                     float errorPulse = (float) Math.sin(TimeUtils.millis() / 200.0) * 0.2f + 0.8f;
                     font.setColor(errorColor.r, errorColor.g, errorColor.b, errorPulse * alpha);
                     font.draw(batch, errorMessage,
-                            inventoryBounds.x + 20,
-                            inventoryBounds.y + 60);
+                            detailsX + 120,
+                            inventoryBounds.y + 90);
                 }
 
                 // Draw usage instructions based on item type
@@ -750,12 +750,12 @@ public class InventoryUI {
                                 character.addItem(craftedItem, 1);
                                 character.descreaseItemAmount(ingredientItem.getItemName(), recipe.ingredientCount);
 
-                                errorMessage = "Đã chế tạo thành công " + recipe.result + "!";
+                                errorMessage = "Crafted " + recipe.result + "!";
                             }
                         }
                         inventoryDirty = true;
                     } catch (Exception e) {
-                        errorMessage = "Lỗi khi chế tạo: " + e.getMessage();
+                        errorMessage = "Error: " + e.getMessage();
                     }
                 } else {
                     errorMessage = "Cần " + recipe.ingredientCount + " " + recipe.ingredient + " để chế tạo!";

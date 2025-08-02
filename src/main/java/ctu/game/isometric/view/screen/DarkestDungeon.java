@@ -363,7 +363,6 @@ public class DarkestDungeon implements Screen {
                             gameController.completedDungeon2();
                         else if (enemyName.equalsIgnoreCase("Frost Guardian"))
                             gameController.defeatedFrostGuardian();
-                        else gameController.returnToTower(enemyName);
                     }
 
                     return true;
@@ -987,7 +986,7 @@ public class DarkestDungeon implements Screen {
                 pendingCombatEnd = false;
                 combatEndDelayTimer = 0f;
                 if (playerHP <= 0) {
-                    gameController.getMusicController().playMusic("defeat");
+//                    gameController.getMusicController().playMusic("defeat");
                     combatState = CombatState.COMBAT_END;
                     combatLog = "THẤT BẠI! Bạn đã thua trong chiến đấu.";
                     victory = false;
@@ -999,7 +998,7 @@ public class DarkestDungeon implements Screen {
                 } else if (enemyHP <= 0) {
                     combatState = CombatState.COMBAT_END;
                     combatLog = "CHIẾN THẮNG! Kẻ địch đã bị hạ gục!";
-                    gameController.getMusicController().playMusic("victory");
+//                    gameController.getMusicController().playMusic("victory");
                     victory = true;
                     defeated = false;
                     isEnded = false;
