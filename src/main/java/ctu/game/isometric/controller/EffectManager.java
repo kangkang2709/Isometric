@@ -26,16 +26,17 @@ public class EffectManager implements Disposable {
     }
 
 
-
     public void loadSoundEffects() {
 //        loadSound("explosion", "audio/effects");
 //        loadSound("fire", "audio/effects");
 //        loadSound("heal", "audio/effects");
 //        loadSound("poison", "audio/effects");
 //        loadSound("buff", "audio/effects");
-//        loadSound("miss", "audio/effects");
-//        loadSound("attack", "audio/effects");
+        loadSound("sword", "audio/effects");
+        loadSound("attack", "audio/effects");
         loadSound("click", "audio/effects");
+        loadSound("pick", "audio/effects");
+        loadSound("buff", "audio/effects");
     }
 
     public void loadSound(String effectName, String soundDir) {
@@ -57,6 +58,19 @@ public class EffectManager implements Disposable {
     public void playClickSound() {
         playSound("click");
     }
+
+    public void playAttackSound() {
+        playSound("sword");
+    }
+
+    public void playPickSound() {
+        playSound("pick");
+    }
+
+    public void playBuffSound() {
+        playSound("buff");
+    }
+
 
     // Spawn effect immediately
     public void spawnEffect(String effectName, float x, float y) {

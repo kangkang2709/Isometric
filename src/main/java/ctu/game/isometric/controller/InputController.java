@@ -201,7 +201,6 @@ public class InputController extends InputAdapter {
             if (gameController.getCurrentState() == GameState.MENU && !gameController.getMenuController().isTutorialShowing()) {
                 return gameController.getMenuController().handleMouseClick(screenX, screenY);
             } else if (gameController.getTutorialUI().handleClick(screenX, screenY)) {
-                effectManager.playClickSound();
             }
             return true; // Click was handled by tutorial
         }
@@ -210,33 +209,34 @@ public class InputController extends InputAdapter {
         switch (gameController.getCurrentState()) {
             case EXPLORING:
                 return handleExploringStateClick(screenX, screenY);
-
             case MENU:
+                effectManager.playClickSound();
                 return gameController.getMenuController().handleMouseClick(screenX, screenY);
             case INFORMATION:
+                effectManager.playClickSound();
                 gameController.getCharacterDisplay().handleClick(screenX, screenY);
                 return true; // Click handled by character display
             case LOAD_GAME:
+                effectManager.playClickSound();
                 return gameController.getLoadGameController().handleMouseClick(screenX, screenY);
             case MAIN_MENU:
+                effectManager.playClickSound();
                 return gameController.getMainMenuController().handleClick(screenX, screenY);
             case GAMEPLAY:
                 return gameController.getGameplayController().handleCombatClick(screenX, screenY);
-
             case DICTIONARY:
+                effectManager.playClickSound();
                 gameController.getDictionaryView().handleMouseClick(screenX, screenY);
                 return true;
-
             case MULTIPLE_CHOICE_QUIZZES:
+                effectManager.playClickSound();
                 return gameController.getMultipleChoiceQuizController().handleClick(screenX, screenY);
-
             case BOUNTY_BOARD:
                 return gameController.getBountyBoardView().handleClick(screenX, screenY);
-
             case QUEST_TRACKER:
                 return gameController.getQuestTrackerView().handleClick(screenX, screenY);
-
             case QUIZZES:
+                effectManager.playClickSound();
                 return gameController.getQuizController().handleClick(screenX, screenY);
             case SETTINGS:
                 return gameController.getSettingsMenuController().handleMouseClick(screenX, screenY);
@@ -531,6 +531,7 @@ public class InputController extends InputAdapter {
                     gameController.showAchievementUI();
             }
             case Keys.ESCAPE -> {
+                effectManager.playClickSound();
                 if (gameController.getAchievementUI().isActive())
                     gameController.getAchievementUI().hide();
                 else
@@ -606,7 +607,10 @@ public class InputController extends InputAdapter {
 
     public boolean handleBountyBoardInput(int keycode) {
         switch (keycode) {
-            case Keys.ESCAPE -> gameController.setState(GameState.EXPLORING);
+            case Keys.ESCAPE -> {
+                effectManager.playClickSound();
+                gameController.setState(GameState.EXPLORING);
+            }
             case Keys.UP -> gameController.getBountyBoardView().scrollUp();
             case Keys.DOWN -> gameController.getBountyBoardView().scrollDown();
             default -> {
@@ -619,6 +623,7 @@ public class InputController extends InputAdapter {
     public boolean handleQuestTrackerInput(int keycode) {
         switch (keycode) {
             case Keys.ESCAPE -> {
+                effectManager.playClickSound();
                 gameController.setState(GameState.EXPLORING);
                 gameController.getQuestTrackerView().toggleVisibility();
             }
@@ -632,7 +637,10 @@ public class InputController extends InputAdapter {
 
     private boolean handleDictionaryInput(int keycode) {
         switch (keycode) {
-            case Keys.ESCAPE -> gameController.setCurrentState(GameState.EXPLORING);
+            case Keys.ESCAPE ->{
+                effectManager.playClickSound();
+                gameController.setCurrentState(GameState.EXPLORING);
+            }
             case Keys.UP -> {
                 gameController.getDictionaryView().selectPreviousWord();
                 return true;
@@ -655,7 +663,8 @@ public class InputController extends InputAdapter {
 //        }
         switch (keycode) {
             case Keys.ESCAPE -> gameController.setState(GameState.MENU);
-            case Keys.P -> {
+            case Keys.ENTER -> {
+                effectManager.playClickSound();
                 gameController.getCutsceneController().endCutscene();
             }
             default -> {
@@ -686,6 +695,7 @@ public class InputController extends InputAdapter {
         }
         switch (keycode) {
             case Keys.ESCAPE -> {
+                effectManager.playClickSound();
                 if (gameController.getMenuController().isTutorialShowing()) {
                     gameController.getMenuController().showTutorialMenu();
                 } else
@@ -704,6 +714,7 @@ public class InputController extends InputAdapter {
     private boolean handleSettingsInput(int keycode) {
         switch (keycode) {
             case Keys.ESCAPE -> {
+
                 if (gameController.getPreviousState() == GameState.MAIN_MENU) {
                     gameController.setState(GameState.MAIN_MENU);
                     gameController.setPreviousState(GameState.MAIN_MENU);
@@ -751,6 +762,7 @@ public class InputController extends InputAdapter {
 
         switch (keycode) {
             case Keys.ESCAPE -> {
+
                 gameController.setState(GameState.MENU);
                 return true;
             }

@@ -152,8 +152,6 @@ public class AttackCard {
             }
             if (t >= 1f && !dissolveComplete) {
                 dissolveComplete = true;
-                // Có thể thêm hiệu ứng âm thanh khi card hoàn thành xuất hiện
-                playSFX();
             }
         } else if (animTime <= phase0) {
             x = startX;
@@ -394,6 +392,7 @@ public class AttackCard {
     public void playSFX() {
         if (sfxCallback != null) {
             sfxCallback.run();
+            System.out.println("Playing SFX for card: " + type + " with word: " + word);
         }
     }
 

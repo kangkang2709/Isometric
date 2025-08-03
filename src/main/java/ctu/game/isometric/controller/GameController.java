@@ -1493,7 +1493,7 @@ public class GameController {
             }
 
             character.setPath(path);
-            effectManager.playClickSound();
+//            effectManager.playClickSound();
 
             // Set the target indicator position
             inputController.showTargetIndicator(targetX, targetY);

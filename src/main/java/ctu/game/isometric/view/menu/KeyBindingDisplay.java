@@ -45,44 +45,45 @@ public class KeyBindingDisplay {
         keyBindings = new ArrayList<>();
 
         // Movement keys
-        keyBindings.add(new KeyBinding("Di Chuyển", "", Color.YELLOW));
-        keyBindings.add(new KeyBinding("W / UP", "Di chuyển lên", Color.WHITE));
-        keyBindings.add(new KeyBinding("S / DOWN", "Di chuyển xuống", Color.WHITE));
-        keyBindings.add(new KeyBinding("A / LEFT", "Di chuyển trái", Color.WHITE));
-        keyBindings.add(new KeyBinding("D / RIGHT", "Di chuyển phải", Color.WHITE));
-        keyBindings.add(new KeyBinding("Left Click", "Di chuyển trên một số bản đồ nhất định", Color.WHITE));
+// Movement keys
+        keyBindings.add(new KeyBinding("Movement", "", Color.YELLOW));
+        keyBindings.add(new KeyBinding("W / UP", "Move up", Color.WHITE));
+        keyBindings.add(new KeyBinding("S / DOWN", "Move down", Color.WHITE));
+        keyBindings.add(new KeyBinding("A / LEFT", "Move left", Color.WHITE));
+        keyBindings.add(new KeyBinding("D / RIGHT", "Move right", Color.WHITE));
+        keyBindings.add(new KeyBinding("Left Click", "Move in certain maps", Color.WHITE));
 
-        // Interface keys
-        keyBindings.add(new KeyBinding("Giao Diện", "", Color.YELLOW));
-        keyBindings.add(new KeyBinding("ESC", "Mở menu tạm dừng", Color.WHITE));
-        keyBindings.add(new KeyBinding("TAB", "Bật/tắt UI khám phá", Color.WHITE));
-        keyBindings.add(new KeyBinding("I", "Mở/đóng túi đồ", Color.WHITE));
-        keyBindings.add(new KeyBinding("V", "Mở từ điển", Color.WHITE));
-        keyBindings.add(new KeyBinding("Q", "Mở theo dõi nhiệm vụ", Color.WHITE));
-        keyBindings.add(new KeyBinding("F1", "Mở thông tin trạng thái nhân vật", Color.WHITE));
-        keyBindings.add(new KeyBinding("F3", "Mở/đóng thành tựu", Color.WHITE));
-        keyBindings.add(new KeyBinding("1", "Bật/tắt bóng tối", Color.WHITE));
-        keyBindings.add(new KeyBinding("2", "Bật/tắt đường đi chính xác (PATH)", Color.WHITE));
+// Interface keys
+        keyBindings.add(new KeyBinding("Interface", "", Color.YELLOW));
+        keyBindings.add(new KeyBinding("ESC", "Open pause menu", Color.WHITE));
+        keyBindings.add(new KeyBinding("TAB", "Toggle exploration UI", Color.WHITE));
+        keyBindings.add(new KeyBinding("I", "Open/close inventory", Color.WHITE));
+        keyBindings.add(new KeyBinding("V", "Open dictionary", Color.WHITE));
+        keyBindings.add(new KeyBinding("Q", "Open quest tracker", Color.WHITE));
+        keyBindings.add(new KeyBinding("F1", "Open character status", Color.WHITE));
+        keyBindings.add(new KeyBinding("F3", "Open/close achievements", Color.WHITE));
+        keyBindings.add(new KeyBinding("1", "Toggle darkness", Color.WHITE));
+        keyBindings.add(new KeyBinding("2", "Toggle path visualization", Color.WHITE));
 
+// Action keys
+        keyBindings.add(new KeyBinding("Actions", "", Color.YELLOW));
+        keyBindings.add(new KeyBinding("E / SPACE", "Interact/Confirm with environment or items", Color.WHITE));
+        keyBindings.add(new KeyBinding("F", "Interact with NPC", Color.WHITE));
+        keyBindings.add(new KeyBinding("ENTER", "Confirm/Continue", Color.WHITE));
 
-        // Action keys
-        keyBindings.add(new KeyBinding("Hành Động", "", Color.YELLOW));
-        keyBindings.add(new KeyBinding("E / SPACE", "Tương tác/Xác nhận môi trường, vật phẩm", Color.WHITE));
-        keyBindings.add(new KeyBinding("F", "Tương tác NPC", Color.WHITE));
-        keyBindings.add(new KeyBinding("ENTER", "Xác nhận/Tiếp tục", Color.WHITE));
+// UI specific keys
+        keyBindings.add(new KeyBinding("Special UI", "", Color.YELLOW));
+        keyBindings.add(new KeyBinding("UP/DOWN", "Navigate menu", Color.WHITE));
+        keyBindings.add(new KeyBinding("Mouse Wheel", "Zoom in/out on some maps", Color.WHITE));
 
-        // UI specific keys
-        keyBindings.add(new KeyBinding("Giao Diện Đặc Biệt", "", Color.YELLOW));
-        keyBindings.add(new KeyBinding("UP/DOWN", "Điều hướng menu", Color.WHITE));
-        keyBindings.add(new KeyBinding("Mouse Wheel", "Phóng to/thu nhỏ ở một số bản đồ", Color.WHITE));
+// Debug keys (optional)
+        keyBindings.add(new KeyBinding("Debug (Test Only)", "", Color.ORANGE));
+// keyBindings.add(new KeyBinding("F8", "Teleport to tavern", Color.GRAY));
+        keyBindings.add(new KeyBinding("F9", "Teleport to main map", Color.GRAY));
+        keyBindings.add(new KeyBinding("F10", "Teleport to DARK Dungeon", Color.GRAY));
+        keyBindings.add(new KeyBinding("F11", "Teleport to 3D Dungeon", Color.GRAY));
+        keyBindings.add(new KeyBinding("F12", "Change weather", Color.GRAY));
 
-        // Debug keys (optional)
-        keyBindings.add(new KeyBinding("Debug (Chỉ Test)", "", Color.ORANGE));
-//        keyBindings.add(new KeyBinding("F8", "Chuyển đến tavern", Color.GRAY));
-        keyBindings.add(new KeyBinding("F9", "Chuyển đến map chính", Color.GRAY));
-        keyBindings.add(new KeyBinding("F10", "Chuyển đến  DARK Dungeon", Color.GRAY));
-        keyBindings.add(new KeyBinding("F11", "Chuyển đến Dungeon 3D", Color.GRAY));
-        keyBindings.add(new KeyBinding("F12", "Thay đổi thời tiết", Color.GRAY));
     }
 
     public void show() {
