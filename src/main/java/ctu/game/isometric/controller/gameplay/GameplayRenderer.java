@@ -30,7 +30,7 @@ import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
 public class GameplayRenderer {
     // Constants
     private static final String VOWELS = "AEIOU";
-    private static final float COMBAT_TIME_LIMIT = 300f;
+    private static final float COMBAT_TIME_LIMIT = 1200f;
     private static final float MARGIN = 20;
 
     // Core components

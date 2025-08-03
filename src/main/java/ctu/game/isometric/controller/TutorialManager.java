@@ -54,17 +54,80 @@ public class TutorialManager {
         addTutorial("maze", new Tutorial("9", "Cơ chế Tung Xúc Xắc", "Trong sự kiện xúc xắc, nhấn 'DICE' để tung. Nếu kết quả đạt hoặc vượt qua giá trị mục tiêu, bạn thành công và có thể tiếp tục.", "event_dice_roll.png", "maze", false));
         addTutorial("maze", new Tutorial("10", "Ba Viên Ngọc Kỳ Bí", "Ở các tầng 4, 6 và 8, bạn sẽ đối mặt với những sinh vật canh giữ viên ngọc cổ đại: Ý Niệm, Biểu Đồ và Dòng Chảy. Đánh bại chúng để tiến gần hơn đến mục tiêu trở về thế giới của mình.", "", "maze", false));
 
-        addTutorial("combat", new Tutorial("1", "Tổng quan chiến đấu", "Combat là cơ chế chiến đấu theo lượt giữa bạn và kẻ địch. Mục tiêu là đánh bại kẻ địch bằng cách sử dụng từ vựng để gây sát thương hoặc sử dụng vật phẩm hỗ trợ.", "combat_overview.png", "combat", false));
-        addTutorial("combat", new Tutorial("2", "Lượt đấu - Nhân vật ", " - Trong lượt của bạn, chọn nút \"Tấn công\" để  chọn các chữ cái từ lưới để tạo thành từ. Nhấn \"CAST\" để tấn công kẻ địch. Sát thương gây ra phụ thuộc vào độ dài và điểm số của từ, từ sai sẽ bị bỏ qua và mất lượt (Vào PauseMenu để xem chi tiết)" +
-                " \n- Nếu bạn không thể tạo từ, hãy nhấn \"Tấn công thường\" để gây sát thương dựa vào tấn công của bản thân.\n","turn-char.png", "combat", false));
-        addTutorial("combat", new Tutorial("3", "Lượt đấu - Kẻ địch ", "Kẻ địch có các hành vi khác nhau như tấn công hoặc hồi máu. Sức mạnh của kẻ địch được điều chỉnh dựa vào cấp độ của nhân vật. Di chuột vào kẻ địch để xem chỉ số kẻ địch để chuẩn bị cho trận chiến.", "turn-enemy.png", "combat", false));
-        addTutorial("combat", new Tutorial("4", "Máu & Năng lượng", "Thanh máu (HP) thể hiện sức khỏe của bạn. Nếu HP giảm về 0, bạn sẽ thua. Thanh năng lượng (Mana) được sử dụng để kích hoạt vật phẩm hỗ trợ.", "combat_health_mana.png", "combat", false));
-        addTutorial("combat", new Tutorial("5", "Vật phẩm", "Trong lượt của bản thân, Nhấn vào nút \"Vật phẩm\" để mở túi đồ, có thể click vào để sử dụng vật phẩm: hồi máu, tăng sức mạnh, hoặc gây sát thương đặc biệt. Sử dụng vật phẩm xong sẽ chuyển lượt cho kẻ địch.", "combat_items.png", "combat", false));
-        addTutorial("combat", new Tutorial("6", "Cơ chế từ vựng", "Từ càng dài và phức tạp, sát thương gây ra càng cao. Các nguyên âm (A, E, I, O, U) và ký tự hiếm (Z, Q, X, J, K) sẽ tăng điểm sát thương.\n Các từ vựng đặc biệt sẽ áp dụng hiệu ứng đặc biệt cho kẻ địch và bản thân.", "", "combat", false));
+        addTutorial("combat", new Tutorial(
+                "1",
+                "Tổng quan chiến đấu",
+                "Chiến đấu trong game là hình thức đánh theo lượt giữa bạn và kẻ địch. Mục tiêu là sử dụng từ vựng để gây sát thương hoặc dùng vật phẩm hỗ trợ nhằm đánh bại kẻ địch.",
+                "combat_overview.png",
+                "combat",
+                false
+        ));
+
+        addTutorial("combat", new Tutorial(
+                "2",
+                "Lượt của bạn",
+                "- Nhấn nút \"Kỹ Năng\" để mở lưới kí tự, chọn các chữ cái trên lưới để tạo thành một từ tiếng Anh.\n" +
+                        "- Sau khi chọn xong, nhấn \"CAST\" để tấn công." +
+                        "- Sát thương dựa trên độ dài và điểm số của từ. Nếu từ không hợp lệ, bạn sẽ mất lượt!\n" +
+                        " **Không nghĩ ra từ? Hãy dùng \"Tấn công thường\" để gây sát thương cơ bản.\n" +
+                        " **Mở Pause Menu để xem chi tiết cách tính điểm và sát thương.",
+                "turn-char.png",
+                "combat",
+                false
+        ));
+
+        addTutorial("combat", new Tutorial(
+                "3",
+                "Lượt của kẻ địch",
+                "Kẻ địch sẽ thực hiện các hành động như tấn công, hồi máu, hoặc tạo hiệu ứng bất lợi cho bạn. Sức mạnh của chúng sẽ tăng theo cấp độ của bạn.\n\n" +
+                        "** Di chuột vào kẻ địch để xem thông tin và chuẩn bị chiến thuật phù hợp.",
+                "turn-enemy.png",
+                "combat",
+                false
+        ));
+
+        addTutorial("combat", new Tutorial(
+                "4",
+                "Máu và Năng lượng",
+                "- **HP (Máu):** Nếu về 0, bạn sẽ thua trận.\n" +
+                        "- **Mana (Năng lượng):** Dùng để kích hoạt vật phẩm hỗ trợ.\n" +
+                        "Giữ HP và Mana luôn ở mức an toàn để sống sót lâu hơn!",
+                "combat_health_mana.png",
+                "combat",
+                false
+        ));
+
+        addTutorial("combat", new Tutorial(
+                "5",
+                "Sử dụng vật phẩm",
+                "Trong lượt của bạn, nhấn nút \"Vật phẩm\" để mở túi đồ. Chọn vật phẩm để sử dụng:\n" +
+                        "- Hồi máu\n" +
+                        "- Tăng sức mạnh\n" +
+                        "- Gây sát thương đặc biệt\n" +
+                        "Lưu ý: Sau khi dùng vật phẩm, lượt sẽ chuyển sang kẻ địch.",
+                "combat_items.png",
+                "combat",
+                false
+        ));
+
+        addTutorial("combat", new Tutorial(
+                "6",
+                "Cơ chế từ vựng",
+                "Từ càng dài và phức tạp thì sát thương gây ra càng cao.\n\n" +
+                        "- Các nguyên âm (A, E, I, O, U) và chữ cái hiếm (Z, Q, X, J, K) sẽ giúp tăng điểm tấn công.\n" +
+                        "- Một số từ đặc biệt còn tạo ra hiệu ứng mạnh mẽ lên kẻ địch hoặc hỗ trợ bạn.",
+                "",
+                "combat",
+                false
+        ));
+
         addTutorial("combat", new Tutorial(
                 "7",
-                "Hiệu ứng đặc biệt 1",
-                "Các từ vựng hoặc vật phẩm sẽ tạo ra hiệu ứng đặc biệt như Buff, Burn, Freeze, Toxic kèm theo số lượt tác dụng (chỉ tính lượt bản thân).",
+                "Hiệu ứng đặc biệt (Phần 1)",
+                "Một số từ vựng hoặc vật phẩm sẽ gây hiệu ứng đặc biệt, như:\n" +
+                        "- **Buff:** Tăng chỉ số có lợi cho bạn.\n" +
+                        "- **Burn, Freeze, Toxic:** Gây bất lợi cho kẻ địch.\n\n" +
+                        "⏳ Hiệu ứng chỉ tồn tại trong lượt của bạn và có số lượt giới hạn.",
                 "special_effect.png",
                 "combat",
                 false
@@ -72,19 +135,22 @@ public class TutorialManager {
 
         addTutorial("combat", new Tutorial(
                 "8",
-                "Hiệu ứng đặc biệt 2",
-                "- Buff Attack: Tăng 5 điểm tấn công.\n" +
-                        "- Buff Defend: Tăng 5 điểm phòng thủ.\n" +
-                        "- Buff Regen: Hồi phục một lượng máu mỗi lượt.\n" +
-                        "- Debuff Freeze: Đóng băng kẻ địch, khiến chúng không thể hành động trong lượt và hồi phục 5 HP. Có 50% cơ hội phá băng mỗi lượt.\n" +
-                        "- Debuff Burn: Gây bỏng, trừ 2% máu mỗi lượt và giảm 20% tấn công của kẻ địch.\n" +
-                        "- Debuff Toxic: Gây độc, trừ 5% hơn mỗi lượt.\n\n" +
-                        "**Lưu ý:** Freeze và Burn không thể tồn tại đồng thời. Nếu kẻ địch đang bị Freeze mà bị dính Burn, cả hai hiệu ứng sẽ bị triệt tiêu và ngược lại.\n" +
-                        "**Mẹo:** Một số từ vựng đặc biệt có khả năng gây hiệu ứng. Hãy tận dụng !",
+                "Hiệu ứng đặc biệt (Phần 2)",
+                "**Buffs:**\n" +
+                        "- Tăng Tấn Công: +5 sát thương\n" +
+                        "- Tăng Phòng Thủ: +5 giáp\n" +
+                        "- Hồi Máu: Phục hồi mỗi lượt\n\n" +
+                        "**Debuffs:**\n" +
+                        "- **Freeze:** Kẻ địch bị đóng băng, không thể hành động và hồi 5 HP. Có 50% cơ hội thoát mỗi lượt.\n" +
+                        "- **Burn:** Gây bỏng, trừ 2% máu mỗi lượt và giảm 20% sát thương của địch.\n" +
+                        "- **Toxic:** Gây độc, trừ máu tăng dần theo mỗi lượt.\n\n" +
+                        "⚠️ *Freeze* và *Burn* không thể tồn tại cùng lúc. Khi một hiệu ứng mới xung đột, cả hai sẽ bị hủy.\n" +
+                        "💡 Mẹo: Tận dụng các từ đặc biệt để tạo hiệu ứng có lợi!",
                 "",
                 "combat",
                 false
         ));
+
 
         addTutorial("combat", new Tutorial("8", "Chiến thắng & Thất bại", "Đánh bại kẻ địch để nhận phần thưởng và kinh nghiệm. Nếu bạn thua, trò chơi sẽ kết thúc hoặc bạn sẽ phải bắt đầu lại từ điểm lưu gần nhất.", "combat_victory_defeat.png", "combat", false));
         addTutorial("combat", new Tutorial("9", "Cơ chế Boss", "Khi đối đầu với Boss, chúng sẽ có sức mạnh và phòng thủ cao hơn. Một số Boss có hiệu ứng đặc biệt như vô hiệu hóa ô chữ, giảm kích thước lưới hoặc hồi máu liên tục.", "combat_boss_mechanics.png", "combat", false));
