@@ -30,7 +30,7 @@ public class IsometricGame extends Game {
         DissolveShaderManager.initialize();
 
         splashScreen = new SplashScreen(this);
-        gameScreen = new GameScreen(this, gameController);
+//        gameScreen = new GameScreen(this, gameController);
         creditsScreen = new CreditsScreen(() -> {
             gameController.setState(GameState.MAIN_MENU);
             gameController.resetGame();

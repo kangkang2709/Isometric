@@ -63,11 +63,11 @@ public class MainMenu {
         int menuX = (screenWidth - BUTTON_WIDTH) / 2;
         int totalMenuHeight = (menuOptions.length * BUTTON_HEIGHT) + ((menuOptions.length - 1) * 20);
 
-        int startY = (screenHeight + totalMenuHeight) / 2 -170;
+        int startY = (screenHeight + totalMenuHeight) / 2 - 210;
         int spacing = 80;
 
         // Thêm vào constructor sau dòng khởi tạo buttonRects
-        titleTexture = new Texture(Gdx.files.internal("ui/title.png")); // Thay đổi đường dẫn texture của bạn
+        titleTexture = new Texture(Gdx.files.internal("ui/title2.png")); // Thay đổi đường dẫn texture của bạn
         titleY = screenHeight + 100; // Bắt đầu từ ngoài màn hình
         titleTargetY = startY + 150; // Vị trí cuối cùng của title
 
@@ -110,7 +110,7 @@ public class MainMenu {
 
         // Vẽ title
         float titleX = (screenWidth - titleTexture.getWidth()) / 2;
-        batch.draw(titleTexture, titleX, titleY);
+        batch.draw(titleTexture, titleX, titleY - 50);
 
 
         float padding = 20f;

@@ -33,7 +33,7 @@ public class SplashScreen implements Screen {
         this.game = game;
         batch = new SpriteBatch();
         splashTexture = new Texture(Gdx.files.internal("backgrounds/black.png"));
-        logoTexture = new Texture(Gdx.files.internal("ui/title.png")); // Thêm logo của game
+        logoTexture = new Texture(Gdx.files.internal("ui/logo.png")); // Thêm logo của game
 
         // Khởi tạo DissolveShaderManager nếu chưa có
         if (DissolveShaderManager.getDissolveShader() == null) {
@@ -74,7 +74,7 @@ public class SplashScreen implements Screen {
         if (logoTexture == null) return;
 
         // Tính toán vị trí logo ở giữa màn hình
-        float logoWidth = 300;
+        float logoWidth = 500;
         float logoHeight = 150;
         float logoX = (Gdx.graphics.getWidth() - logoWidth) / 2;
         float logoY = (Gdx.graphics.getHeight() - logoHeight) / 2 + 50; // Hơi lệch lên trên

@@ -28,33 +28,42 @@ public class CreditsScreen implements Screen {
     private boolean callbackCalled = false;
     private final float END_DELAY = 1f; // đợi 3 giây sau khi hết credits
 
-    public CreditsScreen(Runnable onEndCallback,BitmapFont font) {
+    public CreditsScreen(Runnable onEndCallback, BitmapFont font) {
         this.font = font;
         this.onEndCallback = onEndCallback;
         // Khởi tạo nội dung credits
-        this.creditLines = new String[] {
-                "GIÁM ĐỐC",
+        this.creditLines = new String[]{
+
+                "Labyrinth of Wisdom",
                 "",
-                "Nguyễn Văn A",
                 "",
-                "THIẾT KẾ GAME",
+                "A game by",
                 "",
-                "Trần Thị B",
+                "GAME DESIGN",
                 "",
-                "LẬP TRÌNH VIÊN",
+                "Nguyen Minh Khanh",
                 "",
-                "Lê Văn C",
-                "Phạm Thị D",
+                "PROGRAMMER",
                 "",
-                "ÂM THANH",
+                "Nguyễn Minh Khánh",
                 "",
-                "Hoàng Văn E",
+                "TESTER",
                 "",
-                "ĐỒ HỌA",
+                "Nguyen Minh Khanh",
+                "Le Nhu Phung",
                 "",
-                "Ngô Thị F",
+                "SUPERVISING INSTRUCTOR",
                 "",
-                "CẢM ƠN ĐÃ CHƠI GAME"
+                "Nguyen Cong Danh",
+                "",
+                "DIRECTOR & HELPER",
+                "",
+                "Le Nhu Phung",
+                "Nguyen Ngoc Xuan Nhi",
+                "Trinh Phan Ke Van",
+                "",
+                "",
+                "THANK YOU FOR PLAYING"
         };
     }
 
@@ -121,16 +130,20 @@ public class CreditsScreen implements Screen {
     }
 
     @Override
-    public void resize(int width, int height) {}
+    public void resize(int width, int height) {
+    }
 
     @Override
-    public void pause() {}
+    public void pause() {
+    }
 
     @Override
-    public void resume() {}
+    public void resume() {
+    }
 
     @Override
-    public void hide() {}
+    public void hide() {
+    }
 
     @Override
     public void dispose() {
