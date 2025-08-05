@@ -292,10 +292,14 @@ public class InputController extends InputAdapter {
 
 
     private boolean handleCharacterMovement(int screenX, int screenY) {
+        // Prevent movement clicks while target indicator is showing
+        if (showTargetIndicator) {
+            return false;
+        }
+
         // Convert screen coordinates to world coordinates
         if (gameController.getMap().getMapName().equals("board"))
             return false; // No character movement in these maps
-
 
         Vector3 worldCoords = new Vector3(screenX, screenY, 0);
         gameController.getCamera().unproject(worldCoords);
@@ -549,6 +553,8 @@ public class InputController extends InputAdapter {
             }
             case Keys.W, Keys.UP -> {
                 if (gameController.isCanMoveCharacter()) {
+                    // Cancel any ongoing mouse/touch movement
+                    gameController.getCharacter().clearPath();
                     moveCharacter(1, 0);
                     moved = true;
                 }
@@ -556,6 +562,8 @@ public class InputController extends InputAdapter {
             }
             case Keys.S, Keys.DOWN -> {
                 if (gameController.isCanMoveCharacter()) {
+                    // Cancel any ongoing mouse/touch movement
+                    gameController.getCharacter().clearPath();
                     moveCharacter(-1, 0);
                     moved = true;
                 }
@@ -563,6 +571,8 @@ public class InputController extends InputAdapter {
             }
             case Keys.A, Keys.LEFT -> {
                 if (gameController.isCanMoveCharacter()) {
+                    // Cancel any ongoing mouse/touch movement
+                    gameController.getCharacter().clearPath();
                     moveCharacter(0, -1);
                     moved = true;
                 }
@@ -570,6 +580,8 @@ public class InputController extends InputAdapter {
             }
             case Keys.D, Keys.RIGHT -> {
                 if (gameController.isCanMoveCharacter()) {
+                    // Cancel any ongoing mouse/touch movement
+                    gameController.getCharacter().clearPath();
                     moveCharacter(0, 1);
                     moved = true;
                 }

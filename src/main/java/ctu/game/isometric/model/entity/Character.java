@@ -54,19 +54,197 @@ public class Character {
     // Score for the character
 
     public boolean levelUp(int level) {
-        this.level += level; // Increase level
+        if (level <= 0) {
+            throw new IllegalArgumentException("Level increase must be positive");
+        }
 
-        float scale = level * 1.5f;
+        int previousLevel = this.level;
+        this.level += level;
 
-        this.maxHealth = this.maxHealth + 10;
-        this.maxMana = this.maxMana + 10;
+        // Base scaling với diminishing returns
+        float totalHealthIncrease = 0;
+        float totalManaIncrease = 0;
+        float totalDamageIncrease = 0;
+        float totalDefendIncrease = 0;
 
-        this.health = maxHealth;
-        this.mana = maxHealth;// Restore health to max
-        this.damage += scale; // Increase damage by level
-        this.defend += scale; // Increase defense by level
+        // Tính scaling cho từng level được tăng
+        for (int i = 0; i < level; i++) {
+            int currentLevelForCalc = previousLevel + i + 1;
 
-        return true; // Indicates level up occurred
+            // Health scaling với diminishing returns
+            float healthIncrease = calculateStatIncrease(currentLevelForCalc, 12, 0.8f, 25);
+            totalHealthIncrease += healthIncrease;
+
+            // Mana scaling
+            float manaIncrease = calculateStatIncrease(currentLevelForCalc, 10, 0.7f, 20);
+            totalManaIncrease += manaIncrease;
+
+            // Damage scaling - chậm hơn để cân bằng
+            float damageIncrease = calculateStatIncrease(currentLevelForCalc, 2.0f, 0.85f, 8);
+            totalDamageIncrease += damageIncrease;
+
+            // Defense scaling
+            float defendIncrease = calculateStatIncrease(currentLevelForCalc, 1.8f, 0.82f, 7);
+            totalDefendIncrease += defendIncrease;
+        }
+
+        // Apply increases
+        this.maxHealth += totalHealthIncrease;
+        this.maxMana += totalManaIncrease;
+        this.damage += totalDamageIncrease;
+        this.defend += totalDefendIncrease;
+
+        // Restore to full health/mana on level up
+        this.health = this.maxHealth;
+        this.mana = this.maxMana;
+
+        // Level milestone bonuses
+        applyLevelMilestoneBonuses();
+
+        return true;
+    }
+
+    /**
+     * Tính toán mức tăng stat với diminishing returns
+     * @param level Level hiện tại
+     * @param baseIncrease Mức tăng cơ bản ở level thấp
+     * @param diminishingFactor Hệ số giảm dần (0.7-0.9)
+     * @param maxIncrease Mức tăng tối đa mỗi level
+     */
+    private float calculateStatIncrease(int level, float baseIncrease, float diminishingFactor, float maxIncrease) {
+        // Công thức: baseIncrease * (diminishingFactor ^ (level-1))
+        float scaledIncrease = baseIncrease * (float)Math.pow(diminishingFactor, level - 1);
+
+        // Đảm bảo có mức tăng tối thiểu
+        float minIncrease = baseIncrease * 0.2f;
+        scaledIncrease = Math.max(minIncrease, scaledIncrease);
+
+        // Giới hạn mức tăng tối đa
+        return Math.min(maxIncrease, scaledIncrease);
+    }
+
+    /**
+     * Áp dụng bonus đặc biệt ở các level milestone
+     */
+    private void applyLevelMilestoneBonuses() {
+        switch (this.level) {
+            case 5:
+                // Unlock bonus roll
+                this.bonusRolls += 1;
+                addScore(50);
+                break;
+            case 10:
+                // Major stat boost
+                this.maxHealth += 20;
+                this.maxMana += 15;
+                this.health = this.maxHealth;
+                this.mana = this.maxMana;
+                addScore(100);
+                break;
+            case 15:
+                // Another bonus roll
+                this.bonusRolls += 1;
+                this.damage += 3;
+                addScore(150);
+                break;
+            case 20:
+                // Endgame bonus
+                this.maxHealth += 30;
+                this.maxMana += 25;
+                this.damage += 5;
+                this.defend += 4;
+                this.health = this.maxHealth;
+                this.mana = this.maxMana;
+                addScore(200);
+                break;
+            case 25:
+                // Ultimate bonus
+                this.bonusRolls += 2;
+                this.moveSpeed += 0.5f;
+                addScore(300);
+                break;
+        }
+
+        // Bonus mỗi 5 level
+        if (this.level % 5 == 0 && this.level > 5) {
+            this.moveSpeed += 0.1f; // Tăng tốc độ di chuyển nhẹ
+        }
+    }
+
+    /**
+     * Tính toán tổng stat power để cân bằng combat
+     */
+    public float getTotalPowerLevel() {
+        return (this.damage * 3.0f) +
+                (this.defend * 2.0f) +
+                (this.maxHealth * 0.3f) +
+                (this.maxMana * 0.2f) +
+                (this.level * 5.0f);
+    }
+
+    /**
+     * Lấy thông tin level up preview cho UI
+     */
+    public LevelUpPreview getLevelUpPreview(int levelsToGain) {
+        if (levelsToGain <= 0) return null;
+
+        float healthIncrease = 0;
+        float manaIncrease = 0;
+        float damageIncrease = 0;
+        float defendIncrease = 0;
+
+        for (int i = 0; i < levelsToGain; i++) {
+            int targetLevel = this.level + i + 1;
+            healthIncrease += calculateStatIncrease(targetLevel, 12, 0.8f, 25);
+            manaIncrease += calculateStatIncrease(targetLevel, 10, 0.7f, 20);
+            damageIncrease += calculateStatIncrease(targetLevel, 2.0f, 0.85f, 8);
+            defendIncrease += calculateStatIncrease(targetLevel, 1.8f, 0.82f, 7);
+        }
+
+        return new LevelUpPreview(
+                (int)healthIncrease,
+                (int)manaIncrease,
+                damageIncrease,
+                defendIncrease,
+                checkMilestoneBonuses(this.level + levelsToGain)
+        );
+    }
+
+    /**
+     * Kiểm tra milestone bonus sẽ được nhận
+     */
+    private String checkMilestoneBonuses(int targetLevel) {
+        if (targetLevel >= 25 && this.level < 25) {
+            return "🏆 Ultimate Bonus: +2 Bonus Rolls, +0.5 Move Speed!";
+        } else if (targetLevel >= 20 && this.level < 20) {
+            return "⭐ Endgame Bonus: Major stat boost!";
+        } else if (targetLevel >= 15 && this.level < 15) {
+            return "🎯 Bonus Roll + Damage boost!";
+        } else if (targetLevel >= 10 && this.level < 10) {
+            return "💪 Major Health & Mana boost!";
+        } else if (targetLevel >= 5 && this.level < 5) {
+            return "🎲 First Bonus Roll unlocked!";
+        } else if (targetLevel % 5 == 0 && this.level % 5 != 0) {
+            return "⚡ Move Speed boost!";
+        }
+        return null;
+    }
+
+    // Helper class cho preview
+    public static class LevelUpPreview {
+        public final int healthIncrease;
+        public final int manaIncrease;
+        public final float damageIncrease;
+        public final float defendIncrease;
+        public final String milestoneBonus;
+
+        public LevelUpPreview(int health, int mana, float damage, float defend, String bonus) {
+            this.healthIncrease = health;
+            this.manaIncrease = mana;
+            this.damageIncrease = damage;
+            this.defendIncrease = defend;
+            this.milestoneBonus = bonus;
+        }
     }
 
 

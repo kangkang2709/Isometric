@@ -61,7 +61,7 @@ public class PauseMenu {
 
     // Animation properties
 
-    public PauseMenu(GameController gameController,BitmapFont titleFont, BitmapFont font) {
+    public PauseMenu(GameController gameController, BitmapFont titleFont, BitmapFont font) {
         this.gameController = gameController;
         this.selectedIndex = 0;
         this.menuItems = new ArrayList<>();
@@ -96,6 +96,7 @@ public class PauseMenu {
     private float[] layerPulsePhases;
     private float[] layerPulseAmplitudes;
     private Texture transparentPanel;
+
     private void initializeParallaxBackground() {
         backgroundLayers = new Texture[4];
         layerSpeeds = new float[4];
@@ -138,6 +139,7 @@ public class PauseMenu {
         transparentPanel = new Texture(pixmap);
         pixmap.dispose();
     }
+
     public boolean handleKeyBindingInput(int keycode) {
         if (keyBindingDisplay.isVisible()) {
             return keyBindingDisplay.handleInput(keycode);
@@ -153,7 +155,7 @@ public class PauseMenu {
             float xOffset = (float) Math.sin(layerOffsets[i] + layerPulsePhases[i]) * layerPulseAmplitudes[i];
 
             // Không cần hiệu ứng dọc nữa
-            batch.draw(layer, xOffset -20, 0, 1400, 720);
+            batch.draw(layer, xOffset - 20, 0, 1400, 720);
         }
     }
 
@@ -238,7 +240,10 @@ public class PauseMenu {
         addMenuItem("Xem Hướng Dẫn", this::showTutorialMenu);
         addMenuItem("Xem Phím Tắt", () -> keyBindingDisplay.show());
         addMenuItem("Tùy chỉnh Âm Thanh", () -> gameController.setState(GameState.SETTINGS));
+
         addMenuItem("Lưu Tiến Trình", this::showSaveGameDialog);
+
+
         addMenuItem("Quay Về Menu", () -> {
             gameController.setCurrentState(GameState.MAIN_MENU);
             gameController.setPreviousState(GameState.MAIN_MENU);
@@ -304,11 +309,17 @@ public class PauseMenu {
     }
 
     public void selectNextItem() {
-        selectedIndex = (selectedIndex + 1) % menuItems.size();
+        int startIndex = selectedIndex;
+        do {
+            selectedIndex = (selectedIndex + 1) % menuItems.size();
+        } while (!menuItems.get(selectedIndex).isEnabled() && selectedIndex != startIndex);
     }
 
     public void selectPreviousItem() {
-        selectedIndex = (selectedIndex - 1 + menuItems.size()) % menuItems.size();
+        int startIndex = selectedIndex;
+        do {
+            selectedIndex = (selectedIndex - 1 + menuItems.size()) % menuItems.size();
+        } while (!menuItems.get(selectedIndex).isEnabled() && selectedIndex != startIndex);
     }
 
     public void activateSelectedItem() {
@@ -360,7 +371,15 @@ public class PauseMenu {
             batch.draw(buttonBg, bounds.x, bounds.y, bounds.width, bounds.height);
 
             // Draw text centered on button
-            Color textColor = (i == selectedIndex) ? Color.YELLOW : Color.WHITE;
+            // In the render method, replace the text color logic:
+            Color textColor;
+            if (!item.isEnabled()) {
+                textColor = Color.GRAY; // Disabled color
+            } else if (i == selectedIndex) {
+                textColor = Color.YELLOW; // Selected color
+            } else {
+                textColor = Color.WHITE; // Normal color
+            }
             itemFont.setColor(textColor);
 
             layout.setText(itemFont, item.getText());
@@ -371,7 +390,6 @@ public class PauseMenu {
 
             y -= (itemHeight + buttonPadding);
         }
-
 
 
         if (notificationMessage != null) {
@@ -441,15 +459,36 @@ public class PauseMenu {
         if (keyBindingDisplay != null) keyBindingDisplay.dispose();
     }
 
+    public void disableSaveButton() {
+        for (MenuItem item : menuItems) {
+            if (item.getText().equals("Lưu Tiến Trình")) {
+                item.action = null; // Disable the save action
+                item.enabled = false; // Mark as disabled
+                break;
+            }
+        }
+    }
+    public void enableSaveButton() {
+        for (MenuItem item : menuItems) {
+            if (item.getText().equals("Lưu Tiến Trình")) {
+                item.action = this::showSaveGameDialog; // Re-enable the save action
+                item.enabled = true; // Mark as enabled
+                break;
+            }
+        }
+    }
+
     private static class MenuItem {
         private String text;
         private Runnable action;
         private Rectangle bounds; // Rectangle to define button boundaries
+        private boolean enabled;
 
         public MenuItem(String text, Runnable action) {
             this.text = text;
             this.action = action;
             this.bounds = new Rectangle();
+            this.enabled = action != null;
         }
 
         public void setPosition(float x, float y, float width, float height) {
@@ -465,6 +504,10 @@ public class PauseMenu {
 
         public String getText() {
             return text;
+        }
+
+        public boolean isEnabled() {
+            return enabled;
         }
 
         public void activate() {

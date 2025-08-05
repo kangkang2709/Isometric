@@ -171,7 +171,6 @@ public class GameplayController {
     }
 
 
-
     // Add getter for floating texts
     public List<FloatingText> getFloatingTexts() {
         return floatingTexts;
@@ -863,98 +862,342 @@ public class GameplayController {
     }
 
     private void performEnemyAction() {
-        int action = random.nextInt(10);
+        // Calculate action probabilities based on enemy health and type
+        EnemyActionProbabilities probabilities = calculateActionProbabilities();
+        int action = selectWeightedAction(probabilities);
 
         float damage = 0;
         float heal = 0;
+        boolean skipTurn = false;
 
+        // Handle freeze status with more nuanced behavior
         if (enemyStatusDuration.containsKey("FREEZE")) {
-            boolean isBroke = new Random().nextBoolean();
-            if (isBroke) {
-                enemyStatusDuration.remove("FREEZE");
-                addCombatLog(enemyName + " đã phá vỡ hiệu ứng đóng băng và có thể tấn công!");
-            } else {
-                int freezeDuration = enemyStatusDuration.get("FREEZE");
-                if (freezeDuration > 1) {
-                    addCombatLog(enemyName + " bị đóng băng không thể tấn công và hồi phục nhẹ!");
-
-                    enemyHealth = Math.min(enemyMaxHealth, enemyHealth + 5); // Hồi máu nhẹ khi đóng băng
-                    addFloatingText("+5 HP", 960, 605, Color.BLUE);
-
-                    enemyStatusDuration.put("FREEZE", freezeDuration - 1);
-
-                    enemyAttack(-1, action, (int) heal, () -> {
-                        checkCombatEnd();
-                        if (isCombatMode) {
-                            letterGrid.regenerateGrid();
-                            addCombatLog("---Đến lượt của bạn!---");
-                            isPlayerTurn = true;
-                            checkPlayerStatusEffects();
-                            if (isEnemyBoss()) applyBossEffects();
-                        }
-                    });
-                    return;
-                } else {
-                    enemyStatusDuration.remove("FREEZE");
-                    addCombatLog(enemyName + " đã hết hiệu ứng đóng băng!");
-                }
-            }
+            skipTurn = handleFreezeStatus();
+            if (skipTurn) return;
         }
+
+        // Apply other status effects
         if (!enemyStatusDuration.isEmpty()) {
             checkStatusEffects();
             checkCombatEnd();
+            if (!isCombatMode) return;
         }
 
-        if (action < 4) {
-            damage = 5 + random.nextInt(6) + enemy.getAttackPower(); // ~5–10 + atk
-            damage -= (playerDefend + playerDef); // giảm kháng nhẹ
-            damage = Math.max(0, damage);
-            addCombatLog(enemyName + " tấn công gây " + (int) damage + " sát thương!");
-        } else if (action < 8) {
-            damage = 10 + random.nextInt(6) + (enemy.getAttackPower() - atkNerf) * 1.2f + currentLevel * 0.5f;
-            damage -= (playerDefend + playerDef); // giảm kháng nhẹ
-            damage = Math.max(5, damage);
-            addCombatLog(enemyName + " tấn công mạnh gây " + (int) damage + " sát thương!");
-        } else if (action == 8) {
-            heal = enemyMaxHealth * 0.2f;
-            enemyHealth = Math.min(enemyMaxHealth, enemyHealth + heal);
-            addCombatLog(enemyName + " hồi phục " + (int) heal + " máu!");
-        } else {
-            damage = -1;
-            addCombatLog(enemyName + " đã trượt đòn tấn công!");
-        }
-        if (damage >= 0) {
-            playerHealth = Math.max(0, playerHealth - damage);
+        // Execute the selected action
+        switch (action) {
+            case 0: // Light Attack (40% base chance)
+                damage = calculateLightAttack();
+                addCombatLog(enemyName + " thực hiện đòn tấn công nhẹ gây " + (int) damage + " sát thương!");
+                break;
+
+            case 1: // Heavy Attack (30% base chance)
+                damage = calculateHeavyAttack();
+                addCombatLog(enemyName + " tung đòn tấn công mạnh gây " + (int) damage + " sát thương!");
+                break;
+
+            case 2: // Heal (15% base chance)
+                heal = calculateHealAmount();
+                enemyHealth = Math.min(enemyMaxHealth, enemyHealth + heal);
+                addCombatLog(enemyName + " hồi phục " + (int) heal + " máu!");
+                break;
+
+            case 3: // Special Attack (10% base chance)
+                damage = performSpecialAttack();
+                break;
+
+            case 4: // Defensive Action (3% base chance)
+                performDefensiveAction();
+                damage = 0;
+                break;
+
+            default: // Miss (2% base chance)
+                damage = -1;
+                addCombatLog(enemyName + " đã trượt đòn tấn công!");
+                break;
         }
 
-        int finalDamage = (int)damage;
+        // Apply damage to player
+        if (damage > 0) {
+            float finalDamage = Math.max(0, damage - (playerDefend + playerDef));
+            playerHealth = Math.max(0, playerHealth - finalDamage);
+            damage = finalDamage;
+        }
 
-        enemyAttack((int) damage, action, (int) heal, () -> {
+        int finalDamage = (int) damage;
+
+        // Execute attack animation and end turn
+        enemyAttack(finalDamage, action, (int) heal, () -> {
             checkCombatEnd();
             if (isCombatMode) {
-                if (finalDamage == 0) {
-                    renderer.startActionAnimation(1, false); // e.g. Miss or block animation
-                } else if (finalDamage < 0) {
-
-                } else {
-                    if (isEnemyBoss()) {
-                        renderer.startActionAnimation(3, true); // Boss hit reaction
-                    } else {
-                        renderer.startActionAnimation(2, true); // Normal hit reaction
-                    }
-                    addFloatingText("-" + finalDamage + " HP" , 327, 480, Color.RED);
-
-                }
-
-                isPlayerTurn = true;
-                letterGrid.regenerateGrid();
-                addCombatLog("---Đến lượt của bạn!---");
-                checkPlayerStatusEffects();
-                if (isEnemyBoss()) applyBossEffects();
+                handlePostAttackEffects(finalDamage);
+                endEnemyTurn();
             }
         });
+    }
 
+    private EnemyActionProbabilities calculateActionProbabilities() {
+        float healthPercent = enemyHealth / enemyMaxHealth;
+        EnemyActionProbabilities probabilities = new EnemyActionProbabilities();
 
+        // Base probabilities
+        probabilities.lightAttack = 0.4f;
+        probabilities.heavyAttack = 0.3f;
+        probabilities.heal = 0.15f;
+        probabilities.special = 0.1f;
+        probabilities.defensive = 0.03f;
+        probabilities.miss = 0.02f;
+
+        // Adjust based on health
+        if (healthPercent < 0.3f) {
+            // Low health: more healing and defensive actions
+            probabilities.heal += 0.2f;
+            probabilities.defensive += 0.05f;
+            probabilities.lightAttack -= 0.15f;
+            probabilities.heavyAttack -= 0.1f;
+        } else if (healthPercent < 0.6f) {
+            // Medium health: more aggressive
+            probabilities.heavyAttack += 0.1f;
+            probabilities.special += 0.05f;
+            probabilities.heal -= 0.05f;
+            probabilities.lightAttack -= 0.1f;
+        }
+
+        // Boss-specific adjustments
+        if (isEnemyBoss()) {
+            probabilities.special += 0.1f;
+            probabilities.defensive += 0.02f;
+            probabilities.miss -= 0.01f;
+            probabilities.lightAttack -= 0.06f;
+            probabilities.heavyAttack -= 0.05f;
+        }
+
+        // Lord-specific adjustments
+        if (isEnemyLord()) {
+            probabilities.heavyAttack += 0.15f;
+            probabilities.special += 0.05f;
+            probabilities.heal += 0.1f;
+            probabilities.lightAttack -= 0.2f;
+            probabilities.defensive -= 0.05f;
+            probabilities.miss -= 0.05f;
+        }
+
+        return probabilities;
+    }
+
+    private int selectWeightedAction(EnemyActionProbabilities prob) {
+        float rand = random.nextFloat();
+        float cumulative = 0;
+
+        cumulative += prob.lightAttack;
+        if (rand <= cumulative) return 0;
+
+        cumulative += prob.heavyAttack;
+        if (rand <= cumulative) return 1;
+
+        cumulative += prob.heal;
+        if (rand <= cumulative) return 2;
+
+        cumulative += prob.special;
+        if (rand <= cumulative) return 3;
+
+        cumulative += prob.defensive;
+        if (rand <= cumulative) return 4;
+
+        return 5; // Miss
+    }
+
+    private boolean handleFreezeStatus() {
+        int freezeDuration = enemyStatusDuration.get("FREEZE");
+
+        // Higher level enemies have better chance to break freeze
+        float breakChance = Math.min(0.6f, 0.3f + (currentLevel * 0.02f));
+        if (isEnemyBoss()) breakChance += 0.2f;
+        if (isEnemyLord()) breakChance += 0.3f;
+
+        boolean isBroke = random.nextFloat() < breakChance;
+
+        if (isBroke) {
+            enemyStatusDuration.remove("FREEZE");
+            addCombatLog(enemyName + " đã phá vỡ hiệu ứng đóng băng và có thể tấn công!");
+            return false; // Continue with normal action
+        } else {
+            if (freezeDuration > 1) {
+                addCombatLog(enemyName + " bị đóng băng không thể tấn công và hồi phục nhẹ!");
+
+                float regenAmount = Math.min(10, enemyMaxHealth * 0.02f);
+                enemyHealth = Math.min(enemyMaxHealth, enemyHealth + regenAmount);
+                addFloatingText("+" + (int) regenAmount + " HP", 960, 605, Color.BLUE);
+
+                enemyStatusDuration.put("FREEZE", freezeDuration - 1);
+            } else {
+                enemyStatusDuration.remove("FREEZE");
+                addCombatLog(enemyName + " đã hết hiệu ứng đóng băng!");
+            }
+
+            enemyAttack(-1, 0, 0, () -> {
+                checkCombatEnd();
+                if (isCombatMode) {
+                    endEnemyTurn();
+                }
+            });
+            return true; // Skip turn
+        }
+    }
+
+    private float calculateLightAttack() {
+        float baseDamage = 5 + random.nextInt(6) + enemy.getAttackPower();
+        return Math.max(1, baseDamage - atkNerf);
+    }
+
+    private float calculateHeavyAttack() {
+        float baseDamage = 10 + random.nextInt(8) + (enemy.getAttackPower() - atkNerf) * 1.3f + currentLevel * 0.6f;
+        return Math.max(3, baseDamage);
+    }
+
+    private float calculateHealAmount() {
+        float baseHeal = enemyMaxHealth * (0.15f + random.nextFloat() * 0.1f); // 15-25%
+        if (isEnemyBoss()) baseHeal *= 1.2f;
+        return baseHeal;
+    }
+
+    private float performSpecialAttack() {
+        float damage = 0;
+
+        switch (enemyName) {
+            case "Crystal Serpent Boss":
+                damage = performCrystalSerpenSpecial();
+                break;
+            case "Sapphire Dragon Boss":
+                damage = performSapphireDragonSpecial();
+                break;
+            case "Emerald Revenant Boss":
+                damage = performEmeraldRevenantSpecial();
+                break;
+            case "Demon Lord Azrok":
+                damage = performDemonLordSpecial();
+                break;
+            default:
+                damage = performGenericSpecial();
+                break;
+        }
+
+        return damage;
+    }
+
+    private float performCrystalSerpenSpecial() {
+        addCombatLog("Crystal Serpent Boss phóng ra tia crystal xuyên thấu!");
+        float damage = enemy.getAttackPower() * 1.5f + currentLevel;
+
+        // Chance to disable additional cells
+        if (random.nextFloat() < 0.3f) {
+            int cellToDisable = random.nextInt(25);
+            if (!disabledCells.contains(cellToDisable)) {
+                disabledCells.add(cellToDisable);
+                addCombatLog("Thêm một ô bị vô hiệu hóa!");
+            }
+        }
+
+        return damage;
+    }
+
+    private float performSapphireDragonSpecial() {
+        addCombatLog("Sapphire Dragon Boss thở ra ngọn lửa rồng xanh!");
+        float damage = enemy.getAttackPower() * 1.4f + currentLevel * 0.8f;
+
+        // Chance to apply burn
+        if (random.nextFloat() < 0.4f && !playerStatusDuration.containsKey("BURN")) {
+            playerStatusDuration.put("BURN", 3);
+            addCombatLog("Bạn bị bỏng bởi ngọn lửa rồng!");
+        }
+
+        return damage;
+    }
+
+    private float performEmeraldRevenantSpecial() {
+        addCombatLog("Emerald Revenant Boss triệu hồi năng lượng tối!");
+        float damage = enemy.getAttackPower() * 1.3f + currentLevel * 0.7f;
+
+        // Chance to apply toxic and reduce grid size temporarily
+        if (random.nextFloat() < 0.3f && !playerStatusDuration.containsKey("TOXIC")) {
+            playerStatusDuration.put("TOXIC", 2);
+            addCombatLog("Bạn bị nhiễm độc tố tối!");
+        }
+
+        return damage;
+    }
+
+    private float performDemonLordSpecial() {
+        addCombatLog("Demon Lord Azrok phóng ra năng lượng hủy diệt!");
+        float damage = enemy.getAttackPower() * 2.0f + currentLevel;
+
+        // Multiple effects for final boss
+        if (random.nextFloat() < 0.5f) {
+            if (random.nextBoolean() && !playerStatusDuration.containsKey("BURN")) {
+                playerStatusDuration.put("BURN", 2);
+                addCombatLog("Bạn bị lửa địa ngục thiêu đốt!");
+            } else if (!playerStatusDuration.containsKey("TOXIC")) {
+                playerStatusDuration.put("TOXIC", 2);
+                addCombatLog("Bạn bị nhiễm độc tố quỷ!");
+            }
+        }
+
+        return damage;
+    }
+
+    private float performGenericSpecial() {
+        addCombatLog(enemyName + " sử dụng kỹ năng đặc biệt!");
+        return enemy.getAttackPower() * 1.4f + currentLevel * 0.5f;
+    }
+
+    private void performDefensiveAction() {
+        addCombatLog(enemyName + " tập trung phòng thủ và hồi phục sức mạnh!");
+
+        // Small heal and temporary defense boost
+        float healAmount = enemyMaxHealth * 0.08f;
+        enemyHealth = Math.min(enemyMaxHealth, enemyHealth + healAmount);
+        addFloatingText("+" + (int) healAmount + " HP", 955, 610, Color.GREEN);
+
+        // Remove one negative status effect if any
+        if (enemyStatusDuration.containsKey("BURN")) {
+            enemyStatusDuration.remove("BURN");
+            addCombatLog(enemyName + " đã loại bỏ hiệu ứng bỏng!");
+        } else if (enemyStatusDuration.containsKey("TOXIC")) {
+            enemyStatusDuration.remove("TOXIC");
+            addCombatLog(enemyName + " đã loại bỏ hiệu ứng độc!");
+        }
+    }
+
+    private void handlePostAttackEffects(int finalDamage) {
+        if (finalDamage == 0) {
+            renderer.startActionAnimation(1, false);
+        } else if (finalDamage < 0) {
+            // Miss animation handled in renderer
+        } else {
+            if (isEnemyBoss()) {
+                renderer.startActionAnimation(3, true);
+            } else {
+                renderer.startActionAnimation(2, true);
+            }
+            addFloatingText("-" + finalDamage + " HP", 327, 480, Color.RED);
+        }
+    }
+
+    private void endEnemyTurn() {
+        isPlayerTurn = true;
+        letterGrid.regenerateGrid();
+        addCombatLog("---Đến lượt của bạn!---");
+        checkPlayerStatusEffects();
+        if (isEnemyBoss()) applyBossEffects();
+    }
+
+    // Helper class for action probabilities
+    private static class EnemyActionProbabilities {
+        float lightAttack = 0.4f;
+        float heavyAttack = 0.3f;
+        float heal = 0.15f;
+        float special = 0.1f;
+        float defensive = 0.03f;
+        float miss = 0.02f;
     }
 
     float timerAction = 0;
@@ -1271,64 +1514,238 @@ public class GameplayController {
         if (renderer != null) {
             renderer.resetForNewCombat();
         }
+
+        // Initialize basic combat state
         this.enemy = enemy;
         this.enemyName = enemy.getEnemyName();
         this.wordDamageMultiplier = gameController.getCharacter().getDamage();
         this.playerDefend = gameController.getCharacter().getDefend();
         this.isVictory = false;
         this.experienceGain = 0;
+        this.isCombatMode = true;
+        this.isPlayerTurn = true;
+        this.currentLevel = gameController.getCharacter().getLevel();
+
+        // Initialize player stats
         this.playerHealth = gameController.getCharacter().getHealth();
         this.playerMana = gameController.getCharacter().getMana();
         this.playerMaxMana = gameController.getCharacter().getMaxMana();
         this.playerMaxHealth = gameController.getCharacter().getMaxHealth();
-        this.isCombatMode = true;
-        this.isPlayerTurn = true;
         this.playerName = gameController.getCharacter().getName();
-        this.currentLevel = gameController.getCharacter().getLevel();
-        this.achievementManager = gameController.getAchievementManager();
-        this.enemyMaxHealth = enemy.getHealth() + currentLevel * 5;
-        this.enemyHealth = enemy.getHealth() + currentLevel * 5;
         this.gender = gameController.getCharacter().getGender().toString();
+
+        // Reset combat modifiers
         this.playerDef = 0;
         this.attackBuff = 0;
         this.atkNerf = 0;
         this.playerNerf = 0;
-        addCombatLog("Bắt đầu chiến đấu với " + enemyName + "!");
-        letterGrid.regenerateGrid();
-//
-//        playerStatusDuration.put("BURN", 2);
-//        playerStatusDuration.put("TOXIC", 2);
-        float difficultyScore = (enemyHealth * 0.5f + enemy.getAttackPower() * 1.5f) / (currentLevel + 1);
 
-        if (enemyName.contains("Lord")) {
-            difficultyScore *= 1.5f;
-        } else if (enemyName.contains("Boss")) {
-            difficultyScore *= 2.0f;
-        }
-        if (difficultyScore < 10) {
-            difficultyText = "Dễ";
-        } else if (difficultyScore < 20) {
-            difficultyText = "Vừa";
-        } else if (difficultyScore < 35) {
-            difficultyText = "Khó";
+        // Calculate scaled enemy stats (no scaling for level 1)
+        EnemyStats scaledStats = calculateScaledEnemyStats(enemy, currentLevel);
+        this.enemyMaxHealth = scaledStats.health;
+        this.enemyHealth = scaledStats.health;
+
+        // Update enemy stats for combat
+        enemy.setAttackPower(scaledStats.attackPower);
+        enemy.setDefensePower(scaledStats.defensePower);
+
+        // Calculate difficulty after scaling
+        float difficultyScore = calculateDifficultyScore(scaledStats, currentLevel);
+        this.difficultyText = getDifficultyText(difficultyScore);
+
+        // Initialize combat
+        this.achievementManager = gameController.getAchievementManager();
+
+        // Different combat start messages based on level
+        if (currentLevel == 1) {
+            addCombatLog("🗡️ Trận chiến đầu tiên với " + enemyName + "!");
+            addCombatLog("💡 Hãy thử tạo từ để tấn công hoặc dùng Tấn Công Thường!");
         } else {
-            difficultyText = "Rất Khó";
+            addCombatLog("⚔️ Bắt đầu chiến đấu với " + enemyName + " (Độ khó: " + difficultyText + ")!");
+
+            // Show scaled stats info for higher levels
+            if (currentLevel > 1) {
+                addCombatLog("📊 Enemy được tăng cường cho Level " + currentLevel);
+            }
         }
 
-        if (difficultyText.equals("Khó") || difficultyText.equals("Rất Khó")) {
-            addCombatLog("Cảnh báo: Trận chiến này có thể rất khó khăn!");
+        letterGrid.regenerateGrid();
+
+        // Add difficulty warning (more specific for level 1)
+        if (currentLevel == 1) {
+        } else if (difficultyScore >= 80) {
+            addCombatLog("⚠️ NGUY HIỂM: Trận chiến cực kỳ khó khăn!");
+        } else if (difficultyScore >= 60) {
+            addCombatLog("⚠️ Cảnh báo: Trận chiến này khá thách thức!");
         }
 
+        // Load renderer assets
         renderer.loadPlayerTexture(gameController.getCharacter().getGender().toString());
 
+        // Apply special enemy effects (reduced for level 1)
+        applySpecialEnemyEffects();
+    }
+
+    private EnemyStats calculateScaledEnemyStats(Enemy enemy, int playerLevel) {
+        // Base enemy stats
+        float baseHealth = enemy.getHealth();
+        float baseAttack = enemy.getAttackPower();
+        float baseDefense = enemy.getDefensePower();
+
+        // No scaling for level 1
+        if (playerLevel <= 1) {
+            return new EnemyStats((int) baseHealth, (int) baseAttack, (int) baseDefense);
+        }
+
+        // Scaling factors based on enemy type (starting from level 2)
+        float healthScaling = 1.0f;
+        float attackScaling = 1.0f;
+        float defenseScaling = 1.0f;
+
+        // Level-based scaling with different rates for different enemy types
+        int levelDiff = playerLevel - 1; // Start scaling from level 2
+
+        if (isEnemyLord()) {
+            // Lords scale aggressively
+            healthScaling = 1.0f + (levelDiff * 0.20f);
+            attackScaling = 1.0f + (levelDiff * 0.15f);
+            defenseScaling = 1.0f + (levelDiff * 0.10f);
+        } else if (isEnemyBoss()) {
+            // Bosses have strong scaling
+            healthScaling = 1.0f + (levelDiff * 0.15f);
+            attackScaling = 1.0f + (levelDiff * 0.12f);
+            defenseScaling = 1.0f + (levelDiff * 0.08f);
+        } else {
+            // Regular enemies have moderate scaling
+            healthScaling = 1.0f + (levelDiff * 0.10f);
+            attackScaling = 1.0f + (levelDiff * 0.08f);
+            defenseScaling = 1.0f + (levelDiff * 0.05f);
+        }
+
+        // Apply diminishing returns for high levels
+        if (playerLevel > 10) {
+            float diminishingFactor = 1.0f - ((playerLevel - 10) * 0.02f);
+            diminishingFactor = Math.max(0.7f, diminishingFactor); // Minimum 70% effectiveness
+
+            healthScaling *= diminishingFactor;
+            attackScaling *= diminishingFactor;
+            defenseScaling *= diminishingFactor;
+        }
+
+        // Calculate final stats
+        float finalHealth = baseHealth * healthScaling;
+        float finalAttack = baseAttack * attackScaling;
+        float finalDefense = baseDefense * defenseScaling;
+
+        // Ensure stats don't go below base values
+        finalHealth = Math.max(finalHealth, baseHealth);
+        finalAttack = Math.max(finalAttack, baseAttack);
+        finalDefense = Math.max(finalDefense, baseDefense);
+
+        return new EnemyStats((int) finalHealth, (int) finalAttack, (int) finalDefense);
+    }
+
+
+    private float calculateDifficultyScore(EnemyStats enemyStats, int playerLevel) {
+        // Player power estimation based on level and stats
+        float playerPower = gameController.getCharacter().getDamage() +
+                gameController.getCharacter().getDefend() +
+                gameController.getCharacter().getHealth() * 0.1f +
+                (playerLevel * 3.0f);
+
+        // Enemy power calculation with weight adjustments
+        float enemyPower = (enemyStats.health * 0.4f) +
+                (enemyStats.attackPower * 3.0f) +
+                (enemyStats.defensePower * 2.0f);
+
+        // Base difficulty ratio
+        float difficultyRatio = enemyPower / Math.max(playerPower, 1.0f);
+
+        // Apply enemy type modifiers
+        if (isEnemyLord()) {
+            difficultyRatio *= 2.2f;
+        } else if (isEnemyBoss()) {
+            difficultyRatio *= 1.8f;
+        }
+
+        // Level 1 adjustment - make it easier
+        if (playerLevel == 1) {
+            difficultyRatio *= 0.6f;
+        } else if (playerLevel <= 3) {
+            difficultyRatio *= 0.8f;
+        }
+
+        // Convert to 0-100 scale with better distribution
+        float finalScore = Math.min(difficultyRatio * 20.0f, 100.0f);
+
+        return Math.max(5.0f, finalScore); // Minimum difficulty of 5
+    }
+
+    private String getDifficultyText(float difficultyScore) {
+        if (difficultyScore < 15) {
+            return "Rất Dễ";
+        } else if (difficultyScore < 30) {
+            return "Dễ";
+        } else if (difficultyScore < 45) {
+            return "Vừa";
+        } else if (difficultyScore < 60) {
+            return "Khó";
+        } else if (difficultyScore < 80) {
+            return "Rất Khó";
+        } else {
+            return "Cực Khó";
+        }
+    }
+
+    private void applySpecialEnemyEffects() {
         if (isEnemyBoss()) {
-            if (enemyName.equals("Sapphire Dragon Boss")) enemyStatusDuration.put("REGEN", 10);
+            // Reduced boss effects for low levels
+            if (currentLevel <= 3) {
+                addCombatLog("🛡️ Boss effects được giảm nhẹ cho người chơi mới!");
+            }
+
+            switch (enemyName) {
+                case "Sapphire Dragon Boss":
+                    int regenDuration = Math.max(3, 10 - currentLevel);
+                    enemyStatusDuration.put("REGEN", regenDuration);
+                    addCombatLog("Sapphire Dragon Boss có khả năng hồi phục liên tục!");
+                    break;
+                case "Crystal Serpent Boss":
+                    addCombatLog("Crystal Serpent Boss có thể vô hiệu hóa ô chữ!");
+                    break;
+                case "Emerald Revenant Boss":
+                    addCombatLog("Emerald Revenant Boss sở hữu sức mạnh độc tố!");
+                    break;
+            }
             applyBossEffects();
 
         } else if (isEnemyLord()) {
+            // Lord effects
             if (!gameController.getCharacter().getFlags().contains("frost_guardian_defeated")) {
-                enemy.getEnemyDescription().replace("15", "**");
+                String description = enemy.getEnemyDescription();
+                if (description != null) {
+                    enemy.setEnemyDescription(description.replace("15", "**"));
+                }
             }
+
+            if (currentLevel == 1) {
+                addCombatLog("Một Lord mạnh mẽ! Hãy cẩn thận!");
+            } else {
+                addCombatLog(" Một Lord hùng mạnh với sức mạnh level " + currentLevel + "!");
+            }
+        }
+    }
+
+    // Helper class for enemy stats
+    private static class EnemyStats {
+        final int health;
+        final int attackPower;
+        final int defensePower;
+
+        EnemyStats(int health, int attackPower, int defensePower) {
+            this.health = health;
+            this.attackPower = attackPower;
+            this.defensePower = defensePower;
         }
     }
 

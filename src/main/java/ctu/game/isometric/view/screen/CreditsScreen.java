@@ -59,7 +59,7 @@ public class CreditsScreen implements Screen {
                 "DIRECTOR & HELPER",
                 "",
                 "Le Nhu Phung",
-                "Nguyen Ngoc Xuan Nhi",
+                "Xuan Nhi",
                 "Trinh Phan Ke Van",
                 "",
                 "",

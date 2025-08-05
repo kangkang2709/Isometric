@@ -1233,7 +1233,9 @@ public class GameController {
         if (newState != GameState.SETTINGS) {
             previousState = oldState;
         }
-
+        if (newState == GameState.MENU && (previousState == GameState.GAMEPLAY || previousState == GameState.CUTSCENE)) {
+            pauseMenu.disableSaveButton();
+        } else pauseMenu.enableSaveButton();
 
         transitionRenderer.startLoadingScreen(() -> {
             // This code executes after the fade out, during loading
@@ -1245,6 +1247,7 @@ public class GameController {
                 if (newState == GameState.GAMEPLAY) {
                     playCombatMusic();
                 }
+
             }
         });
 
