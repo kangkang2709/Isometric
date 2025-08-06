@@ -342,8 +342,6 @@ public class WordNetValidator {
         int baseScore = calculateScore(word);
         int letterBonus = calculateBonusPoints(word);
         int posBonus = calculatePartOfSpeechBonus(pos);
-
-//        return baseScore + letterBonus + posBonus;
         return baseScore + letterBonus + posBonus;
     }
 
@@ -352,27 +350,46 @@ public class WordNetValidator {
         if (word == null) return 0;
 
         String text = word.getTerm().trim();
+        String cacheKey = text.toUpperCase();
 
-        if (cache.get(text.toUpperCase()) != null) {
-            return cache.get(text.toUpperCase());
+        // Check cache first
+        Integer cachedScore = cache.get(cacheKey);
+        if (cachedScore != null) {
+            return cachedScore;
         }
 
+        // Calculate score if not in cache
         PartOfSpeech pos = determinePartOfSpeech(text);
+        int score = getEnhancedScore(text, pos);
 
-        return getEnhancedScore(text, pos);
+        // Cache the calculated score
+        cache.put(cacheKey, score);
+
+        return score;
     }
 
 
 
     public int getTotalScore(String word) {
-        if (cache.get(word.toUpperCase()) != null) {
-            System.out.println("Cache hit for word: " + cache.get(word.toUpperCase()));
-            return cache.get(word.toUpperCase());
+        if (word == null || word.trim().isEmpty()) return 0;
+
+        String cacheKey = word.toUpperCase();
+
+        // Check cache first
+        Integer cachedScore = cache.get(cacheKey);
+        if (cachedScore != null) {
+            System.out.println("Cache hit for word: " + cachedScore);
+            return cachedScore;
         }
 
+        // Calculate score if not in cache
         PartOfSpeech pos = determinePartOfSpeech(word);
+        int score = getEnhancedScore(word, pos);
 
-        return getEnhancedScore(word, pos);
+        // Cache the calculated score
+        cache.put(cacheKey, score);
+
+        return score;
     }
 
     // loai tu POS

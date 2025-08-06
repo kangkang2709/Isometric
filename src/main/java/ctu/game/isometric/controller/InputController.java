@@ -17,6 +17,7 @@ import com.badlogic.gdx.utils.Timer;
 import ctu.game.isometric.controller.quiz.QuizController;
 import ctu.game.isometric.model.entity.Enemy;
 import ctu.game.isometric.model.game.GameState;
+import ctu.game.isometric.model.perform.EnhancedMemoryMonitor;
 import ctu.game.isometric.model.world.IsometricMap;
 import ctu.game.isometric.model.world.MapEvent;
 import ctu.game.isometric.util.EnemyLoader;
@@ -92,6 +93,12 @@ public class InputController extends InputAdapter {
 
     @Override
     public boolean keyDown(int keycode) {
+        if(Keys.F12 == keycode) {
+            gameController.getGame().getPerfMonitor().toggleDebugOverlay();
+            return true;
+        }
+
+
         GameState state = gameController.getCurrentState();
 
         if (gameController.getTutorialUI().isVisible()) {
@@ -421,7 +428,7 @@ public class InputController extends InputAdapter {
             }
         }
         switch (keycode) {
-            case Keys.F12 -> {
+            case Keys.SHIFT_RIGHT -> {
                 if (mapRenderer.getCurrentWeather() == WeatherRenderer.WeatherType.SNOW) {
                     mapRenderer.setWeather("rain", 2f);
                 } else {

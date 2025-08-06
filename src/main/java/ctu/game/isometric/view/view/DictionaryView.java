@@ -96,8 +96,11 @@ public class DictionaryView {
     private Rectangle detailsArea = new Rectangle(420, 150, 760, 420);
     private Rectangle backButton = new Rectangle(590, 80, 100, 40);
     private Rectangle pronounceButton = new Rectangle(530, 625, 120, 30);
-
+    private Rectangle scoreButton = new Rectangle(660, 625, 120, 30);
     // Scroll bars
+    private int currentWordScore = 0;
+    private boolean scoreCalculated = false;
+
     private Rectangle wordListScrollBar = new Rectangle(400 - 10, 150, 10, 420);
     private Rectangle wordListScrollThumb = new Rectangle(400 - 10, 150, 10, 100);
     private Rectangle detailsScrollBar = new Rectangle(1180 - 10, 150, 10, 420);
@@ -313,10 +316,13 @@ public class DictionaryView {
         } else if (newTab.contains(x, y)) {
             showingLearnedWords = false;
             updateWordList();
-        } else if (searchButton.contains(x, y)) {
+        }
+        else if (searchButton.contains(x, y)) {
             searchWords();
         } else if (pronounceButton.contains(x, y) && selectedWord != null) {
             pronounceSelectedWord();
+        }else if (scoreButton.contains(x, y) && selectedWord != null) {
+            calculateAndDisplayScore();
         } else if (backButton.contains(x, y)) {
             gameController.setCurrentState(GameState.EXPLORING);
         } else if (wordListArea.contains(x, y)) {
@@ -344,7 +350,13 @@ public class DictionaryView {
             }
         }
     }
+    private void calculateAndDisplayScore() {
+        if (selectedWord == null) return;
 
+        currentWordScore = wordNetValidator.getTotalScore(selectedWord);
+        scoreCalculated = true;
+
+    }
     public void handleMouseScroll(float amountX, float amountY, float mouseX, float mouseY) {
         float cappedScrollAmount = Math.max(-10, Math.min(10, amountY));
 
@@ -436,13 +448,17 @@ public class DictionaryView {
             if (currentIndex > 0) {
                 selectedWord = displayedWords.get(currentIndex - 1);
                 selectedWordChanged = true;
+                // Reset score for new word
+                scoreCalculated = false;
+                currentWordScore = 0;
             }
         } else if (!displayedWords.isEmpty()) {
             selectedWord = displayedWords.get(0);
             selectedWordChanged = true;
+            scoreCalculated = false;
+            currentWordScore = 0;
         }
     }
-
     public void selectNextWord() {
         if (selectedWord != null) {
             int currentIndex = displayedWords.indexOf(selectedWord);
@@ -456,10 +472,15 @@ public class DictionaryView {
             if (currentIndex < lastIndex) {
                 selectedWord = displayedWords.get(currentIndex + 1);
                 selectedWordChanged = true;
+                // Reset score for new word
+                scoreCalculated = false;
+                currentWordScore = 0;
             }
         } else if (!displayedWords.isEmpty()) {
             selectedWord = displayedWords.get(0);
             selectedWordChanged = true;
+            scoreCalculated = false;
+            currentWordScore = 0;
         }
     }
 
@@ -469,6 +490,9 @@ public class DictionaryView {
             selectedWord = displayedWords.get(index);
             detailsScrollPosition = 0;
             selectedWordChanged = true;
+            // Reset score calculation for new word
+            scoreCalculated = false;
+            currentWordScore = 0;
         }
     }
 
@@ -540,6 +564,9 @@ public class DictionaryView {
         } else {
             shapeRenderer.setColor(BUTTON_COLOR);
         }
+
+        drawAngularButton(shapeRenderer, scoreButton.x, scoreButton.y, scoreButton.width, scoreButton.height);
+
         drawAngularButton(shapeRenderer, pronounceButton.x, pronounceButton.y, pronounceButton.width, pronounceButton.height);
 
         // Tabs with angled corners
@@ -608,7 +635,7 @@ public class DictionaryView {
         renderSearchText(batch);
 
         drawStyledText(batch, "Search", searchButton.x + 20, searchButton.y + 20);
-
+        drawStyledText(batch, "Get Score", scoreButton.x + 25, scoreButton.y + 22);
         // Pronounce button text
         if (selectedWord != null && isTTSEnabled) {
             labelFont.setColor(Color.WHITE);
@@ -794,6 +821,13 @@ public class DictionaryView {
         }
         currentY -= 40;
 
+        if (scoreCalculated && currentWordScore > 0) {
+            if (currentY >= minVisibleY && currentY <= maxVisibleY) {
+                titleFont.setColor(ACCENT_COLOR);
+                titleFont.draw(batch, "SCORE: " + currentWordScore, detailsArea.x + 20, currentY);
+            }
+            currentY -= 35;
+        }
         // Pronunciation (if you uncomment it later)
         if (selectedWord.getPronunciation() != null && !selectedWord.getPronunciation().isEmpty()) {
             if (currentY >= minVisibleY && currentY <= maxVisibleY) {

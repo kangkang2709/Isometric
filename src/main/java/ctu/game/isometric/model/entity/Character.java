@@ -306,6 +306,9 @@ public class Character {
         this.newlearneWords = new HashSet<>();
         this.learnedWords = new HashSet<>();
         this.learnedWords.add("HELLO");
+        this.learnedWords.add("GAME");
+        this.learnedWords.add("WORD");
+        this.learnedWords.add("BOOK");
         this.score = 0;
         this.ettempFlags = new HashMap<>();
         this.ettempFlags.put("quizAttempts", 0);
@@ -380,6 +383,9 @@ public class Character {
         this.learnedWords = new HashSet<>();
         this.newlearneWords = new HashSet<>();
         this.learnedWords.add("HELLO");
+        this.learnedWords.add("GAME");
+        this.learnedWords.add("WORD");
+        this.learnedWords.add("BOOK");
         this.ettempFlags = new HashMap<>();
         this.ettempFlags.put("quizAttempts", 0);
         this.ettempFlags.put("mulQuizAttempts", 0);

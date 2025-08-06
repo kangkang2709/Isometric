@@ -15,12 +15,14 @@ import java.util.Map;
 public class AssetManager implements Disposable {
     private Map<String, Texture> textures;
     private AnimationManager animationManager;
+    boolean isFinished = false;
 
     public AssetManager() {
         textures = new HashMap<>();
         animationManager = new AnimationManager();
         animationManager.loadAnimations();
         animationManager.loadDiceAnimations("textures/dice_static.png", "textures/dice_rolling.png");
+
     }
 
     public Map<String, Texture> getTextures() {
@@ -74,8 +76,16 @@ public class AssetManager implements Disposable {
                 textures.get("poison"),
                 textures.get("fire")
         );
+        isFinished = true; // Mark assets as loaded
     }
 
+    public boolean isFinished() {
+        return isFinished;
+    }
+
+    public void setFinished(boolean finished) {
+        isFinished = finished;
+    }
 
     public Map<String, Texture> loadAllItems(List<Items> items) {
         for (Items item : items) {
