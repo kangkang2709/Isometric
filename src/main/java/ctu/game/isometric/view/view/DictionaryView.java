@@ -635,7 +635,7 @@ public class DictionaryView {
         renderSearchText(batch);
 
         drawStyledText(batch, "Search", searchButton.x + 20, searchButton.y + 20);
-        drawStyledText(batch, "Get Score", scoreButton.x + 25, scoreButton.y + 22);
+        drawStyledText(batch, "Get Score", scoreButton.x + 21, scoreButton.y + 22);
         // Pronounce button text
         if (selectedWord != null && isTTSEnabled) {
             labelFont.setColor(Color.WHITE);

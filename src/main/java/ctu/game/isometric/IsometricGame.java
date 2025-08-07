@@ -28,6 +28,7 @@ public class IsometricGame extends Game {
 
     private RealTimePerformanceMonitor perfMonitor;
     private BitmapFont debugFont;
+
     @Override
     public void create() {
         assetManager = new AssetManager();
@@ -35,7 +36,6 @@ public class IsometricGame extends Game {
         Gdx.graphics.setVSync(true);
         gameController = new GameController(this);
         DissolveShaderManager.initialize();
-
 
 
         splashScreen = new SplashScreen(this);
@@ -82,7 +82,7 @@ public class IsometricGame extends Game {
 
 
         super.render(); // Render current screen
-        if (spriteBatch==null)
+        if (spriteBatch == null)
             spriteBatch = new SpriteBatch();
         // Render debug overlay cuối cùng
         perfMonitor.updateFrame();
@@ -92,6 +92,7 @@ public class IsometricGame extends Game {
     }
 
     SpriteBatch spriteBatch;
+
     public AssetManager getAssetManager() {
         return assetManager;
     }
@@ -126,6 +127,12 @@ public class IsometricGame extends Game {
     public void dispose() {
         assetManager.dispose();
         super.dispose();
+        if (spriteBatch != null) {
+            spriteBatch.dispose();
+        }
+        perfMonitor.stopMonitoring();
+        DissolveShaderManager.dispose();
+        debugFont.dispose();
 
     }
 

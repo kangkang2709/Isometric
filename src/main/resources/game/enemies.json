@@ -4,7 +4,7 @@
     "enemyName": "Feral Fungus",
     "enemyDescription": "Low-level enemy, moves slowly but persistently.",
     "texturePath": "enemies/mushroom.png",
-    "health": 10,
+    "health": 15,
     "attackPower": 2,
     "defensePower": 2,
     "rewardId": 10
@@ -14,7 +14,7 @@
     "enemyName": "Twisted Tree",
     "enemyDescription": "Mutated plant with high defense capabilities.",
     "texturePath": "enemies/tree.png",
-    "health": 16,
+    "health": 17,
     "attackPower": 1,
     "defensePower": 4,
     "rewardId": 11
@@ -24,7 +24,7 @@
     "enemyName": "Leonine Beast",
     "enemyDescription": "Wild feral beast, strong attacks but vulnerable.",
     "texturePath": "enemies/beast.png",
-    "health": 11,
+    "health": 14,
     "attackPower": 4,
     "defensePower": 2,
     "rewardId": 14
@@ -34,7 +34,7 @@
     "enemyName": "Armored Snake",
     "enemyDescription": "Creature with thick skin, fairly resistant.",
     "texturePath": "enemies/snake.png",
-    "health": 10,
+    "health": 15,
     "attackPower": 3,
     "defensePower": 3,
     "rewardId": 13

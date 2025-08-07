@@ -32,7 +32,7 @@ public class MainMenu {
     private final int screenWidth = 1280;
     private final int screenHeight = 720;
 
-    private String[] menuOptions = {"Chơi mới", "Tiếp Tục", "Tùy Chỉnh", "Thoát"};
+    private String[] menuOptions = {"Bắt đầu", "Tiếp Tục", "Tùy Chỉnh", "Thoát"};
     private int selectedOption = 0;
 
     private Rectangle[] buttonRects;

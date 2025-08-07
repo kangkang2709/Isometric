@@ -232,7 +232,6 @@ public class InputController extends InputAdapter {
             case GAMEPLAY:
                 return gameController.getGameplayController().handleCombatClick(screenX, screenY);
             case DICTIONARY:
-                effectManager.playClickSound();
                 gameController.getDictionaryView().handleMouseClick(screenX, screenY);
                 return true;
             case MULTIPLE_CHOICE_QUIZZES:
@@ -451,6 +450,9 @@ public class InputController extends InputAdapter {
             }
             case Keys.F5 -> {
                 gameController.changeMap("main");
+            }
+            case Keys.F4 -> {
+                gameController.setState(GameState.BOUNTY_BOARD);
             }
             case Keys.F6 -> {
                 Enemy enemy = new Enemy(11, "Thủ vệ hồ", "Frost Guardian", "frost", 1, 25, 16);
