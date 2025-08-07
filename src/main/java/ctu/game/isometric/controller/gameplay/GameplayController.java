@@ -372,7 +372,7 @@ public class GameplayController {
                     break;
                 case "Toxic Potion":
                     playerToxic(20, () -> {
-
+                        gameController.addFlag("quest_012");
                         addCombatLog("Kẻ địch đã bị trúng độc, mất " + item.getValue() + " máu! Bị độc trong 3 lượt tiếp theo!");
                         enemyHealth = Math.max(0, enemyHealth - item.getValue());
                         checkCombatEnd();
@@ -1434,6 +1434,7 @@ public class GameplayController {
                     achievementManager.updateProgress(Achievement.AchievementType.ENEMY_WIN_3, 1);
                     gameController.addFlag("emerald_revenant_boss_defeated");
                     gameController.addFlag("boss");
+                    gameController.addFlag("quest_024");
                     break;
                 case "Demon Lord Azrok":
                     achievementManager.updateProgress(Achievement.AchievementType.ENEMY_WIN, 1);

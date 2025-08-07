@@ -12,8 +12,10 @@ import ctu.game.isometric.controller.GameController;
 import ctu.game.isometric.model.quest.Quest;
 import org.w3c.dom.ls.LSException;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static ctu.game.isometric.util.FontGenerator.generateVietNameseFont;
 
@@ -30,7 +32,10 @@ public class QuestTrackerView {
     private Matrix4 uiMatrix;
 
     // Constants for positioning and scroll behavior
+// Constants for positioning and scroll behavior
     private final float QUEST_LIST_Y = 510;
+    private final float QUEST_ITEM_HEIGHT = 65f;
+    private final float QUEST_ITEM_WIDTH = 350f;
     private float scrollOffset = 0;
     private final float SCROLL_AMOUNT = 40;
     private final int MAX_VISIBLE_QUESTS = 5;
@@ -45,14 +50,14 @@ public class QuestTrackerView {
         this.backgroundTexture = new Texture(Gdx.files.internal("ui/quest_tracker.png"));
         this.arrowTexture = new Texture(Gdx.files.internal("ui/arrow.png"));
 
-        this.font = generateVietNameseFont("IMFellEnglishSC-Regular.ttf", 19);
+        this.font = gameController.getCommonFont();
         this.smallFont = generateVietNameseFont("IMFellEnglishSC-Regular.ttf", 16);
 
         this.font.setColor(Color.WHITE);
         this.layout = new GlyphLayout();
         this.closeButtonBounds = new Rectangle(1050, 580, 40, 40);
-        this.scrollUpButton = new Rectangle(430, QUEST_LIST_Y - 10, 30, 30);
-        this.scrollDownButton = new Rectangle(430, QUEST_LIST_Y - 300, 30, 30);
+        this.scrollUpButton = new Rectangle(300, QUEST_LIST_Y - 10, 30, 30);
+        this.scrollDownButton = new Rectangle(300, QUEST_LIST_Y - 300, 30, 30);
         this.isVisible = false;
         uiMatrix = new Matrix4().setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
     }
@@ -95,30 +100,53 @@ public class QuestTrackerView {
         font.setColor(Color.YELLOW);
         font.draw(batch, "Title: " + quest.getTitle(), x, y - 30);
         font.setColor(Color.WHITE);
-        font.draw(batch, "Description: " + quest.getDescription(), x, y - 60, 300, -1, true);
+
+        // Cache processed description to avoid repeated processing
+        String processedDescription = getProcessedDescription(quest);
+        font.draw(batch, "Description: " + processedDescription, x, y - 60, 300, -1, true);
 
         font.setColor(Color.YELLOW);
-        font.draw(batch, "Requirements:", x, y - 120);
+        font.draw(batch, "Requirements:", x, y - 140);
         font.setColor(Color.WHITE);
-        int offset = 0;
-        for (Map.Entry<String, Integer> req : quest.getRequirements().entrySet()) {
-            font.draw(batch, "- " + req.getValue() + "x " + req.getKey(), x + 20, y - 150 - offset);
-            offset += 20;
-        }
+        int offset = 20;
 
-        font.setColor(Color.YELLOW);
-        font.draw(batch, "Rewards:", x, y - 150 - offset);
-        font.setColor(Color.WHITE);
-        offset += 30;
-        font.draw(batch, "- XP: " + quest.getReward().getExperience(), x + 20, y - 150 - offset);
-        font.draw(batch, "- Gold: " + quest.getReward().getGold(), x + 20, y - 170 - offset);
-        if (quest.getReward().getItems() != null && !quest.getReward().getItems().isEmpty()) {
-            for (Map.Entry<String, Integer> item : quest.getReward().getItems().entrySet()) {
-                font.draw(batch, "- " + item.getValue() + "x " + item.getKey(), x + 20, y - 190 - offset);
+        // Add null check for requirements
+        if (quest.getRequirements() != null) {
+            for (Map.Entry<String, Integer> req : quest.getRequirements().entrySet()) {
+                font.draw(batch, "- " + req.getValue() + "x " + req.getKey(), x + 40, y - 150 - offset);
                 offset += 20;
             }
         }
 
+        font.setColor(Color.YELLOW);
+        font.draw(batch, "Rewards:", x, y - 160 - offset);
+        font.setColor(Color.WHITE);
+        offset += 50;
+
+        // Add null check for reward
+        if (quest.getReward() != null) {
+            font.draw(batch, "- XP: " + quest.getReward().getExperience(), x + 20, y - 150 - offset);
+            font.draw(batch, "- Gold: " + quest.getReward().getGold(), x + 20, y - 180 - offset);
+            if (quest.getReward().getItems() != null && !quest.getReward().getItems().isEmpty()) {
+                for (Map.Entry<String, Integer> item : quest.getReward().getItems().entrySet()) {
+                    font.draw(batch, "- " + item.getValue() + "x " + item.getKey(), x + 20, y - 190 - offset);
+                    offset += 20;
+                }
+            }
+        }
+    }
+
+    // Add this helper method to cache processed descriptions
+    private String getProcessedDescription(Quest quest) {
+        // Simple caching mechanism - you could implement a more sophisticated cache
+        if (quest.getDescription() == null) {
+            return "";
+        }
+
+        // This could be enhanced with a proper cache (Map<Quest, String>) if needed
+        return Arrays.stream(quest.getDescription().split("\n"))
+                .filter(line -> !line.startsWith("Condition:"))
+                .collect(Collectors.joining("\n"));
     }
 
     private void drawQuestList(SpriteBatch batch, String title, List<Quest> quests, float x, float y) {
@@ -253,7 +281,7 @@ public class QuestTrackerView {
         List<Quest> activeQuests = gameController.getCharacter().getQuestTracker().getActiveQuests();
         boolean canScrollUp = scrollOffset > 0;
         boolean canScrollDown = activeQuests.size() > MAX_VISIBLE_QUESTS &&
-                scrollOffset < (activeQuests.size() - MAX_VISIBLE_QUESTS) * 65;
+                scrollOffset < (activeQuests.size() - MAX_VISIBLE_QUESTS) * QUEST_ITEM_HEIGHT;
 
         if (canScrollUp && scrollUpButton.contains(screenX, screenY)) {
             scrollUp();
@@ -266,16 +294,16 @@ public class QuestTrackerView {
         }
 
         // Check if a quest is clicked
-        int startIndex = (int) (scrollOffset / 60);
+        int startIndex = (int) (scrollOffset / QUEST_ITEM_HEIGHT);
         int endIndex = Math.min(activeQuests.size(), startIndex + MAX_VISIBLE_QUESTS);
 
         float visibleAreaTop = QUEST_LIST_Y - 20;
 
         for (int i = startIndex; i < endIndex; i++) {
             Quest quest = activeQuests.get(i);
-            float itemY = visibleAreaTop - ((i - startIndex) + 1) * 60 + 40;
+            float itemY = visibleAreaTop - ((i - startIndex) + 1) * QUEST_ITEM_HEIGHT + 40;
 
-            Rectangle questBounds = new Rectangle(130, itemY - 10, 350, 55);
+            Rectangle questBounds = new Rectangle(310, itemY - 10, QUEST_ITEM_WIDTH, QUEST_ITEM_HEIGHT - 10);
             if (questBounds.contains(screenX, screenY)) {
                 selectedQuest = quest;
                 return true;
@@ -313,8 +341,7 @@ public class QuestTrackerView {
         List<Quest> activeQuests = gameController.getCharacter().getQuestTracker().getActiveQuests();
         if (activeQuests.size() <= MAX_VISIBLE_QUESTS) return;
 
-        float maxScroll = (activeQuests.size() - MAX_VISIBLE_QUESTS) * 60;
+        float maxScroll = (activeQuests.size() - MAX_VISIBLE_QUESTS) * QUEST_ITEM_HEIGHT;
         scrollOffset = Math.min(maxScroll, scrollOffset + SCROLL_AMOUNT);
-
     }
 }

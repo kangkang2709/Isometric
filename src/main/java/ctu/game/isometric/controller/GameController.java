@@ -159,7 +159,6 @@ public class GameController {
         if (character.getFlags() == null) {
             character.setFlags(new ArrayList<>());
         }
-        System.out.println("Flag added: " + flag);
 
         if (!character.getFlags().contains(flag)) {
             character.getFlags().add(flag);
@@ -602,6 +601,7 @@ public class GameController {
                         "Và giờ thì tạm biệt, người xa xứ...."));
                 npcManager.removeNPC(9);
                 addFlag("completed_dungeon2");
+                addFlag("quest_007");
             }
         }, 2f);
     }
@@ -619,6 +619,7 @@ public class GameController {
                 ));
                 npcManager.removeNPC(10);
                 addFlag("frost_guardian_defeated");
+                addFlag("quest_001");
             }
         }, 2f);
     }
@@ -2059,8 +2060,22 @@ public class GameController {
 
     }
 
-    private void applyQuizMovementEffect() {
-        getDialogController().showSimpleMessage("Bạn đã trả lời đúng. Nhận thêm 1 lượt tung xúc sắc!");
+    public void applyQuizMovementEffect() {
+//        getDialogController().showSimpleMessage("Bạn đã trả lời đúng. Nhận thêm 1 lượt tung xúc sắc!");
+        character.updateQuizCompletedCount();
+        switch (character.getQuizCompletedCount()) {
+            case 15:
+                addFlag("quest_008");
+                break;
+            case 30:
+                addFlag("quest_009");
+                break;
+            case 50:
+                addFlag("quest_010");
+                break;
+            default:
+                break;
+        }
         getDice().setBonusRoll(true);
         character.setBonusRolls(getDice().getBonusCount());
     }

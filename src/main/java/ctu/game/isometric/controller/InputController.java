@@ -93,7 +93,7 @@ public class InputController extends InputAdapter {
 
     @Override
     public boolean keyDown(int keycode) {
-        if(Keys.F12 == keycode) {
+        if (Keys.F12 == keycode) {
             gameController.getGame().getPerfMonitor().toggleDebugOverlay();
             return true;
         }
@@ -472,10 +472,15 @@ public class InputController extends InputAdapter {
 //                gameController.addFlag("klein_unlock");
 //                gameController.getCharacter().setScore(600);
 
-                gameController.getCharacter().setPosition(14, 17);
                 gameController.addFlag("defeated_final_boss");
                 gameController.addFlag("klein_unlock");
                 gameController.addFlag("klein_meet");
+                gameController.addFlag("dungeon_entry");
+                gameController.applyQuizMovementEffect();
+            }
+            case Keys.BACKSPACE -> {
+                gameController.getCharacter().setPosition(14, 17);
+
             }
             case Keys.HOME -> {
                 gameController.getCharacter().setPosition(gameController.getMap().getEndX(), gameController.getMap().getEndY());
@@ -658,7 +663,7 @@ public class InputController extends InputAdapter {
 
     private boolean handleDictionaryInput(int keycode) {
         switch (keycode) {
-            case Keys.ESCAPE ->{
+            case Keys.ESCAPE -> {
                 effectManager.playClickSound();
                 gameController.setCurrentState(GameState.EXPLORING);
             }

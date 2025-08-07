@@ -749,6 +749,12 @@ public class InventoryUI {
                             if (craftedItem != null) {
                                 character.addItem(craftedItem, 1);
                                 character.descreaseItemAmount(ingredientItem.getItemName(), recipe.ingredientCount);
+                                System.out.println("Crafted " + item.getItemName());
+                                if (item.getItemName().equals("Healing Herb")) {
+                                    gameController.addFlag("quest_001");
+                                } else if (item.getItemName().equals("Mana Blossom")) {
+                                    gameController.addFlag("quest_003");
+                                }
 
                                 errorMessage = "Crafted " + recipe.result + "!";
                             }

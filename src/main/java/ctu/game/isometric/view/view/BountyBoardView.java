@@ -634,42 +634,49 @@ public class BountyBoardView {
     boolean needUpdate = true;
 
     private void updateQuestSlots() {
+        // Always refresh quest lists when switching tabs or after quest state changes
+        if (needUpdate || currentTab != previousTab) {
+            controller.updateQuestStatusFromQuestTracker(
+                    controller.getGameController().getCharacter().getQuestTracker()
+            );
+            needUpdate = false;
+        }
+
         // Filter quests based on the current tab
         switch (currentTab) {
             case AVAILABLE:
-                if (needUpdate) {
-                    controller.updateQuestStatusFromQuestTracker(controller.getGameController().getCharacter().getQuestTracker());
-                    needUpdate = false; // Reset flag after update
-                }
                 currentQuestList = controller.getAllQuests().values().stream()
                         .filter(quest -> quest.getStatus() == Quest.QuestStatus.AVAILABLE)
                         .toList();
                 break;
             case ACTIVE:
-                currentQuestList = controller.getActiveQuests();
+                // Refresh active quests from controller
+                currentQuestList = new ArrayList<>(controller.getActiveQuests());
                 break;
             case COMPLETED:
-                currentQuestList = controller.getCompletedQuests();
+                // Refresh completed quests from controller
+                currentQuestList = new ArrayList<>(controller.getCompletedQuests());
                 break;
             case LOCKED:
-                currentQuestList = controller.getLockedQuests();
+                // Refresh locked quests from controller
+                currentQuestList = new ArrayList<>(controller.getLockedQuests());
                 break;
             default:
                 currentQuestList = new ArrayList<>();
         }
 
         // Ensure scrollOffset is valid
-        if (scrollOffset > currentQuestList.size() - maxVisibleQuests) {
+        if (scrollOffset > Math.max(0, currentQuestList.size() - maxVisibleQuests)) {
             scrollOffset = Math.max(0, currentQuestList.size() - maxVisibleQuests);
         }
 
         // Clear and populate only visible quest slots
         questSlots.clear();
         float slotWidth = 350;
-        float slotHeight = 95; // Taller cards for more info
+        float slotHeight = 95;
         float slotX = boardX + 20;
         float slotY = boardY + boardHeight - 200;
-        float padding = 15; // More padding between cards
+        float padding = 15;
 
         int end = Math.min(scrollOffset + maxVisibleQuests, currentQuestList.size());
         for (int i = scrollOffset; i < end; i++) {
@@ -713,8 +720,13 @@ public class BountyBoardView {
         if (selectedQuest != null && (selectedQuest.getStatus() == Quest.QuestStatus.AVAILABLE || controller.checkCanAcceptQuest(selectedQuest.getId()))) {
             if (acceptButton.contains(screenX, screenY)) {
                 controller.acceptQuest(selectedQuest.getId());
-                needUpdate = true; // Mark update needed after quest change
-
+                needUpdate = true; // This will now refresh all tabs
+                // Optionally switch to ACTIVE tab to show the accepted quest
+                if (currentTab == QuestTab.AVAILABLE) {
+                    previousTab = currentTab;
+                    currentTab = QuestTab.ACTIVE;
+                    tabTransitionProgress = 0f;
+                }
                 return true;
             }
         }
@@ -723,8 +735,14 @@ public class BountyBoardView {
         if (selectedQuest != null) {
             if (selectedQuest.getStatus() == Quest.QuestStatus.COMPLETED && submitButton.contains(screenX, screenY)) {
                 controller.submitQuest(selectedQuest.getId());
-                needUpdate = true; // Mark update needed after quest change
+                needUpdate = true; // This will now refresh all tabs
                 selectedQuest = null;
+                // Optionally switch to COMPLETED tab to show the claimed quest
+                if (currentTab == QuestTab.ACTIVE) {
+                    previousTab = currentTab;
+                    currentTab = QuestTab.COMPLETED;
+                    tabTransitionProgress = 0f;
+                }
                 return true;
             } else if (selectedQuest.getStatus() == Quest.QuestStatus.IN_PROGRESS &&
                     controller.checkQuestCompletion(selectedQuest.getId()) &&

@@ -106,14 +106,15 @@ public class Character {
 
     /**
      * Tính toán mức tăng stat với diminishing returns
-     * @param level Level hiện tại
-     * @param baseIncrease Mức tăng cơ bản ở level thấp
+     *
+     * @param level             Level hiện tại
+     * @param baseIncrease      Mức tăng cơ bản ở level thấp
      * @param diminishingFactor Hệ số giảm dần (0.7-0.9)
-     * @param maxIncrease Mức tăng tối đa mỗi level
+     * @param maxIncrease       Mức tăng tối đa mỗi level
      */
     private float calculateStatIncrease(int level, float baseIncrease, float diminishingFactor, float maxIncrease) {
         // Công thức: baseIncrease * (diminishingFactor ^ (level-1))
-        float scaledIncrease = baseIncrease * (float)Math.pow(diminishingFactor, level - 1);
+        float scaledIncrease = baseIncrease * (float) Math.pow(diminishingFactor, level - 1);
 
         // Đảm bảo có mức tăng tối thiểu
         float minIncrease = baseIncrease * 0.2f;
@@ -202,8 +203,8 @@ public class Character {
         }
 
         return new LevelUpPreview(
-                (int)healthIncrease,
-                (int)manaIncrease,
+                (int) healthIncrease,
+                (int) manaIncrease,
                 damageIncrease,
                 defendIncrease,
                 checkMilestoneBonuses(this.level + levelsToGain)
@@ -318,6 +319,7 @@ public class Character {
         this.ettempFlags.put("wrongWord", 0);
         this.ettempFlags.put("loop", 0);
         this.ettempFlags.put("prayer", 0);
+        this.ettempFlags.put("quizcount", 0);
         this.questTracker = new QuestTracker();
         mapName = "forest";
         initialTutorial();
@@ -394,10 +396,18 @@ public class Character {
         this.ettempFlags.put("run", 0);
         this.ettempFlags.put("loop", 0);
         this.ettempFlags.put("prayer", 0);
+        this.ettempFlags.put("quizcount", 0);
         this.score = 0;
         this.questTracker = new QuestTracker();
         mapName = "forest";
         initialTutorial();
+    }
+
+    public void updateQuizCompletedCount() {
+        ettempFlags.put("quizcount", ettempFlags.getOrDefault("quizcount", 0) + 1);
+    }
+    public int getQuizCompletedCount() {
+        return ettempFlags.getOrDefault("quizcount", 0);
     }
 
     public int getRun() {
@@ -599,6 +609,7 @@ public class Character {
         }
         this.score -= score;
     }
+
     public Map<String, String> getSubObjectives(String mainObjectiveKey) {
         Map<String, String> subObjectives = new HashMap<>();
 
@@ -618,6 +629,7 @@ public class Character {
 
         return subObjectives.isEmpty() ? null : subObjectives;
     }
+
     public boolean upgradeItem(String itemName, int score) {
 
         if (items == null || !items.containsKey(itemName) || items.get(itemName) <= 0) {

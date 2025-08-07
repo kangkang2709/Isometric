@@ -1,116 +1,138 @@
 [
   {
+    "id": "quest_001",
+    "title": "Crafting Elixir",
+    "description": "Condition: First talk to Klein \nUse 2 Healing Herbs to craft an Elixir",
+    "status": "LOCKED",
+    "conditions": "klein_meet",
+    "visible": true,
+    "requirements": {},
+    "reward": {
+      "experience": 150,
+      "gold": 80
+    }
+  },
+  {
+    "id": "quest_003",
+    "title": "Crafting Arcane Essence",
+    "description": "Condition: First talk to Klein \nUse 2 Mana Blossom to craft an Arcane Essence",
+    "status": "LOCKED",
+    "conditions": "klein_meet",
+    "visible": true,
+    "requirements": {},
+    "reward": {
+      "experience": 150,
+      "gold": 80
+    }
+  },
+  {
     "id": "quest_002",
-    "title": "Forest Gathering",
-    "description": "Collect 5 Healing Herbs in Whispering Woods",
+    "title": "Forest Gathering 1",
+    "description": "Collect 5 Healing Herbs for Hera",
     "status": "AVAILABLE",
     "visible": true,
     "requirements": {
       "Healing Herb": 5
     },
     "reward": {
-      "experience": 80,
-      "gold": 40
+      "experience": 100,
+      "gold": 50
     }
   },
   {
-    "id": "quest_003",
-    "title": "Message for Tian",
-    "description": "Talk to Lorekeeper Tian in the Tower of Knowledge",
+    "id": "quest_030",
+    "title": "Forest Gathering 2",
+    "description": "Collect 5 Mana Blossom for Hera",
     "status": "AVAILABLE",
     "visible": true,
-    "requirements": {},
+    "requirements": {
+      "Mana Blossom": 5
+    },
     "reward": {
-      "experience": 50
+      "experience": 100,
+      "gold": 50
+    }
+  },
+  {
+    "id": "quest_031",
+    "title": "Clear Monster 1",
+    "description": "Defeat 3 Feral Fungus",
+    "status": "AVAILABLE",
+    "visible": true,
+    "requirements": {
+      "Healing Herb": 6
+    },
+    "reward": {
+      "experience": 150,
+      "gold": 80
+    }
+  },
+  {
+    "id": "quest_032",
+    "title": "Clear Monster 2",
+    "description": "Defeat 3 Twisted Tree",
+    "status": "AVAILABLE",
+    "visible": true,
+    "requirements": {
+      "Mana Blossom": 6
+    },
+    "reward": {
+      "experience": 150,
+      "gold": 80
+    }
+  },
+  {
+    "id": "quest_033",
+    "title": "Clear Monster 4",
+    "description": "Defeat 3 Goblin Brute",
+    "status": "AVAILABLE",
+    "visible": true,
+    "requirements": {
+      "Mana Blossom": 6
+    },
+    "reward": {
+      "experience": 150,
+      "gold": 80
+    }
+  },
+  {
+    "id": "quest_034",
+    "title": "Clear Monster 5",
+    "description": "Defeat 3 Leonine Beast",
+    "status": "AVAILABLE",
+    "visible": true,
+    "requirements": {
+      "Beast Flesh": 9
+    },
+    "reward": {
+      "experience": 150,
+      "gold": 80
     }
   },
   {
     "id": "quest_004",
     "title": "Potion Delivery",
-    "description": "Deliver 2 Elixirs to the injured soldier in East Camp",
+    "description": "Deliver 2 Elixirs",
     "status": "AVAILABLE",
     "visible": true,
     "requirements": {
-      "Elixir": 1
+      "Elixir": 2
     },
     "reward": {
-      "experience": 120,
-      "gold": 60
-    }
-  },
-  {
-    "id": "quest_005",
-    "title": "The Ancient Tome",
-    "description": "Recover the Book of Returned from the Final Boss",
-    "status": "LOCKED",
-    "conditions": "defeat_final_boss",
-    "visible": true,
-    "requirements": {},
-    "reward": {
-      "experience": 500,
-      "gold": 1000
-    }
-  },
-  {
-    "id": "quest_006",
-    "title": "Trial by Fire I",
-    "description": "Unlock mini-game 1 via mysterious NPC",
-    "status": "AVAILABLE",
-    "visible": true,
-    "requirements": {},
-    "reward": {
-      "experience": 100
+      "experience": 100,
+      "gold": 100
     }
   },
   {
     "id": "quest_007",
-    "title": "Trial by Fire II",
-    "description": "Unlock mini-game 2 via mysterious NPC",
+    "title": "Trial by Fire I-II",
+    "description": "Condition: Talk to Obelisk \n Find and Complete Armon Quest",
     "status": "LOCKED",
-    "conditions": "defeat_final_boss",
+    "conditions": "oblisk_meet",
     "visible": true,
     "requirements": {},
     "reward": {
       "experience": 500
-    }
-  },
-  {
-    "id": "quest_008",
-    "title": "Into the Abyss",
-    "description": "Use Ruby Omega to enter Dungeon A",
-    "status": "AVAILABLE",
-    "visible": true,
-    "requirements": {},
-    "reward": {
-      "experience": 200
-    }
-  },
-  {
-    "id": "quest_009",
-    "title": "Cold Depths",
-    "description": "Use Saphire Alpha to enter Dungeon B",
-    "status": "LOCKED",
-    "conditions": "defeat_final_boss",
-    "visible": true,
-    "requirements": {},
-    "reward": {
-      "experience": 200
-    }
-  },
-  {
-    "id": "quest_010",
-    "title": "Toxic Experiment",
-    "description": "Use Toxic Potion on any enemy",
-    "status": "AVAILABLE",
-    "visible": true,
-    "requirements": {
-    },
-    "reward": {
-      "experience": 90,
-      "gold": 30,
-      "items": {
-        "Toxic Potion": 1
-      }
     }
   },
   {
@@ -123,25 +145,41 @@
       "Beast Flesh": 3
     },
     "reward": {
-      "experience": 150,
-      "gold": 80
+      "experience": 80,
+      "gold": 50
     }
   },
   {
-    "id": "quest_014",
-    "title": "Dungeon Scout I",
-    "description": "Defeat 5 Skeleton Warriors in Dungeon A",
+    "id": "quest_013",
+    "title": "Beast Anatomy",
+    "description": "Bring back 5 Beast Flesh",
     "status": "AVAILABLE",
     "visible": true,
-    "requirements": {},
+    "requirements": {
+      "Beast Flesh": 5
+    },
     "reward": {
-      "experience": 200,
+      "experience": 100,
       "gold": 100
     }
   },
   {
+    "id": "quest_014",
+    "title": "Beast Anatomy",
+    "description": "Bring back 15 Beast Flesh",
+    "status": "AVAILABLE",
+    "visible": true,
+    "requirements": {
+      "Beast Flesh": 15
+    },
+    "reward": {
+      "experience": 200,
+      "gold": 150
+    }
+  },
+  {
     "id": "quest_015",
-    "title": "The Forgotten Hide",
+    "title": "The Forgotten Hide 1",
     "description": "Bring back 2 Hide of the Fallen",
     "status": "AVAILABLE",
     "visible": true,
@@ -149,13 +187,41 @@
       "Hide of the Fallen": 2
     },
     "reward": {
-      "experience": 120,
-      "gold": 20
+      "experience": 80,
+      "gold": 50
     }
   },
   {
     "id": "quest_016",
-    "title": "Enchanted Shards",
+    "title": "The Forgotten Hide 2",
+    "description": "Bring back 5 Hide of the Fallen",
+    "status": "AVAILABLE",
+    "visible": true,
+    "requirements": {
+      "Hide of the Fallen": 5
+    },
+    "reward": {
+      "experience": 100,
+      "gold": 100
+    }
+  },
+  {
+    "id": "quest_016",
+    "title": "The Forgotten Hide 3",
+    "description": "Bring back 15 Hide of the Fallen",
+    "status": "AVAILABLE",
+    "visible": true,
+    "requirements": {
+      "Hide of the Fallen": 15
+    },
+    "reward": {
+      "experience": 200,
+      "gold": 150
+    }
+  },
+  {
+    "id": "quest_018",
+    "title": "Enchanted Shards 1",
     "description": "Collect 3 Enchanted Stones from dungeon monsters",
     "status": "AVAILABLE",
     "visible": true,
@@ -163,89 +229,124 @@
       "Enchanted Stone": 3
     },
     "reward": {
-      "experience": 140
-    }
-  },
-  {
-    "id": "quest_017",
-    "title": "Strength Within",
-    "description": "Use Draught of Fury before next battle",
-    "status": "AVAILABLE",
-    "visible": true,
-    "requirements": {
-      "Draught of Fury": 1
-    },
-    "reward": {
-      "experience": 80
-    }
-  },
-  {
-    "id": "quest_018",
-    "title": "Aegis of Hope",
-    "description": "Use Aegis Brew to protect allies in a fight",
-    "status": "AVAILABLE",
-    "visible": true,
-    "requirements": {
-      "Aegis Brew": 1
-    },
-    "reward": {
-      "experience": 80
-    }
-  },
-  {
-    "id": "quest_019",
-    "title": "Returning Light",
-    "description": "Return the Book of Returned to the High Temple",
-    "status": "LOCKED",
-    "conditions": "intro",
-    "visible": true,
-    "requirements": {
-      "Book of Returned": 1
-    },
-    "reward": {
-      "experience": 400
-    }
-  },
-  {
-    "id": "quest_020",
-    "title": "War Preparation",
-    "description": "Deliver 5 Elixirs and 5 Arcane Essences to Commander Kael",
-    "status": "LOCKED",
-    "conditions": "defeat_final_boss",
-    "visible": true,
-    "requirements": {
-      "Elixir": 5,
-      "Arcane Essence": 5
-    },
-    "reward": {
-      "experience": 300,
-      "gold": 450
-    }
-  },
-  {
-    "id": "quest_023",
-    "title": "Recipe Hunt: Elixir",
-    "description": "Discover the recipe for Elixir from Tian",
-    "status": "AVAILABLE",
-    "visible": true,
-    "requirements": {
-      "Healing Herb": 1
-    },
-    "reward": {
       "experience": 100
     }
   },
   {
+    "id": "quest_019",
+    "title": "Enchanted Shards 2",
+    "description": "Collect 5 Enchanted Stones from dungeon monsters",
+    "status": "AVAILABLE",
+    "visible": true,
+    "requirements": {
+      "Enchanted Stone": 5
+    },
+    "reward": {
+      "experience": 200
+    }
+  },
+  {
+    "id": "quest_020",
+    "title": "Enchanted Shards 3",
+    "description": "Collect 15 Enchanted Stones from dungeon monsters",
+    "status": "AVAILABLE",
+    "visible": true,
+    "requirements": {
+      "Enchanted Stone": 15
+    },
+    "reward": {
+      "experience": 350
+    }
+  },
+  {
     "id": "quest_024",
-    "title": "Tower’s Challenge",
+    "title": "Maze Clear",
     "description": "Conditon:Gain 3 ruby \nComplete the puzzle in the Tower of Trials",
     "status": "LOCKED",
-    "conditions": "defeat_final_boss",
+    "conditions": "intro",
     "visible": true,
     "requirements": {
     },
     "reward": {
-      "experience": 300
+      "experience": 500
+    }
+  },
+  {
+    "id": "quest_025",
+    "title": "Frost Guardian challenge",
+    "description": "Conditon: Defeat Fire Dragon \nPass the Frost Guardian challenge",
+    "status": "LOCKED",
+    "conditions": "sapphire_dragon_boss_defeated",
+    "visible": true,
+    "requirements": {
+    },
+    "reward": {
+      "experience": 500
+    }
+  },
+  {
+    "id": "quest_008",
+    "title": "Fix word I",
+    "description": "Condition: Entry Maze \nAnswer 15 quiz correctly in the Maze",
+    "status": "LOCKED",
+    "conditions": "dungeon_entry",
+    "visible": true,
+    "requirements": {},
+    "reward": {
+      "experience": 250,
+      "gold": 80,
+      "items": {
+        "Big Elixir": 1,
+        "Big Mana Essence": 1
+      }
+    }
+  },
+  {
+    "id": "quest_009",
+    "title": "Fix word II",
+    "description": "Condition: Fix word I \nAnswer 30 quiz correctly in the Maze",
+    "status": "LOCKED",
+    "conditions": "quest_008",
+    "visible": true,
+    "requirements": {},
+    "reward": {
+      "experience": 250,
+      "gold": 80,
+      "items": {
+        "Big Elixir": 2
+      }
+    }
+  },
+  {
+    "id": "quest_010",
+    "title": "Fix word III",
+    "description": "Condition: Fix word II\nAnswer 50 quiz correctly in the Maze",
+    "status": "LOCKED",
+    "conditions": "quest_009",
+    "visible": true,
+    "requirements": {},
+    "reward": {
+      "experience": 250,
+      "gold": 80,
+      "items": {
+        "Big Mana Essence": 3
+      }
+    }
+  },
+  {
+    "id": "quest_012",
+    "title": "Toxic Poison",
+    "description": "Condition:Entry to Maze Dungeon \n First use Toxic Potion",
+    "status": "LOCKED",
+    "conditions": "dungeon_entry",
+    "visible": true,
+    "requirements": {},
+    "reward": {
+      "experience": 50,
+      "gold": 50,
+      "items": {
+        "Toxic Potion": 1
+      }
     }
   }
 ]

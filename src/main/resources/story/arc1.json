@@ -1064,7 +1064,7 @@
             {
               "character": "Elden",
               "characterImage": "npc_village_master.png",
-              "text": "Ngày xưa ta từng là một kiếm sĩ, phiêu lưu qua mọi miền đất, săn lùng quái vật và tiền thưởng. Nhưng máu đổ nhiều, và cuối cùng chẳng bao giờ đủ để giữ hòa bình."
+              "text": "Ngày xưa ta từng là một kiếm sĩ, phiêu lưu qua mọi miền đất, săn lùng quái vật và tiền thưởng. Nhưng máu đổ nhiều, và cuối cùng chẳng bao giờ đủ để giữ\n hòa bình."
             },
             {
               "character": "Elden",
@@ -1799,19 +1799,19 @@
             {
               "text": "Lăng mộ ký ức 1 [Ruby Omega]",
               "next_scene": "scene_end",
-              "required_item": "CCCD",
+              "required_item": "Ruby Omega",
               "reward_item": "Ruby Omega"
             },
             {
-              "text": "Lake  [Saphire Alpha]",
+              "text": "Frost Land [Sapphire Alpha]",
               "next_scene": "scene_end",
-              "required_item": "CCCD",
+              "required_item": "Sapphire Alpha",
               "reward_item": "Saphire Alpha"
             },
             {
-              "text": "Gốc cây Yggdrasil [Emeral Delta]",
+              "text": "Magic Forest [Emerald Delta]",
               "next_scene": "scene_end",
-              "required_item": "CCCD",
+              "required_item": "Emerald Delta",
               "reward_item": "Emeral Delta"
             },
             {
