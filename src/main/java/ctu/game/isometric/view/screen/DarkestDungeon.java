@@ -11,6 +11,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.Timer;
 import ctu.game.isometric.IsometricGame;
+import ctu.game.isometric.controller.DungeonInputProcessor;
 import ctu.game.isometric.controller.GameController;
 import ctu.game.isometric.model.entity.Character;
 import ctu.game.isometric.model.entity.Enemy;
@@ -40,7 +41,7 @@ public class DarkestDungeon implements Screen {
     private OrthographicCamera camera;
 
     // Combat state
-    private enum CombatState {
+    public enum CombatState {
         PLAYER_TURN, ENEMY_TURN, COMBAT_END, ANIMATING
     }
 
@@ -71,8 +72,8 @@ public class DarkestDungeon implements Screen {
     private String enemyName = "Cactoid Vertephile";
 
     // Screen dimensions - Split into two 360px halves
-    private final float SCREEN_WIDTH = 1280;
-    private final float SCREEN_HEIGHT = 720;
+    public final float SCREEN_WIDTH = 1280;
+    public final float SCREEN_HEIGHT = 720;
     private final float TOP_HALF_HEIGHT = 360;
     private final float BOTTOM_HALF_HEIGHT = 360;
 
@@ -147,7 +148,6 @@ public class DarkestDungeon implements Screen {
     public DarkestDungeon(IsometricGame game, GameController gameController) {
         this.gameController = gameController;
         this.game = game;
-        this.player = gameController.getCharacter();
         this.assetManager = game.getAssetManager();
         this.wordNetValidator = gameController.getWordNetValidator();
 
@@ -289,6 +289,7 @@ public class DarkestDungeon implements Screen {
         currentPlayerTexture = playerIdleTextures[0];
         currentEnemyTexture = enemyIdleTextures[0];
 
+        this.player = gameController.getCharacter();
 
         rewardRenderer = new RewardRenderer(batch, font, titleFont, inputFont, shapeRenderer, assetManager);
         defeatRenderer = new DefeatRenderer(batch, font, titleFont, inputFont, shapeRenderer);
@@ -485,8 +486,12 @@ public class DarkestDungeon implements Screen {
                 return false;
             }
         });
-
+// In the show() method of DarkestDungeon class
+//        DungeonInputProcessor inputProcessor = new DungeonInputProcessor(this);
+//
+//        Gdx.input.setInputProcessor(inputProcessor);
     }
+
 
     float menuWidth = 320;
     float menuHeight = 240;
@@ -498,7 +503,7 @@ public class DarkestDungeon implements Screen {
     float buttonY = menuY + menuHeight;
 
 
-    private void updateTooltip() {
+    public void updateTooltip() {
         hoveredSkill = -1;
         showTooltip = false;
 
@@ -675,7 +680,7 @@ public class DarkestDungeon implements Screen {
         );
 
         // Render enemy
-        character2DRenderer.renderCharacter(
+        if (currentEnemyTexture!= null) character2DRenderer.renderCharacter(
                 currentEnemyTexture,
                 enemyWorldPos,
                 environment3D.getCamera(),
@@ -1378,7 +1383,7 @@ public class DarkestDungeon implements Screen {
     }
 
 
-    private void processWordInput(String word) {
+    public void processWordInput(String word) {
         displayWord = word;
         showWordDisplay = true;
         wordDisplayTimer = 0f;
@@ -1910,7 +1915,7 @@ public class DarkestDungeon implements Screen {
     }
 
 
-    private void handlePlayerAction(int skillIdx) {
+    public void handlePlayerAction(int skillIdx) {
         // Play click sound
         if (gameController.getEffectManager() != null) {
             gameController.getEffectManager().playClickSound();
@@ -2051,4 +2056,137 @@ public class DarkestDungeon implements Screen {
         environment3D.dispose();
     }
 
+    // Getter and setter methods for DarkestDungeon class
+    public GameController getGameController() {
+        return gameController;
+    }
+
+    public boolean isPaused() {
+        return isPaused;
+    }
+
+    public void setPaused(boolean paused) {
+        this.isPaused = paused;
+    }
+
+    public boolean isShowTutorial() {
+        return showTutorial;
+    }
+
+    public void setShowTutorial(boolean showTutorial) {
+        this.showTutorial = showTutorial;
+    }
+
+    public int getCurrentTutorialPage() {
+        return currentTutorialPage;
+    }
+
+    public void setCurrentTutorialPage(int page) {
+        this.currentTutorialPage = page;
+    }
+
+    public boolean isVictory() {
+        return victory;
+    }
+
+    public boolean isDefeated() {
+        return defeated;
+    }
+
+    public boolean isEnded() {
+        return isEnded;
+    }
+
+    public boolean isWaitingForInput() {
+        return waitingForInput;
+    }
+
+    public boolean isShowInputField() {
+        return showInputField;
+    }
+
+    public String getInputWord() {
+        return inputWord;
+    }
+
+    public void setInputWord(String word) {
+        this.inputWord = word;
+    }
+
+    public TutorialRenderer getTutorialRenderer() {
+        return tutorialRenderer;
+    }
+
+    public Rectangle getContinueButtonBounds() {
+        return continueButtonBounds;
+    }
+
+    public Items getItem() {
+        return item;
+    }
+
+    public Reward getReward() {
+        return reward;
+    }
+
+    public int getPlayerHP() {
+        return playerHP;
+    }
+
+    public int getPlayerMana() {
+        return playerMana;
+    }
+
+    public String getEnemyName() {
+        return enemyName;
+    }
+
+    public int getNewLevel() {
+        return newLevel;
+    }
+
+    public int getCurrentLevel() {
+        return currentLevel;
+    }
+
+    public IsometricGame getGame() {
+        return game;
+    }
+
+    public DarkestDungeon.CombatState getCombatState() {
+        return combatState;
+    }
+
+    public boolean isAnimating() {
+        return isAnimating;
+    }
+
+    public float getMenuX() {
+        return menuX;
+    }
+
+    public float getMenuWidth() {
+        return menuWidth;
+    }
+
+    public float getButtonY() {
+        return buttonY;
+    }
+
+    public float getButtonHeight() {
+        return buttonHeight;
+    }
+
+    public float getButtonSpacing() {
+        return buttonSpacing;
+    }
+
+    public boolean isSkillEnabled(int index) {
+        return skillEnabled[index];
+    }
+
+    public void setMousePosition(float x, float y) {
+        this.mouseX = x;
+        this.mouseY = y;
+    }
 }

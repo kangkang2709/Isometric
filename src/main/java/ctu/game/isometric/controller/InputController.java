@@ -110,6 +110,8 @@ public class InputController extends InputAdapter {
             return handleDialogInput(keycode);
         }
 
+        System.out.println("Key pressed: " + keycode + " in state: " + state);
+
         // Handle different game states
         switch (state) {
             case DICTIONARY:
@@ -121,6 +123,7 @@ public class InputController extends InputAdapter {
             case SETTINGS:
                 return handleSettingsInput(keycode);
             case CUTSCENE:
+                // Handle cutscene input
                 return handleCutSceneInput(keycode);
             case EXPLORING:
                 if (gameController.getDialogController().isDialogActive())

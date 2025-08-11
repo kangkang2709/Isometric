@@ -28,6 +28,8 @@ target/
 /.nb-gradle/
 build/
 dict/
+out/
+
 !**/src/main/**/build/
 !**/src/test/**/build/
 

@@ -243,10 +243,48 @@ public class DialogUI {
     }
 
     private void startNewTextAnimation(String text) {
-        currentFullText = text;
+        // Preprocess text to add proper line breaks
+        currentFullText = wrapText(text, DIALOG_BOX_WIDTH - 190); // 190 accounts for margins/padding
         displayedText = "";
         textTimer = 0;
         isTextFullyDisplayed = false;
+    }
+    private String wrapText(String text, float maxWidth) {
+        if (text == null || text.isEmpty()) return "";
+
+        StringBuilder wrappedText = new StringBuilder();
+        String[] words = text.split("\\s+");
+        StringBuilder currentLine = new StringBuilder();
+
+        com.badlogic.gdx.graphics.g2d.GlyphLayout layout = new com.badlogic.gdx.graphics.g2d.GlyphLayout();
+
+        for (String word : words) {
+            // Test if adding this word exceeds the width
+            String testLine = currentLine.length() > 0
+                    ? currentLine + " " + word
+                    : word;
+
+            layout.setText(dialogFont, testLine);
+
+            if (layout.width <= maxWidth) {
+                // Word fits, add it to current line
+                if (currentLine.length() > 0) {
+                    currentLine.append(" ");
+                }
+                currentLine.append(word);
+            } else {
+                // Word doesn't fit, start a new line
+                wrappedText.append(currentLine).append("\n");
+                currentLine = new StringBuilder(word);
+            }
+        }
+
+        // Add the last line
+        if (currentLine.length() > 0) {
+            wrappedText.append(currentLine);
+        }
+
+        return wrappedText.toString();
     }
 
     private void updateTextAnimation(float deltaTime) {

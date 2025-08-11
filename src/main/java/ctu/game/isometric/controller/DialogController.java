@@ -42,13 +42,19 @@ public class DialogController {
         try {
             ObjectMapper mapper = new ObjectMapper();
             mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-            storyData = mapper.readValue(Gdx.files.internal("story/arc1.json").reader(), StoryData.class);
+
+            // Đảm bảo đọc file với UTF-8
+            storyData = mapper.readValue(
+                    Gdx.files.internal("story/arc1.json").reader("UTF-8"),
+                    StoryData.class
+            );
 
             Gdx.app.log("Dialog", "Story data loaded successfully");
         } catch (IOException e) {
             Gdx.app.error("Dialog", "Failed to load story data", e);
         }
     }
+
 
     public void startDialog(String arcId, String sceneId) {
         if (storyData == null) return;
@@ -326,8 +332,7 @@ public class DialogController {
                     // If player doesn't have the required item, redirect to scene_not_enough_item
                     startDialog(currentArcId, "scene_not_enough_item");
                 }
-            }
-            else if (choice.getText().contains("[YES]")) {
+            } else if (choice.getText().contains("[YES]")) {
                 performAction = true;
                 isCancelAction = false;
 
