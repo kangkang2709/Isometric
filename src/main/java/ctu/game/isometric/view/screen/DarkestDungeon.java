@@ -167,12 +167,8 @@ public class DarkestDungeon implements Screen {
     public void startCombat(Enemy enemy) {
         this.enemyName = enemy.getEnemyName();
         System.out.println("Starting combat with enemy: " + enemyName);
-        this.enemyMaxHP = (int) enemy.getHealth();
-        this.enemyHP = enemyMaxHP;
 
 
-        this.enemyATK = enemy.getAttackPower();
-        this.enemyDEF = enemy.getDefensePower();
 
         this.rewardId = enemy.getRewardID();
 
@@ -183,6 +179,18 @@ public class DarkestDungeon implements Screen {
         this.playerMaxMana = (int) gameController.getCharacter().getMaxMana();
         this.playerATK = (int) gameController.getCharacter().getDamage();
         this.playerDEF = (int) gameController.getCharacter().getDamage();
+
+
+
+        double hpScale = 0.2;   // enemy gains 20% of player's max HP
+        double atkScale = 0.15; // enemy gains 15% of player's ATK
+        double defScale = 0.1;  // enemy gains 10% of player's DEF
+
+        this.enemyMaxHP = (int) (enemy.getHealth() + playerMaxHP * hpScale);
+        this.enemyHP = enemyMaxHP;
+
+        this.enemyATK = (int) (enemy.getAttackPower() + playerATK * atkScale);
+        this.enemyDEF = (int) (enemy.getDefensePower() + playerDEF * defScale);
 
         this.isAnimating = false;
         this.isPlayerAction = true;

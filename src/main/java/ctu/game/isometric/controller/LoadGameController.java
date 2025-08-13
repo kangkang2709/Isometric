@@ -261,8 +261,8 @@ public class LoadGameController {
     }
 
     public boolean handleMouseClick(int x, int y) {
-        int mouseX = Gdx.input.getX();
-        int mouseY = screenHeight - Gdx.input.getY(); // Invert Y coordinate
+        int mouseX = x;
+        int mouseY = screenHeight - y; // Invert Y coordinate
 
         if (isConfirmationDialogActive) {
             if (confirmYesButtonRect.contains(mouseX, mouseY)) {

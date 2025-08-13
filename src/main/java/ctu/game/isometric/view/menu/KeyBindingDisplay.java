@@ -146,7 +146,7 @@ public class KeyBindingDisplay {
         batch.begin();
 
         // Draw title
-        titleFont.draw(batch, "Phím Tắt", panelX, panelY + panelHeight - 30,
+        titleFont.draw(batch, "KEY BINDING", panelX, panelY + panelHeight - 30,
                 panelWidth, Align.center, false);
 
         // Draw key bindings

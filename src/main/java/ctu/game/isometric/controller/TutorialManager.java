@@ -66,8 +66,8 @@ public class TutorialManager {
         addTutorial("combat", new Tutorial(
                 "2",
                 "Lượt của bạn",
-                "- Nhấn nút \"Kỹ Năng\" để mở lưới kí tự, chọn các chữ cái trên lưới để tạo thành một từ tiếng Anh.\n" +
-                        "- Sau khi chọn xong, nhấn \"CAST\" để tấn công." +
+                "- Nhấn nút \"Kỹ Năng\" để mở lưới kí tự, chọn các chữ cái trên lưới để tạo thành một từ tiếng Anh." +
+                        "- Sau khi chọn xong, nhấn \"CAST\" để tấn công.\n" +
                         "- Sát thương dựa trên độ dài và điểm số của từ. Nếu từ không hợp lệ, bạn sẽ mất lượt!\n" +
                         " **Không nghĩ ra từ? Hãy dùng \"Tấn công thường\" để gây sát thương cơ bản.\n" +
                         " **Mở Pause Menu để xem chi tiết cách tính điểm và sát thương.",

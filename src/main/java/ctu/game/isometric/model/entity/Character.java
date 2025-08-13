@@ -403,6 +403,14 @@ public class Character {
         initialTutorial();
     }
 
+    public void setRun(int run) {
+
+        if (run < 0) {
+            throw new IllegalArgumentException("Run count cannot be negative");
+        }
+        ettempFlags.put("run", run);
+    }
+
     public void updateQuizCompletedCount() {
         ettempFlags.put("quizcount", ettempFlags.getOrDefault("quizcount", 0) + 1);
     }

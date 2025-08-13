@@ -79,7 +79,7 @@ public class SettingsMenu {
         // Add back option
         addMenuOption("Quay Lại", MenuOption.OptionType.BUTTON,
                 () -> {
-                    if(gameController.getPreviousState() == GameState.MAIN_MENU) {
+                    if (gameController.getPreviousState() == GameState.MAIN_MENU) {
                         gameController.setState(GameState.MAIN_MENU);
                         gameController.setPreviousState(GameState.MAIN_MENU);
                     } else {

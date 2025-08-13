@@ -302,11 +302,13 @@ public class GameScreen implements Screen {
 
     @Override
     public void pause() {
-        if (gameController.getCurrentState() == GameState.MAIN_MENU || gameController.getCurrentState() == GameState.SETTINGS) {
+        if (gameController.getTutorialUI().isVisible())
+            return;
+        if (gameController.getCurrentState() == GameState.MAIN_MENU || gameController.getCurrentState() == GameState.SETTINGS ) {
             return;
         }
         System.out.println("GameScreen paused");
-        gameController.setState(GameState.MENU);
+//        gameController.setState(GameState.MENU);
     }
 
     @Override

@@ -253,9 +253,11 @@ public class MainMenu {
                 break;
             case 1:
                 gameController.setState(GameState.LOAD_GAME);
+                gameController.setPreviousState(GameState.MAIN_MENU);
                 break;
             case 2:
                 gameController.setState(GameState.SETTINGS);
+                gameController.setPreviousState(GameState.MAIN_MENU);
                 break;
             case 3:
                 Gdx.app.exit();

@@ -505,11 +505,52 @@ public class InputController extends InputAdapter {
                 gameController.getGameplayController().activate();
                 gameController.getGameplayController().startCombat(enemy);
             }
+
             case Keys.NUM_1 -> {
                 gameController.getMapRenderer().toogleRenderDarkNessWithLight();
             }
             case Keys.NUM_2 -> {
                 gameController.getMapRenderer().toggleRenderPath();
+            }
+
+            case Keys.NUM_8 -> {
+                Enemy enemy = EnemyLoader.getEnemyById(8);
+
+                gameController.setState(GameState.GAMEPLAY);
+
+                gameController.getGameplayController().activate();
+                gameController.getGameplayController().startCombat(enemy);
+                break;
+            }
+            case Keys.NUM_9 -> {
+                Enemy enemy = EnemyLoader.getEnemyById(9);
+
+                gameController.setState(GameState.GAMEPLAY);
+
+                gameController.getGameplayController().activate();
+                gameController.getGameplayController().startCombat(enemy);
+                break;
+            }
+
+            case Keys.NUM_3 -> {
+                gameController.getCharacter().setRun(9);
+                break;
+            }
+            case Keys.NUM_4 -> {
+                gameController.startMulChoiceQuiz(2);
+                break;
+            }
+            case Keys.NUM_5 -> {
+                gameController.startQuiz(2);
+                break;
+            }
+            case Keys.NUM_6 -> {
+                gameController.changeMap("frozen");
+                break;
+            }
+            case Keys.NUM_7 -> {
+                gameController.changeMap("dungeon2");
+                break;
             }
             case Keys.F10 -> {
                 gameController.changeMap("board");
@@ -551,6 +592,8 @@ public class InputController extends InputAdapter {
                 else
                     gameController.showAchievementUI();
             }
+
+
             case Keys.ESCAPE -> {
                 effectManager.playClickSound();
                 if (gameController.getAchievementUI().isActive())

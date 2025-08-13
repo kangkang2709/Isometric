@@ -2000,12 +2000,12 @@ public class GameController {
                 boolean isDungeon = random.nextBoolean();
 
                 if (isDungeon) {
-                    Enemy enemy = new Enemy(21, "Thủ vệ hồ", "Frog", "frost", 1, 5, 3);
+                    Enemy enemy = new Enemy(21, "Thủ vệ hồ", "Frog", "frost", 20, 5, 3);
                     enemy.setDefensePower(7);
                     game.getDarkestDungeonScreen().startCombat(enemy);
                     game.changeScreen("DARK_DUNGEON");
                 } else {
-                    Enemy enemy = new Enemy(34, "Thủ vệ hồ", "Minotaur", "minotaur", 1, 7, 4);
+                    Enemy enemy = new Enemy(34, "Thủ vệ hồ", "Minotaur", "minotaur", 20, 7, 4);
                     enemy.setDefensePower(5);
                     game.getDarkestDungeonScreen().startCombat(enemy);
                     game.changeScreen("DARK_DUNGEON");
