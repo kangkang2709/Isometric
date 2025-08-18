@@ -502,7 +502,7 @@ public class MulChoiceQuizController {
 
     public void exitQuiz() {
         quizActive = false;
-        gameController.getCharacter().setScore(totalScore);
+        gameController.getCharacter().addScore(totalScore);
         gameController.setState(GameState.EXPLORING);
 
         boolean quizCompleted = this.totalScore > 0;

@@ -33,38 +33,38 @@ public class CreditsScreen implements Screen {
         this.onEndCallback = onEndCallback;
         // Khởi tạo nội dung credits
         this.creditLines = new String[]{
-
-                "Labyrinth of Wisdom",
+                "THANK YOU FOR PLAYING",
                 "",
                 "",
-                "A game by",
+                "Trinh Phan Ke Van",
+                "Xuan Nhi",
+                "Le Nhu Phung",
                 "",
-                "GAME DESIGN",
+                "DIRECTOR & HELPER",
+                "",
+                "Nguyen Cong Danh",
+                "",
+                "SUPERVISING INSTRUCTOR",
+                "",
+                "Le Nhu Phung",
+                "Nguyen Minh Khanh",
+                "",
+                "TESTER",
                 "",
                 "Nguyen Minh Khanh",
                 "",
                 "PROGRAMMER",
                 "",
-                "Nguyễn Minh Khánh",
-                "",
-                "TESTER",
-                "",
                 "Nguyen Minh Khanh",
-                "Le Nhu Phung",
                 "",
-                "SUPERVISING INSTRUCTOR",
+                "GAME DESIGN",
                 "",
-                "Nguyen Cong Danh",
-                "",
-                "DIRECTOR & HELPER",
-                "",
-                "Le Nhu Phung",
-                "Xuan Nhi",
-                "Trinh Phan Ke Van",
+                "A game by",
                 "",
                 "",
-                "THANK YOU FOR PLAYING"
+                "Labyrinth of Wisdom"
         };
+
     }
 
     @Override

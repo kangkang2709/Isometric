@@ -108,6 +108,7 @@ public class MainMenu {
         batch.setProjectionMatrix(new Matrix4().setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
         renderParallaxBackground(batch);
 
+        font.setColor(Color.WHITE);
         // Vẽ title
         float titleX = (screenWidth - titleTexture.getWidth()) / 2;
         batch.draw(titleTexture, titleX, titleY - 50);

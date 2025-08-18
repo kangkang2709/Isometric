@@ -169,7 +169,6 @@ public class DarkestDungeon implements Screen {
         System.out.println("Starting combat with enemy: " + enemyName);
 
 
-
         this.rewardId = enemy.getRewardID();
 
         this.playerName = gameController.getCharacter().getName();
@@ -179,7 +178,6 @@ public class DarkestDungeon implements Screen {
         this.playerMaxMana = (int) gameController.getCharacter().getMaxMana();
         this.playerATK = (int) gameController.getCharacter().getDamage();
         this.playerDEF = (int) gameController.getCharacter().getDamage();
-
 
 
         double hpScale = 0.2;   // enemy gains 20% of player's max HP
@@ -368,7 +366,7 @@ public class DarkestDungeon implements Screen {
                                 if (newLevel > currentLevel) gameController.showLevelUpNotification();
                             }
                         }, 0.5f);
-                        if (enemyName.equalsIgnoreCase("Demon"))
+                        if (enemyName.equalsIgnoreCase("Flame Guardian Armon"))
                             gameController.completedDungeon2();
                         else if (enemyName.equalsIgnoreCase("Frost Guardian"))
                             gameController.defeatedFrostGuardian();
@@ -688,7 +686,7 @@ public class DarkestDungeon implements Screen {
         );
 
         // Render enemy
-        if (currentEnemyTexture!= null) character2DRenderer.renderCharacter(
+        if (currentEnemyTexture != null) character2DRenderer.renderCharacter(
                 currentEnemyTexture,
                 enemyWorldPos,
                 environment3D.getCamera(),
@@ -1303,6 +1301,7 @@ public class DarkestDungeon implements Screen {
                     String[] wordsArray = learnedWords.toArray(new String[0]);
                     String randomWord = wordsArray[MathUtils.random(wordsArray.length - 1)];
 
+                    System.out.println("Random word chosen: " + randomWord);
                     int wordScore = wordNetValidator.getTotalScore(randomWord);
                     int wordDamage = Math.max(1, wordScore + playerATK - enemyDEF);
                     enemyHP = Math.max(0, enemyHP - wordDamage);
@@ -1326,7 +1325,7 @@ public class DarkestDungeon implements Screen {
                 showInputField = true;
                 waitingForInput = true;
                 inputWord = "";
-                combatLog = "Nhập một từ và nhấn ENTER\n Từ không hợp lệ sẽ gây sát thương (Phản sát thương) cho bạn!";
+                combatLog = "Từ không hợp lệ sẽ Phản sát thương! Từ đã dùng không gây sát thương.";
                 return;
             case 3: // Heal
                 startActionAnimation(1);
@@ -1396,7 +1395,17 @@ public class DarkestDungeon implements Screen {
         showWordDisplay = true;
         wordDisplayTimer = 0f;
 
-        if (wordNetValidator.isValidWord(word)) {
+
+        if (gameController.getCharacter().getLearnedWords().contains(word.toUpperCase()) ||
+                gameController.getCharacter().getNewlearneWords().contains(word.toUpperCase())) {
+
+            int wordDamage = 0; // Set damage to 0 for already learned words
+            combatLog = "'" + word + "' đã được dùng! Từ này không gây sát thương.";
+            showDamageNumber(wordDamage, true, false);
+            currentEffectTexture = effectTextures[0];
+            effectOnPlayer = false;
+
+        } else if (wordNetValidator.isValidWord(word)) {
             int wordScore = wordNetValidator.getTotalScore(word);
             int wordDamage = Math.max(1, wordScore + playerATK - enemyDEF);
             enemyHP = Math.max(0, enemyHP - wordDamage);

@@ -102,7 +102,14 @@ public class InputController extends InputAdapter {
         GameState state = gameController.getCurrentState();
 
         if (gameController.getTutorialUI().isVisible()) {
-            return gameController.getTutorialUI().handleKeyPress(keycode);
+            if (state == GameState.CUTSCENE) {
+                if (keycode == Keys.ENTER) {
+                    effectManager.playClickSound();
+                    gameController.getCutsceneController().endCutscene();
+                }
+                return true;
+            } else
+                return gameController.getTutorialUI().handleKeyPress(keycode);
         }
 
         // Handle dialog input first
@@ -479,6 +486,8 @@ public class InputController extends InputAdapter {
                 gameController.addFlag("klein_unlock");
                 gameController.addFlag("klein_meet");
                 gameController.addFlag("dungeon_entry");
+                gameController.addFlag("completed_dungeon2");
+
                 gameController.applyQuizMovementEffect();
             }
             case Keys.BACKSPACE -> {
@@ -534,6 +543,12 @@ public class InputController extends InputAdapter {
 
             case Keys.NUM_3 -> {
                 gameController.getCharacter().setRun(9);
+                break;
+            }
+            case Keys.END -> {
+                gameController.getCharacter().setRun(9);
+                gameController.addFlag("defeated_final_boss");
+                gameController.changeSaveMap("forest");
                 break;
             }
             case Keys.NUM_4 -> {
