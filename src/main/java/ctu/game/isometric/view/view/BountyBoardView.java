@@ -666,24 +666,23 @@ public class BountyBoardView {
         }
 
         // Ensure scrollOffset is valid
-        if (scrollOffset > Math.max(0, currentQuestList.size() - maxVisibleQuests)) {
-            scrollOffset = Math.max(0, currentQuestList.size() - maxVisibleQuests);
-        }
+    // Ensure scrollOffset is valid
+    scrollOffset = Math.max(0, Math.min(scrollOffset, Math.max(0, currentQuestList.size() - maxVisibleQuests)));
 
-        // Clear and populate only visible quest slots
-        questSlots.clear();
-        float slotWidth = 350;
-        float slotHeight = 95;
-        float slotX = boardX + 20;
-        float slotY = boardY + boardHeight - 200;
-        float padding = 15;
+    // Clear and populate only visible quest slots
+    questSlots.clear();
+    float slotWidth = 350;
+    float slotHeight = 95;
+    float slotX = boardX + 20;
+    float slotY = boardY + boardHeight - 200;
+    float padding = 15;
 
-        int end = Math.min(scrollOffset + maxVisibleQuests, currentQuestList.size());
-        for (int i = scrollOffset; i < end; i++) {
-            int displayIndex = i - scrollOffset;
-            float yOffset = slotY - (displayIndex * (slotHeight + padding));
-            questSlots.add(new QuestSlot(currentQuestList.get(i), new Rectangle(slotX, yOffset, slotWidth, slotHeight)));
-        }
+    int end = Math.min(scrollOffset + maxVisibleQuests, currentQuestList.size());
+    for (int i = scrollOffset; i < end; i++) {
+        int displayIndex = i - scrollOffset;
+        float yOffset = slotY - (displayIndex * (slotHeight + padding));
+        questSlots.add(new QuestSlot(currentQuestList.get(i), new Rectangle(slotX, yOffset, slotWidth, slotHeight)));
+    }
     }
 
 
